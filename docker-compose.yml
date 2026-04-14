@@ -6,6 +6,13 @@ x-node-defaults: &node-defaults
   image: globulario/globular-node:latest
   privileged: true
   cgroup: host
+  # Use Globular DNS (node-1) for *.globular.internal resolution.
+  # Without this, Docker's internal DNS (127.0.0.11) forwards to the host
+  # resolver which returns the REAL cluster IPs (10.0.0.x) instead of the
+  # Docker network IPs (10.10.0.x), breaking all mesh/service discovery.
+  dns:
+    - 10.10.0.11
+    - 8.8.8.8
   # systemd needs these
   tmpfs:
     - /run

@@ -1,0 +1,14 @@
+[Unit]
+Description=Assign node profiles for quickstart simulation
+After=globular-seed-etcd.service globular-cluster-controller.service globular-node-agent.service
+Wants=globular-seed-etcd.service globular-cluster-controller.service globular-node-agent.service
+ConditionPathExists=/opt/globular/scripts/assign-profiles.sh
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+EnvironmentFile=-/etc/globular/quickstart.env
+ExecStart=/opt/globular/scripts/assign-profiles.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,193 @@
+# Globular Quickstart — 5-node cluster
+# Usage: make up  (or: docker compose up -d)
+
+x-node-defaults: &node-defaults
+  build: .
+  image: globulario/globular-node:latest
+  privileged: true
+  cgroup: host
+  # systemd needs these
+  tmpfs:
+    - /run
+    - /run/lock
+    - /tmp
+  volumes:
+    - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    - shared-pki:/shared-pki
+  networks:
+    - globular-net
+  restart: unless-stopped
+  stop_grace_period: 30s
+
+services:
+  # ── Control-plane nodes (etcd + all core services) ─────
+
+  node-1:
+    <<: *node-defaults
+    hostname: node-1
+    container_name: globular-node-1
+    environment:
+      GLOBULAR_NODE_NAME: node-1
+      GLOBULAR_NODE_IP: "10.10.0.11"
+      GLOBULAR_CLUSTER_PEERS: "node-1=10.10.0.11,node-2=10.10.0.12,node-3=10.10.0.13"
+      GLOBULAR_PROFILES: "control-plane,core,gateway"
+      GLOBULAR_CA_MODE: "generate"
+      GLOBULAR_CLUSTER_DOMAIN: "globular.internal"
+      GLOBULAR_SCYLLA_ADDR: "10.10.0.20"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - shared-pki:/shared-pki
+      - node1-state:/var/lib/globular
+    networks:
+      globular-net:
+        ipv4_address: 10.10.0.11
+    ports:
+      - "10443:443"     # HTTPS gateway (host 10443 → container 443)
+      - "18443:8443"    # gRPC-Web
+
+  node-2:
+    <<: *node-defaults
+    hostname: node-2
+    container_name: globular-node-2
+    depends_on:
+      - node-1
+      - scylladb
+    environment:
+      GLOBULAR_NODE_NAME: node-2
+      GLOBULAR_NODE_IP: "10.10.0.12"
+      GLOBULAR_CLUSTER_PEERS: "node-1=10.10.0.11,node-2=10.10.0.12,node-3=10.10.0.13"
+      GLOBULAR_PROFILES: "control-plane,core,storage"
+      GLOBULAR_CA_MODE: "copy"
+      GLOBULAR_CLUSTER_DOMAIN: "globular.internal"
+      GLOBULAR_SCYLLA_ADDR: "10.10.0.20"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - shared-pki:/shared-pki
+      - node2-state:/var/lib/globular
+    networks:
+      globular-net:
+        ipv4_address: 10.10.0.12
+    ports:
+      - "19090:9090"    # Prometheus (debug)
+
+  node-3:
+    <<: *node-defaults
+    hostname: node-3
+    container_name: globular-node-3
+    depends_on:
+      - node-1
+    environment:
+      GLOBULAR_NODE_NAME: node-3
+      GLOBULAR_NODE_IP: "10.10.0.13"
+      GLOBULAR_CLUSTER_PEERS: "node-1=10.10.0.11,node-2=10.10.0.12,node-3=10.10.0.13"
+      GLOBULAR_PROFILES: "control-plane,core,ai"
+      GLOBULAR_CA_MODE: "copy"
+      GLOBULAR_CLUSTER_DOMAIN: "globular.internal"
+      GLOBULAR_SCYLLA_ADDR: "10.10.0.20"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - shared-pki:/shared-pki
+      - node3-state:/var/lib/globular
+    networks:
+      globular-net:
+        ipv4_address: 10.10.0.13
+
+  # ── ScyllaDB (storage infrastructure) ─────────────────
+  # Runs as a separate container but on the same Docker network.
+  # Globular services connect to it at 10.10.0.20:9042, matching
+  # production where ScyllaDB listens on the node's IP.
+
+  scylladb:
+    image: scylladb/scylla:6.2
+    container_name: globular-scylladb
+    hostname: scylladb
+    command: >
+      --seeds=10.10.0.20
+      --listen-address=10.10.0.20
+      --rpc-address=10.10.0.20
+      --broadcast-address=10.10.0.20
+      --broadcast-rpc-address=10.10.0.20
+      --cluster-name=quickstart.local
+      --endpoint-snitch=SimpleSnitch
+      --developer-mode=1
+      --smp=2
+      --memory=1G
+      --overprovisioned=1
+      --api-address=10.10.0.20
+    networks:
+      globular-net:
+        ipv4_address: 10.10.0.20
+    volumes:
+      - scylla-data:/var/lib/scylla
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh 10.10.0.20 -e 'SELECT now() FROM system.local' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  # ── Compute nodes (node agent only) ───────────────────
+
+  node-4:
+    <<: *node-defaults
+    hostname: node-4
+    container_name: globular-node-4
+    depends_on:
+      - node-1
+      - node-2
+      - node-3
+    environment:
+      GLOBULAR_NODE_NAME: node-4
+      GLOBULAR_NODE_IP: "10.10.0.14"
+      GLOBULAR_CLUSTER_PEERS: "node-1=10.10.0.11,node-2=10.10.0.12,node-3=10.10.0.13"
+      GLOBULAR_PROFILES: "compute"
+      GLOBULAR_CA_MODE: "copy"
+      GLOBULAR_CLUSTER_DOMAIN: "globular.internal"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - shared-pki:/shared-pki
+      - node4-state:/var/lib/globular
+    networks:
+      globular-net:
+        ipv4_address: 10.10.0.14
+
+  node-5:
+    <<: *node-defaults
+    hostname: node-5
+    container_name: globular-node-5
+    depends_on:
+      - node-1
+      - node-2
+      - node-3
+    environment:
+      GLOBULAR_NODE_NAME: node-5
+      GLOBULAR_NODE_IP: "10.10.0.15"
+      GLOBULAR_CLUSTER_PEERS: "node-1=10.10.0.11,node-2=10.10.0.12,node-3=10.10.0.13"
+      GLOBULAR_PROFILES: "compute"
+      GLOBULAR_CA_MODE: "copy"
+      GLOBULAR_CLUSTER_DOMAIN: "globular.internal"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - shared-pki:/shared-pki
+      - node5-state:/var/lib/globular
+    networks:
+      globular-net:
+        ipv4_address: 10.10.0.15
+
+volumes:
+  scylla-data:
+  shared-pki:
+  node1-state:
+  node2-state:
+  node3-state:
+  node4-state:
+  node5-state:
+
+networks:
+  globular-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.0.0/24
+          gateway: 10.10.0.1

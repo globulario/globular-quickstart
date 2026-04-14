@@ -1,0 +1,14 @@
+[Unit]
+Description=Configure resolv.conf to use Globular DNS for internal zones
+After=globular-dns.service
+Wants=globular-dns.service
+ConditionPathExists=/opt/globular/scripts/configure-dns.sh
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+EnvironmentFile=-/etc/globular/quickstart.env
+ExecStart=/opt/globular/scripts/configure-dns.sh
+
+[Install]
+WantedBy=multi-user.target

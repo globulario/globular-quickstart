@@ -1,0 +1,14 @@
+[Unit]
+Description=Seed etcd with cluster configuration
+After=globular-etcd.service
+Wants=globular-etcd.service
+ConditionPathExists=/opt/globular/scripts/seed-etcd.sh
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+EnvironmentFile=-/etc/globular/quickstart.env
+ExecStart=/opt/globular/scripts/seed-etcd.sh
+
+[Install]
+WantedBy=multi-user.target

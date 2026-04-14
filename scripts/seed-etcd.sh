@@ -44,12 +44,12 @@ if [ -z "$existing" ]; then
     $ETCD put /globular/cluster/minio/hosts '["10.10.0.12"]'
 fi
 
-# Seed system config (domain, cluster info)
+# Seed system config (domain, cluster_id, bootstrapped flag)
 existing=$($ETCD get /globular/system/config --print-value-only 2>/dev/null || echo "")
 if [ -z "$existing" ]; then
     CLUSTER_DOMAIN="${GLOBULAR_CLUSTER_DOMAIN:-quickstart.local}"
-    echo "[seed] Writing system config (domain=$CLUSTER_DOMAIN)"
-    $ETCD put /globular/system/config "{\"Domain\":\"$CLUSTER_DOMAIN\"}"
+    echo "[seed] Writing system config (domain=$CLUSTER_DOMAIN, cluster_id=$CLUSTER_DOMAIN)"
+    $ETCD put /globular/system/config "{\"Domain\":\"$CLUSTER_DOMAIN\",\"cluster_id\":\"$CLUSTER_DOMAIN\",\"bootstrapped\":true}"
 fi
 
 # Seed DNS hosts (control-plane node IPs)

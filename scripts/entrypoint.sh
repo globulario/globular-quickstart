@@ -15,9 +15,15 @@ CA_MODE="${GLOBULAR_CA_MODE:-copy}"   # "generate" on node-1, "copy" on others
 STATE=/var/lib/globular
 PKI=$STATE/pki
 
+# Detect the container's actual MAC address (stable when docker-compose
+# sets mac_address, random otherwise). Globular uses MAC as node identity
+# for signing keys and JWT tokens.
+NODE_MAC=$(ip link show eth0 2>/dev/null | awk '/ether/{print $2}' || echo "00:00:00:00:00:00")
+
 echo "=== Globular node: $NODE_NAME ($NODE_IP) ==="
 echo "    profiles: $PROFILES"
 echo "    peers:    $CLUSTER_PEERS"
+echo "    mac:      $NODE_MAC"
 
 # ── 1. PKI bootstrap ────────────────────────────────────
 if [ "$CA_MODE" = "generate" ]; then
@@ -54,8 +60,9 @@ fi
 if [ ! -f "$PKI/issued/services/service.crt" ]; then
     echo "[pki] Generating service certificate for $NODE_NAME..."
 
-    # Build SAN list: this node's IP + all peer IPs + localhost (for local health checks)
-    SAN="IP:$NODE_IP,IP:127.0.0.1,DNS:$NODE_NAME,DNS:localhost"
+    # Build SAN list: node IP + hostname + FQDN + localhost (for health checks)
+    CLUSTER_DOMAIN="${GLOBULAR_CLUSTER_DOMAIN:-globular.internal}"
+    SAN="IP:$NODE_IP,IP:127.0.0.1,DNS:$NODE_NAME,DNS:${NODE_NAME}.${CLUSTER_DOMAIN},DNS:localhost"
     # Add VIP if this is a gateway node
     if echo "$PROFILES" | grep -q "gateway"; then
         SAN="$SAN,IP:10.10.0.100"
@@ -83,6 +90,45 @@ if [ ! -f "$STATE/keys/${NODE_NAME}_private" ]; then
     openssl pkey -in "$STATE/keys/${NODE_NAME}_private" \
         -pubout -out "$STATE/keys/${NODE_NAME}_public" 2>/dev/null
 fi
+
+# ── 2a. Cross-node public key exchange ───────────────────
+# Each node signs JWTs with its own Ed25519 key. For cross-node auth,
+# every node must have every other node's PUBLIC key so it can verify
+# tokens from remote services. We use /shared-pki as the exchange.
+#
+# The MAC-based key (generated lazily by Go code at first token creation)
+# is the one actually used for signing. We generate it here so it's
+# available before any service starts.
+NODE_MAC_NORM=$(echo "$NODE_MAC" | tr ':' '_')
+if [ ! -f "$STATE/keys/${NODE_MAC_NORM}_private" ]; then
+    echo "[pki] Generating Ed25519 signing key for MAC $NODE_MAC..."
+    openssl genpkey -algorithm Ed25519 \
+        -out "$STATE/keys/${NODE_MAC_NORM}_private" 2>/dev/null
+    openssl pkey -in "$STATE/keys/${NODE_MAC_NORM}_private" \
+        -pubout -out "$STATE/keys/${NODE_MAC_NORM}_public" 2>/dev/null
+fi
+
+# Publish this node's public key to the shared volume.
+mkdir -p /shared-pki/keys
+cp "$STATE/keys/${NODE_MAC_NORM}_public" "/shared-pki/keys/${NODE_MAC_NORM}_public"
+echo "[pki] Published public key for $NODE_MAC to shared volume"
+
+# Import all peer public keys from the shared volume.
+# Runs in a background loop because other nodes may not have published yet.
+(
+    for i in $(seq 1 60); do
+        if ls /shared-pki/keys/*_public 2>/dev/null | grep -q .; then
+            for pubkey in /shared-pki/keys/*_public; do
+                base=$(basename "$pubkey")
+                if [ ! -f "$STATE/keys/$base" ]; then
+                    cp "$pubkey" "$STATE/keys/$base"
+                    echo "[pki] Imported peer public key: $base"
+                fi
+            done
+        fi
+        sleep 2
+    done
+) &
 
 # ── 2b. MinIO TLS certs (storage nodes) ─────────────────
 # MinIO auto-detects TLS when certs exist in ~/.minio/certs/
@@ -154,6 +200,15 @@ ETCD
     chown globular:globular "$STATE/config/etcd.yaml"
 fi
 
+# ── Helper: enable a systemd unit (create WantedBy symlink) ──
+WANTS_DIR=/etc/systemd/system/multi-user.target.wants
+mkdir -p "$WANTS_DIR"
+
+enable_unit() {
+    local unit="$1"
+    ln -sf "/etc/systemd/system/${unit}" "$WANTS_DIR/${unit}"
+}
+
 # ── 4. Render systemd unit templates ────────────────────
 echo "[units] Rendering unit file templates..."
 for unit in /etc/systemd/system/globular-*.service; do
@@ -204,14 +259,6 @@ fi
 # systemctl enable requires a running systemd (D-Bus), but we're
 # before PID 1. Create the WantedBy symlinks manually.
 echo "[units] Enabling services for profiles: $PROFILES"
-
-WANTS_DIR=/etc/systemd/system/multi-user.target.wants
-mkdir -p "$WANTS_DIR"
-
-enable_unit() {
-    local unit="$1"
-    ln -sf "/etc/systemd/system/${unit}" "$WANTS_DIR/${unit}"
-}
 
 # Always enabled on every node
 enable_unit globular-node-agent.service
@@ -281,6 +328,14 @@ fi
 # at least Domain and the etcd endpoints.
 CLUSTER_DOMAIN="${GLOBULAR_CLUSTER_DOMAIN:-globular.internal}"
 
+# Clear stale tokens from previous runs. Tokens are signed with the node's
+# signing key; after a restart with a new MAC or regenerated keys, old
+# tokens have invalid signatures and cause auth failures.
+if [ -d "$STATE/tokens" ]; then
+    echo "[config] Clearing stale tokens..."
+    rm -f "$STATE/tokens/"*_token
+fi
+
 # Build etcd endpoints list from peers
 ETCD_ENDPOINTS=""
 IFS=',' read -ra PEERS_CFG <<< "$CLUSTER_PEERS"
@@ -294,7 +349,7 @@ cat > "$STATE/config.json" <<SEEDCFG
 {
   "Domain": "$CLUSTER_DOMAIN",
   "Name": "$NODE_NAME",
-  "Mac": "00:00:00:00:00:00",
+  "Mac": "$NODE_MAC",
   "EtcdEndpoints": "$ETCD_ENDPOINTS",
   "CaCertificate": "$PKI/ca.crt",
   "Certificate": "$PKI/issued/services/service.crt",

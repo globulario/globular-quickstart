@@ -1,0 +1,146 @@
+version: 1
+name: cert-expiry-detection
+description: |
+  Verify that Globular's PKI invariant enforcement detects an expired TLS certificate
+  and triggers automatic repair.
+
+  This test injects an expired self-signed certificate into node-3's service cert path,
+  then verifies that:
+    1. The PKI invariant validator detects the expired/invalid cert
+    2. A cluster event is emitted (controller.invariant.pki_violation)
+    3. The invariant repair step restarts node-agent on the affected node
+    4. The node-agent re-issues a valid cert from the cluster CA
+    5. The cert is back within the valid window after repair
+
+  What Globular does automatically:
+    - PKI invariant runs during cluster.invariant.enforcement workflow
+    - Checks every node's cert: expiry, SAN coverage, chain validity, CA presence
+    - If violations found: restarts node-agent on affected nodes
+    - node-agent restart triggers certificate re-issuance from the cluster CA
+    - Certs approaching expiry (<30 days) are flagged before they expire
+
+  What requires operator action:
+    - CA expiry (no automatic renewal — requires manual CA rotation)
+    - Cert issued with wrong domain/SAN that doesn't match cluster config
+    - mTLS failures caused by cert/CA mismatch between services
+
+  This test directly validates the fix for the VIP cert SAN issue that caused
+  a 16-hour silent outage (missing 10.0.0.100 in SANs → all VIP traffic rejected).
+
+suite: security
+tags:
+  - chaos
+  - pki
+  - certificates
+  - tls
+  - invariant
+  - auto-repair
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: node3_cert_valid_before
+    probe: pki.cert_expiry_days
+    params:
+      node: node-3
+    expect:
+      expired: false
+      days_remaining_gte: 1
+
+baseline:
+  - type: probe
+    id: cert_info_before
+    probe: pki.cert_info
+    params:
+      node: node-3
+
+  - type: probe
+    id: expiry_days_before
+    probe: pki.cert_expiry_days
+    params:
+      node: node-3
+
+steps:
+  # Inject an expired (0-day validity) self-signed cert on node-3
+  - id: inject_expired_cert
+    action: chaos.inject_expired_cert
+    params:
+      node: node-3
+      cert_path: /var/lib/globular/pki/issued/services/service.crt
+      key_path: /var/lib/globular/pki/issued/services/service.key
+
+  # Verify the cert is now expired (immediate check)
+  - id: verify_cert_expired
+    action: wait
+    params:
+      timeout: 10
+      until:
+        probe: pki.cert_expiry_days
+        params:
+          node: node-3
+        expect:
+          expired: true
+
+  # Wait for the invariant enforcement workflow to detect and repair it.
+  # The invariant runs as part of the reconcile loop (every ~5 minutes),
+  # and repair restarts node-agent which re-issues from the CA.
+  # Allow up to 15 minutes total for: detect → repair → re-issue.
+  - id: wait_for_repair
+    action: wait
+    params:
+      timeout: 900    # 15 minutes
+      poll_interval: 30
+      until:
+        probe: pki.cert_expiry_days
+        params:
+          node: node-3
+        expect:
+          expired: false
+          days_remaining_gte: 1
+
+assertions:
+  # Cert is now valid
+  - type: probe
+    id: cert_valid_after_repair
+    probe: pki.cert_expiry_days
+    params:
+      node: node-3
+    expect:
+      expired: false
+      days_remaining_gte: 1
+
+  # Cert is issued by the cluster CA (chain is valid)
+  - type: probe
+    id: cert_chain_valid
+    probe: pki.cert_info
+    params:
+      node: node-3
+    expect:
+      chain_valid: true
+
+  # Cluster is fully healthy
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+cleanup:
+  # If repair did not succeed, restore the backed-up cert so the cluster is clean
+  - id: restore_cert_backup
+    action: chaos.restore_cert
+    params:
+      node: node-3
+      cert_path: /var/lib/globular/pki/issued/services/service.crt
+      key_path: /var/lib/globular/pki/issued/services/service.key

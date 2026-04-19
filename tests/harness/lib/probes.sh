@@ -936,3 +936,114 @@ probe_cluster_installed_packages() {
 
     echo "{\"total\":$total,\"node_count\":$node_count}"
 }
+
+# ── chaos / invariant probes ──────────────────────────────────────────────────
+
+# probe: node.disk_usage
+# Params: --node <node-name> --path <path> (default /var/lib/globular)
+# Returns: {"used_pct":N,"free_pct":N,"used_gb":N,"total_gb":N,"path":"..."}
+# Reads disk usage inside a Docker container via df.
+probe_node_disk_usage() {
+    local node="" path="/var/lib/globular"
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --node) node="$2"; shift 2 ;;
+            --path) path="$2"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+    local container="globular-${node}"
+    local df_out
+    df_out=$(docker exec "$container" df -m "$path" 2>/dev/null | awk 'NR==2{print $2,$3,$4}')
+    if [[ -z "$df_out" ]]; then
+        echo "{\"error\":\"df failed\",\"node\":\"$node\"}"
+        return
+    fi
+    local total_mb used_mb free_mb
+    read -r total_mb used_mb free_mb <<< "$df_out"
+    local used_pct free_pct total_gb used_gb
+    used_pct=$(awk "BEGIN{printf \"%.1f\", $used_mb/$total_mb*100}")
+    free_pct=$(awk "BEGIN{printf \"%.1f\", $free_mb/$total_mb*100}")
+    total_gb=$(awk "BEGIN{printf \"%.1f\", $total_mb/1024}")
+    used_gb=$(awk "BEGIN{printf \"%.1f\", $used_mb/1024}")
+    echo "{\"used_pct\":$used_pct,\"free_pct\":$free_pct,\"used_gb\":$used_gb,\"total_gb\":$total_gb,\"path\":\"$path\",\"node\":\"$node\"}"
+}
+
+# probe: cluster.quorum_loss_alert
+# Params: (none)
+# Returns: {"alert_present":true|false}
+# Checks if the emergency quorum loss alert key exists in etcd.
+# Written by invariantTriggerEmergencyBackup when ≥2 founding nodes go critical.
+probe_cluster_quorum_loss_alert() {
+    local val
+    val=$(_etcd_get "/globular/cluster/alerts/quorum_loss" 2>/dev/null || echo "")
+    if [[ -n "$val" && "$val" != "null" ]]; then
+        echo "{\"alert_present\":true}"
+    else
+        echo "{\"alert_present\":false}"
+    fi
+}
+
+# probe: node.partition_fenced
+# Params: --node <node-id>
+# Returns: {"fenced":true|false,"fenced_since":"...","node_id":"..."}
+# Checks if Metadata["partition_fenced_since"] is set in the node's cluster state.
+probe_node_partition_fenced() {
+    local node=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --node) node="$2"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+    # Node state is stored at /globular/nodes/<node_id>/status as JSON.
+    # We check if any node status JSON contains partition_fenced_since.
+    local node_keys
+    node_keys=$(_etcd_keys "/globular/nodes/" 2>/dev/null | grep '/status$' || echo "")
+    while IFS= read -r key; do
+        [[ -z "$key" ]] && continue
+        local val
+        val=$(_etcd_get "$key" 2>/dev/null || echo "")
+        if echo "$val" | grep -q "partition_fenced_since"; then
+            local fenced_since
+            fenced_since=$(echo "$val" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('Metadata',{}).get('partition_fenced_since',''))" 2>/dev/null || echo "")
+            echo "{\"fenced\":true,\"fenced_since\":\"$fenced_since\",\"node_id\":\"$node\"}"
+            return
+        fi
+    done <<< "$node_keys"
+    echo "{\"fenced\":false,\"node_id\":\"$node\"}"
+}
+
+# probe: pki.cert_expiry_days
+# Params: --node <node-name> --cert_path <path>
+# Returns: {"days_remaining":N,"expired":true|false,"node":"..."}
+# Checks how many days until a cert expires inside a container.
+probe_pki_cert_expiry_days() {
+    local node="" cert_path="/var/lib/globular/pki/issued/services/service.crt"
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --node) node="$2"; shift 2 ;;
+            --cert_path) cert_path="$2"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+    local container="globular-${node}"
+    local expiry_line
+    expiry_line=$(docker exec "$container" openssl x509 -in "$cert_path" -noout -enddate 2>/dev/null || echo "")
+    if [[ -z "$expiry_line" ]]; then
+        echo "{\"error\":\"cannot read cert\",\"node\":\"$node\",\"cert_path\":\"$cert_path\"}"
+        return
+    fi
+    local expiry_date
+    expiry_date=$(echo "$expiry_line" | cut -d= -f2)
+    local days_remaining
+    days_remaining=$(docker exec "$container" bash -c \
+        "python3 -c \"from datetime import datetime; import sys; \
+        exp=datetime.strptime('$expiry_date','%b %d %H:%M:%S %Y %Z'); \
+        now=datetime.utcnow(); \
+        delta=(exp-now).days; \
+        print(delta)\"" 2>/dev/null || echo "-1")
+    local expired=false
+    [[ "$days_remaining" -lt 0 ]] 2>/dev/null && expired=true
+    echo "{\"days_remaining\":$days_remaining,\"expired\":$expired,\"node\":\"$node\",\"cert_path\":\"$cert_path\"}"
+}

@@ -1,0 +1,196 @@
+version: 1
+name: dual-node-failure
+description: |
+  Verify Globular's response to simultaneous failure of two founding nodes.
+
+  This test stops node-4 and node-5 (worker nodes in the 5-node quickstart cluster).
+  In a production 3-node cluster, losing 2 of 3 founding nodes would risk etcd quorum.
+  In the 5-node quickstart, nodes 1-3 run etcd; nodes 4-5 are workers.
+
+  We use this to verify:
+    1. The cluster controller detects both heartbeats going stale within 5 minutes
+    2. After 15 minutes of critical staleness for 2+ nodes, quorum_at_risk=true fires
+    3. The emergency backup alert key is written to etcd
+    4. The controller emits a quorum_loss_imminent event
+    5. Both nodes are fenced (partition_fenced_since set)
+    6. The cluster continues to function with the remaining 3 nodes
+    7. Both fences auto-clear when nodes are restored
+
+  What Globular does automatically:
+    - Dual-node critical detection (≥2 nodes stale >15min → quorum_at_risk=true)
+    - Writes /globular/cluster/alerts/quorum_loss to etcd (for Alertmanager to trigger backup)
+    - Emits controller.invariant.quorum_loss_imminent event
+    - Fences both nodes (release pipeline skips them)
+    - Auto-clears fences and emits node_partition_healed when heartbeats resume
+
+  What requires operator action:
+    - Physical investigation of failed hardware
+    - Manual backup initiation if Alertmanager is not configured
+    - Full node recovery workflow if nodes cannot be restarted
+
+  Production note: In a 3-node cluster, losing 2 founding nodes means etcd loses
+  quorum and the cluster goes read-only. This scenario uses worker nodes to test
+  the detection and alerting path without actually breaking etcd.
+
+suite: resilience
+tags:
+  - chaos
+  - dual-node
+  - quorum
+  - emergency-backup
+  - invariant
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - type: probe
+    id: node4_running
+    probe: node.container_running
+    params:
+      node: node-4
+    expect:
+      running: true
+
+  - type: probe
+    id: node5_running
+    probe: node.container_running
+    params:
+      node: node-5
+    expect:
+      running: true
+
+  # No existing quorum loss alert before we start
+  - type: probe
+    id: no_prior_alert
+    probe: cluster.quorum_loss_alert
+    expect:
+      alert_present: false
+
+baseline:
+  - type: probe
+    id: cluster_health_before
+    probe: cluster.health
+
+  - type: probe
+    id: node_count_before
+    probe: cluster.nodes
+
+steps:
+  # Stop both worker nodes simultaneously
+  - id: stop_node4
+    action: chaos.stop_node
+    params:
+      node: node-4
+
+  - id: stop_node5
+    action: chaos.stop_node
+    params:
+      node: node-5
+
+  # Wait for both heartbeats to go stale (5 min WARN threshold)
+  - id: wait_warn_threshold
+    action: wait
+    params:
+      timeout: 360
+      poll_interval: 30
+
+  # Wait for CRITICAL threshold (15 min total) — both nodes now critical
+  # This triggers quorum_at_risk=true which triggers emergency backup alert
+  - id: wait_critical_and_alert
+    action: wait
+    params:
+      timeout: 600
+      poll_interval: 60
+
+  # Give invariant loop time to fence both nodes and write the alert key
+  - id: settle
+    action: wait
+    params:
+      timeout: 90
+
+assertions:
+  # Emergency backup alert is written to etcd
+  - type: probe
+    id: quorum_loss_alert_present
+    probe: cluster.quorum_loss_alert
+    expect:
+      alert_present: true
+
+  # Both nodes are fenced
+  - type: probe
+    id: node4_fenced
+    probe: node.partition_fenced
+    params:
+      node: node-4
+    expect:
+      fenced: true
+
+  - type: probe
+    id: node5_fenced
+    probe: node.partition_fenced
+    params:
+      node: node-5
+    expect:
+      fenced: true
+
+  # Cluster is degraded but etcd quorum is intact (3 founding nodes still up)
+  - type: probe
+    id: etcd_quorum_intact
+    probe: cluster.etcd_members
+    expect:
+      healthy_count_gte: 3
+
+  # etcd can still accept writes
+  - type: probe
+    id: etcd_writable
+    probe: etcd.write_test
+    expect:
+      success: true
+
+cleanup:
+  # Restart both nodes
+  - id: start_node4
+    action: chaos.start_node
+    params:
+      node: node-4
+
+  - id: start_node5
+    action: chaos.start_node
+    params:
+      node: node-5
+
+  # Clear the quorum loss alert key from etcd
+  - id: clear_alert_key
+    action: wait
+    params:
+      timeout: 180
+      poll_interval: 20
+      until:
+        probe: cluster.quorum_loss_alert
+        params: {}
+        expect:
+          alert_present: false
+
+  # Wait for fences to be auto-cleared after heartbeats resume
+  - id: wait_fences_cleared
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 15
+      until:
+        probe: cluster.health
+        params: {}
+        expect:
+          status: healthy
+          members_gte: 5

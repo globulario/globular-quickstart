@@ -1,0 +1,147 @@
+version: 1
+name: network-partition-fencing
+description: |
+  Verify that Globular detects a network partition and automatically fences the
+  isolated node to protect new deployments.
+
+  This test blocks all network traffic on node-3 (a worker node) using iptables,
+  then verifies that:
+    1. The cluster controller detects the heartbeat going stale within ~5 minutes
+    2. The invariant enforcement workflow classifies it as WARN (>5min) then CRITICAL (>15min)
+    3. After the critical threshold, the node is marked with partition_fenced_since
+    4. The fence is automatically cleared when the network is restored and heartbeat resumes
+
+  What Globular does automatically:
+    - Heartbeat staleness tracked in cluster state (LastSeen field)
+    - WARN after 5 minutes (reconcile blocks new deployments to stale nodes)
+    - CRITICAL after 15 minutes → sets Metadata["partition_fenced_since"]
+    - Fenced nodes are skipped by the release pipeline
+    - When heartbeat resumes, fence is auto-cleared and node_partition_healed event emitted
+    - If ≥2 nodes go critical simultaneously, quorum_loss_imminent event + etcd alert key written
+
+  What requires operator action:
+    - Diagnosing and fixing the network issue
+    - Manual node recovery if heartbeat does not resume within the grace period
+
+  NOTE: This test uses a worker node (node-3) which does NOT run etcd.
+  Isolating a founding node (node-1, node-2, node-3 in a 3-node cluster) would
+  risk actual etcd quorum loss — use dual-node-failure.yaml for that scenario.
+
+suite: resilience
+tags:
+  - chaos
+  - network
+  - partition
+  - fencing
+  - invariant
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - type: probe
+    id: node5_running
+    probe: node.container_running
+    params:
+      node: node-5
+    expect:
+      running: true
+
+baseline:
+  - type: probe
+    id: cluster_health_before
+    probe: cluster.health
+
+  - type: probe
+    id: node5_registered
+    probe: cluster.nodes
+    params:
+      node: node-5
+
+steps:
+  # Block network traffic on node-5 (worker, no etcd)
+  - id: block_network_node5
+    action: chaos.block_network
+    params:
+      node: node-5
+      direction: both
+
+  # Wait for heartbeat to go stale (WARN threshold = 5 minutes)
+  - id: wait_warn_threshold
+    action: wait
+    params:
+      timeout: 360   # 6 minutes — gives buffer past the 5min WARN threshold
+      poll_interval: 30
+      until:
+        probe: cluster.health
+        params: {}
+        expect:
+          status: healthy   # cluster stays healthy — only 1 of 5 nodes partitioned
+
+  # Wait for CRITICAL threshold and fencing (15 minutes total)
+  - id: wait_critical_threshold
+    action: wait
+    params:
+      timeout: 600   # 10 more minutes to reach 15min critical threshold
+      poll_interval: 60
+
+  # Give invariant enforcement time to fence the node
+  - id: settle_after_fence
+    action: wait
+    params:
+      timeout: 60
+
+assertions:
+  # Node is fenced — partition_fenced_since is set in cluster state
+  - type: probe
+    id: node5_fenced
+    probe: node.partition_fenced
+    params:
+      node: node-5
+    expect:
+      fenced: true
+
+  # Cluster is still healthy — one worker node partitioned does not break the cluster
+  - type: probe
+    id: cluster_still_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  # No quorum loss alert — only 1 node is critical
+  - type: probe
+    id: no_quorum_loss_alert
+    probe: cluster.quorum_loss_alert
+    expect:
+      alert_present: false
+
+cleanup:
+  # Restore network on node-5
+  - id: unblock_network_node5
+    action: chaos.unblock_network
+    params:
+      node: node-5
+
+  # Wait for heartbeat to resume and fence to be auto-cleared
+  - id: wait_fence_cleared
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 15
+      until:
+        probe: node.partition_fenced
+        params:
+          node: node-5
+        expect:
+          fenced: false

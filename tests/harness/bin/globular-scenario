@@ -104,7 +104,7 @@ class ScenarioExecutor:
             ("baseline",      self._exec_probes, False),  # capture only
             ("steps",         self._exec_steps,  False),  # actions
             ("assertions",    self._exec_probes, True),   # stop on fail
-            ("cleanup",       self._exec_probes, False),  # best-effort
+            ("cleanup",       self._exec_steps,  False),  # best-effort, supports chaos actions
         ]
 
         overall_ok = True
@@ -340,6 +340,140 @@ class ScenarioExecutor:
                 result = {"action": action, "container": container, "unit": unit,
                           "exit_code": proc.returncode,
                           "stderr": proc.stderr.strip()[:200]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.fill_disk":
+                # Fill disk on a node to a target usage percentage.
+                # params: node, path (default /var/lib/globular), target_pct (default 95)
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                path = params.get("path", "/var/lib/globular")
+                target_pct = int(params.get("target_pct", 95))
+                # Calculate how many MB to write: get disk size, compute fill amount
+                fill_cmd = (
+                    f"df -m {path} | awk 'NR==2{{total=$2; used=$3; free=$4; "
+                    f"target=int(total*{target_pct}/100); fill=target-used; "
+                    f"if(fill>0) {{system(\"dd if=/dev/zero of={path}/.chaos-fill bs=1M count=\"fill\" status=none\")}} }}'"
+                )
+                proc = subprocess.run(
+                    ["docker", "exec", container, "bash", "-c", fill_cmd],
+                    capture_output=True, text=True, timeout=60)
+                ok = proc.returncode == 0
+                result = {"action": action, "container": container, "path": path,
+                          "target_pct": target_pct, "exit_code": proc.returncode,
+                          "stderr": proc.stderr.strip()[:200]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.clear_disk_fill":
+                # Remove the chaos fill file created by chaos.fill_disk.
+                # params: node, path (default /var/lib/globular)
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                path = params.get("path", "/var/lib/globular")
+                proc = subprocess.run(
+                    ["docker", "exec", container, "rm", "-f", f"{path}/.chaos-fill"],
+                    capture_output=True, text=True, timeout=15)
+                ok = proc.returncode == 0
+                result = {"action": action, "container": container,
+                          "exit_code": proc.returncode}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.block_network":
+                # Block all traffic between a node and the rest of the cluster using iptables.
+                # params: node, direction (in|out|both, default both)
+                # Requires the container to run with NET_ADMIN capability.
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                direction = params.get("direction", "both")
+                cmds = []
+                if direction in ("out", "both"):
+                    cmds.append("iptables -I OUTPUT -j DROP")
+                if direction in ("in", "both"):
+                    cmds.append("iptables -I INPUT -j DROP")
+                # Always allow loopback and etcd health checks from localhost
+                cmds.insert(0, "iptables -I OUTPUT -o lo -j ACCEPT")
+                cmds.insert(0, "iptables -I INPUT -i lo -j ACCEPT")
+                cmd = " && ".join(cmds)
+                proc = subprocess.run(
+                    ["docker", "exec", "--privileged", container, "bash", "-c", cmd],
+                    capture_output=True, text=True, timeout=15)
+                ok = proc.returncode == 0
+                result = {"action": action, "container": container, "direction": direction,
+                          "exit_code": proc.returncode, "stderr": proc.stderr.strip()[:200]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.unblock_network":
+                # Remove iptables DROP rules inserted by chaos.block_network.
+                # params: node
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                cmd = "iptables -F INPUT; iptables -F OUTPUT"
+                proc = subprocess.run(
+                    ["docker", "exec", "--privileged", container, "bash", "-c", cmd],
+                    capture_output=True, text=True, timeout=15)
+                ok = proc.returncode == 0
+                result = {"action": action, "container": container,
+                          "exit_code": proc.returncode, "stderr": proc.stderr.strip()[:200]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.inject_expired_cert":
+                # Replace the node's TLS service cert with an expired self-signed cert.
+                # The original is saved as service.crt.chaos-backup for restoration.
+                # params: node, cert_path (default /var/lib/globular/pki/issued/services/service.crt),
+                #         key_path (default /var/lib/globular/pki/issued/services/service.key)
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                cert_path = params.get("cert_path", "/var/lib/globular/pki/issued/services/service.crt")
+                key_path = params.get("key_path", "/var/lib/globular/pki/issued/services/service.key")
+                # Generate an expired cert (not before/after both in the past)
+                gen_cmd = (
+                    f"cp {cert_path} {cert_path}.chaos-backup && "
+                    f"cp {key_path} {key_path}.chaos-backup && "
+                    f"openssl req -x509 -newkey rsa:2048 -keyout {key_path} "
+                    f"-out {cert_path} -days 1 -nodes "
+                    f"-subj '/CN=chaos-expired' "
+                    f"-set_serial 1 "
+                    f"2>/dev/null && "
+                    # Backdate the cert using faketime if available, otherwise use subjectAltName trickery.
+                    # simpler: just write a cert valid from long ago to yesterday.
+                    f"openssl req -x509 -newkey rsa:2048 -keyout {key_path} "
+                    f"-out {cert_path} -nodes "
+                    f"-subj '/CN=chaos-expired' "
+                    f"-days 0 "  # 0-day validity = already expired
+                    f"2>/dev/null || true"
+                )
+                proc = subprocess.run(
+                    ["docker", "exec", container, "bash", "-c", gen_cmd],
+                    capture_output=True, text=True, timeout=30)
+                ok = proc.returncode == 0
+                result = {"action": action, "container": container, "cert_path": cert_path,
+                          "exit_code": proc.returncode, "stderr": proc.stderr.strip()[:300]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.restore_cert":
+                # Restore the original cert after chaos.inject_expired_cert.
+                # params: node, cert_path, key_path
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                cert_path = params.get("cert_path", "/var/lib/globular/pki/issued/services/service.crt")
+                key_path = params.get("key_path", "/var/lib/globular/pki/issued/services/service.key")
+                restore_cmd = (
+                    f"[[ -f {cert_path}.chaos-backup ]] && mv {cert_path}.chaos-backup {cert_path}; "
+                    f"[[ -f {key_path}.chaos-backup ]] && mv {key_path}.chaos-backup {key_path}; "
+                    f"true"
+                )
+                proc = subprocess.run(
+                    ["docker", "exec", container, "bash", "-c", restore_cmd],
+                    capture_output=True, text=True, timeout=15)
+                ok = proc.returncode == 0
+                result = {"action": action, "container": container,
+                          "exit_code": proc.returncode}
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "scenario": "service-crash-recovery",
+  "suite": "resilience",
+  "start_time": "2026-04-18T23:50:59.791375Z",
+  "end_time": "2026-04-18T23:51:00.303422Z",
+  "passed": false,
+  "item_count": 3,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:51:00.111802Z"
+    },
+    {
+      "id": "dns_registered_before",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "dns"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 6
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:51:00.207726Z"
+    },
+    {
+      "id": "dns_active_before",
+      "section": "preconditions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-3",
+        "service": "dns"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "inactive",
+        "node": "node-3",
+        "service": "dns"
+      },
+      "passed": false,
+      "timestamp": "2026-04-18T23:51:00.303339Z"
+    }
+  ]
+}

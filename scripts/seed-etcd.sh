@@ -78,7 +78,12 @@ if [ -z "$existing" ]; then
     $ETCD put /globular/cluster/dns/records '{
         "minio.globular.internal": "10.10.0.12",
         "gateway.globular.internal": "10.10.0.11",
-        "controller.globular.internal": "10.10.0.11"
+        "controller.globular.internal": "10.10.0.11",
+        "node-1.globular.internal": "10.10.0.11",
+        "node-2.globular.internal": "10.10.0.12",
+        "node-3.globular.internal": "10.10.0.13",
+        "node-4.globular.internal": "10.10.0.14",
+        "node-5.globular.internal": "10.10.0.15"
     }'
 fi
 

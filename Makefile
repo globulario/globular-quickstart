@@ -54,7 +54,13 @@ ALL_BINS = $(CORE_BINS) $(STORAGE_BINS) $(AI_BINS) $(EXTRA_BINS)
 # ── Unit files to include ────────────────────────────────
 UNITS = $(wildcard $(UNIT_SRC)/globular-*.service)
 
-.PHONY: collect build up down clean logs status shell test
+.PHONY: collect build up down clean logs status shell test \
+	quickstart-up quickstart-down quickstart-reset quickstart-logs \
+	test-wait test-smoke test-functional test-security test-resilience \
+	test-recovery test-soak test-v1-certification ci-smoke \
+	test-scenario test-scenario-keep \
+	test-parity-report test-health-matrix test-authz-report test-recovery-report \
+	check-test-schemas check-test-scenarios test-debug-shell
 
 ## collect — copy binaries + units into build context
 collect:
@@ -124,6 +130,105 @@ status:
 shell:
 	docker exec -it globular-node-$(N) bash
 
-## test — run integration tests (Phase 5)
+## test — run integration tests against the running cluster
 test:
-	@echo "Integration tests not yet implemented (Phase 5)"
+	@echo "=== Running integration tests ==="
+	cd $(SERVICES_DIR) && GLOBULAR_TEST_CLUSTER=1 make test-integration
+
+# ── V1 Test Harness ──────────────────────────────────────────────────────────
+TEST_BIN = ./tests/harness/bin/globular-test
+
+## quickstart-up — start the cluster (alias for up without rebuild)
+quickstart-up:
+	docker compose up -d
+	@echo "Cluster starting. Run 'make quickstart-logs' or 'make test-wait' to monitor."
+
+## quickstart-down — stop cluster, preserve state
+quickstart-down:
+	docker compose down
+
+## quickstart-reset — full reset (removes all state volumes)
+quickstart-reset:
+	docker compose down -v
+	docker compose up -d
+
+## quickstart-logs — follow all container logs
+quickstart-logs:
+	docker compose logs -f
+
+## test-wait — wait for cluster to become healthy (up to 5 min)
+test-wait:
+	$(TEST_BIN) cluster wait 300
+
+## test-smoke — run the smoke test suite (cluster must be up)
+test-smoke:
+	$(TEST_BIN) suite smoke
+
+## test-functional — run the functional test suite
+test-functional:
+	$(TEST_BIN) suite functional
+
+## test-security — run the security test suite
+test-security:
+	$(TEST_BIN) suite security
+
+## test-resilience — run the resilience test suite
+test-resilience:
+	$(TEST_BIN) suite resilience
+
+## test-recovery — run the recovery test suite
+test-recovery:
+	$(TEST_BIN) suite recovery
+
+## test-soak — run the soak test suite
+test-soak:
+	$(TEST_BIN) suite soak
+
+## test-v1-certification — full V1 certification run (all suites)
+test-v1-certification:
+	@echo "=== V1 CERTIFICATION RUN ==="
+	$(TEST_BIN) suite smoke && \
+	$(TEST_BIN) suite functional && \
+	$(TEST_BIN) suite security && \
+	$(TEST_BIN) suite resilience && \
+	$(TEST_BIN) suite recovery
+	@echo "=== V1 CERTIFICATION COMPLETE ==="
+
+## ci-smoke — bring up cluster then run smoke suite (CI entry point)
+ci-smoke: up test-wait test-smoke
+
+## test-scenario — run a single scenario (SCENARIO=path/to/scenario.yaml)
+test-scenario:
+	$(TEST_BIN) scenario $(SCENARIO)
+
+## test-scenario-keep — run a scenario, keep artifacts on failure
+test-scenario-keep:
+	$(TEST_BIN) scenario $(SCENARIO) --keep-cluster --keep-artifacts
+
+## test-parity-report — generate service parity report
+test-parity-report:
+	$(TEST_BIN) report parity
+
+## test-health-matrix — generate service health matrix
+test-health-matrix:
+	$(TEST_BIN) report service-health
+
+## test-authz-report — generate authz report
+test-authz-report:
+	$(TEST_BIN) report authz
+
+## test-recovery-report — generate recovery report
+test-recovery-report:
+	$(TEST_BIN) report recovery
+
+## check-test-schemas — validate all scenario YAML files
+check-test-schemas:
+	$(TEST_BIN) check schemas
+
+## check-test-scenarios — list all scenarios
+check-test-scenarios:
+	$(TEST_BIN) check scenarios
+
+## test-debug-shell — open shell on a node (NODE=node-1)
+test-debug-shell:
+	$(TEST_BIN) debug shell $(NODE)

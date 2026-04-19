@@ -1,0 +1,226 @@
+version: 1
+name: service-crash-autostart
+description: |
+  Verify that systemd's Restart=on-failure policy automatically recovers
+  services after a hard crash (SIGKILL) on a control-plane node.
+
+  The Globular service model relies on systemd as the process supervisor.
+  All services have Restart=on-failure configured, which means:
+  - On clean exit (code 0): no restart (intentional stop)
+  - On failure (non-zero exit, signal): restart after RestartSec
+
+  SIGKILL (signal 9) cannot be caught by the process — it's an unconditional
+  kernel-level kill. systemd receives the SIGCHLD, sees the abnormal exit,
+  and schedules a restart. This simulates: OOM kill, kernel panic on peer,
+  `kill -9` by an admin, or hardware-triggered watchdog.
+
+  Services tested:
+  - workflow (node-1): critical service, must auto-restart
+  - dns (node-1): DNS queries blocked during crash, must auto-restart
+
+  Failure modes caught:
+  - Restart=on-failure not configured in the unit file
+  - RestartSec too long (service stays down for minutes)
+  - Service restart loop (crashes immediately after restart — caught by
+    StartLimitIntervalSec / StartLimitBurst)
+  - Service leaves lock files or sockets preventing restart
+  - Service fails to reconnect to etcd after restart (auth issue)
+
+  Industry known problem: "restart storm" — a service that crashes immediately
+  after restart triggers the systemd StartLimitBurst, causing systemd to
+  give up restarting. Setting StartLimitIntervalSec=300 and StartLimitBurst=5
+  gives 5 attempts in 5 minutes, which is sufficient for transient failures
+  without allowing infinite loops.
+suite: recovery
+tags:
+  - recovery
+  - systemd
+  - autostart
+  - crash
+  - sigkill
+  - service-restart
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: workflow_active_before
+    probe: service.status
+    params:
+      node: node-1
+      service: workflow
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: dns_active_before
+    probe: service.status
+    params:
+      node: node-1
+      service: dns
+    expect:
+      unit_state: active
+
+baseline:
+  - type: probe
+    id: initial_service_count
+    probe: services.count
+
+  - type: probe
+    id: initial_cluster_health
+    probe: cluster.health
+
+steps:
+  # ── Test 1: Crash workflow service ────────────────────────────────────────
+  - id: sigkill_workflow
+    action: chaos.sigkill_service
+    params:
+      node: node-1
+      service: workflow
+
+  # Wait for crash to be detected
+  - id: wait_workflow_crashed
+    action: wait
+    params:
+      timeout: 15
+      poll_interval: 3
+      until:
+        probe: service.status
+        params:
+          node: node-1
+          service: workflow
+        expect:
+          unit_state: failed
+
+  # Wait for systemd restart
+  - id: wait_workflow_restarted
+    action: wait
+    params:
+      timeout: 60
+      poll_interval: 5
+      until:
+        probe: service.status
+        params:
+          node: node-1
+          service: workflow
+        expect:
+          unit_state: active
+
+  # Verify cluster survived the crash
+  - id: verify_cluster_healthy_after_workflow_crash
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # Verify workflow re-registers in etcd
+  - id: wait_workflow_reregistered
+    action: wait
+    params:
+      timeout: 60
+      poll_interval: 5
+      until:
+        probe: service.registered
+        params:
+          service: workflow
+        expect:
+          registered: true
+
+  # ── Test 2: Crash dns service ─────────────────────────────────────────────
+  - id: sigkill_dns
+    action: chaos.sigkill_service
+    params:
+      node: node-1
+      service: dns
+
+  # Wait for crash
+  - id: wait_dns_crashed
+    action: wait
+    params:
+      timeout: 15
+      poll_interval: 3
+      until:
+        probe: service.status
+        params:
+          node: node-1
+          service: dns
+        expect:
+          unit_state: failed
+
+  # Wait for systemd restart
+  - id: wait_dns_restarted
+    action: wait
+    params:
+      timeout: 60
+      poll_interval: 5
+      until:
+        probe: service.status
+        params:
+          node: node-1
+          service: dns
+        expect:
+          unit_state: active
+
+assertions:
+  # ── Final state assertions ────────────────────────────────────────────────
+  - type: probe
+    id: workflow_active_after
+    probe: service.status
+    params:
+      node: node-1
+      service: workflow
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: dns_active_after
+    probe: service.status
+    params:
+      node: node-1
+      service: dns
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: workflow_registered_after
+    probe: service.registered
+    params:
+      service: workflow
+    expect:
+      registered: true
+
+  - type: probe
+    id: dns_registered_after
+    probe: service.registered
+    params:
+      service: dns
+    expect:
+      registered: true
+
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: write_quorum_after
+    probe: etcd.write_test
+    expect:
+      success: true
+
+cleanup:
+  - type: probe
+    id: final_health
+    probe: cluster.health
+    expect:
+      status: healthy

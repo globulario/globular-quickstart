@@ -1,0 +1,543 @@
+#!/usr/bin/env python3
+"""
+globular-scenario — YAML scenario executor for Globular V1 test harness.
+
+Usage: globular-scenario <scenario.yaml> <output-dir> [--verbose]
+
+Parses a scenario YAML file and executes its sections in order:
+  preconditions → baseline → steps → assertions → cleanup
+
+Each probe/action maps to a bash function in tests/harness/lib/probes.sh.
+Results are collected as JSON evidence and a markdown summary is written
+to <output-dir>/evidence.json and <output-dir>/RESULT.md.
+
+Exit code: 0 = PASS, 1 = FAIL
+"""
+
+import sys
+import os
+import json
+import subprocess
+import datetime
+import time
+import shlex
+import warnings
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+try:
+    import yaml
+except ImportError:
+    print("ERROR: pyyaml required. Run: pip3 install pyyaml", file=sys.stderr)
+    sys.exit(1)
+
+HARNESS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LIB_DIR = os.path.join(HARNESS_DIR, "lib")
+PROBES_SH = os.path.join(LIB_DIR, "probes.sh")
+
+
+class Evidence:
+    def __init__(self, scenario_name: str, suite: str):
+        self.scenario_name = scenario_name
+        self.suite = suite
+        self.start_time = datetime.datetime.utcnow()
+        self.items: list = []
+        self.passed = True
+
+    def record(self, section: str, item_id: str, probe: str, params: dict,
+               expect: dict, result: dict, passed: bool):
+        self.items.append({
+            "id": item_id,
+            "section": section,
+            "probe": probe,
+            "params": params,
+            "expect": expect,
+            "result": result,
+            "passed": passed,
+            "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+        })
+        if not passed:
+            self.passed = False
+
+    def to_dict(self) -> dict:
+        return {
+            "schema_version": 1,
+            "scenario": self.scenario_name,
+            "suite": self.suite,
+            "start_time": self.start_time.isoformat() + "Z",
+            "end_time": datetime.datetime.utcnow().isoformat() + "Z",
+            "passed": self.passed,
+            "item_count": len(self.items),
+            "items": self.items,
+        }
+
+
+class ScenarioExecutor:
+    def __init__(self, scenario_file: str, output_dir: str, verbose: bool = False):
+        self.scenario_file = scenario_file
+        self.output_dir = output_dir
+        self.verbose = verbose
+
+        with open(scenario_file) as f:
+            self.scenario = yaml.safe_load(f)
+
+        name = self.scenario.get("name", os.path.basename(scenario_file))
+        suite = self.scenario.get("suite", "unknown")
+        self.evidence = Evidence(name, suite)
+        self.baseline_captures: dict = {}
+
+    # ── public entry point ────────────────────────────────────────────────────
+
+    def run(self) -> bool:
+        name = self.scenario.get("name", "?")
+        desc = self.scenario.get("description", "")
+        print(f"  Scenario: {name}")
+        if desc:
+            print(f"  {desc}")
+
+        if not self._validate_schema():
+            return False
+
+        # Execute sections in order. Stop early on precondition or assertion failure.
+        sections = [
+            ("preconditions", self._exec_probes, True),   # stop on fail
+            ("baseline",      self._exec_probes, False),  # capture only
+            ("steps",         self._exec_steps,  False),  # actions
+            ("assertions",    self._exec_probes, True),   # stop on fail
+            ("cleanup",       self._exec_probes, False),  # best-effort
+        ]
+
+        overall_ok = True
+        for section, handler, stop_on_fail in sections:
+            items = self.scenario.get(section, [])
+            if not items:
+                continue
+            print(f"  [{section}]")
+            ok = handler(items, section)
+            if not ok:
+                overall_ok = False
+                if stop_on_fail:
+                    print(f"  STOPPED: {section} failed — skipping remaining sections")
+                    break
+
+        self._write_output(overall_ok)
+        return overall_ok
+
+    # ── section handlers ──────────────────────────────────────────────────────
+
+    def _exec_probes(self, items: list, section: str) -> bool:
+        ok = True
+        for item in items:
+            if item.get("type") not in ("probe", None):
+                continue
+            if not self._exec_probe_item(item, section):
+                ok = False
+        return ok
+
+    def _exec_steps(self, items: list, section: str) -> bool:
+        ok = True
+        for item in items:
+            action = item.get("action", "")
+            item_id = item.get("id", action or "step")
+
+            if action == "wait":
+                if self._exec_wait(item, section):
+                    print(f"    OK:   {item_id}")
+                else:
+                    print(f"    FAIL: {item_id} (wait timed out)")
+                    ok = False
+
+            elif action.startswith("chaos."):
+                if self._exec_chaos(item, section):
+                    print(f"    OK:   {item_id}")
+                else:
+                    print(f"    FAIL: {item_id} ({action} failed)")
+                    ok = False
+
+            elif action in ("publish.service_package", "repository.promote",
+                            "desired_state.upsert", "workflow.dispatch",
+                            "backup.create", "backup.restore",
+                            "node.recover.full_reseed"):
+                print(f"    SKIP: {item_id} ({action} — not yet implemented)")
+
+            elif item.get("probe"):
+                # Step is actually a probe-style check
+                if not self._exec_probe_item(item, section):
+                    ok = False
+
+            else:
+                print(f"    SKIP: {item_id} (unknown action: {action})")
+
+        return ok
+
+    # ── probe execution ───────────────────────────────────────────────────────
+
+    def _exec_probe_item(self, item: dict, section: str) -> bool:
+        probe = item.get("probe", "")
+        params = item.get("params", {}) or {}
+        expect = item.get("expect", {}) or {}
+        item_id = item.get("id") or probe or "probe"
+
+        if not probe:
+            print(f"    SKIP: {item_id} (no probe specified)")
+            return True
+
+        result = self._call_probe(probe, params)
+
+        if self.verbose:
+            print(f"    result: {json.dumps(result)}")
+
+        if expect:
+            passed, failures = self._check_expect(result, expect)
+        else:
+            # No expect — just a capture (baseline)
+            passed = True
+            failures = []
+            self.baseline_captures[item_id] = result
+
+        status = "PASS" if passed else "FAIL"
+        print(f"    {status}: {item_id}")
+        if not passed:
+            for f in failures:
+                print(f"      {f}")
+
+        self.evidence.record(section, item_id, probe, params, expect, result, passed)
+        return passed
+
+    def _exec_wait(self, item: dict, section: str) -> bool:
+        params = item.get("params", {}) or {}
+        timeout = int(params.get("timeout", 60))
+        poll_interval = int(params.get("poll_interval", 5))
+        until = params.get("until") or {}
+        item_id = item.get("id", "wait")
+
+        if not until:
+            # Plain sleep — honour the configured timeout
+            print(f"    WAIT: {item_id} (sleeping {timeout}s)")
+            time.sleep(timeout)
+            return True
+
+        probe = until.get("probe", "")
+        probe_params = until.get("params", {}) or {}
+        expect = until.get("expect", {}) or {}
+
+        deadline = time.time() + timeout
+        attempt = 0
+        while time.time() < deadline:
+            attempt += 1
+            result = self._call_probe(probe, probe_params)
+            passed, _ = self._check_expect(result, expect)
+            if passed:
+                self.evidence.record(
+                    section, item_id, probe, probe_params, expect, result, True)
+                return True
+            remaining = int(deadline - time.time())
+            print(f"    WAIT: {item_id} (attempt {attempt}, {remaining}s remaining)")
+            time.sleep(poll_interval)
+
+        result = self._call_probe(probe, probe_params)
+        self.evidence.record(
+            section, item_id, probe, probe_params, expect, result, False)
+        return False
+
+    # ── chaos execution ───────────────────────────────────────────────────────
+
+    def _exec_chaos(self, item: dict, section: str) -> bool:
+        """
+        Execute a chaos action. Supported actions:
+          chaos.stop_node      params: node (e.g. "node-4")
+          chaos.start_node     params: node
+          chaos.kill_service   params: node, service (systemd unit suffix)
+          chaos.restart_service params: node, service
+        All run docker commands on the host (not inside a container).
+        """
+        action = item.get("action", "")
+        params = item.get("params", {}) or {}
+        item_id = item.get("id", action)
+
+        node = params.get("node", "")
+        service = params.get("service", "")
+        container = f"globular-{node}" if node else ""
+
+        if self.verbose:
+            print(f"    [chaos] {action} node={node} service={service}")
+
+        try:
+            if action == "chaos.stop_node":
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                # Use docker stop -t 10 so Docker sends SIGTERM then SIGKILL after 10s.
+                # The compose stop_grace_period (30s) governs systemd shutdown, but for
+                # chaos testing we want a fast, forced stop. Timeout 20s > -t 10 so the
+                # Python subprocess never races the docker stop grace period.
+                proc = subprocess.run(
+                    ["docker", "stop", "-t", "10", container],
+                    capture_output=True, text=True, timeout=20)
+                ok = proc.returncode == 0
+                result = {"action": action, "container": container,
+                          "exit_code": proc.returncode,
+                          "stdout": proc.stdout.strip()[:100]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.start_node":
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                proc = subprocess.run(
+                    ["docker", "start", container],
+                    capture_output=True, text=True, timeout=30)
+                ok = proc.returncode == 0
+                result = {"action": action, "container": container,
+                          "exit_code": proc.returncode,
+                          "stdout": proc.stdout.strip()[:100]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.kill_service":
+                # Graceful stop (SIGTERM). Use chaos.sigkill_service for SIGKILL.
+                if not container or not service:
+                    return self._chaos_fail(section, item_id, action, params, "node and service params required")
+                unit = f"globular-{service}.service"
+                proc = subprocess.run(
+                    ["docker", "exec", container, "systemctl", "stop", unit],
+                    capture_output=True, text=True, timeout=30)
+                ok = proc.returncode == 0
+                result = {"action": action, "container": container, "unit": unit,
+                          "exit_code": proc.returncode,
+                          "stderr": proc.stderr.strip()[:200]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.sigkill_service":
+                # Hard kill — sends SIGKILL to main process, triggering Restart=on-failure.
+                if not container or not service:
+                    return self._chaos_fail(section, item_id, action, params, "node and service params required")
+                unit = f"globular-{service}.service"
+                proc = subprocess.run(
+                    ["docker", "exec", container, "systemctl", "kill",
+                     "--kill-who=main", "-s", "KILL", unit],
+                    capture_output=True, text=True, timeout=30)
+                ok = proc.returncode == 0
+                result = {"action": action, "container": container, "unit": unit,
+                          "signal": "SIGKILL", "exit_code": proc.returncode,
+                          "stderr": proc.stderr.strip()[:200]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.restart_service":
+                if not container or not service:
+                    return self._chaos_fail(section, item_id, action, params, "node and service params required")
+                unit = f"globular-{service}.service"
+                # Use --no-block so systemctl returns immediately without waiting
+                # for the service to reach 'active'. Services using Type=notify
+                # (e.g. cluster-controller) may never reach 'active' if the binary
+                # does not call sd_notify(READY=1) — causing systemctl to hang
+                # indefinitely without --no-block.
+                proc = subprocess.run(
+                    ["docker", "exec", container, "systemctl", "restart", "--no-block", unit],
+                    capture_output=True, text=True, timeout=30)
+                ok = proc.returncode == 0
+                result = {"action": action, "container": container, "unit": unit,
+                          "exit_code": proc.returncode,
+                          "stderr": proc.stderr.strip()[:200]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            else:
+                print(f"    SKIP: {item_id} ({action} — unknown chaos action)")
+                return True  # unknown chaos = skip, not fail
+
+        except subprocess.TimeoutExpired:
+            return self._chaos_fail(section, item_id, action, params, "timed out after 30s")
+        except Exception as e:
+            return self._chaos_fail(section, item_id, action, params, str(e))
+
+    def _chaos_fail(self, section, item_id, action, params, reason) -> bool:
+        result = {"action": action, "error": reason}
+        self.evidence.record(section, item_id, action, params, {}, result, False)
+        print(f"    ERROR: {item_id} — {reason}")
+        return False
+
+    # ── probe dispatch ────────────────────────────────────────────────────────
+
+    def _call_probe(self, probe: str, params: dict) -> dict:
+        """
+        Call a probe function from probes.sh via bash.
+        The probe name "cluster.health" maps to function probe_cluster_health.
+        Params dict becomes --key value args.
+        """
+        func_name = "probe_" + probe.replace(".", "_")
+
+        # Build --key value args from params dict
+        args = []
+        for k, v in params.items():
+            args.extend([f"--{k}", str(v)])
+
+        args_str = " ".join(shlex.quote(a) for a in args)
+        cmd = f'source "{PROBES_SH}" && {func_name} {args_str}'
+
+        if self.verbose:
+            print(f"    [probe] bash -c '{func_name} {args_str}'")
+
+        try:
+            proc = subprocess.run(
+                ["bash", "-c", cmd],
+                capture_output=True, text=True, timeout=45
+            )
+            stdout = proc.stdout.strip()
+            stderr = proc.stderr.strip()
+
+            if not stdout:
+                return {
+                    "error": f"probe returned no output (exit {proc.returncode})",
+                    "stderr": stderr[:200] if stderr else "",
+                }
+
+            try:
+                return json.loads(stdout)
+            except json.JSONDecodeError:
+                # Probe returned non-JSON — treat as raw string
+                return {"raw": stdout, "exit_code": proc.returncode}
+
+        except subprocess.TimeoutExpired:
+            return {"error": "probe timed out after 45s"}
+        except Exception as e:
+            return {"error": str(e)}
+
+    # ── expectation checking ──────────────────────────────────────────────────
+
+    def _check_expect(self, result: dict, expect: dict) -> tuple[bool, list]:
+        """
+        Check result against expect block.
+        Supports:
+          key: value           — exact equality
+          key_gte: N           — numeric >= N (key is the field name without _gte)
+          key_lte: N           — numeric <= N
+          key_contains: str    — string contains substring
+          present: true/false  — dict has/lacks a truthy value
+        """
+        if not isinstance(result, dict):
+            return False, [f"expected dict result, got {type(result).__name__}: {result}"]
+
+        failures = []
+        for raw_key, expected_val in expect.items():
+            # Determine operator from key suffix
+            if raw_key.endswith("_gte"):
+                field = raw_key[:-4]
+                actual = result.get(field)
+                try:
+                    if float(actual) < float(expected_val):
+                        failures.append(
+                            f"field '{field}': expected >= {expected_val}, got {actual}")
+                except (TypeError, ValueError):
+                    failures.append(
+                        f"field '{field}': cannot compare {actual!r} >= {expected_val}")
+
+            elif raw_key.endswith("_lte"):
+                field = raw_key[:-4]
+                actual = result.get(field)
+                try:
+                    if float(actual) > float(expected_val):
+                        failures.append(
+                            f"field '{field}': expected <= {expected_val}, got {actual}")
+                except (TypeError, ValueError):
+                    failures.append(
+                        f"field '{field}': cannot compare {actual!r} <= {expected_val}")
+
+            elif raw_key.endswith("_contains"):
+                field = raw_key[:-9]
+                actual = result.get(field, "")
+                if str(expected_val) not in str(actual):
+                    failures.append(
+                        f"field '{field}': expected to contain {expected_val!r}, got {actual!r}")
+
+            else:
+                # Exact equality
+                actual = result.get(raw_key)
+                if actual != expected_val:
+                    failures.append(
+                        f"field '{raw_key}': expected {expected_val!r}, got {actual!r}")
+
+        return len(failures) == 0, failures
+
+    # ── schema validation ─────────────────────────────────────────────────────
+
+    def _validate_schema(self) -> bool:
+        required = ["version", "name", "suite"]
+        missing = [f for f in required if f not in self.scenario]
+        if missing:
+            print(f"  ERROR: scenario missing required fields: {missing}", file=sys.stderr)
+            return False
+        if self.scenario.get("version") != 1:
+            print(
+                f"  ERROR: unsupported schema version: {self.scenario.get('version')}",
+                file=sys.stderr)
+            return False
+        return True
+
+    # ── output ────────────────────────────────────────────────────────────────
+
+    def _write_output(self, passed: bool):
+        os.makedirs(self.output_dir, exist_ok=True)
+
+        # evidence.json
+        ev = self.evidence.to_dict()
+        ev["passed"] = passed
+        with open(os.path.join(self.output_dir, "evidence.json"), "w") as f:
+            json.dump(ev, f, indent=2)
+
+        # RESULT.md
+        result_str = "PASS" if passed else "FAIL"
+        pass_count = sum(1 for i in ev["items"] if i.get("passed"))
+        fail_count = len(ev["items"]) - pass_count
+
+        with open(os.path.join(self.output_dir, "RESULT.md"), "w") as f:
+            f.write(f"# {ev['scenario']}\n\n")
+            f.write(f"**Suite**: {ev['suite']}  \n")
+            f.write(f"**Result**: {result_str}  \n")
+            f.write(f"**Time**: {ev['start_time']}  \n")
+            f.write(f"**Checks**: {pass_count} passed, {fail_count} failed\n\n")
+
+            if ev["items"]:
+                f.write("## Checks\n\n")
+                f.write("| Section | ID | Probe | Result |\n")
+                f.write("|---------|----|----|--------|\n")
+                for item in ev["items"]:
+                    icon = "✓" if item.get("passed") else "✗"
+                    f.write(
+                        f"| {item['section']} | {item['id']} | {item['probe']} | {icon} |\n")
+
+            if self.baseline_captures:
+                f.write("\n## Baseline Captures\n\n```json\n")
+                f.write(json.dumps(self.baseline_captures, indent=2))
+                f.write("\n```\n")
+
+
+# ── main ──────────────────────────────────────────────────────────────────────
+
+def main():
+    args = sys.argv[1:]
+    verbose = "--verbose" in args or "-v" in args
+    args = [a for a in args if a not in ("--verbose", "-v")]
+
+    if len(args) < 2:
+        print(f"Usage: globular-scenario <scenario.yaml> <output-dir> [--verbose]",
+              file=sys.stderr)
+        sys.exit(1)
+
+    scenario_file = args[0]
+    output_dir = args[1]
+
+    if not os.path.exists(scenario_file):
+        print(f"ERROR: scenario not found: {scenario_file}", file=sys.stderr)
+        sys.exit(1)
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    executor = ScenarioExecutor(scenario_file, output_dir, verbose)
+    passed = executor.run()
+    sys.exit(0 if passed else 1)
+
+
+if __name__ == "__main__":
+    main()

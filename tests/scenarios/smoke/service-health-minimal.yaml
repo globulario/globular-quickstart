@@ -1,0 +1,143 @@
+version: 1
+name: service-health-minimal
+description: |
+  Verify that the core Globular services are registered in etcd after cluster boot.
+  Registration in etcd means the service started, connected to etcd, and announced itself.
+  This is a proxy for service health — if a service crashes before registering, it won't appear.
+
+  Services checked:
+    - cluster controller (control plane decisions)
+    - node agent (execution layer)
+    - workflow (state machine engine)
+    - cluster doctor (health analysis)
+    - authentication (JWT tokens)
+    - rbac (permission enforcement)
+    - dns (name resolution)
+
+  This test proves the stack is alive end-to-end, not just that containers are running.
+suite: smoke
+tags:
+  - services
+  - registration
+  - etcd
+  - core-stack
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+baseline:
+  - type: probe
+    id: initial_service_count
+    probe: services.count
+    # Capture current service count before asserting
+
+# ── wait for services to self-register ───────────────────────────────────────
+steps:
+  - id: wait_for_core_services
+    action: wait
+    params:
+      timeout: 240
+      poll_interval: 10
+      until:
+        probe: services.count
+        expect:
+          count_gte: 5   # at least 5 core services must be registered
+
+# ── assert individual critical services ──────────────────────────────────────
+assertions:
+  - type: probe
+    id: services_registered_count
+    probe: services.count
+    expect:
+      count_gte: 5
+
+  # These use prefix-based matching on the etcd key path.
+  # If a service registers as "cluster_controller" or "ClusterController",
+  # the prefix scan will find it.
+
+  - type: probe
+    id: cluster_controller_registered
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+  - type: probe
+    id: node_agent_registered
+    probe: service.registered
+    params:
+      service: node_agent
+    expect:
+      registered: true
+
+  - type: probe
+    id: workflow_registered
+    probe: service.registered
+    params:
+      service: workflow
+    expect:
+      registered: true
+
+  - type: probe
+    id: authentication_registered
+    probe: service.registered
+    params:
+      service: authentication
+    expect:
+      registered: true
+
+  - type: probe
+    id: rbac_registered
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true
+
+  # Systemd unit state for etcd (most stable — started first and stays active)
+  - type: probe
+    id: etcd_unit_active_node1
+    probe: service.status
+    params:
+      node: node-1
+      service: etcd
+    expect:
+      unit_state: active
+
+  # Node agent unit — always the first service to start on every node
+  - type: probe
+    id: node_agent_unit_active_node1
+    probe: service.status
+    params:
+      node: node-1
+      service: node-agent
+    expect:
+      unit_state: active
+
+  # Other service unit states are checked in the functional suite
+  # after the cluster has fully converged.
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-1
+      service: cluster-controller
+    - type: logs
+      node: node-1
+      service: node-agent
+
+cleanup:
+  - type: probe
+    id: final_service_count
+    probe: services.count

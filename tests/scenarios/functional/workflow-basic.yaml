@@ -1,0 +1,115 @@
+version: 1
+name: workflow-basic
+description: |
+  Verify the Workflow Service is fully operational after cluster boot.
+
+  Checks:
+    1. Workflow service is registered in etcd (started and connected)
+    2. Workflow systemd unit is active on node-1
+    3. The workflow etcd namespace exists (any workflow keys written)
+
+  The workflow service is the coordination backbone of Globular — all cluster
+  mutations go through it. If it's not running, no convergence can happen.
+
+  Note: Deep workflow execution tests (dispatch → SUCCEEDED) are in Wave 6
+  after the runner container is available.
+
+suite: functional
+tags:
+  - workflow
+  - coordination
+  - core-stack
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: workflow_registered
+    probe: service.registered
+    params:
+      service: workflow
+    expect:
+      registered: true
+
+baseline:
+  - type: probe
+    id: baseline_workflow_status
+    probe: service.status
+    params:
+      node: node-1
+      service: workflow
+
+# ── wait for unit to become active ───────────────────────────────────────────
+steps:
+  - id: wait_workflow_active
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 10
+      until:
+        probe: service.status
+        params:
+          node: node-1
+          service: workflow
+        expect:
+          unit_state: active
+
+# ── assert workflow service fully operational ─────────────────────────────────
+assertions:
+  - type: probe
+    id: workflow_service_registered
+    probe: service.registered
+    params:
+      service: workflow
+    expect:
+      registered: true
+
+  - type: probe
+    id: workflow_unit_active_node1
+    probe: service.status
+    params:
+      node: node-1
+      service: workflow
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: workflow_unit_active_node2
+    probe: service.status
+    params:
+      node: node-2
+      service: workflow
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: workflow_unit_active_node3
+    probe: service.status
+    params:
+      node: node-3
+      service: workflow
+    expect:
+      unit_state: active
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-1
+      service: workflow
+
+cleanup:
+  - type: probe
+    id: final_cluster_health
+    probe: cluster.health
+    expect:
+      status: healthy

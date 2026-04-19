@@ -1,0 +1,127 @@
+version: 1
+name: mtls-connectivity
+description: |
+  Verify that all core services accept mTLS connections with the cluster CA.
+
+  Uses openssl s_client to perform a TLS handshake against each service's
+  gRPC endpoint. A successful handshake proves:
+    - The service is listening on the expected port
+    - The service cert is trusted by the cluster CA
+    - The service accepts client certs issued by the cluster CA
+    - The TLS chain is valid end-to-end
+
+  This is the network-level security proof that the mTLS mesh is operational.
+  It does NOT test authorization (that's authz-enforcement) — only transport security.
+
+  Services tested (from service matrix):
+    - authentication   10.10.0.11:10005
+    - rbac             10.10.0.11:10004
+    - workflow         10.10.0.11:10220
+    - event            10.10.0.11:10000
+    - repository       10.10.0.12:10009
+
+suite: security
+tags:
+  - mtls
+  - tls
+  - connectivity
+  - mesh
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+baseline:
+  - type: probe
+    id: baseline_service_matrix
+    probe: cluster.service_matrix
+    # Capture service locations for evidence
+
+assertions:
+  # ── mTLS handshake per service ─────────────────────────────────────────────
+  # Endpoints are read from the service matrix (earlier output showed these IPs/ports).
+  # node-1 (10.10.0.11) hosts: authentication, rbac, workflow, event, log, resource
+
+  - type: probe
+    id: mtls_authentication
+    probe: pki.mtls_connect
+    params:
+      node: node-1
+      target_ip: 10.10.0.11
+      target_port: 10005
+    expect:
+      connected: true
+
+  - type: probe
+    id: mtls_rbac
+    probe: pki.mtls_connect
+    params:
+      node: node-1
+      target_ip: 10.10.0.11
+      target_port: 10004
+    expect:
+      connected: true
+
+  - type: probe
+    id: mtls_workflow
+    probe: pki.mtls_connect
+    params:
+      node: node-1
+      target_ip: 10.10.0.11
+      target_port: 10220
+    expect:
+      connected: true
+
+  - type: probe
+    id: mtls_event
+    probe: pki.mtls_connect
+    params:
+      node: node-1
+      target_ip: 10.10.0.11
+      target_port: 10000
+    expect:
+      connected: true
+
+  # node-2 (10.10.0.12) hosts: repository, backup_manager, cluster_doctor
+  - type: probe
+    id: mtls_repository
+    probe: pki.mtls_connect
+    params:
+      node: node-1
+      target_ip: 10.10.0.12
+      target_port: 10009
+    expect:
+      connected: true
+
+  # Cross-node mTLS: node-2 connecting to node-1 services
+  - type: probe
+    id: mtls_cross_node
+    probe: pki.mtls_connect
+    params:
+      node: node-2
+      target_ip: 10.10.0.11
+      target_port: 10004
+    expect:
+      connected: true
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-1
+      service: rbac
+
+cleanup:
+  - type: probe
+    id: final_cluster_health
+    probe: cluster.health
+    expect:
+      status: healthy

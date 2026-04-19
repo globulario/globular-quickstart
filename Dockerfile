@@ -25,7 +25,10 @@ RUN (cd /lib/systemd/system/sysinit.target.wants/ && \
     rm -f /lib/systemd/system/anaconda.target.wants/*
 
 # ── globular user ────────────────────────────────────────
-RUN groupadd -r globular && useradd -r -g globular -d /var/lib/globular -s /bin/false globular
+# Pin UID/GID to 10001 to avoid collisions with host system users.
+# Without this, `useradd -r` picks UID 999 which is `dnsmasq` on Ubuntu,
+# making all container processes appear as dnsmasq in host `ps` output.
+RUN groupadd -r -g 10001 globular && useradd -r -u 10001 -g globular -d /var/lib/globular -s /bin/false globular
 
 # ── directory skeleton ───────────────────────────────────
 RUN mkdir -p \

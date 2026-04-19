@@ -428,6 +428,16 @@ AMCFG
 
     # Pre-create backup dirs
     mkdir -p "$STATE/backups/jobs"
+
+    # Initialize restic repository if not already present
+    RESTIC_REPO=/var/backups/globular/restic
+    if [ ! -f "$RESTIC_REPO/config" ]; then
+        echo "[backup] Initializing restic repository..."
+        mkdir -p "$RESTIC_REPO"
+        chown globular:globular "$RESTIC_REPO"
+        RESTIC_PASSWORD="globular-backup" su -s /bin/bash globular -c \
+            "restic -r $RESTIC_REPO init" 2>&1 || echo "[backup] WARN: restic init failed"
+    fi
 fi
 
 # ── 7. Pre-create working directories for all units ─────

@@ -1,0 +1,160 @@
+version: 1
+name: pki-cert-validity-all-nodes
+description: |
+  Verify that TLS certificates are valid and not approaching expiry on all nodes.
+
+  Globular uses two certificate types:
+  1. Cluster CA (10-year validity) — root of trust for all mTLS
+  2. Service certificates (1-year validity) — per-node, signed by cluster CA
+
+  Certificate expiry is a silent killer in distributed systems: everything
+  works perfectly until the moment a cert expires, then all mTLS connections
+  immediately fail. This test provides early warning before that happens.
+
+  Failure modes caught:
+  - Certificate expired (days_remaining = 0)
+  - Certificate approaching expiry (< 30 days) — renewal window missed
+  - Certificate file missing on a node (entrypoint.sh PKI step failed)
+  - CA cert is different between nodes (concurrent CA generation on split boot)
+  - Service cert issued by wrong CA (mTLS will fail between nodes)
+
+  Industry known problem: "certificate expiry blindness" — ops teams assume
+  certs are managed by automation, automation silently fails, certs expire in
+  production. The 30-day threshold gives a recovery window even if a renewal
+  cycle is missed.
+
+  Threshold rationale:
+  - Service certs: 365 days. Alert at 30 days (within one monthly check cycle).
+  - CA cert: 3650 days. Alert at 30 days (same policy for consistency).
+  - The quickstart cluster generates fresh certs at each cold boot, so fresh
+    clusters will always have 300+ days remaining.
+suite: security
+tags:
+  - pki
+  - tls
+  - certificates
+  - expiry
+  - all-nodes
+  - mtls
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+baseline:
+  - type: probe
+    id: node1_cert_baseline
+    probe: pki.cert_info
+    params:
+      node: node-1
+
+steps: []
+
+assertions:
+  # ── CA certificate validity ────────────────────────────────────────────────
+  - type: probe
+    id: ca_valid_node1
+    probe: pki.ca_valid
+    params:
+      node: node-1
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: ca_valid_node2
+    probe: pki.ca_valid
+    params:
+      node: node-2
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: ca_valid_node3
+    probe: pki.ca_valid
+    params:
+      node: node-3
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: ca_valid_node4
+    probe: pki.ca_valid
+    params:
+      node: node-4
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: ca_valid_node5
+    probe: pki.ca_valid
+    params:
+      node: node-5
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  # ── Service certificate validity (all nodes) ───────────────────────────────
+  - type: probe
+    id: service_cert_node1
+    probe: pki.cert_info
+    params:
+      node: node-1
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: service_cert_node2
+    probe: pki.cert_info
+    params:
+      node: node-2
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: service_cert_node3
+    probe: pki.cert_info
+    params:
+      node: node-3
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: service_cert_node4
+    probe: pki.cert_info
+    params:
+      node: node-4
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: service_cert_node5
+    probe: pki.cert_info
+    params:
+      node: node-5
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+cleanup:
+  - type: probe
+    id: final_cert_check
+    probe: pki.cert_info
+    params:
+      node: node-1

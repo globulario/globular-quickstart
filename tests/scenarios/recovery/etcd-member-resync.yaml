@@ -1,0 +1,218 @@
+version: 1
+name: etcd-member-resync
+description: |
+  Verify that an etcd member resyncs correctly after rejoining a cluster
+  where writes occurred during its absence.
+
+  This is one of the most important resilience properties of etcd/Raft:
+  when a member that was offline comes back, it must catch up with all
+  writes that occurred during its absence — without losing any data and
+  without requiring manual intervention.
+
+  The resync mechanism:
+  1. Rejoining member contacts the current leader
+  2. Leader sends all missing log entries (from member's last known index)
+  3. Member replays the log entries to rebuild its state
+  4. Member reports as healthy once its index matches the leader's
+  5. The cluster is now fully consistent across all 3 members
+
+  This test writes to etcd while a member is down, then verifies the
+  key is readable from all endpoints after the member rejoins. This
+  directly tests Raft's log replication guarantee.
+
+  Failure modes caught:
+  - Member comes back but stays in "learner" state (doesn't vote)
+  - WAL corruption during catch-up (member falls behind again)
+  - etcd db size mismatch preventing sync (compaction needed)
+  - Network partition during resync (incomplete catch-up)
+  - TLS cert not accepted during peer reconnect (cert renewal conflict)
+
+  Industry known problem: "lagging replicas after maintenance" — a member
+  that was down for a long time (> snapshot interval) must receive a full
+  snapshot instead of just log entries. etcd's snapshot transfer is
+  automatic but can be slow for large databases.
+
+  CAP theorem note: the write during member absence demonstrates C over A:
+  the write succeeds (majority partition = consistent), and when the minority
+  member rejoins, it receives the write (eventual consistency achieved via
+  Raft log replication).
+suite: recovery
+tags:
+  - recovery
+  - etcd
+  - raft
+  - resync
+  - quorum
+  - log-replication
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: all_members_healthy_before
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  - type: probe
+    id: write_quorum_before
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: node2_running
+    probe: node.container_running
+    params:
+      node: node-2
+    expect:
+      running: true
+
+baseline:
+  - type: probe
+    id: initial_member_health
+    probe: cluster.etcd_members
+
+  - type: probe
+    id: initial_write_test
+    probe: etcd.write_test
+
+steps:
+  # ── Step 1: Stop node-2 (one etcd member) ────────────────────────────────
+  # node-2 also hosts: controller (current leader), cluster_doctor,
+  # repository, monitoring, backup_manager. These services become unavailable.
+  # etcd drops from 3→2 members. Quorum maintained (2/3).
+  - id: stop_node2
+    action: chaos.stop_node
+    params:
+      node: node-2
+
+  # ── Step 2: Wait for cluster to stabilize with 2 members ────────────────
+  - id: wait_for_2_member_quorum
+    action: wait
+    params:
+      timeout: 45
+      poll_interval: 5
+      until:
+        probe: etcd.write_test
+        expect:
+          success: true
+
+  # ── Step 3: Write to etcd while node-2 is absent ──────────────────────────
+  # This write MUST succeed (quorum maintained at 2/3).
+  # When node-2 rejoins, it must receive this write via Raft log replication.
+  # The etcd.write_test probe writes, reads back, and deletes — if it succeeds,
+  # the write went through the Raft quorum.
+  - id: write_during_absence
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  # Verify only 2 members are healthy (expected during node-2 absence)
+  - id: verify_2_members_healthy
+    probe: cluster.etcd_members
+    expect:
+      healthy_gte: 2
+
+  # ── Step 4: Restart node-2 ────────────────────────────────────────────────
+  - id: start_node2
+    action: chaos.start_node
+    params:
+      node: node-2
+
+  # ── Step 5: Wait for node-2 to come back ──────────────────────────────────
+  - id: wait_for_node2_container
+    action: wait
+    params:
+      timeout: 60
+      poll_interval: 10
+      until:
+        probe: node.container_running
+        params:
+          node: node-2
+        expect:
+          running: true
+
+  # ── Step 6: Wait for node-2 etcd member to resync ────────────────────────
+  # After the container starts, etcd on node-2 reconnects to its peers and
+  # replicates any missing log entries. This takes seconds to minutes
+  # depending on how many writes occurred during absence.
+  - id: wait_for_full_resync
+    action: wait
+    params:
+      timeout: 180
+      poll_interval: 10
+      until:
+        probe: cluster.etcd_members
+        expect:
+          healthy_gte: 3
+
+  # ── Step 7: Verify write quorum works with all 3 members ──────────────────
+  - id: write_test_after_resync
+    probe: etcd.write_test
+    expect:
+      success: true
+
+assertions:
+  # ── Full quorum restored and operational ──────────────────────────────────
+  - type: probe
+    id: all_members_healthy_after
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  - type: probe
+    id: write_quorum_after_resync
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: node2_running_after
+    probe: node.container_running
+    params:
+      node: node-2
+    expect:
+      running: true
+
+  # All nodes should be heartbeating after full recovery
+  - type: probe
+    id: all_nodes_heartbeating_after
+    probe: cluster.nodes
+    expect:
+      count_gte: 5
+
+cleanup:
+  - type: probe
+    id: final_member_health
+    probe: cluster.etcd_members
+
+  - type: probe
+    id: final_write_test
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: final_cluster_health
+    probe: cluster.health
+    expect:
+      status: healthy

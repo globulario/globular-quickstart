@@ -1,0 +1,192 @@
+version: 1
+name: node-agent-crash-recovery
+description: |
+  Verify that the node agent recovers after a hard crash (SIGKILL) on a
+  compute node, and that the cluster remains healthy throughout.
+
+  The node agent is the execution layer — it receives workflow steps,
+  installs packages, starts/stops services, and heartbeats to the controller.
+  A hard crash (SIGKILL) simulates an OOM kill, kernel panic recovery, or
+  abrupt process termination where no cleanup is possible.
+
+  Recovery sequence:
+  1. SIGKILL terminates node agent immediately (no graceful shutdown)
+  2. systemd detects exit and marks unit as failed
+  3. Restart=on-failure triggers restart after RestartSec delay
+  4. Node agent restarts, re-reads config from etcd
+  5. Node agent re-registers heartbeat and resumes processing
+
+  What this validates:
+  - systemd Restart=on-failure works for hard crashes (SIGKILL)
+  - Node agent is stateless enough to recover without persistent cleanup
+  - Heartbeat registration resumes after restart
+  - Cluster remains healthy — no cascading failure from one node agent down
+  - Services on the affected node continue running (systemd supervises them
+    independently of the node agent)
+
+  Industry known problem: "cascading failure from agent loss" — if the
+  controller aggressively reschedules when a node goes silent, it can
+  overwhelm the remaining nodes. The stale threshold (5 minutes) and
+  workflow semaphore prevent this.
+
+  Note: We test on node-4 (compute) to avoid impacting etcd quorum.
+  The test demonstrates the pattern — the same applies to any node.
+suite: resilience
+tags:
+  - chaos
+  - node-agent
+  - crash-recovery
+  - sigkill
+  - systemd
+  - compute-node
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: node4_container_running
+    probe: node.container_running
+    params:
+      node: node-4
+    expect:
+      running: true
+
+  - type: probe
+    id: node4_agent_active
+    probe: service.status
+    params:
+      node: node-4
+      service: node-agent
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: node4_registered_before
+    probe: node.etcd_registered
+    params:
+      node: node-4
+    expect:
+      registered: true
+
+baseline:
+  - type: probe
+    id: initial_node_count
+    probe: cluster.nodes
+
+steps:
+  # ── Step 1: Hard-kill the node agent on node-4 ────────────────────────────
+  # SIGKILL cannot be caught or ignored — the process is terminated immediately.
+  # systemd receives the SIGCHLD and transitions the unit to "failed".
+  - id: sigkill_node_agent_node4
+    action: chaos.sigkill_service
+    params:
+      node: node-4
+      service: node-agent
+
+  # ── Step 2: Brief pause for systemd to process the SIGKILL ────────────────
+  # After SIGKILL the node agent process exits immediately. systemd detects
+  # the exit via SIGCHLD and schedules the Restart=on-failure restart.
+  # We don't wait for the transient "failed" state because systemd's
+  # RestartSec is typically 1-5s — the service restarts before the next probe
+  # poll fires. Instead we give systemd 10s to notice and start the restart.
+  - id: pause_for_sigkill_detection
+    action: wait
+    params:
+      timeout: 10
+
+  # ── Step 3: Verify cluster health is NOT affected ────────────────────────
+  # The control plane (etcd, controller, workflow) must remain healthy.
+  # A single compute node agent crash must never cascade to the cluster.
+  - id: cluster_healthy_during_crash
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - id: write_quorum_during_crash
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  # ── Step 4: Wait for systemd to restart the node agent ───────────────────
+  # Restart=on-failure → systemd restarts after RestartSec (default: 5s).
+  - id: wait_for_agent_restart
+    action: wait
+    params:
+      timeout: 60
+      poll_interval: 5
+      until:
+        probe: service.status
+        params:
+          node: node-4
+          service: node-agent
+        expect:
+          unit_state: active
+
+  # ── Step 5: Wait for heartbeat to resume ─────────────────────────────────
+  # After restart, the agent re-registers its metrics port key in etcd.
+  # This proves the agent is fully functional (not just started but hung).
+  - id: wait_for_heartbeat_resume
+    action: wait
+    params:
+      timeout: 90
+      poll_interval: 10
+      until:
+        probe: node.etcd_registered
+        params:
+          node: node-4
+        expect:
+          registered: true
+
+assertions:
+  # ── Final state assertions ────────────────────────────────────────────────
+  - type: probe
+    id: node4_agent_active_after
+    probe: service.status
+    params:
+      node: node-4
+      service: node-agent
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: node4_registered_after
+    probe: node.etcd_registered
+    params:
+      node: node-4
+    expect:
+      registered: true
+
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: all_nodes_present_after
+    probe: cluster.nodes
+    expect:
+      count_gte: 5
+
+  - type: probe
+    id: write_quorum_after
+    probe: etcd.write_test
+    expect:
+      success: true
+
+cleanup:
+  - type: probe
+    id: final_health
+    probe: cluster.health
+    expect:
+      status: healthy

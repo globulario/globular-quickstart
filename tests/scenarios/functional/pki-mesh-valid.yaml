@@ -1,0 +1,182 @@
+version: 1
+name: pki-mesh-valid
+description: |
+  Verify that the cluster PKI is correctly bootstrapped across all nodes.
+
+  This test checks four PKI invariants that are prerequisites for all
+  inter-service mTLS communication:
+
+  1. CA certificate is valid and has 30+ days remaining (root of trust)
+  2. Service TLS certificate is valid on each control-plane node
+  3. Ed25519 signing keys are present on each node (JWT signing)
+  4. Peer public keys have been distributed (cross-node JWT verification)
+
+  Failure modes detected:
+  - CA regenerated on restart but old service certs still referencing it
+  - Service cert expired or about to expire (< 30 days)
+  - Ed25519 key not generated before services started (JWT issuance fails)
+  - Peer key exchange didn't complete (cross-node auth fails)
+  - Certificate path mismatch (/var/lib/globular/pki/ vs /etc/globular/creds/)
+suite: functional
+tags:
+  - pki
+  - tls
+  - certificates
+  - security
+  - signing-keys
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+baseline:
+  - type: probe
+    id: ca_baseline
+    probe: pki.ca_valid
+    params:
+      node: node-1
+
+steps: []
+
+assertions:
+  # ── CA validity (all control-plane nodes) ─────────────────────────────────
+  # The CA is generated once on node-1 and copied to all others via shared-pki.
+  # All nodes must have the same CA and it must be valid for 30+ days.
+  - type: probe
+    id: ca_valid_node1
+    probe: pki.ca_valid
+    params:
+      node: node-1
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: ca_valid_node2
+    probe: pki.ca_valid
+    params:
+      node: node-2
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: ca_valid_node3
+    probe: pki.ca_valid
+    params:
+      node: node-3
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  # ── Service TLS certificate validity (all nodes) ──────────────────────────
+  # Each node generates its own service cert signed by the cluster CA.
+  # The cert must be valid for 30+ days and not yet expired.
+  - type: probe
+    id: service_cert_node1
+    probe: pki.cert_info
+    params:
+      node: node-1
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: service_cert_node2
+    probe: pki.cert_info
+    params:
+      node: node-2
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: service_cert_node3
+    probe: pki.cert_info
+    params:
+      node: node-3
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: service_cert_node4
+    probe: pki.cert_info
+    params:
+      node: node-4
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: service_cert_node5
+    probe: pki.cert_info
+    params:
+      node: node-5
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  # ── Ed25519 signing keys (all nodes) ─────────────────────────────────────
+  # Each node has its own private key plus peer public keys for cross-node JWT
+  # verification. The node-specific key must exist before any service starts.
+  - type: probe
+    id: signing_keys_node1
+    probe: pki.signing_keys
+    params:
+      node: node-1
+    expect:
+      present: true
+      node_key_present: true
+
+  - type: probe
+    id: signing_keys_node2
+    probe: pki.signing_keys
+    params:
+      node: node-2
+    expect:
+      present: true
+      node_key_present: true
+
+  - type: probe
+    id: signing_keys_node3
+    probe: pki.signing_keys
+    params:
+      node: node-3
+    expect:
+      present: true
+      node_key_present: true
+
+  - type: probe
+    id: signing_keys_node4
+    probe: pki.signing_keys
+    params:
+      node: node-4
+    expect:
+      present: true
+
+  - type: probe
+    id: signing_keys_node5
+    probe: pki.signing_keys
+    params:
+      node: node-5
+    expect:
+      present: true
+
+cleanup:
+  - type: probe
+    id: final_ca_check
+    probe: pki.ca_valid
+    params:
+      node: node-1
+    expect:
+      valid: true

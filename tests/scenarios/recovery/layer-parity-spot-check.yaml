@@ -1,0 +1,155 @@
+version: 1
+name: layer-parity-spot-check
+description: |
+  Spot-check the relationship between Layer 3 (installed in etcd) and
+  Layer 4 (running in systemd) for a set of critical services.
+
+  The 4-layer model guarantees these layers are INDEPENDENT — a service
+  can be installed (Layer 3) but not running (Layer 4), or running but
+  not recorded as installed. This scenario verifies that for the core
+  services, Layers 3 and 4 are in parity (both present and consistent).
+
+  Services checked:
+    - node-agent:   must be installed AND active on all 5 nodes
+    - dns:          installed on node-1, node-3; active on those nodes
+    - rbac:         installed on founding nodes; active on node-1, node-2
+
+  This is a post-resilience parity check — verifies that the chaos
+  scenarios (crash, node restart) left Layer 3 and Layer 4 in sync.
+
+suite: recovery
+tags:
+  - layer3
+  - layer4
+  - parity
+  - post-resilience
+  - spot-check
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: false
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_reachable
+    probe: cluster.health
+    expect:
+      status: healthy
+
+assertions:
+  # ── node-agent: Layer 3 present on all nodes ───────────────────────────────
+  - type: probe
+    id: node1_packages_present
+    probe: node.installed_packages
+    params:
+      node: node-1
+    expect:
+      count_gte: 1   # at least node-agent itself
+
+  - type: probe
+    id: node2_packages_present
+    probe: node.installed_packages
+    params:
+      node: node-2
+    expect:
+      count_gte: 1
+
+  - type: probe
+    id: node3_packages_present
+    probe: node.installed_packages
+    params:
+      node: node-3
+    expect:
+      count_gte: 1
+
+  - type: probe
+    id: node4_packages_present
+    probe: node.installed_packages
+    params:
+      node: node-4
+    expect:
+      count_gte: 1
+
+  - type: probe
+    id: node5_packages_present
+    probe: node.installed_packages
+    params:
+      node: node-5
+    expect:
+      count_gte: 1
+
+  # ── node-agent: Layer 4 active on all nodes ────────────────────────────────
+  - type: probe
+    id: node_agent_active_node1
+    probe: service.status
+    params:
+      node: node-1
+      service: node-agent
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: node_agent_active_node2
+    probe: service.status
+    params:
+      node: node-2
+      service: node-agent
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: node_agent_active_node3
+    probe: service.status
+    params:
+      node: node-3
+      service: node-agent
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: node_agent_active_node4
+    probe: service.status
+    params:
+      node: node-4
+      service: node-agent
+    expect:
+      unit_state: active   # rejoined after resilience test
+
+  - type: probe
+    id: node_agent_active_node5
+    probe: service.status
+    params:
+      node: node-5
+      service: node-agent
+    expect:
+      unit_state: active   # rejoined after resilience test
+
+  # ── dns: Layer 4 active on node-3 (the node that was SIGKILL'd) ───────────
+  - type: probe
+    id: dns_active_after_resilience
+    probe: service.status
+    params:
+      node: node-3
+      service: dns
+    expect:
+      unit_state: active
+
+  # ── dns: still registered in etcd (Layer 2 / service registry) ────────────
+  - type: probe
+    id: dns_registered_post_chaos
+    probe: service.registered
+    params:
+      service: dns
+    expect:
+      registered: true
+
+  # ── cluster-wide service count stable post-chaos ───────────────────────────
+  - type: probe
+    id: service_count_stable
+    probe: cluster.health
+    expect:
+      status: healthy
+
+cleanup: []

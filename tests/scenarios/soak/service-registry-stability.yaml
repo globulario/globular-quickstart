@@ -1,0 +1,148 @@
+version: 1
+name: service-registry-stability
+description: |
+  Verify that the etcd service registry does not drift over time.
+
+  Services self-register when they start and remain in etcd until
+  explicitly removed. This scenario samples the registry 3 times
+  over ~4 minutes to verify:
+    - No services spontaneously deregister (count does not decrease)
+    - DNS remains registered throughout (spot-check of a specific service)
+    - RBAC remains registered throughout
+
+  A count decrease means a service crashed and failed to reconnect to
+  etcd before the sample. A service disappearing means its reconnect
+  logic is broken or etcd rejected the re-registration.
+
+  This is a read-only audit of the service discovery layer.
+
+suite: soak
+tags:
+  - stability
+  - etcd
+  - service-registry
+  - soak
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: false
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: registry_reachable
+    probe: services.count
+    expect:
+      count_gte: 19
+
+  - type: probe
+    id: dns_registered_before
+    probe: service.registered
+    params:
+      service: dns
+    expect:
+      registered: true
+
+baseline:
+  - type: probe
+    id: baseline_service_count
+    probe: services.count
+
+steps:
+  # ── sample T=0 ────────────────────────────────────────────────────────────
+  - id: t0_count
+    probe: services.count
+    expect:
+      count_gte: 19
+
+  - id: t0_dns
+    probe: service.registered
+    params:
+      service: dns
+    expect:
+      registered: true
+
+  - id: t0_rbac
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true
+
+  # ── wait 120s ─────────────────────────────────────────────────────────────
+  - id: wait_mid
+    action: wait
+    params:
+      timeout: 120
+
+  # ── sample T=120s ─────────────────────────────────────────────────────────
+  - id: t120_count
+    probe: services.count
+    expect:
+      count_gte: 19
+
+  - id: t120_dns
+    probe: service.registered
+    params:
+      service: dns
+    expect:
+      registered: true
+
+  - id: t120_rbac
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true
+
+  # ── wait 120s ─────────────────────────────────────────────────────────────
+  - id: wait_final
+    action: wait
+    params:
+      timeout: 120
+
+  # ── sample T=240s ─────────────────────────────────────────────────────────
+  - id: t240_count
+    probe: services.count
+    expect:
+      count_gte: 19
+
+  - id: t240_dns
+    probe: service.registered
+    params:
+      service: dns
+    expect:
+      registered: true
+
+  - id: t240_rbac
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true
+
+assertions:
+  - type: probe
+    id: final_count_stable
+    probe: services.count
+    expect:
+      count_gte: 19
+
+  - type: probe
+    id: final_dns_registered
+    probe: service.registered
+    params:
+      service: dns
+    expect:
+      registered: true
+
+  - type: probe
+    id: final_rbac_registered
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true
+
+cleanup: []

@@ -1,0 +1,170 @@
+version: 1
+name: compute-node-stop-restart
+description: |
+  Verify that stopping a compute-only node does not affect cluster health.
+
+  Compute nodes (node-4, node-5) run only the node agent — they do NOT
+  participate in etcd quorum, controller leadership, or any core services.
+  Stopping one must be completely transparent to the control plane.
+
+  This is the simplest resilience test: it validates the architectural
+  isolation between the execution plane (compute) and the control plane.
+
+  What this test verifies:
+  - etcd quorum is maintained when a compute node is removed
+  - The cluster reports healthy with one fewer node
+  - Stopping node-4 does not affect services running on node-1, 2, 3
+  - etcd writes continue to work during and after the removal
+  - The node re-registers its heartbeat after restart
+
+  Classical distributed systems pattern: graceful node removal.
+  Industry known issue: compute node stoppage can trigger thundering-herd
+  if the controller tries to reschedule all its workloads simultaneously.
+  The workflow semaphore (3 concurrent max) prevents this.
+suite: resilience
+tags:
+  - chaos
+  - compute-node
+  - graceful-removal
+  - etcd-quorum
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: node4_running
+    probe: node.container_running
+    params:
+      node: node-4
+    expect:
+      running: true
+
+  - type: probe
+    id: all_nodes_present
+    probe: cluster.nodes
+    expect:
+      count_gte: 5
+
+  - type: probe
+    id: write_test_before
+    probe: etcd.write_test
+    expect:
+      success: true
+
+baseline:
+  - type: probe
+    id: initial_node_count
+    probe: cluster.nodes
+
+  - type: probe
+    id: initial_etcd_members
+    probe: cluster.etcd_members
+
+steps:
+  # ── Step 1: Stop the compute node ─────────────────────────────────────────
+  - id: stop_node4
+    action: chaos.stop_node
+    params:
+      node: node-4
+
+  # ── Step 2: Allow cluster to detect the removal ───────────────────────────
+  # The controller marks a node stale after ~5 minutes of no heartbeat.
+  # We don't wait that long here — we just verify the immediate effect:
+  # etcd quorum is unaffected and control-plane services continue.
+  - id: wait_for_stabilization
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: node-4
+        expect:
+          running: false
+
+  # ── Step 3: Verify cluster health during compute node outage ──────────────
+  - id: verify_cluster_healthy_during_outage
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - id: verify_write_quorum_maintained
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - id: verify_etcd_members_unchanged
+    probe: cluster.etcd_members
+    expect:
+      healthy_gte: 3   # all 3 control-plane etcd members still healthy
+
+  # ── Step 4: Restart the compute node ─────────────────────────────────────
+  - id: start_node4
+    action: chaos.start_node
+    params:
+      node: node-4
+
+  # ── Step 5: Wait for node to rejoin ───────────────────────────────────────
+  - id: wait_for_node4_rejoin
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 10
+      until:
+        probe: node.etcd_registered
+        params:
+          node: node-4
+        expect:
+          registered: true
+
+assertions:
+  # ── Final state assertions ────────────────────────────────────────────────
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: all_nodes_heartbeating_after
+    probe: cluster.nodes
+    expect:
+      count_gte: 5
+
+  - type: probe
+    id: node4_registered_after
+    probe: node.etcd_registered
+    params:
+      node: node-4
+    expect:
+      registered: true
+
+  - type: probe
+    id: write_test_after
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: etcd_members_all_healthy
+    probe: cluster.etcd_members
+    expect:
+      healthy_gte: 3
+
+cleanup:
+  - type: probe
+    id: final_health
+    probe: cluster.health
+    expect:
+      status: healthy

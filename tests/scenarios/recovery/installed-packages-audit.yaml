@@ -1,0 +1,93 @@
+version: 1
+name: installed-packages-audit
+description: |
+  Verify that Layer 3 (installed packages) state is intact and queryable
+  across all cluster nodes after the resilience test suite.
+
+  The 4-layer truth model is:
+    Layer 1: Repository (artifact exists)
+    Layer 2: Desired (what should run)
+    Layer 3: Installed (what node agent recorded as installed in etcd)
+    Layer 4: Runtime (systemd active state)
+
+  This scenario asserts Layer 3 is populated and consistent:
+    - Per-node package counts are above minimums
+    - The cluster-wide total is above minimum
+    - Node 4 (the node crashed and restarted in resilience tests) still
+      has its full installed set in etcd (keys survive container restarts)
+
+  This is a non-destructive read-only audit — safe to run at any time.
+
+suite: recovery
+tags:
+  - layer3
+  - installed-packages
+  - etcd
+  - audit
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: false
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_reachable
+    probe: cluster.health
+    expect:
+      status: healthy
+
+assertions:
+  # ── cluster-wide total ─────────────────────────────────────────────────────
+  - type: probe
+    id: cluster_installed_total
+    probe: cluster.installed_packages
+    expect:
+      total_gte: 50      # 62 observed; floor guards against silent deletion
+      node_count_gte: 5  # all 5 nodes represented in Layer 3
+
+  # ── per-node minimums ──────────────────────────────────────────────────────
+  # Founding nodes (1-3) run etcd + full stack — expect more packages
+  - type: probe
+    id: node1_packages
+    probe: node.installed_packages
+    params:
+      node: node-1
+    expect:
+      count_gte: 10
+
+  - type: probe
+    id: node2_packages
+    probe: node.installed_packages
+    params:
+      node: node-2
+    expect:
+      count_gte: 10
+
+  - type: probe
+    id: node3_packages
+    probe: node.installed_packages
+    params:
+      node: node-3
+    expect:
+      count_gte: 10
+
+  # Worker nodes (no etcd, fewer services) — 6 observed; floor guards against silent deletion
+  - type: probe
+    id: node4_packages
+    probe: node.installed_packages
+    params:
+      node: node-4
+    expect:
+      count_gte: 5   # node-4 crashed and rejoined in resilience suite — Layer 3 must survive
+
+  - type: probe
+    id: node5_packages
+    probe: node.installed_packages
+    params:
+      node: node-5
+    expect:
+      count_gte: 5
+
+cleanup: []

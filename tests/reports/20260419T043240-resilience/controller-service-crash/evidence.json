@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "scenario": "controller-service-crash",
+  "suite": "resilience",
+  "start_time": "2026-04-19T04:32:51.710392Z",
+  "end_time": "2026-04-19T04:32:52.473221Z",
+  "passed": false,
+  "item_count": 3,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:32:52.038423Z"
+    },
+    {
+      "id": "controller_running_node2",
+      "section": "preconditions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "activating",
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "passed": false,
+      "timestamp": "2026-04-19T04:32:52.147749Z"
+    },
+    {
+      "id": "write_quorum_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 288
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:32:52.473143Z"
+    }
+  ]
+}

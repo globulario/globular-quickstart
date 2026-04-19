@@ -1,0 +1,362 @@
+{
+  "schema_version": 1,
+  "scenario": "etcd-member-resync",
+  "suite": "recovery",
+  "start_time": "2026-04-19T04:58:12.124816Z",
+  "end_time": "2026-04-19T04:58:49.180601Z",
+  "passed": true,
+  "item_count": 22,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:12.500500Z"
+    },
+    {
+      "id": "all_members_healthy_before",
+      "section": "preconditions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "total": 3,
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:12.847894Z"
+    },
+    {
+      "id": "write_quorum_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 307
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:13.190553Z"
+    },
+    {
+      "id": "node2_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:13.219533Z"
+    },
+    {
+      "id": "initial_member_health",
+      "section": "baseline",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:13.643369Z"
+    },
+    {
+      "id": "initial_write_test",
+      "section": "baseline",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {},
+      "result": {
+        "success": true,
+        "latency_ms": 326
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:14.008797Z"
+    },
+    {
+      "id": "stop_node2",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-2",
+        "exit_code": 0,
+        "stdout": "globular-node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:24.548124Z"
+    },
+    {
+      "id": "wait_for_2_member_quorum",
+      "section": "steps",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 268
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:24.850485Z"
+    },
+    {
+      "id": "write_during_absence",
+      "section": "steps",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 255
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:25.137310Z"
+    },
+    {
+      "id": "verify_2_members_healthy",
+      "section": "steps",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_gte": 2
+      },
+      "result": {
+        "total": 3,
+        "healthy": 2,
+        "unhealthy": 1
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:30.415754Z"
+    },
+    {
+      "id": "start_node2",
+      "section": "steps",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-2",
+        "exit_code": 0,
+        "stdout": "globular-node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:30.807278Z"
+    },
+    {
+      "id": "wait_for_node2_container",
+      "section": "steps",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:30.836642Z"
+    },
+    {
+      "id": "wait_for_full_resync",
+      "section": "steps",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:46.540567Z"
+    },
+    {
+      "id": "write_test_after_resync",
+      "section": "steps",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 276
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:46.852556Z"
+    },
+    {
+      "id": "all_members_healthy_after",
+      "section": "assertions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "total": 3,
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:47.206484Z"
+    },
+    {
+      "id": "write_quorum_after_resync",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 318
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:47.561300Z"
+    },
+    {
+      "id": "cluster_healthy_after",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:47.888304Z"
+    },
+    {
+      "id": "node2_running_after",
+      "section": "assertions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:47.927541Z"
+    },
+    {
+      "id": "all_nodes_heartbeating_after",
+      "section": "assertions",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {
+        "count_gte": 5
+      },
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:48.125987Z"
+    },
+    {
+      "id": "final_member_health",
+      "section": "cleanup",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:48.495846Z"
+    },
+    {
+      "id": "final_write_test",
+      "section": "cleanup",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 307
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:48.853553Z"
+    },
+    {
+      "id": "final_cluster_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:58:49.180521Z"
+    }
+  ]
+}

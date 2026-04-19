@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "scenario": "controller-service-crash",
+  "suite": "resilience",
+  "start_time": "2026-04-19T04:43:29.365497Z",
+  "end_time": "2026-04-19T04:44:48.795631Z",
+  "passed": false,
+  "item_count": 14,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:43:29.684927Z"
+    },
+    {
+      "id": "controller_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:43:29.778840Z"
+    },
+    {
+      "id": "write_quorum_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 295
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:43:30.109652Z"
+    },
+    {
+      "id": "initial_controller_registration",
+      "section": "baseline",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {},
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:43:30.225881Z"
+    },
+    {
+      "id": "initial_leader",
+      "section": "baseline",
+      "probe": "cluster.leader",
+      "params": {},
+      "expect": {},
+      "result": {
+        "leader_endpoint": "10.10.0.12:12000",
+        "is_leader": true
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:43:30.350284Z"
+    },
+    {
+      "id": "kill_controller_node2",
+      "section": "steps",
+      "probe": "chaos.kill_service",
+      "params": {
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.kill_service",
+        "container": "globular-node-2",
+        "unit": "globular-cluster-controller.service",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:43:30.874242Z"
+    },
+    {
+      "id": "verify_etcd_unaffected",
+      "section": "steps",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 308
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:43:46.215675Z"
+    },
+    {
+      "id": "wait_for_controller_restart",
+      "section": "steps",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "inactive",
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "passed": false,
+      "timestamp": "2026-04-19T04:44:47.687908Z"
+    },
+    {
+      "id": "wait_for_re_registration",
+      "section": "steps",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:44:47.792983Z"
+    },
+    {
+      "id": "controller_active_node2",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "inactive",
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "passed": false,
+      "timestamp": "2026-04-19T04:44:47.896046Z"
+    },
+    {
+      "id": "controller_registered_after",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:44:47.993891Z"
+    },
+    {
+      "id": "cluster_healthy_after",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:44:48.316111Z"
+    },
+    {
+      "id": "write_quorum_after",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 287
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:44:48.638330Z"
+    },
+    {
+      "id": "all_nodes_still_present",
+      "section": "assertions",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {
+        "count_gte": 5
+      },
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:44:48.795545Z"
+    }
+  ]
+}

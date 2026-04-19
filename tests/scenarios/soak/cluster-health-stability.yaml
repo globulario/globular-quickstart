@@ -1,0 +1,129 @@
+version: 1
+name: cluster-health-stability
+description: |
+  Sample cluster health 4 times over ~5 minutes to verify the cluster
+  does not flap, lose quorum, or drop nodes during idle operation.
+
+  This is the core soak assertion: a healthy cluster must stay healthy
+  without operator intervention. Each sample checks:
+    - cluster.health status == healthy
+    - etcd members >= 3 (quorum maintained)
+    - node count >= 5 (no nodes silently dropped)
+    - service count >= 19 (no services deregistered)
+
+  Failure means the cluster is oscillating — systemd is restart-looping
+  a critical service, etcd is losing connectivity, or a node heartbeat
+  is missing. Any instability here surfaces a real problem to investigate.
+
+suite: soak
+tags:
+  - stability
+  - health
+  - soak
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: healthy_before_soak
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+baseline:
+  - type: probe
+    id: baseline_health
+    probe: cluster.health
+
+  - type: probe
+    id: baseline_services
+    probe: services.count
+
+steps:
+  # ── sample T=0 ────────────────────────────────────────────────────────────
+  - id: sample_t0_health
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - id: sample_t0_services
+    probe: services.count
+    expect:
+      count_gte: 19
+
+  # ── wait 90s ──────────────────────────────────────────────────────────────
+  - id: wait_sample_1
+    action: wait
+    params:
+      timeout: 90
+
+  # ── sample T=90s ──────────────────────────────────────────────────────────
+  - id: sample_t90_health
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - id: sample_t90_services
+    probe: services.count
+    expect:
+      count_gte: 19
+
+  # ── wait 90s ──────────────────────────────────────────────────────────────
+  - id: wait_sample_2
+    action: wait
+    params:
+      timeout: 90
+
+  # ── sample T=180s ─────────────────────────────────────────────────────────
+  - id: sample_t180_health
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - id: sample_t180_services
+    probe: services.count
+    expect:
+      count_gte: 19
+
+  # ── wait 90s ──────────────────────────────────────────────────────────────
+  - id: wait_sample_3
+    action: wait
+    params:
+      timeout: 90
+
+  # ── sample T=270s ─────────────────────────────────────────────────────────
+  - id: sample_t270_health
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - id: sample_t270_services
+    probe: services.count
+    expect:
+      count_gte: 19
+
+assertions:
+  # Final state check (T≈5min)
+  - type: probe
+    id: final_health
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - type: probe
+    id: final_service_count
+    probe: services.count
+    expect:
+      count_gte: 19
+
+cleanup: []

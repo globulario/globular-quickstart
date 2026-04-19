@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "scenario": "repository-lifecycle",
+  "suite": "functional",
+  "start_time": "2026-04-18T23:31:42.376899Z",
+  "end_time": "2026-04-18T23:31:43.814602Z",
+  "passed": false,
+  "item_count": 8,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:31:42.765484Z"
+    },
+    {
+      "id": "repository_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "repository"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:31:42.868816Z"
+    },
+    {
+      "id": "baseline_desired_state",
+      "section": "baseline",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 22,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "alertmanager",
+          "assign-profiles",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "discovery",
+          "dns",
+          "dns-resolver",
+          "event",
+          "log",
+          "monitoring",
+          "node-agent",
+          "rbac",
+          "repository",
+          "resource",
+          "seed-etcd",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:31:43.051101Z"
+    },
+    {
+      "id": "wait_desired_state_populated",
+      "section": "steps",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {
+        "count_gte": 1
+      },
+      "result": {
+        "count": 22,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "alertmanager",
+          "assign-profiles",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "discovery",
+          "dns",
+          "dns-resolver",
+          "event",
+          "log",
+          "monitoring",
+          "node-agent",
+          "rbac",
+          "repository",
+          "resource",
+          "seed-etcd",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:31:43.287457Z"
+    },
+    {
+      "id": "repository_service_registered",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "repository"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:31:43.398306Z"
+    },
+    {
+      "id": "repository_unit_active",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "repository"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "inactive",
+        "node": "node-1",
+        "service": "repository"
+      },
+      "passed": false,
+      "timestamp": "2026-04-18T23:31:43.497908Z"
+    },
+    {
+      "id": "desired_state_populated",
+      "section": "assertions",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {
+        "count_gte": 1
+      },
+      "result": {
+        "count": 22,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "alertmanager",
+          "assign-profiles",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "discovery",
+          "dns",
+          "dns-resolver",
+          "event",
+          "log",
+          "monitoring",
+          "node-agent",
+          "rbac",
+          "repository",
+          "resource",
+          "seed-etcd",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:31:43.695307Z"
+    },
+    {
+      "id": "controller_unit_active",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "cluster-controller"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "activating",
+        "node": "node-1",
+        "service": "cluster-controller"
+      },
+      "passed": false,
+      "timestamp": "2026-04-18T23:31:43.814510Z"
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "scenario": "rbac-policy-integrity",
+  "suite": "security",
+  "start_time": "2026-04-18T23:41:06.645217Z",
+  "end_time": "2026-04-18T23:41:07.946829Z",
+  "passed": true,
+  "item_count": 9,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:06.943812Z"
+    },
+    {
+      "id": "rbac_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 7
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:07.036229Z"
+    },
+    {
+      "id": "baseline_rbac_policy",
+      "section": "baseline",
+      "probe": "rbac.policy_file",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {},
+      "result": {
+        "present": true,
+        "role_count": 6,
+        "valid_json": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:07.200549Z"
+    },
+    {
+      "id": "rbac_service_present",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 7
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:07.290013Z"
+    },
+    {
+      "id": "rbac_unit_active",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "rbac"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-1",
+        "service": "rbac"
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:07.386882Z"
+    },
+    {
+      "id": "policy_file_node1",
+      "section": "assertions",
+      "probe": "rbac.policy_file",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {
+        "present": true,
+        "valid_json": true,
+        "role_count_gte": 4
+      },
+      "result": {
+        "present": true,
+        "role_count": 6,
+        "valid_json": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:07.549597Z"
+    },
+    {
+      "id": "policy_file_node2",
+      "section": "assertions",
+      "probe": "rbac.policy_file",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "present": true,
+        "valid_json": true,
+        "role_count_gte": 4
+      },
+      "result": {
+        "present": true,
+        "role_count": 6,
+        "valid_json": true,
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:07.703670Z"
+    },
+    {
+      "id": "signing_keys_present",
+      "section": "assertions",
+      "probe": "pki.signing_keys",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {
+        "present": true,
+        "node_key_present": true,
+        "key_count_gte": 2
+      },
+      "result": {
+        "present": true,
+        "key_count": 8,
+        "node_key_present": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:07.860056Z"
+    },
+    {
+      "id": "final_rbac_check",
+      "section": "cleanup",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 7
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:07.946755Z"
+    }
+  ]
+}

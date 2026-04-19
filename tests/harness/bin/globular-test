@@ -1,0 +1,311 @@
+#!/usr/bin/env bash
+# globular-test — Globular V1 test harness entry point
+#
+# Usage: globular-test <command> [args...]
+#
+# Commands:
+#   suite <name>              Run a test suite (smoke|functional|security|resilience|recovery|soak)
+#   scenario <path>           Run a single scenario YAML file
+#   cluster <cmd> [args]      Cluster lifecycle: up|down|reset|logs|status|wait
+#   check <what>              Validate: schemas|scenarios|fixtures
+#   report <type>             Generate: parity|service-health|authz|recovery
+#   debug shell <node>        Open a bash shell on a cluster node
+#
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HARNESS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+TESTS_DIR="$(cd "$HARNESS_DIR/.." && pwd)"
+ROOT_DIR="$(cd "$TESTS_DIR/.." && pwd)"
+
+export REPORTS_DIR="$TESTS_DIR/reports"
+export SCENARIOS_DIR="$TESTS_DIR/scenarios"
+export LIB_DIR="$HARNESS_DIR/lib"
+
+source "$LIB_DIR/cluster.sh"
+source "$LIB_DIR/reports.sh"
+
+SCENARIO_BIN="$SCRIPT_DIR/globular-scenario"
+
+# ── dependency check ──────────────────────────────────────────────────────────
+
+check_deps() {
+    local ok=true
+    command -v docker >/dev/null 2>&1 || { echo "ERROR: docker is required" >&2; ok=false; }
+    command -v python3 >/dev/null 2>&1 || { echo "ERROR: python3 is required" >&2; ok=false; }
+    python3 -c "import yaml" 2>/dev/null || {
+        echo "ERROR: pyyaml is required. Run: pip3 install pyyaml" >&2
+        ok=false
+    }
+    $ok || exit 1
+}
+
+# ── usage ─────────────────────────────────────────────────────────────────────
+
+usage() {
+    cat <<'EOF'
+globular-test — Globular V1 test harness
+
+Commands:
+  suite <name>              Run a test suite
+                              Suites: smoke functional security resilience recovery soak
+  scenario <path>           Run a single scenario YAML file
+    --keep-cluster          Do not stop cluster after scenario
+    --keep-artifacts        Do not clean up artifacts
+    --verbose               Verbose probe output
+  cluster <cmd>             Cluster lifecycle management
+    up                      Start the cluster (docker compose up -d)
+    down                    Stop the cluster (preserves state)
+    reset                   Full reset (removes all volumes)
+    logs [node]             Follow logs (optionally for one node)
+    status                  Show container and etcd health
+    wait [timeout_secs]     Wait for cluster to become healthy (default: 300s)
+  check schemas             Validate all scenario YAML files
+  check scenarios           List all scenario files
+  report parity             Feature parity report vs golden baseline
+  report service-health     Service registration health matrix
+  report authz              RBAC/authz report
+  report recovery           Recovery scenario report
+  debug shell <node>        Open bash shell on a node (e.g. node-1)
+
+Examples:
+  globular-test cluster up
+  globular-test cluster wait
+  globular-test suite smoke
+  globular-test scenario tests/scenarios/smoke/cluster-cold-boot.yaml --verbose
+  globular-test report service-health
+  globular-test debug shell node-1
+EOF
+}
+
+# ── suite ─────────────────────────────────────────────────────────────────────
+
+cmd_suite() {
+    local suite="${1:?suite name required (smoke|functional|security|resilience|recovery|soak)}"
+    local verbose="${VERBOSE:-}"
+    local suite_dir="$SCENARIOS_DIR/$suite"
+
+    if [ ! -d "$suite_dir" ]; then
+        echo "ERROR: Suite directory not found: $suite_dir" >&2
+        exit 1
+    fi
+
+    local run_id
+    run_id="$(date -u '+%Y%m%dT%H%M%S')-${suite}"
+    local run_dir="$REPORTS_DIR/$run_id"
+    mkdir -p "$run_dir"
+
+    echo ""
+    echo "╔══════════════════════════════════════════════╗"
+    echo "║  Suite: $suite"
+    echo "║  Run ID: $run_id"
+    echo "╚══════════════════════════════════════════════╝"
+
+    local pass=0 fail=0
+
+    # Collect scenario files sorted
+    local scenarios=()
+    while IFS= read -r -d '' f; do
+        scenarios+=("$f")
+    done < <(find "$suite_dir" -maxdepth 1 -name "*.yaml" -print0 | sort -z)
+
+    if [ ${#scenarios[@]} -eq 0 ]; then
+        echo "WARNING: No scenarios found in $suite_dir"
+        echo "  (Scenarios are added as work progresses through waves 3-8)"
+        exit 0
+    fi
+
+    for scenario_file in "${scenarios[@]}"; do
+        local scenario_name
+        scenario_name="$(basename "$scenario_file" .yaml)"
+        local scenario_out="$run_dir/$scenario_name"
+        mkdir -p "$scenario_out"
+
+        echo ""
+        echo "  ── $scenario_name ──"
+
+        local scenario_args=("$scenario_file" "$scenario_out")
+        [ -n "$verbose" ] && scenario_args+=("--verbose")
+
+        if python3 "$SCENARIO_BIN" "${scenario_args[@]}"; then
+            echo "  → PASS"
+            ((pass++)) || true
+        else
+            echo "  → FAIL"
+            ((fail++)) || true
+        fi
+    done
+
+    echo ""
+    report_suite_summary "$suite" "$pass" "$fail" 0 "$run_dir"
+
+    # Update 'latest' symlink
+    ln -sfn "$run_id" "$REPORTS_DIR/latest"
+
+    echo ""
+    echo "Full report: $run_dir"
+    echo ""
+
+    if [ "$fail" -gt 0 ]; then
+        echo "RESULT: FAIL ($fail scenario(s) failed)"
+        exit 1
+    fi
+    echo "RESULT: PASS (all $pass scenario(s) passed)"
+}
+
+# ── scenario ──────────────────────────────────────────────────────────────────
+
+cmd_scenario() {
+    local scenario_file=""
+    local verbose=""
+
+    for arg in "$@"; do
+        case "$arg" in
+            --verbose|-v)      verbose="--verbose" ;;
+            --keep-cluster)    : ;;  # handled by caller if needed
+            --keep-artifacts)  : ;;
+            *)                 scenario_file="$arg" ;;
+        esac
+    done
+
+    if [ -z "$scenario_file" ]; then
+        echo "ERROR: scenario path required" >&2; exit 1
+    fi
+    if [ ! -f "$scenario_file" ]; then
+        echo "ERROR: scenario not found: $scenario_file" >&2; exit 1
+    fi
+
+    local run_id
+    run_id="$(date -u '+%Y%m%dT%H%M%S')-$(basename "$scenario_file" .yaml)"
+    local run_dir="$REPORTS_DIR/$run_id"
+    mkdir -p "$run_dir"
+
+    echo ""
+    echo "Running scenario: $scenario_file"
+
+    local args=("$scenario_file" "$run_dir")
+    [ -n "$verbose" ] && args+=("--verbose")
+
+    if python3 "$SCENARIO_BIN" "${args[@]}"; then
+        echo ""
+        echo "RESULT: PASS"
+        ln -sfn "$run_id" "$REPORTS_DIR/latest"
+    else
+        echo ""
+        echo "RESULT: FAIL — evidence at: $run_dir"
+        ln -sfn "$run_id" "$REPORTS_DIR/latest"
+        exit 1
+    fi
+}
+
+# ── cluster ───────────────────────────────────────────────────────────────────
+
+cmd_cluster() {
+    local action="${1:?action required (up|down|reset|logs|status|wait)}"
+    shift || true
+    case "$action" in
+        up)     cluster_up "$@" ;;
+        down)   cluster_down "$@" ;;
+        reset)  cluster_reset "$@" ;;
+        logs)   cluster_logs "$@" ;;
+        status) cluster_status ;;
+        wait)   cluster_wait_healthy "${1:-300}" ;;
+        *)      echo "ERROR: Unknown cluster action: $action" >&2; exit 1 ;;
+    esac
+}
+
+# ── check ─────────────────────────────────────────────────────────────────────
+
+cmd_check() {
+    local what="${1:-schemas}"
+    case "$what" in
+        schemas)
+            echo "Validating scenario YAML schemas..."
+            local ok=true
+            while IFS= read -r -d '' f; do
+                if python3 -c "
+import yaml, sys
+with open('$f') as fh:
+    d = yaml.safe_load(fh)
+required = ['version', 'name', 'suite']
+missing = [k for k in required if k not in d]
+if missing:
+    print(f'FAIL $f: missing {missing}')
+    sys.exit(1)
+if d['version'] != 1:
+    print(f'FAIL $f: unsupported version {d[\"version\"]}')
+    sys.exit(1)
+print(f'OK   $f')
+" 2>&1; then
+                    :
+                else
+                    ok=false
+                fi
+            done < <(find "$SCENARIOS_DIR" -name "*.yaml" -print0 2>/dev/null)
+            $ok && echo "All scenario schemas valid." || { echo "Schema errors found."; exit 1; }
+            ;;
+        scenarios)
+            echo "Scenarios:"
+            find "$SCENARIOS_DIR" -name "*.yaml" | sort | sed "s|$SCENARIOS_DIR/||"
+            ;;
+        fixtures)
+            echo "Fixtures:"
+            find "$TESTS_DIR/fixtures" -type f | sort 2>/dev/null || echo "(none)"
+            ;;
+        *)
+            echo "ERROR: Unknown check: $what" >&2; exit 1
+            ;;
+    esac
+}
+
+# ── report ────────────────────────────────────────────────────────────────────
+
+cmd_report() {
+    local type="${1:?report type required (parity|service-health|authz|recovery)}"
+    case "$type" in
+        parity)         report_parity ;;
+        service-health) report_service_health ;;
+        authz)          report_authz ;;
+        recovery)       report_recovery ;;
+        *)              echo "ERROR: Unknown report type: $type" >&2; exit 1 ;;
+    esac
+}
+
+# ── debug ─────────────────────────────────────────────────────────────────────
+
+cmd_debug() {
+    local action="${1:-shell}"
+    local node="${2:-node-1}"
+    case "$action" in
+        shell)
+            echo "Opening shell on $node..."
+            docker exec -it "globular-${node}" /bin/bash
+            ;;
+        *)
+            echo "ERROR: Unknown debug action: $action" >&2; exit 1
+            ;;
+    esac
+}
+
+# ── main ──────────────────────────────────────────────────────────────────────
+
+main() {
+    check_deps
+
+    local cmd="${1:-}"
+    [ -z "$cmd" ] && { usage; exit 0; }
+    shift
+
+    case "$cmd" in
+        suite)    cmd_suite "$@" ;;
+        scenario) cmd_scenario "$@" ;;
+        cluster)  cmd_cluster "$@" ;;
+        check)    cmd_check "$@" ;;
+        report)   cmd_report "$@" ;;
+        debug)    cmd_debug "$@" ;;
+        help|--help|-h) usage ;;
+        *) echo "ERROR: Unknown command: $cmd" >&2; usage; exit 1 ;;
+    esac
+}
+
+main "$@"

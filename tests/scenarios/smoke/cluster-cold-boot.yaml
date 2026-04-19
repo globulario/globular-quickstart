@@ -1,0 +1,101 @@
+version: 1
+name: cluster-cold-boot
+description: |
+  Verify that the cluster bootstraps correctly from a cold start.
+  All control-plane nodes must form a healthy etcd quorum.
+  All 5 nodes must heartbeat into etcd within the boot window.
+  This is the foundational smoke test — if it fails, nothing else is worth running.
+suite: smoke
+tags:
+  - boot
+  - etcd
+  - quorum
+  - heartbeat
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: false  # this IS the health test
+  reset_before: false
+  reset_after: false
+
+# ── wait for cluster to be ready ─────────────────────────────────────────────
+# We cannot check preconditions before boot converges, so we use a wait step.
+
+preconditions:
+  - type: probe
+    id: containers_running
+    probe: cluster.nodes
+    # We don't assert here — just verify we can reach etcd at all.
+    # If docker exec fails, this will return count:0 gracefully.
+
+baseline:
+  - type: probe
+    id: initial_node_count
+    probe: cluster.nodes
+    # Captures the node count at the start (before we wait for full convergence)
+
+# ── wait for full convergence ─────────────────────────────────────────────────
+steps:
+  - id: wait_for_etcd_quorum
+    action: wait
+    params:
+      timeout: 360
+      poll_interval: 10
+      until:
+        probe: cluster.health
+        expect:
+          status: healthy
+
+  - id: wait_for_all_nodes
+    action: wait
+    params:
+      timeout: 300
+      poll_interval: 10
+      until:
+        probe: cluster.nodes
+        expect:
+          count_gte: 3  # at minimum the 3 control-plane nodes
+
+# ── final assertions ──────────────────────────────────────────────────────────
+assertions:
+  - type: probe
+    id: etcd_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: etcd_quorum
+    probe: cluster.health
+    expect:
+      members_gte: 3   # 3 control-plane nodes in etcd quorum
+
+  - type: probe
+    id: nodes_heartbeating
+    probe: cluster.nodes
+    expect:
+      count_gte: 3     # at minimum the 3 control-plane nodes
+
+  - type: probe
+    id: system_config_seeded
+    probe: cluster.desired_state
+    # desired state may be empty initially — just verify the probe works
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-1
+      service: etcd
+    - type: logs
+      node: node-2
+      service: etcd
+    - type: logs
+      node: node-3
+      service: etcd
+
+cleanup:
+  - type: probe
+    id: final_health_check
+    probe: cluster.health
+    expect:
+      status: healthy

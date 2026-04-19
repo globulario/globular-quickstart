@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "scenario": "controller-service-crash",
+  "suite": "resilience",
+  "start_time": "2026-04-19T04:47:18.675845Z",
+  "end_time": "2026-04-19T04:48:37.639499Z",
+  "passed": false,
+  "item_count": 14,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:47:18.978255Z"
+    },
+    {
+      "id": "controller_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:47:19.098468Z"
+    },
+    {
+      "id": "write_quorum_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 279
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:47:19.414852Z"
+    },
+    {
+      "id": "initial_controller_registration",
+      "section": "baseline",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {},
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:47:19.511713Z"
+    },
+    {
+      "id": "initial_leader",
+      "section": "baseline",
+      "probe": "cluster.leader",
+      "params": {},
+      "expect": {},
+      "result": {
+        "leader_endpoint": "10.10.0.11:12000",
+        "is_leader": true
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:47:19.630799Z"
+    },
+    {
+      "id": "kill_controller_node2",
+      "section": "steps",
+      "probe": "chaos.sigkill_service",
+      "params": {
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.sigkill_service",
+        "container": "globular-node-2",
+        "unit": "globular-cluster-controller.service",
+        "signal": "SIGKILL",
+        "exit_code": 1,
+        "stderr": "Failed to kill unit globular-cluster-controller.service: No main process to kill"
+      },
+      "passed": false,
+      "timestamp": "2026-04-19T04:47:19.699149Z"
+    },
+    {
+      "id": "verify_etcd_unaffected",
+      "section": "steps",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 311
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:47:35.043923Z"
+    },
+    {
+      "id": "wait_for_controller_restart",
+      "section": "steps",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "inactive",
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "passed": false,
+      "timestamp": "2026-04-19T04:48:36.430287Z"
+    },
+    {
+      "id": "wait_for_re_registration",
+      "section": "steps",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:48:36.549607Z"
+    },
+    {
+      "id": "controller_active_node2",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "inactive",
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "passed": false,
+      "timestamp": "2026-04-19T04:48:36.670468Z"
+    },
+    {
+      "id": "controller_registered_after",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:48:36.773020Z"
+    },
+    {
+      "id": "cluster_healthy_after",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:48:37.091936Z"
+    },
+    {
+      "id": "write_quorum_after",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 331
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:48:37.461488Z"
+    },
+    {
+      "id": "all_nodes_still_present",
+      "section": "assertions",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {
+        "count_gte": 5
+      },
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T04:48:37.639415Z"
+    }
+  ]
+}

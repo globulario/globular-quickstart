@@ -1,0 +1,291 @@
+{
+  "schema_version": 1,
+  "scenario": "mtls-connectivity",
+  "suite": "security",
+  "start_time": "2026-04-18T23:41:02.421702Z",
+  "end_time": "2026-04-18T23:41:03.804768Z",
+  "passed": true,
+  "item_count": 9,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:02.743538Z"
+    },
+    {
+      "id": "baseline_service_matrix",
+      "section": "baseline",
+      "probe": "cluster.service_matrix",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 19,
+        "services": [
+          {
+            "name": "ai_executor.AiExecutorService",
+            "port": 10009,
+            "address": "10.10.0.13:10009",
+            "version": "0.0.7"
+          },
+          {
+            "name": "ai_memory.AiMemoryService",
+            "port": 10010,
+            "address": "10.10.0.13:10010",
+            "version": "0.0.7"
+          },
+          {
+            "name": "ai_router.AiRouterService",
+            "port": 10003,
+            "address": "10.10.0.13:10003",
+            "version": "0.0.7"
+          },
+          {
+            "name": "ai_watcher.AiWatcherService",
+            "port": 10008,
+            "address": "10.10.0.13:10008",
+            "version": "0.0.7"
+          },
+          {
+            "name": "authentication.AuthenticationService",
+            "port": 10005,
+            "address": "10.10.0.11:10005",
+            "version": "0.0.7"
+          },
+          {
+            "name": "backup_manager.BackupManagerService",
+            "port": 10008,
+            "address": "10.10.0.12:10008",
+            "version": "0.0.7"
+          },
+          {
+            "name": "cluster_controller.ClusterControllerService",
+            "port": 12000,
+            "address": "10.10.0.11",
+            "version": "0.0.1"
+          },
+          {
+            "name": "cluster_doctor.ClusterDoctorService",
+            "port": 12100,
+            "address": "10.10.0.12",
+            "version": "0.1.0"
+          },
+          {
+            "name": "discovery.PackageDiscovery",
+            "port": 10001,
+            "address": "10.10.0.11:10001",
+            "version": "0.0.7"
+          },
+          {
+            "name": "dns.DnsService",
+            "port": 10006,
+            "address": "10.10.0.13:10006",
+            "version": "0.0.7"
+          },
+          {
+            "name": "dns.DnsService",
+            "port": 10006,
+            "address": "10.10.0.14",
+            "version": "0.0.7"
+          },
+          {
+            "name": "event.EventService",
+            "port": 10000,
+            "address": "10.10.0.11:10000",
+            "version": "0.0.7"
+          },
+          {
+            "name": "log.LogService",
+            "port": 10002,
+            "address": "10.10.0.11:10002",
+            "version": "0.0.7"
+          },
+          {
+            "name": "monitoring.MonitoringService",
+            "port": 10005,
+            "address": "10.10.0.12:10005",
+            "version": "0.0.1"
+          },
+          {
+            "name": "node_agent.NodeAgentService",
+            "port": 11000,
+            "address": "10.10.0.12",
+            "version": "0.0.1"
+          },
+          {
+            "name": "rbac.RbacService",
+            "port": 10004,
+            "address": "10.10.0.11:10004",
+            "version": "0.0.7"
+          },
+          {
+            "name": "repository.PackageRepository",
+            "port": 10009,
+            "address": "10.10.0.12:10009",
+            "version": "0.0.1"
+          },
+          {
+            "name": "resource.ResourceService",
+            "port": 10010,
+            "address": "10.10.0.11:10010",
+            "version": "0.0.7"
+          },
+          {
+            "name": "workflow.WorkflowService",
+            "port": 10220,
+            "address": "10.10.0.11:10220",
+            "version": "0.0.7"
+          }
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:02.864234Z"
+    },
+    {
+      "id": "mtls_authentication",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-1",
+        "target_ip": "10.10.0.11",
+        "target_port": 10005
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:10005",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:02.969184Z"
+    },
+    {
+      "id": "mtls_rbac",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-1",
+        "target_ip": "10.10.0.11",
+        "target_port": 10004
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:10004",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:03.082962Z"
+    },
+    {
+      "id": "mtls_workflow",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-1",
+        "target_ip": "10.10.0.11",
+        "target_port": 10220
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:10220",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:03.190933Z"
+    },
+    {
+      "id": "mtls_event",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-1",
+        "target_ip": "10.10.0.11",
+        "target_port": 10000
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:10000",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:03.295023Z"
+    },
+    {
+      "id": "mtls_repository",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-1",
+        "target_ip": "10.10.0.12",
+        "target_port": 10009
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.12:10009",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:03.403277Z"
+    },
+    {
+      "id": "mtls_cross_node",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-2",
+        "target_ip": "10.10.0.11",
+        "target_port": 10004
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:10004",
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:03.511153Z"
+    },
+    {
+      "id": "final_cluster_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-18T23:41:03.804681Z"
+    }
+  ]
+}

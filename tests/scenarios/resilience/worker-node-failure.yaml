@@ -1,0 +1,144 @@
+version: 1
+name: worker-node-failure
+description: |
+  Verify that the cluster remains healthy when a worker node (no etcd) fails,
+  and that the node can rejoin after being restarted.
+
+  Test sequence:
+    1. Confirm 5 nodes heartbeating and cluster healthy (baseline)
+    2. Stop node-4 container (docker stop — simulates node crash/power loss)
+    3. Assert cluster is still healthy with 4 nodes heartbeating
+    4. Assert etcd quorum is maintained (3 members still active)
+    5. Restart node-4
+    6. Wait for node-4 to rejoin (heartbeat re-appears in etcd)
+    7. Assert 5 nodes heartbeating again
+
+  node-4 is chosen because:
+    - It does NOT run etcd — stopping it cannot break quorum
+    - It's a worker node — no critical control-plane services
+    - Stopping it simulates the most common failure mode (node crash)
+
+  This test proves the cluster can survive single-node worker failures without
+  operator intervention, and that nodes self-heal on restart.
+
+suite: resilience
+tags:
+  - chaos
+  - node-failure
+  - rejoin
+  - etcd-quorum
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+      nodes_gte: 5
+
+  - type: probe
+    id: node4_running
+    probe: service.status
+    params:
+      node: node-4
+      service: node-agent
+    expect:
+      unit_state: active
+
+baseline:
+  - type: probe
+    id: baseline_health
+    probe: cluster.health
+    # Capture node count before chaos
+
+steps:
+  # ── inject fault ──────────────────────────────────────────────────────────
+  - id: stop_node4
+    action: chaos.stop_node
+    params:
+      node: node-4
+
+  # Verify the container actually stopped (docker inspect, not etcd heartbeat).
+  # Note: heartbeat keys have no TTL — they persist after container stops.
+  # Use node.container_running to confirm the container is truly down.
+  - id: wait_node4_container_stopped
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: node-4
+        expect:
+          running: false
+
+  # ── assert degraded-but-healthy state ─────────────────────────────────────
+  # etcd quorum is maintained (nodes 1, 2, 3 are etcd members)
+  - id: check_cluster_healthy_degraded
+    probe: cluster.health
+    expect:
+      status: healthy   # etcd quorum still intact
+      members_gte: 3    # 3 etcd members still up
+
+  # ── restart the node ──────────────────────────────────────────────────────
+  - id: start_node4
+    action: chaos.start_node
+    params:
+      node: node-4
+
+  # Wait for node-4 container to be running and node-agent to come up
+  - id: wait_node4_rejoined
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 10
+      until:
+        probe: service.status
+        params:
+          node: node-4
+          service: node-agent
+        expect:
+          unit_state: active
+
+assertions:
+  - type: probe
+    id: all_nodes_back
+    probe: cluster.health
+    expect:
+      nodes_gte: 5
+      status: healthy
+
+  - type: probe
+    id: etcd_quorum_intact
+    probe: cluster.health
+    expect:
+      members_gte: 3
+
+  - type: probe
+    id: node4_agent_active
+    probe: service.status
+    params:
+      node: node-4
+      service: node-agent
+    expect:
+      unit_state: active
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-4
+      service: node-agent
+
+cleanup:
+  - type: probe
+    id: final_cluster_health
+    probe: cluster.health
+    expect:
+      status: healthy

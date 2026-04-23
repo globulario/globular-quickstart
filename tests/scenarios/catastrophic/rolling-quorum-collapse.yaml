@@ -1,0 +1,285 @@
+version: 1
+name: rolling-quorum-collapse
+description: |
+  Simulate a rolling quorum collapse: first remove one etcd member (node-2),
+  observe that the remaining 2/3 quorum is healthy, then while node-2 is still
+  down, remove a second member (node-3). The cluster now has only 1/3 members —
+  below quorum — and transitions from "degraded but functional" to
+  "completely unable to accept writes."
+
+  This is a realistic "bad maintenance window" scenario: an operator takes
+  node-2 offline for maintenance, does not wait for it to come back, then
+  node-3 fails unexpectedly. The cluster collapses through two distinct phases.
+
+  Phase 1 (1 member down — DEGRADED, still functional):
+    - 2/3 etcd members alive → quorum maintained
+    - Writes accepted
+    - Cluster reports degraded (one member missing)
+    - This state is RECOVERABLE automatically (restart node-2)
+
+  Phase 2 (2 members down — CATASTROPHIC, read-only):
+    - 1/3 etcd members alive → quorum lost
+    - Writes REJECTED by etcd
+    - Cluster is read-only: services can still serve cached reads but cannot
+      update state, register, or write heartbeats
+    - This state CANNOT self-recover — operator must restart 1+ node
+
+  Key measurement: Does the cluster correctly detect the quorum-loss transition
+  and emit the emergency alert BEFORE losing write access entirely? If the
+  controller is on node-1 (the probe node, still running) it may write the
+  alert key before quorum is lost. If the alert IS written, that's the
+  cluster protecting its integrity: "I'm about to lose write access, alerting now."
+
+  Recovery in this scenario:
+    1. Restore node-2 first → 2/3 quorum re-established, writes resume
+    2. Restore node-3 → full 3/3 health
+    3. Verify data integrity (Raft log was preserved on node-1)
+
+  Integrity verdict: PROTECTED — Raft durability on node-1 guarantees no data
+  loss. The cluster degrades gracefully through two observable phases.
+
+suite: catastrophic
+tags:
+  - catastrophe
+  - etcd-quorum
+  - rolling-failure
+  - quorum-collapse
+  - two-phase
+  - operator-required
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: full_quorum_before
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  - type: probe
+    id: cluster_healthy_before
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: writes_ok_before
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: node2_running
+    probe: node.container_running
+    params:
+      node: node-2
+    expect:
+      running: true
+
+  - type: probe
+    id: node3_running
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: true
+
+baseline:
+  - type: probe
+    id: baseline_cluster_health
+    probe: cluster.health
+
+  - type: probe
+    id: baseline_members
+    probe: cluster.etcd_members
+
+  - type: probe
+    id: baseline_write_test
+    probe: etcd.write_test
+
+steps:
+  # ════════════════════════════════════════════════════════════════════════════
+  # PHASE 1: Remove one member — degraded but quorum maintained
+  # ════════════════════════════════════════════════════════════════════════════
+
+  - id: stop_node2_phase1
+    action: chaos.stop_node
+    params:
+      node: node-2
+
+  # Wait for node-2 to be confirmed stopped
+  - id: wait_node2_stopped
+    action: wait
+    params:
+      timeout: 20
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: node-2
+        expect:
+          running: false
+
+  # Verify that with 2/3 members, writes still work (quorum maintained)
+  # This is the "degraded but functional" proof — do NOT skip this check.
+  - id: verify_phase1_writes_ok
+    action: wait
+    params:
+      timeout: 20
+      poll_interval: 5
+      until:
+        probe: etcd.write_test
+        expect:
+          success: true
+
+  # Short observation window at 2/3 quorum state
+  - id: observe_phase1_degraded
+    action: wait
+    params:
+      timeout: 15
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # PHASE 2: Remove a second member — quorum collapses to 1/3
+  # ════════════════════════════════════════════════════════════════════════════
+
+  - id: stop_node3_phase2
+    action: chaos.stop_node
+    params:
+      node: node-3
+
+  # Wait for node-3 to be confirmed stopped
+  - id: wait_node3_stopped
+    action: wait
+    params:
+      timeout: 20
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: node-3
+        expect:
+          running: false
+
+  # Allow time for the cluster to detect the quorum collapse and
+  # attempt to write the emergency quorum_loss alert before going read-only.
+  # node-1's controller has a small window here where it can still write.
+  - id: observe_quorum_collapse
+    action: wait
+    params:
+      timeout: 30
+
+assertions:
+  # ── Phase state verification ───────────────────────────────────────────────
+
+  - type: probe
+    id: node2_confirmed_down
+    probe: node.container_running
+    params:
+      node: node-2
+    expect:
+      running: false
+
+  - type: probe
+    id: node3_confirmed_down
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: false
+
+  - type: probe
+    id: node1_still_up
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: true
+
+  # ── Only 1/3 etcd members remain: quorum is lost ─────────────────────────
+  # node-1 is the probe container AND an etcd member. It's still running.
+  # IMPORTANT: etcd endpoint health checks require quorum to answer. With 1/3
+  # members alive (below majority), etcd's own health endpoint returns unhealthy
+  # even for the surviving node — it cannot confirm a majority. So all three
+  # endpoints report unhealthy (healthy=0). We capture this as evidence without
+  # making it a pass/fail assertion.
+  - type: probe
+    id: etcd_member_status_at_quorum_loss
+    probe: cluster.etcd_members
+
+  # ── CRITICAL: etcd write fails (quorum lost — 1/3 cannot form majority) ──
+  # This is the moment the cluster becomes read-only. The write test will
+  # fail because etcd cannot achieve a write quorum with only 1 of 3 members.
+  - type: probe
+    id: writes_blocked_quorum_lost
+    probe: etcd.write_test
+    expect:
+      success: false
+
+  # ── Check if the emergency alert was written before quorum was lost ────────
+  # If the cluster controller detected the cascading loss in time and wrote
+  # the quorum_loss alert key, that's a sign of proactive protection.
+  # This assertion is informational (we record the result either way).
+  - type: probe
+    id: emergency_alert_status
+    probe: cluster.quorum_loss_alert
+
+cleanup:
+  # ── Recovery: restore node-2 first to re-establish 2/3 quorum ─────────────
+  - id: start_node2
+    action: chaos.start_node
+    params:
+      node: node-2
+
+  # Wait for 2/3 quorum to restore and writes to resume
+  - id: wait_phase1_quorum_restored
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 10
+      until:
+        probe: etcd.write_test
+        expect:
+          success: true
+
+  # ── Then restore node-3 ────────────────────────────────────────────────────
+  - id: start_node3
+    action: chaos.start_node
+    params:
+      node: node-3
+
+  # Wait for full 3/3 quorum
+  - id: wait_full_quorum_restored
+    action: wait
+    params:
+      timeout: 180
+      poll_interval: 15
+      until:
+        probe: cluster.etcd_members
+        expect:
+          healthy_gte: 3
+
+  - id: final_cluster_health
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - id: final_write_test
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - id: clear_quorum_loss_alert_if_present
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 20
+      until:
+        probe: cluster.quorum_loss_alert
+        params: {}
+        expect:
+          alert_present: false

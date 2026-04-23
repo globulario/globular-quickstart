@@ -158,7 +158,25 @@ steps:
         expect:
           healthy_gte: 3
 
-  # ── Step 7: Verify write quorum works with all 3 members ──────────────────
+  # ── Step 7: Wait for node-2 services to fully restart ────────────────────
+  # etcd on node-2 becomes healthy before all other services finish booting.
+  # The node-agent has its own startup sequence (waits for TLS certs, etcd
+  # connection). We wait for it explicitly so subsequent scenarios that check
+  # Layer 4 parity don't fail due to a startup race.
+  - id: wait_for_node2_agent
+    action: wait
+    params:
+      timeout: 90
+      poll_interval: 10
+      until:
+        probe: service.status
+        params:
+          node: node-2
+          service: node-agent
+        expect:
+          unit_state: active
+
+  # ── Step 8: Verify write quorum works with all 3 members ──────────────────
   - id: write_test_after_resync
     probe: etcd.write_test
     expect:

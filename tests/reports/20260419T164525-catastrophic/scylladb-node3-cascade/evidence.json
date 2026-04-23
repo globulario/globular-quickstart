@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "scenario": "scylladb-node3-cascade",
+  "suite": "catastrophic",
+  "start_time": "2026-04-19T16:51:56.144293Z",
+  "end_time": "2026-04-19T16:52:31.918664Z",
+  "passed": false,
+  "item_count": 7,
+  "items": [
+    {
+      "id": "cluster_healthy_before",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "members_gte": 3
+      },
+      "result": {
+        "status": "degraded",
+        "members": 0,
+        "nodes": 0
+      },
+      "passed": false,
+      "timestamp": "2026-04-19T16:52:11.431975Z"
+    },
+    {
+      "id": "all_etcd_members_healthy",
+      "section": "preconditions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "total": 3,
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 0,
+        "unhealthy": 3
+      },
+      "passed": false,
+      "timestamp": "2026-04-19T16:52:26.702387Z"
+    },
+    {
+      "id": "etcd_writable_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": false,
+        "latency_ms": 5072
+      },
+      "passed": false,
+      "timestamp": "2026-04-19T16:52:31.806270Z"
+    },
+    {
+      "id": "scylladb_container_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "scylladb"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "scylladb"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T16:52:31.832829Z"
+    },
+    {
+      "id": "node3_running_before",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": false,
+        "node": "node-3"
+      },
+      "passed": false,
+      "timestamp": "2026-04-19T16:52:31.861023Z"
+    },
+    {
+      "id": "node1_running_before",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T16:52:31.889014Z"
+    },
+    {
+      "id": "node2_running_before",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": false,
+        "node": "node-2"
+      },
+      "passed": false,
+      "timestamp": "2026-04-19T16:52:31.918585Z"
+    }
+  ]
+}

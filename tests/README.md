@@ -1,181 +1,258 @@
-# Globular V1 Test Harness
+# Globular Quickstart Test Harness
 
-This directory contains the Globular V1 test harness — a YAML-driven, evidence-collecting
-test framework for validating a running Globular Docker cluster.
+**Scenario-driven validation for a running Globular quickstart cluster.**
 
-## Quick Start
+This directory contains the test harness used to validate the Docker-based Globular cluster started by `globular-quickstart`.
+
+It is built around:
+
+- read-only probes
+- YAML scenario definitions
+- suite execution by category
+- evidence capture for every run
+- Markdown summaries for human review
+
+This is the place where Globular gets tested as a **real clustered system**, not just as isolated unit tests.
+
+## What this harness is for
+
+The harness is designed to answer questions like:
+
+- Did the cluster cold-boot correctly?
+- Are the control-plane and runtime layers aligned?
+- Does mTLS actually work end to end?
+- Can services recover from crashes?
+- What happens when a worker disappears?
+- Does etcd disruption surface clearly?
+- Do recovery and audit flows leave evidence?
+
+## Quick start
+
+From the quickstart repository root:
 
 ```bash
-# 1. Start the cluster (from the quickstart root)
 make up
-
-# 2. Wait for it to become healthy
 make test-wait
-
-# 3. Run the smoke suite
 make test-smoke
-
-# 4. View the report
 cat tests/reports/latest/SUMMARY.md
+```
+
+You can also run a single scenario:
+
+```bash
+make test-scenario SCENARIO=tests/scenarios/smoke/cluster-cold-boot.yaml
+```
+
+Or keep artifacts around during debugging:
+
+```bash
+make test-scenario-keep SCENARIO=tests/scenarios/resilience/service-crash-recovery.yaml
 ```
 
 ## Requirements
 
-- Docker + Docker Compose
-- Python 3 + pyyaml (`pip3 install pyyaml`)
-- A running Globular cluster (`make up` or `make quickstart-up`)
+- a running quickstart cluster
+- Docker / Docker Compose
+- Python 3
+- `pyyaml` available to the scenario executor
+- the harness entrypoint at `tests/harness/bin/globular-test`
 
-## Concepts
+## Core model
 
 ### The 4 truth layers
 
-Every test in this harness respects the Globular 4-layer state model:
+The harness follows the Globular 4-layer state model:
 
-```
-Layer 1: Repository  — "Does this version exist?"
-Layer 2: Desired     — "What should be running?"
-Layer 3: Installed   — "What is actually installed?"
-Layer 4: Runtime     — "Is it running and healthy?"
+```text
+Layer 1: Repository  — does the artifact/version exist?
+Layer 2: Desired     — what should be present?
+Layer 3: Installed   — what is actually installed?
+Layer 4: Runtime     — what is running and healthy now?
 ```
 
-Probes that check etcd registration verify Layer 2/3.
-Probes that check systemd unit state verify Layer 4.
+The point is not only to see whether “something works.”  
+It is to tell **which layer drifted** when something does not.
 
 ### Probes
 
-Probes are read-only queries. They output a single line of JSON.
-All probes are implemented in `tests/harness/lib/probes.sh`.
+Probes are read-only checks that return structured JSON.
 
-Probe names use dot notation: `cluster.health`, `service.status`, `authz.check`.
-In bash, the function is `probe_cluster_health()`, `probe_service_status()`, etc.
+Examples include cluster-, service-, authz-, PKI-, and runtime-oriented checks.  
+They are implemented under:
+
+- `tests/harness/lib/probes.sh`
 
 ### Scenarios
 
-Each scenario is a YAML file that declares:
-- Which cluster profile it needs
-- Preconditions (probes that must pass before the scenario runs)
-- A baseline capture (state before mutation)
-- Steps (actions, waits, chaos injections)
-- Assertions (probes with expected values)
-- Evidence to collect
-- Cleanup steps
+Scenarios are YAML files under `tests/scenarios/`.
 
-### Expect operators
+A scenario typically declares:
 
-In `expect:` blocks:
-- `field: value` — exact equality
-- `field_gte: N` — numeric greater-than-or-equal
-- `field_lte: N` — numeric less-than-or-equal
-- `field_contains: str` — string contains
+- required cluster profile or context
+- preconditions
+- actions / waits / chaos injections
+- assertions
+- evidence to collect
+- cleanup behavior
 
-## Directory Structure
+### Evidence
 
-```
+Every scenario run produces durable artifacts such as:
+
+- `evidence.json`
+- `RESULT.md`
+
+Suite runs also produce:
+
+- `SUMMARY.md`
+
+Reports are written under:
+
+- `tests/reports/<run-id>/`
+- `tests/reports/latest` points to the most recent run
+
+## Directory layout
+
+```text
 tests/
+├── README.md
 ├── harness/
 │   ├── bin/
-│   │   ├── globular-test       # main entry point (bash)
-│   │   └── globular-scenario   # YAML scenario executor (Python)
+│   │   └── globular-test
 │   └── lib/
-│       ├── cluster.sh          # cluster lifecycle helpers
-│       ├── probes.sh           # all probe implementations
-│       ├── assertions.sh       # assertion helpers
-│       └── reports.sh          # report generation
+│       ├── cluster.sh
+│       ├── probes.sh
+│       └── parse_service_configs.py
 ├── scenarios/
-│   ├── smoke/                  # Wave 3: quick validation (3 scenarios)
-│   ├── functional/             # Wave 4: feature parity (3 scenarios)
-│   ├── security/               # Wave 5: authz enforcement (3 scenarios)
-│   ├── resilience/             # Wave 6: failure drills (3 scenarios)
-│   ├── recovery/               # Wave 7: layer audit + release state (3 scenarios)
-│   └── soak/                   # Wave 8: stability (3 scenarios)
-├── fixtures/                   # test data (tokens, packages, etc.)
-├── golden/                     # baseline snapshots for parity reports
-└── reports/                    # output from test runs (gitignored except .gitkeep)
+│   ├── smoke/
+│   ├── functional/
+│   ├── security/
+│   ├── resilience/
+│   ├── recovery/
+│   ├── soak/
+│   └── catastrophic/
+├── fixtures/
+├── golden/
+└── reports/
 ```
 
-## Make Targets
+## Scenario families in this repository
 
-### Cluster lifecycle
-| Target | Description |
-|--------|-------------|
-| `make quickstart-up` | Start cluster |
-| `make quickstart-down` | Stop cluster (keeps state) |
-| `make quickstart-reset` | Full reset (removes all state) |
-| `make quickstart-logs` | Follow all logs |
-| `make test-wait` | Wait for healthy (up to 5 min) |
+Based on the current repository contents, this harness includes:
 
-### Test suites
-| Target | Description |
-|--------|-------------|
-| `make test-smoke` | Smoke suite (3 scenarios) |
-| `make test-functional` | Functional suite |
-| `make test-security` | Security/authz suite |
-| `make test-resilience` | Resilience/chaos suite |
-| `make test-recovery` | Recovery/repair suite |
-| `make test-soak` | Soak/stability suite |
-| `make test-v1-certification` | All suites (V1 gate) |
+| Family | Purpose |
+|--------|---------|
+| `smoke` | fast confidence checks after startup |
+| `functional` | core cluster and platform behavior |
+| `security` | mTLS, PKI, signing keys, and RBAC policy checks |
+| `resilience` | service crash and node disruption drills |
+| `recovery` | audits, parity checks, rejoin/resync, release-failure evidence |
+| `soak` | time-based stability checks |
+| `catastrophic` | majority-loss and blackout style drills |
 
-### Single scenario
+### Current scenario counts
+
+The repository currently contains:
+
+- **3 smoke** scenarios
+- **6 functional** scenarios
+- **8 security** scenarios
+- **11 resilience** scenarios
+- **6 recovery** scenarios
+- **3 soak** scenarios
+- **5 catastrophic** scenarios
+
+This is broader than a basic smoke harness. It is a layered failure-lab.
+
+## Main make targets
+
+These are run from the quickstart repository root.
+
+### Bring the cluster to ready state
+
 ```bash
-make test-scenario SCENARIO=tests/scenarios/smoke/cluster-cold-boot.yaml
-make test-scenario-keep SCENARIO=...  # keep artifacts on failure
+make up
+make test-wait
 ```
 
-### Reports
-| Target | Description |
-|--------|-------------|
-| `make test-health-matrix` | Service registration matrix |
-| `make test-parity-report` | Feature parity vs golden baseline |
-| `make test-authz-report` | RBAC/authz summary |
+### Run suites
 
-### Debug
 ```bash
-make test-debug-shell NODE=node-1   # shell into a cluster node
-make check-test-schemas             # validate all scenario YAML files
+make test-smoke
+make test-functional
+make test-security
+make test-resilience
+make test-recovery
+make test-soak
 ```
 
-## CI Integration
+### Full V1 gate
 
-Stage 1 — every PR:
-```bash
-make check-test-schemas
-```
-
-Stage 2 — merge to master:
-```bash
-make ci-smoke   # builds cluster, waits, runs smoke suite
-```
-
-Stage 3+ — nightly / pre-release:
-```bash
-make test-functional test-security test-resilience test-recovery
-```
-
-Release gate:
 ```bash
 make test-v1-certification
 ```
 
-## Implementation Waves
+### Run one scenario
 
-| Wave | Status | Description |
-|------|--------|-------------|
-| 1 | ✓ Done | Harness skeleton |
-| 2 | ✓ Done | Core probe layer |
-| 3 | ✓ Done | Smoke scenarios (3) |
-| 4 | ✓ Done | Functional scenarios (3) — parity, repository, workflow |
-| 5 | ✓ Done | Security scenarios (3) — PKI, RBAC policy, mTLS connectivity |
-| 6 | ✓ Done | Resilience scenarios (3) — service crash recovery, worker node failure, etcd quorum |
-| 7 | ✓ Done | Recovery scenarios (3) — installed packages audit, release failure audit, layer parity |
-| 8 | ✓ Done | Soak scenarios (3) — cluster health stability, service registry stability, node-agent uptime |
+```bash
+make test-scenario SCENARIO=tests/scenarios/security/mtls-connectivity.yaml
+```
 
-## Evidence
+### Generate reports
 
-Every scenario run produces:
-- `evidence.json` — full JSON trace of every probe and result
-- `RESULT.md` — human-readable pass/fail summary
+```bash
+make test-parity-report
+make test-health-matrix
+make test-authz-report
+make test-recovery-report
+```
 
-Suite runs also produce:
-- `SUMMARY.md` — aggregate results for all scenarios in the suite
+### Debug
 
-Reports are written to `tests/reports/<run-id>/` with a `tests/reports/latest` symlink.
+```bash
+make test-debug-shell NODE=node-1
+make check-test-schemas
+make check-test-scenarios
+```
+
+## What makes this harness useful
+
+This harness is valuable because it combines three things that usually live far apart:
+
+1. **real cluster execution**
+2. **declarative scenarios**
+3. **post-run evidence**
+
+That makes it suitable for:
+
+- regression testing after infrastructure changes
+- validating bug fixes against realistic failure modes
+- capturing operator-readable proof for readiness gates
+- building confidence before bare-metal rollout
+
+## How to read results
+
+A typical workflow after running a suite:
+
+```bash
+cat tests/reports/latest/SUMMARY.md
+find tests/reports/latest -name RESULT.md | sort
+find tests/reports/latest -name evidence.json | sort
+```
+
+If a scenario fails, the `evidence.json` file is the primary forensic artifact.  
+The Markdown reports are there to make the results easier to scan quickly.
+
+## Notes for contributors
+
+- keep probes read-only whenever possible
+- keep scenarios declarative and evidence-oriented
+- prefer explicit assertions over vague “health looks good” checks
+- when adding a new scenario, place it in the right family by intent, not by convenience
+- update scenario docs when suite shape changes
+
+## Relationship to other tests
+
+This harness does **not** replace service-level unit tests or lower-level integration tests in `services/`.
+
+Instead, it validates the **cluster as a whole** after packaging, supervision, PKI, discovery, routing, and infrastructure dependencies are all in play.

@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "scenario": "cluster-cold-boot",
+  "suite": "smoke",
+  "start_time": "2026-04-19T05:12:59.731499Z",
+  "end_time": "2026-04-19T05:13:02.062836Z",
+  "passed": true,
+  "item_count": 9,
+  "items": [
+    {
+      "id": "containers_running",
+      "section": "preconditions",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:12:59.911525Z"
+    },
+    {
+      "id": "initial_node_count",
+      "section": "baseline",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:13:00.087210Z"
+    },
+    {
+      "id": "wait_for_etcd_quorum",
+      "section": "steps",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:13:00.419443Z"
+    },
+    {
+      "id": "wait_for_all_nodes",
+      "section": "steps",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {
+        "count_gte": 3
+      },
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:13:00.595466Z"
+    },
+    {
+      "id": "etcd_healthy",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:13:00.941788Z"
+    },
+    {
+      "id": "etcd_quorum",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "members_gte": 3
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:13:01.303544Z"
+    },
+    {
+      "id": "nodes_heartbeating",
+      "section": "assertions",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {
+        "count_gte": 3
+      },
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:13:01.479512Z"
+    },
+    {
+      "id": "system_config_seeded",
+      "section": "assertions",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 22,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "alertmanager",
+          "assign-profiles",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "discovery",
+          "dns",
+          "dns-resolver",
+          "event",
+          "log",
+          "monitoring",
+          "node-agent",
+          "rbac",
+          "repository",
+          "resource",
+          "seed-etcd",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:13:01.708947Z"
+    },
+    {
+      "id": "final_health_check",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:13:02.062752Z"
+    }
+  ]
+}

@@ -1,0 +1,419 @@
+{
+  "schema_version": 1,
+  "scenario": "rolling-quorum-collapse",
+  "suite": "catastrophic",
+  "start_time": "2026-04-19T17:00:00.962031Z",
+  "end_time": "2026-04-19T17:02:53.351943Z",
+  "passed": true,
+  "item_count": 26,
+  "items": [
+    {
+      "id": "full_quorum_before",
+      "section": "preconditions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "total": 3,
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:01.332812Z"
+    },
+    {
+      "id": "cluster_healthy_before",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:01.738395Z"
+    },
+    {
+      "id": "writes_ok_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 434
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:02.213093Z"
+    },
+    {
+      "id": "node2_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:02.242667Z"
+    },
+    {
+      "id": "node3_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:02.272578Z"
+    },
+    {
+      "id": "baseline_cluster_health",
+      "section": "baseline",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {},
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:02.596708Z"
+    },
+    {
+      "id": "baseline_members",
+      "section": "baseline",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:02.935801Z"
+    },
+    {
+      "id": "baseline_write_test",
+      "section": "baseline",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {},
+      "result": {
+        "success": true,
+        "latency_ms": 351
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:03.327697Z"
+    },
+    {
+      "id": "stop_node2_phase1",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-2",
+        "exit_code": 0,
+        "stdout": "globular-node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:13.786167Z"
+    },
+    {
+      "id": "wait_node2_stopped",
+      "section": "steps",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "running": false
+      },
+      "result": {
+        "running": false,
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:13.817392Z"
+    },
+    {
+      "id": "verify_phase1_writes_ok",
+      "section": "steps",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 280
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:14.134881Z"
+    },
+    {
+      "id": "stop_node3_phase2",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-3",
+        "exit_code": 0,
+        "stdout": "globular-node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:39.544266Z"
+    },
+    {
+      "id": "wait_node3_stopped",
+      "section": "steps",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "running": false
+      },
+      "result": {
+        "running": false,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:00:39.576547Z"
+    },
+    {
+      "id": "node2_confirmed_down",
+      "section": "assertions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "running": false
+      },
+      "result": {
+        "running": false,
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:01:09.606823Z"
+    },
+    {
+      "id": "node3_confirmed_down",
+      "section": "assertions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "running": false
+      },
+      "result": {
+        "running": false,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:01:09.635131Z"
+    },
+    {
+      "id": "node1_still_up",
+      "section": "assertions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:01:09.664365Z"
+    },
+    {
+      "id": "etcd_member_status_at_quorum_loss",
+      "section": "assertions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 3,
+        "healthy": 0,
+        "unhealthy": 3
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:01:24.932285Z"
+    },
+    {
+      "id": "writes_blocked_quorum_lost",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": false
+      },
+      "result": {
+        "success": false,
+        "latency_ms": 5096
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:01:30.081746Z"
+    },
+    {
+      "id": "emergency_alert_status",
+      "section": "assertions",
+      "probe": "cluster.quorum_loss_alert",
+      "params": {},
+      "expect": {},
+      "result": {
+        "alert_present": false
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:01:35.162060Z"
+    },
+    {
+      "id": "start_node2",
+      "section": "cleanup",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-2",
+        "exit_code": 0,
+        "stdout": "globular-node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:01:35.575393Z"
+    },
+    {
+      "id": "wait_phase1_quorum_restored",
+      "section": "cleanup",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 251
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:01:50.967609Z"
+    },
+    {
+      "id": "start_node3",
+      "section": "cleanup",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-3",
+        "exit_code": 0,
+        "stdout": "globular-node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:01:51.426972Z"
+    },
+    {
+      "id": "wait_full_quorum_restored",
+      "section": "cleanup",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:02:52.649293Z"
+    },
+    {
+      "id": "final_cluster_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:02:52.939236Z"
+    },
+    {
+      "id": "final_write_test",
+      "section": "cleanup",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 282
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:02:53.257259Z"
+    },
+    {
+      "id": "clear_quorum_loss_alert_if_present",
+      "section": "cleanup",
+      "probe": "cluster.quorum_loss_alert",
+      "params": {},
+      "expect": {
+        "alert_present": false
+      },
+      "result": {
+        "alert_present": false
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T17:02:53.351865Z"
+    }
+  ]
+}

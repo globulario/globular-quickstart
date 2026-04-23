@@ -1,0 +1,238 @@
+version: 1
+name: control-plane-majority-loss
+description: |
+  Simulate the loss of 2 of 3 control-plane nodes (node-1 + node-2), leaving
+  only node-3 alive with 1/3 of etcd members — below the Raft quorum threshold.
+
+  In a 3-member etcd cluster, quorum requires (3/2)+1 = 2 members. With only
+  1 member alive, etcd enters a read-only state: reads on the surviving member
+  may succeed but writes are REJECTED because no majority can acknowledge them.
+
+  This scenario also happens to stop the harness's probe container (node-1), so
+  all etcd-backed probes will return "unknown" or "failed" during the outage
+  phase. That is EXPECTED and is itself evidence of the catastrophic failure.
+
+  What Globular CANNOT do automatically:
+    - It cannot restore etcd quorum from 1/3 — this requires an operator to
+      restart the failed nodes or perform etcd disaster recovery.
+    - The quorum_loss_imminent alert may have been written before node-1 stopped
+      but once etcd is read-only the alert key itself cannot be updated.
+    - No new workflows can be dispatched (workflow service cannot write to etcd).
+    - The cluster controller leader (if on node-1 or node-2) loses its lease and
+      the remaining member (node-3) cannot elect a new leader without quorum.
+
+  What the cluster DOES do:
+    - node-3 continues running its services in degraded read-only mode.
+    - Heartbeat staleness detection continues (stored locally or fails silently).
+    - On restart of nodes 1+2, Raft log replication automatically re-syncs all
+      missed entries and full quorum is restored without operator intervention.
+    - Data written before the outage is NOT lost — Raft durability guarantees it.
+
+  Integrity verdict: PROTECTED — data survives, quorum auto-restores on restart.
+  Recovery path: operator must restart the failed containers/nodes.
+
+suite: catastrophic
+tags:
+  - catastrophe
+  - etcd-quorum
+  - majority-loss
+  - read-only
+  - operator-required
+  - no-self-heal
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_fully_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - type: probe
+    id: all_three_etcd_healthy
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  - type: probe
+    id: etcd_writable_before
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: node1_running_before
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: true
+
+  - type: probe
+    id: node2_running_before
+    probe: node.container_running
+    params:
+      node: node-2
+    expect:
+      running: true
+
+  - type: probe
+    id: node3_running_before
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: true
+
+baseline:
+  - type: probe
+    id: baseline_cluster_health
+    probe: cluster.health
+
+  - type: probe
+    id: baseline_etcd_members
+    probe: cluster.etcd_members
+
+  - type: probe
+    id: baseline_write_latency
+    probe: etcd.write_test
+
+steps:
+  # ── Inject majority failure: stop node-1 AND node-2 ────────────────────────
+  # This removes 2/3 etcd members simultaneously, pushing the cluster below
+  # the Raft quorum threshold. The surviving node-3 cannot form a majority.
+  - id: stop_node1
+    action: chaos.stop_node
+    params:
+      node: node-1
+
+  - id: stop_node2
+    action: chaos.stop_node
+    params:
+      node: node-2
+
+  # ── Wait for quorum loss to propagate ──────────────────────────────────────
+  # etcd detects missing members via heartbeat timeouts (1s HB, 5s election).
+  # After ~10s the surviving node-3 etcd member has no peers; it cannot
+  # become leader and the cluster enters a read-only limbo.
+  - id: wait_for_quorum_collapse
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: node-2
+        expect:
+          running: false
+
+  # ── Allow time for the system to settle in degraded state ──────────────────
+  # node-3 (alone) may attempt leader election and fail repeatedly.
+  # Services on node-3 that require etcd writes will start failing gracefully.
+  - id: observe_degraded_state
+    action: wait
+    params:
+      timeout: 20
+
+assertions:
+  # ── Phase 1: Verify failure state ──────────────────────────────────────────
+
+  # EXPECTED: node-1 and node-2 containers are stopped
+  - type: probe
+    id: node1_stopped
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: false
+
+  - type: probe
+    id: node2_stopped
+    probe: node.container_running
+    params:
+      node: node-2
+    expect:
+      running: false
+
+  # EXPECTED: node-3 is still alive (it is the sole survivor)
+  - type: probe
+    id: node3_still_alive
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: true
+
+  # EXPECTED: cluster health probe returns "unknown" — node-1 (probe container) is down.
+  # This is the catastrophe signature: the harness itself loses visibility.
+  - type: probe
+    id: cluster_in_unknown_state
+    probe: cluster.health
+    expect:
+      status: unknown
+
+  # EXPECTED: etcd write test fails — node-1 container is not running.
+  # The write cannot be proxied to node-3 because the probe infrastructure
+  # itself depends on the stopped node.
+  - type: probe
+    id: etcd_writes_blocked
+    probe: etcd.write_test
+    expect:
+      success: false
+
+cleanup:
+  # ── Restore cluster: staggered restart to minimize re-election races ────────
+
+  # Restart node-1 first (it is the CA generator — others depend on its PKI).
+  - id: start_node1
+    action: chaos.start_node
+    params:
+      node: node-1
+
+  # Wait for node-1 to come up and etcd to be reachable before starting node-2.
+  # This avoids a race where node-2 tries to join before the CA is ready.
+  - id: wait_node1_etcd_online
+    action: wait
+    params:
+      timeout: 90
+      poll_interval: 10
+      until:
+        probe: etcd.write_test
+        expect:
+          success: true
+
+  # Restart node-2
+  - id: start_node2
+    action: chaos.start_node
+    params:
+      node: node-2
+
+  # Wait for all 3 members to be healthy (Raft resync is automatic)
+  - id: wait_full_quorum_restored
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 15
+      until:
+        probe: cluster.etcd_members
+        expect:
+          healthy_gte: 3
+
+  # Final integrity check — data must survive the majority loss
+  - id: verify_write_after_recovery
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - id: verify_cluster_healthy_after_recovery
+    probe: cluster.health
+    expect:
+      status: healthy

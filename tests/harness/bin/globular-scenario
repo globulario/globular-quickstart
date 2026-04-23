@@ -98,27 +98,34 @@ class ScenarioExecutor:
         if not self._validate_schema():
             return False
 
-        # Execute sections in order. Stop early on precondition or assertion failure.
+        # Execute sections in order. Stop early on precondition or assertion failure,
+        # but ALWAYS run cleanup regardless of earlier failures so chaos tests can
+        # restore cluster state even when assertions expose a catastrophic failure.
         sections = [
             ("preconditions", self._exec_probes, True),   # stop on fail
             ("baseline",      self._exec_probes, False),  # capture only
             ("steps",         self._exec_steps,  False),  # actions
-            ("assertions",    self._exec_probes, True),   # stop on fail
-            ("cleanup",       self._exec_steps,  False),  # best-effort, supports chaos actions
+            ("assertions",    self._exec_probes, True),   # stop on fail (cleanup still runs)
+            ("cleanup",       self._exec_steps,  False),  # always runs — best-effort restore
         ]
 
         overall_ok = True
+        stopped_at = None
         for section, handler, stop_on_fail in sections:
             items = self.scenario.get(section, [])
             if not items:
+                continue
+            # Skip intermediate sections if stopped, but ALWAYS run cleanup
+            if stopped_at and section != "cleanup":
+                print(f"  [SKIP] {section} (stopped at {stopped_at})")
                 continue
             print(f"  [{section}]")
             ok = handler(items, section)
             if not ok:
                 overall_ok = False
-                if stop_on_fail:
-                    print(f"  STOPPED: {section} failed — skipping remaining sections")
-                    break
+                if stop_on_fail and stopped_at is None:
+                    stopped_at = section
+                    print(f"  STOPPED: {section} failed — cleanup will still run")
 
         self._write_output(overall_ok)
         return overall_ok

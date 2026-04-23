@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "scenario": "authz-basic",
+  "suite": "smoke",
+  "start_time": "2026-04-19T05:12:58.111280Z",
+  "end_time": "2026-04-19T05:12:59.638404Z",
+  "passed": true,
+  "item_count": 9,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:12:58.410097Z"
+    },
+    {
+      "id": "rbac_service_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 7
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:12:58.525076Z"
+    },
+    {
+      "id": "initial_role_binding_count",
+      "section": "baseline",
+      "probe": "authz.role_bindings",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 0
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:12:58.638798Z"
+    },
+    {
+      "id": "wait_for_rbac_seeded",
+      "section": "steps",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 7
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:12:58.748285Z"
+    },
+    {
+      "id": "rbac_service_present",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 7
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:12:58.856260Z"
+    },
+    {
+      "id": "rbac_unit_active",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "rbac"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-1",
+        "service": "rbac"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:12:58.973251Z"
+    },
+    {
+      "id": "authz_layer_reachable",
+      "section": "assertions",
+      "probe": "authz.check",
+      "params": {
+        "subject": "system:sa:cluster-controller",
+        "action": "cluster.read",
+        "resource": "nodes"
+      },
+      "expect": {
+        "rbac_registered": true,
+        "result": "unknown"
+      },
+      "result": {
+        "rbac_registered": true,
+        "roles_seeded": false,
+        "binding_count": 0,
+        "result": "unknown",
+        "note": "full gRPC check requires runner container"
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:12:59.175706Z"
+    },
+    {
+      "id": "bootstrap_bindings_present",
+      "section": "assertions",
+      "probe": "authz.role_bindings",
+      "params": {},
+      "expect": {
+        "count_gte": 0
+      },
+      "result": {
+        "count": 0
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:12:59.278300Z"
+    },
+    {
+      "id": "final_cluster_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-04-19T05:12:59.638211Z"
+    }
+  ]
+}

@@ -88,19 +88,15 @@ steps:
       node: node-1
       service: workflow
 
-  # Wait for crash to be detected
-  - id: wait_workflow_crashed
+  # Brief pause for SIGKILL to be processed by systemd.
+  # The transient 'failed' state is too short to reliably observe — systemd's
+  # Restart=on-failure fires within ~1-3s (RestartSec), so by the time the
+  # probe runs the service is already back to 'active'. A plain sleep is more
+  # reliable than polling for the transient state.
+  - id: pause_after_workflow_kill
     action: wait
     params:
-      timeout: 15
-      poll_interval: 3
-      until:
-        probe: service.status
-        params:
-          node: node-1
-          service: workflow
-        expect:
-          unit_state: failed
+      timeout: 5
 
   # Wait for systemd restart
   - id: wait_workflow_restarted
@@ -142,19 +138,11 @@ steps:
       node: node-1
       service: dns
 
-  # Wait for crash
-  - id: wait_dns_crashed
+  # Brief pause for SIGKILL — same reasoning as workflow above.
+  - id: pause_after_dns_kill
     action: wait
     params:
-      timeout: 15
-      poll_interval: 3
-      until:
-        probe: service.status
-        params:
-          node: node-1
-          service: dns
-        expect:
-          unit_state: failed
+      timeout: 5
 
   # Wait for systemd restart
   - id: wait_dns_restarted

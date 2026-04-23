@@ -1,143 +1,285 @@
-# Globular Quickstart — Containerized Cluster Simulation
+# Globular Quickstart
 
-A Docker-based 5-node Globular cluster that runs **unmodified production binaries** inside systemd-in-Docker containers. This is not a demo or a reduced-fidelity mock — it is a full cluster simulation used to validate transport, identity, storage, discovery, control-plane communication, and workflow execution.
+**High-fidelity Docker simulation of a Globular cluster using unmodified production binaries under systemd.**
 
-## Architecture
+`globular-quickstart` is the fastest way to stand up a realistic multi-node Globular environment for development, debugging, validation, and failure testing.
 
+This repository is **not** a toy demo and **not** a mocked control plane. It runs the real Globular binaries inside Ubuntu/systemd containers and exercises the real platform stack:
+
+- etcd with mTLS
+- controller / node-agent / workflow engine
+- Envoy + xDS + gateway
+- DNS, RBAC, authentication, repository, monitoring
+- MinIO over HTTPS
+- AI services
+- ScyllaDB as a separate infrastructure container
+- YAML-driven scenario tests with evidence capture
+
+It exists to answer questions like:
+
+- “Will Globular cold-boot cleanly from zero state?”
+- “Does discovery, PKI, routing, and workflow execution behave correctly?”
+- “What happens if a worker dies, etcd loses quorum, or ScyllaDB restarts?”
+- “Can we validate fixes in a repeatable cluster before touching bare metal?”
+
+## Repository role in the Globular project
+
+Globular is split across a few focused repositories:
+
+- **[`Globular`](https://github.com/globulario/Globular)** — top-level project entry point and platform overview
+- **[`services`](https://github.com/globulario/services)** — backend services, control plane, docs, and installable releases
+- **[`globular-admin`](https://github.com/globulario/globular-admin)** — admin UI, media app, SDK, and component library
+- **[`globular-installer`](https://github.com/globulario/globular-installer)** — installer/bootstrap implementation used by packaged installs
+- **[`globular-quickstart`](https://github.com/globulario/globular-quickstart)** — cluster simulation, test harness, and failure drills
+
+If you want to **install Globular for real**, use the packaged releases from `services`.  
+If you want to **simulate, validate, and break a cluster safely**, this repository is the right place.
+
+## What this repository contains
+
+```text
+globular-quickstart/
+├── Dockerfile                  # Ubuntu + systemd + Globular runtime image
+├── docker-compose.yml          # multi-node cluster topology
+├── Makefile                    # build, cluster lifecycle, and test targets
+├── scripts/                    # bootstrapping and node configuration scripts
+├── units/                      # systemd service units copied into the image
+├── units-extra/                # quickstart-specific helper units
+├── tests/                      # YAML scenario test harness + reports
+├── policy/                     # cluster policy fixtures
+└── binaries/                   # compiled binaries copied into the image build context
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Docker Network (10.10.0.0/24)                │
-│                                                                 │
-│    ┌──────────┐  ┌──────────┐  ┌──────────┐                     │
-│    │  node-1  │  │  node-2  │  │  node-3  │                     │
-│    │ .11      │  │ .12      │  │ .13      │                     │
-│    │ ctrl+gw  │  │ ctrl+sto │  │ ctrl+ai  │                     │
-│    │ 15 svcs  │  │ 20 svcs  │  │ 19 svcs  │                     │
-│    └──────────┘  └──────────┘  └──────────┘                     │
-│                                                                 │
-│    ┌──────────┐  ┌──────────┐  ┌──────────┐                     │
-│    │  node-4  │  │  node-5  │  │ scylladb │                     │
-│    │ .14      │  │ .15      │  │ .20      │                     │
-│    │ compute  │  │ compute  │  │ ScyllaDB │                     │
-│    │ 1 svc    │  │ 1 svc    │  │ 6.2      │                     │
-│    └──────────┘  └──────────┘  └──────────┘                     │
-└─────────────────────────────────────────────────────────────────┘
-```
 
-| Node | IP | Profiles | Key Services |
-|------|-----|----------|-------------|
-| node-1 | 10.10.0.11 | control-plane, core, gateway | etcd, controller, xds, envoy, gateway, dns, auth, rbac, workflow |
-| node-2 | 10.10.0.12 | control-plane, core, storage | etcd, MinIO (HTTPS), repository, prometheus, monitoring, backup |
-| node-3 | 10.10.0.13 | control-plane, core, ai | etcd, ai-memory, ai-executor, ai-watcher, ai-router, mcp |
-| node-4 | 10.10.0.14 | compute | node-agent only |
-| node-5 | 10.10.0.15 | compute | node-agent only |
-| scylladb | 10.10.0.20 | — | ScyllaDB 6.2 (shared database) |
+## Cluster topology
 
-## Quick Start
+The quickstart environment models a **5-node Globular cluster plus ScyllaDB** on a dedicated Docker network.
+
+| Node | IP | Profiles | Main role |
+|------|----|----------|-----------|
+| node-1 | 10.10.0.11 | control-plane, core, gateway | ingress, xDS, gateway, auth, RBAC, workflow |
+| node-2 | 10.10.0.12 | control-plane, core, storage | repository, MinIO, monitoring, backup |
+| node-3 | 10.10.0.13 | control-plane, core, ai | AI services, MCP, controller replica |
+| node-4 | 10.10.0.14 | compute | worker / node-agent |
+| node-5 | 10.10.0.15 | compute | worker / node-agent |
+| scylladb | 10.10.0.20 | infrastructure | shared ScyllaDB service |
+
+That gives you a realistic control-plane / storage / AI / worker split without needing physical machines.
+
+## Why this repo matters
+
+This repository gives Globular something many infrastructure projects badly need but rarely have: a **repeatable, destructive, testable cluster lab**.
+
+It is useful for:
+
+- cold-boot validation
+- control-plane regression testing
+- PKI and mTLS debugging
+- workflow and reconciliation debugging
+- repository and package behavior checks
+- resilience drills
+- recovery drills
+- catastrophic failure simulation before touching real hardware
+
+## Quick start
+
+### Prerequisites
+
+- Docker Engine / Docker Compose
+- enough CPU and memory for a 5-node simulation
+- compiled Globular binaries available on the host at `/usr/lib/globular/bin`
+- systemd unit files available on the host at `/etc/systemd/system`
+
+### Build and start the cluster
 
 ```bash
-# Prerequisites: Docker Engine 29+, 16+ cores, 8GB+ RAM
-make up        # builds image + starts 5-node cluster
-make status    # check cluster health
-make logs      # follow all container logs
-make shell N=1 # exec into node-1
-make down      # stop cluster (preserve state)
-make clean     # stop + wipe all volumes
+make up
 ```
 
-The cluster takes ~3 minutes to fully converge (etcd → ScyllaDB → services → profiles → DNS → workflow).
+This performs:
 
-## What This Proves
+1. `make collect` — copies binaries and unit files into the build context
+2. `docker build` — builds the node image
+3. `docker compose up -d` — starts the cluster
 
-This simulation validates the full Globular stack running from cold boot with zero prior state:
+### Check status
 
-### Transport (all TLS)
-- etcd: 3-node cluster with mTLS peer and client connections
-- gRPC: all inter-service calls use mTLS with the cluster CA
-- MinIO: HTTPS with cluster-CA-signed certificate
-- ScyllaDB: connected from 3 control-plane nodes
-
-### Identity
-- Cluster CA generated at boot, per-node service certs issued with correct SANs
-- Ed25519 signing keys generated per node for JWT token signing
-- Controller generates SA tokens (300s TTL) with correct cluster_id
-- Interceptor chain validates subject + cluster_id on every mutating RPC
-
-### Storage
-- etcd: sole source of truth for service config, cluster state, Tier-0 host lists
-- ScyllaDB: 8 keyspaces (workflow, dns, rbac_permissions, ai_memory, ai_conversations, globular_events, ...)
-- MinIO: HTTPS, cluster-config bucket, workflow definitions stored and retrieved
-
-### Discovery
-- All services register in etcd with deterministic UUID keys
-- DNS reconciler auto-derives A records from node profiles (11 A + 3 SRV)
-- ClusterResolver resolves `*.globular.internal` via Globular DNS daemon
-- Profile auto-derivation from installed packages (no manual assignment needed)
-- MinIO pool auto-discovered from storage-profile nodes
-
-### Control-Plane
-- Single leader via etcd lease election, verified across 3 controllers
-- 5 nodes reporting heartbeats every 30s with installed service inventory
-- Workflow client connects via lazy retry (handles cold-boot ordering)
-- Event client connects via lazy retry
-
-### Workflow Execution (end-to-end)
-- Controller dispatches `cluster.reconcile` to workflow service
-- Auth: direct gRPC with mTLS + JWT token (not through Envoy)
-- Workflow definition loaded from MinIO over HTTPS
-- Engine executes 7 steps: advance_infra_joins → scan_drift → classify_drift → short_circuit_clean → aggregate → finalize → emit_completed
-- Run state persisted in ScyllaDB with status=SUCCEEDED
-- Runs continuously every 30s
-
-## Bugs Found and Fixed
-
-This simulation exposed 4 production bugs that were latent on bare-metal clusters:
-
-### 1. Hardcoded 127.0.0.1 ScyllaDB defaults
-- **Services**: ai_memory, dns, workflow
-- **Cause**: Default constructors used `127.0.0.1` for ScyllaHosts. On first boot, this got saved to etcd as the service config — poisoning the registry with loopback addresses
-- **Fix**: Removed all `127.0.0.1` defaults. ScyllaDB hosts must come from etcd cluster key or the service errors out
-- **Rule enforced**: if etcd can't provide infrastructure addresses, fail explicitly
-
-### 2. Cold-boot service resolution race
-- **Services**: controller → workflow client, event client
-- **Cause**: Peer service addresses resolved once at startup. On cold boot, the registry is empty — services permanently lost connectivity
-- **Fix**: Lazy retry goroutines (60 attempts × 5s) for workflow and event clients
-- **Confirmed on production**: `workflow_client_nil` observed in readiness gate on bare-metal after restart
-
-### 3. Mesh routing stripping auth context
-- **Service**: controller → workflow client
-- **Cause**: Fallback resolution used `ResolveServiceAddr` which applies mesh routing (port 443). Envoy strips the controller's mTLS cert and token metadata
-- **Fix**: Resolve direct service port from etcd for the workflow client, bypassing mesh
-
-### 4. MinIO pool FQDN in DNS A records
-- **Service**: DNS reconciler
-- **Cause**: `MinioPoolNodes` stores FQDNs but A records require IPs. `net.ParseIP("node-2.globular.internal")` returned nil → malformed DNS packets
-- **Fix**: Resolve FQDNs to IPs from controller node state before emitting pool records
-
-## File Structure
-
-```
-globular-quickstart/
-├── Dockerfile              # Ubuntu 22.04 + systemd + all Globular binaries
-├── docker-compose.yml      # 5 Globular nodes + ScyllaDB
-├── Makefile                # build/up/down/clean/status/shell targets
-├── scripts/
-│   ├── entrypoint.sh       # PKI, etcd config, unit rendering, profile setup
-│   ├── seed-etcd.sh        # Tier-0 keys: ScyllaDB/MinIO/DNS hosts
-│   ├── assign-profiles.sh  # Profile assignment (superseded by auto-derivation)
-│   └── configure-dns.sh    # Wire resolv.conf to Globular DNS
-├── units-extra/
-│   ├── globular-seed-etcd.service
-│   ├── globular-assign-profiles.service
-│   └── globular-dns-resolver.service
-└── binaries/               # (gitignored) compiled service binaries
+```bash
+make status
+make logs
+make shell N=1
 ```
 
-## Design Decisions
+### Stop or reset
 
-- **systemd as PID 1**: containers run `--privileged` with systemd so the node agent's supervisor works identically to bare metal. No process supervisor shims
-- **ScyllaDB as sidecar**: separate container on the Docker network, matching production where ScyllaDB runs as an independent infrastructure component
-- **Shared PKI volume**: CA key shared between nodes at boot, per-node certs generated in entrypoint — same trust chain as production
-- **No env vars for config**: all service configuration comes from etcd or local seed files. The `GLOBULAR_*` env vars in the compose file are only used by the entrypoint script, never by Globular binaries
-- **Docker as dumb transport**: Docker provides networking and container lifecycle only. DNS, service discovery, TLS, and routing all go through Globular's own stack
+```bash
+make down          # stop, preserve state
+make clean         # stop, remove volumes, wipe build context
+make quickstart-reset
+```
+
+## Key make targets
+
+### Cluster lifecycle
+
+| Target | Description |
+|--------|-------------|
+| `make up` | Collect binaries, build image, and start cluster |
+| `make down` | Stop cluster, keep state |
+| `make clean` | Stop cluster, remove volumes, remove collected binaries/units |
+| `make logs` | Follow all container logs |
+| `make log-1` | Follow logs for a specific node |
+| `make status` | Container state + etcd health |
+| `make shell N=1` | Open shell on a specific node |
+
+### Quickstart aliases
+
+| Target | Description |
+|--------|-------------|
+| `make quickstart-up` | Start cluster without rebuild |
+| `make quickstart-down` | Stop cluster, keep state |
+| `make quickstart-reset` | Full reset and restart |
+| `make quickstart-logs` | Follow logs |
+
+### Test harness
+
+| Target | Description |
+|--------|-------------|
+| `make test-wait` | Wait for cluster health |
+| `make test-smoke` | Run smoke scenarios |
+| `make test-functional` | Run functional scenarios |
+| `make test-security` | Run security scenarios |
+| `make test-resilience` | Run resilience scenarios |
+| `make test-recovery` | Run recovery scenarios |
+| `make test-soak` | Run soak scenarios |
+| `make test-v1-certification` | Full V1 certification run |
+| `make test-scenario SCENARIO=...` | Run one scenario |
+| `make test-debug-shell NODE=node-1` | Debug shell helper |
+
+## Test harness
+
+The `tests/` directory contains a scenario-driven validation framework for the running cluster.
+
+See [`tests/README.md`](tests/README.md) for full details.
+
+At a glance, the harness includes:
+
+- read-only probes
+- YAML-defined scenarios
+- per-scenario evidence capture
+- human-readable result summaries
+- report generation
+- suite execution by wave
+
+Current scenario families in this repo:
+
+- **smoke**
+- **functional**
+- **security**
+- **resilience**
+- **recovery**
+- **soak**
+- **catastrophic**
+
+## What the simulation validates
+
+This environment is designed to validate real Globular behavior across several layers.
+
+### Transport and security
+
+- etcd peer and client TLS
+- service-to-service mTLS
+- cluster CA and per-node/service certificates
+- signing key distribution
+- token validation paths
+
+### Discovery and configuration
+
+- service registration
+- DNS reconciliation
+- profile assignment / derivation
+- endpoint resolution
+- etcd as source of truth
+
+### Control-plane behavior
+
+- leader election
+- node heartbeats
+- workflow dispatch and execution
+- repository and package behavior
+- event and workflow client recovery during cold boot
+
+### Infrastructure dependencies
+
+- ScyllaDB connectivity
+- MinIO over HTTPS
+- monitoring path
+- storage-related cluster behavior
+
+### Failure and recovery
+
+- service crash recovery
+- worker node loss
+- node-agent restart
+- etcd member disruption
+- control-plane member loss
+- release/recovery audit flows
+- catastrophic drills
+
+## Design principles
+
+This repository deliberately favors realism over convenience.
+
+- **systemd as PID 1** so supervisor behavior matches real deployment
+- **real production binaries** rather than test doubles
+- **Docker only as transport and container runtime**
+- **ScyllaDB as a separate container**, mirroring real infra separation
+- **seeded infrastructure addresses** rather than ad-hoc environment-variable configuration
+- **evidence-first tests** so every scenario leaves artifacts behind
+
+## Relationship to real installs
+
+Quickstart is for **simulation and validation**, not the primary end-user install path.
+
+To install Globular on Linux, use the packaged releases from the `services` repository:
+
+- **Releases:** <https://github.com/globulario/services/releases>
+
+Typical install flow:
+
+```bash
+VERSION="1.0.56"
+
+curl -LO "https://github.com/globulario/services/releases/download/v${VERSION}/globular-${VERSION}-linux-amd64.tar.gz"
+curl -LO "https://github.com/globulario/services/releases/download/v${VERSION}/globular-${VERSION}-linux-amd64.tar.gz.sha256"
+/usr/bin/sha256sum -c "globular-${VERSION}-linux-amd64.tar.gz.sha256"
+
+tar xzf "globular-${VERSION}-linux-amd64.tar.gz"
+cd "globular-${VERSION}-linux-amd64"
+sudo bash install.sh
+```
+
+## Typical workflow for contributors
+
+```bash
+# 1. Rebuild / install latest host binaries first
+# 2. Start quickstart
+make up
+
+# 3. Wait for healthy cluster
+make test-wait
+
+# 4. Run a focused suite or scenario
+make test-smoke
+make test-scenario SCENARIO=tests/scenarios/resilience/service-crash-recovery.yaml
+
+# 5. Inspect results
+cat tests/reports/latest/SUMMARY.md
+```
+
+## Documentation inside this repo
+
+- [`tests/README.md`](tests/README.md) — test harness, scenarios, reports, and suite execution
+
+## License
+
+See [LICENSE](LICENSE) if present in the repository, and the wider Globular project licensing where applicable.

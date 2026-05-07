@@ -1,0 +1,133 @@
+# quickstart_topology.yaml — awareness topology descriptor for globular-quickstart
+#
+# Describes how the quickstart lab differs from a production Globular cluster.
+# Awareness checks and invariant validators MUST distinguish quickstart topology
+# from production topology where founding-node rules apply.
+#
+# This file is referenced by awareness scenarios and should be consulted
+# before applying production invariants to quickstart test evidence.
+
+topology_id: quickstart-5node
+description: |
+  Five-node Docker Compose cluster for quickstart testing.
+  This is a lab topology — it deliberately deviates from production
+  founding-node expectations in controlled, documented ways.
+
+network:
+  subnet: "10.10.0.0/24"
+  gateway: "10.10.0.1"
+  nodes:
+    - id: node-1
+      ip: "10.10.0.11"
+      profiles: [control-plane, core, gateway, storage]
+      role: leader-candidate
+    - id: node-2
+      ip: "10.10.0.12"
+      profiles: [control-plane, core, storage]
+      role: follower
+    - id: node-3
+      ip: "10.10.0.13"
+      profiles: [control-plane, core, ai]
+      role: follower
+    - id: node-4
+      ip: "10.10.0.14"
+      profiles: [compute]
+      role: worker
+    - id: node-5
+      ip: "10.10.0.15"
+      profiles: [compute]
+      role: worker
+  external_services:
+    - id: scylladb
+      ip: "10.10.0.20"
+      image: "scylladb/scylla:6.2"
+      note: >
+        ScyllaDB runs as a standalone container, NOT on any node with a
+        storage profile.  This externalizes the database for quickstart
+        simplicity and differs from the production founding-node expectation
+        that the first 3 nodes MUST carry core+control-plane+storage profiles.
+
+lab_exceptions:
+  - id: quickstart.topology_external_scylla_is_lab_only
+    title: "External ScyllaDB is valid for quickstart only"
+    description: |
+      In production, ScyllaDB MUST run on the founding nodes (first 3 nodes
+      with core+control-plane+storage profiles).  In quickstart, ScyllaDB
+      is externalised as a standalone Docker container (10.10.0.20) so that
+      the test cluster can boot without MinIO quorum on every node.
+
+      This exception MUST NOT be used to relax the production invariant:
+        infra.founding_quorum — first 3 nodes must carry etcd+ScyllaDB+MinIO.
+
+      Awareness checks that fire on quickstart evidence and reference the
+      founding-quorum invariant should note this exception before reporting
+      a violation.
+    applies_to: [node-1, node-2, node-3, node-4, node-5]
+    does_not_apply_to: production
+    invariant_ref: infra.founding_quorum
+
+  - id: quickstart.no_minio_quorum_required
+    title: "MinIO quorum not enforced in quickstart"
+    description: |
+      Production requires MinIO on at least 3 storage nodes for erasure-coding
+      redundancy.  In quickstart, MinIO may run on fewer nodes (or only node-1)
+      to allow the cluster to function for smoke and functional tests.
+
+      This exception MUST NOT weaken the production invariant:
+        infra.minio_quorum — MinIO requires >= 3 nodes.
+    applies_to: [node-1, node-2, node-3]
+    does_not_apply_to: production
+    invariant_ref: infra.minio_quorum
+
+  - id: quickstart.topology_lab_only_exception
+    title: "Quickstart is a lab topology — not a production reference cluster"
+    description: |
+      This marker identifies the quickstart topology as a lab environment.
+      Any awareness finding that references a production invariant should
+      first check whether a lab exception applies before classifying the
+      finding as a true violation.
+
+      Evidence from quickstart training scenarios is valid for awareness
+      graph training, but proposals generated from quickstart incidents
+      must be reviewed with this context in mind before promotion.
+      Production-targeting invariant proposals must not be auto-approved.
+    applies_to: [node-1, node-2, node-3, node-4, node-5, scylladb]
+    does_not_apply_to: production
+    invariant_ref: topology.lab_boundary
+
+training_integration:
+  ledger: tests/reports/awareness-training-ledger.jsonl
+  topology_exception_marker: quickstart.topology_lab_only_exception
+  note: >
+    Quickstart is the primary environment for awareness training.
+    Scenarios under tests/scenarios/training/ run with AWARENESS_TRAINING=1
+    to produce full evidence bundles. All proposals are DRAFT-only and require
+    manual review before promotion.
+
+production_comparison:
+  note: >
+    Production Globular clusters enforce:
+      1. etcd on ALL nodes (no exceptions)
+      2. ScyllaDB on >= 3 founding nodes (minimum replication factor)
+      3. MinIO on >= 3 storage nodes (erasure coding)
+      4. First 3 nodes MUST have profiles: core, control-plane, storage
+
+    Quickstart relaxes (2) and (3) by externalising ScyllaDB and using
+    a simplified MinIO topology.  Test results from quickstart are valid
+    for smoke, functional, security, and resilience testing of the
+    cluster control-plane logic, but do NOT validate founding-node quorum
+    enforcement, which requires a real 3-node storage setup.
+
+awareness_invariant_guidance:
+  - invariant: infra.founding_quorum
+    quickstart_behaviour: >
+      This invariant will likely NOT be satisfied in quickstart because
+      ScyllaDB is external.  Awareness checks should note the exception
+      quickstart.topology_external_scylla_is_lab_only and suppress the
+      finding for quickstart runs.
+  - invariant: runtime.installed_state_not_liveness
+    quickstart_behaviour: >
+      This invariant is fully applicable in quickstart.  Layer 3
+      (installed in etcd) must not be used as a proxy for Layer 4
+      (systemd active).  Both layers are independently observable in
+      the quickstart cluster.

@@ -1,0 +1,73 @@
+version: 1
+name: desired-state-reconciliation
+suite: patterns
+description: |
+  Pattern simulation: desired_state_reconciliation.
+  Validates that installed/runtime mismatch does not cause unbounded reconcile loops.
+  Observes convergence behavior and collects awareness evidence against pattern invariants.
+
+awareness:
+  enabled: true
+  task: "desired installed runtime state mismatch unbounded reconciliation loop"
+  phase: "convergence"
+  include_runtime: true
+  runtime_window: "15m"
+  create_incident_on_failure: true
+  create_proposal_on_failure: false
+  expected_invariants:
+    - convergence.no_infinite_retry
+    - install.result.atomic_commit
+    - infra.desired_hash_consistency
+    - runtime.installed_state_not_liveness
+  patterns:
+    validate:
+      - pattern.desired_state_reconciliation
+      - pattern.circuit_breaker_distributed
+      - pattern.bulkhead
+    expected_invariants:
+      - convergence.no_infinite_retry
+      - install.result.atomic_commit
+    expected_code_smells_absent:
+      - retry without bounded backoff
+      - retry loop without terminal BLOCKED state
+    expected_behavior:
+      - bounded reconciliation with no unbounded dispatch loop
+      - clear BLOCKED or DEGRADED state if convergence cannot complete
+
+preconditions:
+  - id: node-1-running
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: true
+  - id: cluster-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+
+baseline:
+  - id: initial-health
+    probe: cluster.health
+  - id: initial-nodes
+    probe: cluster.nodes
+
+assertions:
+  - id: cluster-still-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+  - id: controller-active
+    probe: service.status
+    params:
+      node: node-1
+      service: cluster-controller
+    expect:
+      unit_state: "active"
+  - id: node-agent-active
+    probe: service.status
+    params:
+      node: node-1
+      service: node-agent
+    expect:
+      unit_state: "active"

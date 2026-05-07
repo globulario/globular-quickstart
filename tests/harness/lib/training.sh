@@ -105,6 +105,8 @@ result = {
     "forbidden_fixes": [],
     "required_tests": [],
     "learning_recommendation": "",
+    "code_smells": [],
+    "design_patterns": [],
 }
 
 def load_json(path):
@@ -129,6 +131,8 @@ extend_unique(result["matched_invariants"],    pf.get("matched_invariants") or p
 extend_unique(result["matched_failure_modes"], pf.get("matched_failure_modes") or pf.get("failure_modes"))
 extend_unique(result["forbidden_fixes"],       pf.get("forbidden_fixes"))
 extend_unique(result["required_tests"],        pf.get("required_tests"))
+extend_unique(result["code_smells"],           pf.get("code_smells"))
+extend_unique(result["design_patterns"],       pf.get("design_patterns"))
 
 # Parse debug-session.json
 dbs = load_json(os.path.join(adir, "debug-session.json"))
@@ -136,6 +140,8 @@ extend_unique(result["matched_invariants"],    dbs.get("matched_invariants") or 
 extend_unique(result["matched_failure_modes"], dbs.get("matched_failure_modes") or dbs.get("failure_modes"))
 extend_unique(result["forbidden_fixes"],       dbs.get("forbidden_fixes"))
 extend_unique(result["required_tests"],        dbs.get("required_tests"))
+extend_unique(result["code_smells"],           dbs.get("code_smells"))
+extend_unique(result["design_patterns"],       dbs.get("design_patterns"))
 
 rec = dbs.get("learning_recommendation") or dbs.get("recommendation") or pf.get("recommendation") or ""
 if rec:

@@ -1,0 +1,72 @@
+version: 1
+name: objectstore-authority-generation
+suite: patterns
+description: |
+  Pattern simulation: consensus_backed_authority + fencing_token_generation_guard + split_brain_prevention.
+  Validates that objectstore (MinIO) topology is governed by etcd desired state and generation markers,
+  not inferred from local disk. Observation-only scenario.
+
+awareness:
+  enabled: true
+  task: "objectstore MinIO topology inferred from local disk instead of etcd desired state generation guard split brain"
+  phase: "convergence"
+  include_runtime: true
+  runtime_window: "15m"
+  create_incident_on_failure: true
+  create_proposal_on_failure: false
+  expected_invariants:
+    - objectstore.desired_state_must_be_registry_governed
+    - objectstore.topology_contract
+    - topology.reconciler_must_respect_safety_contract
+    - critical_state.registry_ownership_required
+  expected_failure_modes:
+    - objectstore_topology_inferred_from_local_state
+  patterns:
+    validate:
+      - pattern.consensus_backed_authority
+      - pattern.fencing_token_generation_guard
+      - pattern.split_brain_prevention
+    expected_invariants:
+      - objectstore.desired_state_must_be_registry_governed
+      - topology.reconciler_must_respect_safety_contract
+    expected_code_smells_absent:
+      - local file used as cluster authority
+      - topology created from local disk scan without etcd confirmation
+    expected_behavior:
+      - MinIO topology contract controls objectstore behavior
+      - no local disk inference
+      - generation markers present in topology transitions
+
+preconditions:
+  - id: node-1-running
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: true
+  - id: cluster-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+
+baseline:
+  - id: initial-health
+    probe: cluster.health
+  - id: minio-status
+    probe: service.status
+    params:
+      node: node-1
+      service: minio
+
+assertions:
+  - id: cluster-still-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+  - id: controller-active
+    probe: service.status
+    params:
+      node: node-1
+      service: cluster-controller
+    expect:
+      unit_state: "active"

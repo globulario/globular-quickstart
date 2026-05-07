@@ -65,6 +65,11 @@ class AwarenessCollector:
         self.training_enabled = bool(training.get("enabled",
             os.environ.get("AWARENESS_TRAINING", "0") == "1"))
         self._had_error = False
+        self.patterns_cfg = self.cfg.get("patterns") or {}
+        self.patterns_validate = self.patterns_cfg.get("validate") or []
+        self.expected_invariants_for_patterns = self.patterns_cfg.get("expected_invariants") or []
+        self.expected_code_smells_absent = self.patterns_cfg.get("expected_code_smells_absent") or []
+        self._pattern_result = "SKIPPED"
 
     def _run(self, func: str, *args) -> bool:
         """Source awareness.sh and call func with args via bash. Returns True on success."""
@@ -107,6 +112,24 @@ class AwarenessCollector:
             self._run("awareness_incident_from_failure", self.task, self.output_dir)
             if self.create_proposal:
                 self._run("awareness_propose_from_incident", self.output_dir)
+
+    def collect_patterns(self) -> str:
+        """Collect pattern evidence. Returns 'PASS', 'WARN', 'SKIPPED', or 'FAIL'."""
+        if not self.patterns_validate:
+            return "SKIPPED"
+        patterns_csv = ",".join(self.patterns_validate)
+        preflight_json = os.path.join(self.output_dir, "awareness", "preflight.json")
+        preflight_arg = preflight_json if os.path.exists(preflight_json) else ""
+        self._run("awareness_collect_patterns", patterns_csv, self.output_dir, preflight_arg)
+        val_file = os.path.join(self.output_dir, "awareness", "patterns", "validation.json")
+        if not os.path.exists(val_file):
+            return "SKIPPED"
+        try:
+            with open(val_file) as f:
+                val = json.load(f)
+            return val.get("overall_result", "SKIPPED")
+        except Exception:
+            return "WARN"
 
     def get_result(self) -> str:
         """Return AWARENESS_PASS, AWARENESS_SKIPPED, or AWARENESS_ERROR."""
@@ -219,6 +242,8 @@ class ScenarioExecutor:
 
         # Awareness preflight — before any scenario sections run.
         self.awareness.preflight()
+        # Collect pattern evidence immediately after preflight (while graph is warm).
+        self.awareness._pattern_result = self.awareness.collect_patterns()
 
         # Execute sections in order. Stop early on precondition or assertion failure,
         # but ALWAYS run cleanup regardless of earlier failures so chaos tests can
@@ -779,12 +804,54 @@ class ScenarioExecutor:
                 "enabled", "task", "phase", "include_runtime", "runtime_window",
                 "create_incident_on_failure", "expected_invariants", "expected_forbidden_fixes",
                 "create_proposal_on_failure", "expected_failure_modes", "training",
+                "patterns",
             }
             unknown = set(aw.keys()) - valid_keys
             if unknown:
                 print(f"  ERROR: unknown keys in awareness block: {sorted(unknown)}",
                       file=sys.stderr)
                 return False
+            # Validate patterns sub-block
+            patterns_cfg = aw.get("patterns")
+            if patterns_cfg is not None:
+                if not isinstance(patterns_cfg, dict):
+                    print("  ERROR: 'awareness.patterns' must be a mapping", file=sys.stderr)
+                    return False
+                valid_pattern_keys = {"validate", "expected_invariants",
+                                      "expected_code_smells_absent", "expected_behavior"}
+                unknown_p = set(patterns_cfg.keys()) - valid_pattern_keys
+                if unknown_p:
+                    print(f"  ERROR: unknown keys in awareness.patterns block: {sorted(unknown_p)}",
+                          file=sys.stderr)
+                    return False
+                KNOWN_PATTERN_IDS = {
+                    "pattern.control_plane_data_plane", "pattern.desired_state_reconciliation",
+                    "pattern.leased_leadership_single_writer", "pattern.consensus_backed_authority",
+                    "pattern.last_known_good", "pattern.circuit_breaker_distributed",
+                    "pattern.bulkhead", "pattern.saga_durable_workflow",
+                    "pattern.idempotent_executor", "pattern.durable_event_outbox",
+                    "pattern.health_gate", "pattern.explicit_degraded_mode",
+                    "pattern.fencing_token_generation_guard", "pattern.intent_marker_tombstone",
+                    "pattern.read_repair_authority_repair", "pattern.backpressure",
+                    "pattern.bootstrap_then_promote", "pattern.dns_independent_recovery",
+                    "pattern.split_brain_prevention", "pattern.bounded_critical_query",
+                    # legacy patterns.yaml entries
+                    "pattern.persistence_gap", "pattern.error_swallowing",
+                    "pattern.stale_authority", "pattern.partial_truth",
+                    "pattern.unverified_runtime_truth", "pattern.unbounded_critical_query",
+                    "pattern.destructive_absence", "pattern.missing_intent_marker",
+                    "pattern.version_only_identity",
+                    "pattern.runtime_observation_as_desired_authority",
+                    "pattern.ephemeral_state_contamination", "pattern.unit_type_shadowing",
+                }
+                for pid in (patterns_cfg.get("validate") or []):
+                    if not str(pid).startswith("pattern."):
+                        print(f"  ERROR: pattern ID must start with 'pattern.': {pid}",
+                              file=sys.stderr)
+                        return False
+                    if pid not in KNOWN_PATTERN_IDS:
+                        print(f"  ERROR: unknown pattern ID: {pid}", file=sys.stderr)
+                        return False
         return True
 
     # ── output ────────────────────────────────────────────────────────────────
@@ -832,6 +899,122 @@ class ScenarioExecutor:
             "incident": incident_status,
             "proposal": proposal_status,
         }
+
+    def _write_patterns_md(self, pattern_result: str) -> None:
+        """Write PATTERNS.md summarizing pattern validation evidence."""
+        patterns_md_path = os.path.join(self.output_dir, "PATTERNS.md")
+        adir = os.path.join(self.output_dir, "awareness")
+        val_file = os.path.join(adir, "patterns", "validation.json")
+
+        val = {}
+        if os.path.exists(val_file):
+            try:
+                with open(val_file) as f:
+                    val = json.load(f)
+            except Exception:
+                pass
+
+        # Gather evidence presence
+        preflight_present = os.path.exists(os.path.join(adir, "preflight.json"))
+        debug_present = os.path.exists(os.path.join(adir, "debug-session.json"))
+
+        # Extract matched data from preflight if available
+        pf_invariants: list = []
+        pf_fail_modes: list = []
+        pf_forbidden: list = []
+        pf_code_smells: list = []
+        if preflight_present:
+            try:
+                with open(os.path.join(adir, "preflight.json")) as fh:
+                    pf = json.load(fh)
+                pf_invariants = pf.get("matched_invariants") or pf.get("invariants") or []
+                pf_fail_modes = pf.get("matched_failure_modes") or pf.get("failure_modes") or []
+                pf_forbidden = pf.get("forbidden_fixes") or []
+                pf_code_smells = pf.get("code_smells") or []
+            except Exception:
+                pass
+
+        patterns_tested = self.awareness.patterns_validate
+        expected_invariants = self.awareness.expected_invariants_for_patterns
+        expected_smells_absent = self.awareness.expected_code_smells_absent
+        patterns_matched = val.get("patterns_with_output") or []
+        patterns_missing = val.get("patterns_missing") or []
+
+        missing_evidence = []
+        if not preflight_present:
+            missing_evidence.append("preflight.json")
+        if not debug_present:
+            missing_evidence.append("debug-session.json")
+        if patterns_missing:
+            missing_evidence.extend([f"pattern output for {p}" for p in patterns_missing])
+
+        with open(patterns_md_path, "w") as f:
+            f.write("# Pattern Validation\n\n")
+
+            f.write("## Patterns tested\n\n")
+            if patterns_tested:
+                for p in patterns_tested:
+                    f.write(f"- {p}\n")
+            else:
+                f.write("- (none)\n")
+            f.write("\n")
+
+            f.write("## Expected invariants\n\n")
+            if expected_invariants:
+                for inv in expected_invariants:
+                    f.write(f"- {inv}\n")
+            else:
+                f.write("- (none specified)\n")
+            f.write("\n")
+
+            f.write("## Expected code smells absent\n\n")
+            if expected_smells_absent:
+                for s in expected_smells_absent:
+                    f.write(f"- {s}\n")
+            else:
+                f.write("- (none specified)\n")
+            f.write("\n")
+
+            f.write("## Runtime evidence\n\n")
+            f.write(f"- preflight.json: {'present' if preflight_present else 'absent'}\n")
+            f.write(f"- debug-session.json: {'present' if debug_present else 'absent'}\n")
+            f.write("\n")
+
+            f.write("## Awareness matches\n\n")
+            f.write(f"- patterns: {patterns_matched if patterns_matched else '(none matched)'}\n")
+            if pf_invariants:
+                f.write(f"- invariants: {pf_invariants[:5]}"
+                        f"{'...' if len(pf_invariants) > 5 else ''}\n")
+            else:
+                f.write("- invariants: (none)\n")
+            if pf_fail_modes:
+                f.write(f"- failure modes: {pf_fail_modes[:5]}"
+                        f"{'...' if len(pf_fail_modes) > 5 else ''}\n")
+            else:
+                f.write("- failure modes: (none)\n")
+            if pf_forbidden:
+                f.write(f"- forbidden fixes: {pf_forbidden[:5]}"
+                        f"{'...' if len(pf_forbidden) > 5 else ''}\n")
+            else:
+                f.write("- forbidden fixes: (none)\n")
+            if pf_code_smells:
+                f.write(f"- code smells: {pf_code_smells[:5]}"
+                        f"{'...' if len(pf_code_smells) > 5 else ''}\n")
+            else:
+                f.write("- code smells: (none)\n")
+            f.write("\n")
+
+            f.write(f"## Result\n\n{pattern_result}\n\n")
+
+            f.write("## Notes\n\n")
+            f.write("- lab-only topology: single-node quickstart"
+                    " (not full 3-node production cluster)\n")
+            if missing_evidence:
+                for m in missing_evidence:
+                    f.write(f"- missing evidence: {m}\n")
+            rec = val.get("recommended_next_scenario") or ""
+            if rec:
+                f.write(f"- recommended next scenario: {rec}\n")
 
     def _write_output(self, passed: bool, result: str = "", awareness_result: str = ""):
         os.makedirs(self.output_dir, exist_ok=True)
@@ -929,7 +1112,19 @@ class ScenarioExecutor:
                     f.write("> Run: `globular awareness validate-proposal --file "
                             f"{adir_rel}/proposal.yaml`\n")
 
-            if self.baseline_captures:
+        # Write PATTERNS.md if patterns block is configured (always, even if SKIPPED)
+        if self.awareness.patterns_validate is not None:
+            pattern_result = getattr(self.awareness, "_pattern_result", "SKIPPED")
+            self._write_patterns_md(pattern_result)
+            patterns_md = os.path.join(self.output_dir, "PATTERNS.md")
+            if os.path.exists(patterns_md):
+                with open(os.path.join(self.output_dir, "RESULT.md"), "a") as rf:
+                    rf.write(f"\n## Pattern Validation\n\n")
+                    rf.write(f"**Pattern result**: {pattern_result}  \n")
+                    rf.write(f"See [PATTERNS.md](PATTERNS.md) for full pattern evidence.\n")
+
+        if self.baseline_captures:
+            with open(os.path.join(self.output_dir, "RESULT.md"), "a") as f:
                 f.write("\n## Baseline Captures\n\n```json\n")
                 f.write(json.dumps(self.baseline_captures, indent=2))
                 f.write("\n```\n")
@@ -965,6 +1160,68 @@ class ScenarioExecutor:
             subprocess.run(["bash", "-c", cmd], timeout=30)
         except Exception as e:
             print(f"  [training] WARNING: ledger append error: {e}")
+
+        # Pattern ledger — written separately if patterns were tested
+        if self.awareness.patterns_validate:
+            self._append_to_pattern_ledger(result)
+
+    def _append_to_pattern_ledger(self, scenario_result: str) -> None:
+        """Append one JSON line to the pattern-specific ledger."""
+        pattern_ledger = os.path.join(
+            os.path.dirname(LEDGER_FILE), "awareness-pattern-ledger.jsonl")
+        adir = os.path.join(self.output_dir, "awareness")
+        val_file = os.path.join(adir, "patterns", "validation.json")
+
+        val = {}
+        if os.path.exists(val_file):
+            try:
+                with open(val_file) as f:
+                    val = json.load(f)
+            except Exception:
+                pass
+
+        # Extract data from preflight.json for enrichment
+        pf_code_smells: list = []
+        pf_forbidden: list = []
+        pf_invariants: list = []
+        pf_path = os.path.join(adir, "preflight.json")
+        if os.path.exists(pf_path):
+            try:
+                with open(pf_path) as fh:
+                    pf = json.load(fh)
+                pf_code_smells = pf.get("code_smells") or []
+                pf_forbidden = pf.get("forbidden_fixes") or []
+                pf_invariants = pf.get("matched_invariants") or pf.get("invariants") or []
+            except Exception:
+                pass
+
+        patterns_tested = self.awareness.patterns_validate
+        patterns_matched = val.get("patterns_with_output") or []
+        pattern_result = getattr(self.awareness, "_pattern_result", "SKIPPED")
+        scenario_name = self.scenario.get("name", "unknown")
+        run_id = os.path.basename(self.output_dir)
+        ts = datetime.datetime.utcnow().isoformat() + "Z"
+
+        entry = {
+            "run_id": run_id,
+            "scenario": scenario_name,
+            "timestamp": ts,
+            "patterns_tested": patterns_tested,
+            "patterns_matched": patterns_matched,
+            "pattern_result": pattern_result,
+            "code_smells": pf_code_smells[:10],
+            "forbidden_fixes": pf_forbidden[:10],
+            "new_failure_class": False,
+            "matched_invariants": pf_invariants[:10],
+            "scenario_result": scenario_result,
+        }
+        try:
+            os.makedirs(os.path.dirname(pattern_ledger), exist_ok=True)
+            with open(pattern_ledger, "a") as f:
+                f.write(json.dumps(entry) + "\n")
+            print(f"  [training] pattern-ledger: {pattern_ledger}")
+        except Exception as e:
+            print(f"  [training] WARNING: pattern ledger append error: {e}")
 
 
 # ── main ──────────────────────────────────────────────────────────────────────

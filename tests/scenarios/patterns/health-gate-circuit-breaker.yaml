@@ -1,0 +1,72 @@
+version: 1
+name: health-gate-circuit-breaker
+suite: patterns
+description: |
+  Pattern simulation: health_gate + circuit_breaker_distributed.
+  Validates backend health gate behavior: work must not dispatch into an unhealthy dependency.
+  Observes cluster in steady state and verifies health gate invariants are respected.
+
+awareness:
+  enabled: true
+  task: "workflow dispatch into unhealthy backend deterministic failure retry storm circuit breaker health gate"
+  phase: "convergence"
+  include_runtime: true
+  runtime_window: "15m"
+  create_incident_on_failure: true
+  create_proposal_on_failure: false
+  expected_invariants:
+    - workflow.backend_health_gate
+    - convergence.no_infinite_retry
+    - repository.metadata_first
+  expected_failure_modes:
+    - workflow.backend_unavailable
+    - deterministic.install.failure.retry_loop
+  patterns:
+    validate:
+      - pattern.health_gate
+      - pattern.circuit_breaker_distributed
+      - pattern.backpressure
+    expected_invariants:
+      - workflow.backend_health_gate
+      - convergence.no_infinite_retry
+    expected_code_smells_absent:
+      - backend unhealthy but work dispatch continues unchanged
+      - retry without bounded backoff or singleflight gate
+    expected_behavior:
+      - backend unhealthy state appears in doctor or health report
+      - no infinite retry into unavailable backend
+      - circuit breaker or BLOCKED state is reached
+
+preconditions:
+  - id: node-1-running
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: true
+  - id: cluster-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+
+baseline:
+  - id: initial-health
+    probe: cluster.health
+  - id: workflow-health
+    probe: service.status
+    params:
+      node: node-1
+      service: workflow-server
+
+assertions:
+  - id: cluster-still-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+  - id: controller-active
+    probe: service.status
+    params:
+      node: node-1
+      service: cluster-controller
+    expect:
+      unit_state: "active"

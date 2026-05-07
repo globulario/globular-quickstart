@@ -1,0 +1,79 @@
+version: 1
+name: absence-is-not-destructive-intent
+suite: patterns
+description: |
+  Pattern simulation: intent_marker_tombstone + last_known_good + read_repair_authority_repair.
+  Validates that missing control-plane state does not stop or delete a running service.
+  This is a read-only / observation scenario: no destructive etcd mutations are performed.
+  Evidence is collected from the running cluster to verify absence-guard behavior.
+
+awareness:
+  enabled: true
+  task: "missing etcd key absence interpreted as delete intent service stopped without explicit approval tombstone last known good"
+  phase: "convergence"
+  include_runtime: true
+  runtime_window: "15m"
+  create_incident_on_failure: true
+  create_proposal_on_failure: false
+  expected_invariants:
+    - critical_state.absence_is_not_destructive_intent
+    - critical_state.deletion_requires_audited_intent
+    - runtime.last_known_good_required_for_critical_consumers
+  expected_failure_modes:
+    - critical_state.absent_key_interpreted_as_stop
+  patterns:
+    validate:
+      - pattern.intent_marker_tombstone
+      - pattern.last_known_good
+      - pattern.read_repair_authority_repair
+    expected_invariants:
+      - critical_state.absence_is_not_destructive_intent
+      - critical_state.deletion_requires_audited_intent
+    expected_code_smells_absent:
+      - missing key branch calls stop or delete
+      - stop service on missing key without checking LKG
+    expected_behavior:
+      - no destructive runtime action from missing key
+      - degraded or repair finding is produced instead of stop
+      - services hold LKG on temporary authority unavailability
+
+preconditions:
+  - id: node-1-running
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: true
+  - id: cluster-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+
+baseline:
+  - id: initial-health
+    probe: cluster.health
+  - id: ingress-status
+    probe: service.status
+    params:
+      node: node-1
+      service: envoy
+
+assertions:
+  - id: cluster-still-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+  - id: node-agent-active
+    probe: service.status
+    params:
+      node: node-1
+      service: node-agent
+    expect:
+      unit_state: "active"
+  - id: controller-active
+    probe: service.status
+    params:
+      node: node-1
+      service: cluster-controller
+    expect:
+      unit_state: "active"

@@ -454,3 +454,213 @@ awareness_propose_from_incident() {
         echo "  [awareness] WARNING: proposal file not found (see proposal.log)"
     fi
 }
+
+# awareness_collect_patterns <patterns_csv> <out_dir> [preflight_json_path]
+# For each pattern ID in comma-separated patterns_csv:
+#   - Run node-context --node "pattern:<id>" --zoom all --format json
+#   - Run node-context --node "pattern:<id>" --zoom all --format agent
+#   - Write to awareness/patterns/pattern.<id>.json
+#             awareness/patterns/pattern.<id>.agent.txt
+# Then write awareness/patterns/validation.json summarizing results.
+# preflight_json_path: if provided, extract code_smells/invariants from it for matching.
+awareness_collect_patterns() {
+    local patterns_csv="$1" out_dir="$2"
+    local preflight_json_path="${3:-}"
+
+    local adir rc
+    adir="$(_awareness_dir "$out_dir")"
+    _awareness_guard "$out_dir"; rc=$?
+    if [ "$rc" -eq 1 ]; then
+        # Awareness unavailable — write SKIPPED validation.json and return 0
+        local pdir="$adir/patterns"
+        mkdir -p "$pdir"
+        python3 -c "
+import json
+result = {
+    'overall_result': 'SKIPPED',
+    'reason': 'awareness not available',
+    'patterns': [],
+    'patterns_attempted': [],
+    'patterns_with_output': [],
+    'patterns_missing': [],
+    'expected_invariants_matched': [],
+    'expected_invariants_missing': [],
+}
+print(json.dumps(result, indent=2))
+" > "$pdir/validation.json"
+        echo "  [awareness] patterns: SKIPPED (awareness not available)"
+        return 0
+    fi
+    [ "$rc" -eq 2 ] && return 1
+
+    local bin; bin="$(_awareness_bin)"
+    local pdir="$adir/patterns"
+    mkdir -p "$pdir"
+
+    local extra_args=()
+    [ -n "${AWARENESS_REPO:-}" ] && extra_args+=(--repo "${AWARENESS_REPO}")
+
+    local attempted=()
+    local with_output=()
+    local missing=()
+
+    # Process each pattern ID from the CSV
+    local IFS=','
+    for pattern_id in $patterns_csv; do
+        pattern_id="${pattern_id#"${pattern_id%%[![:space:]]*}"}"   # trim leading space
+        pattern_id="${pattern_id%"${pattern_id##*[![:space:]]}"}"    # trim trailing space
+        [ -z "$pattern_id" ] && continue
+
+        attempted+=("$pattern_id")
+        local node_ref="pattern:$pattern_id"
+        local json_out="$pdir/$pattern_id.json"
+        local agent_out="$pdir/$pattern_id.agent.txt"
+
+        echo "  [awareness] pattern: $pattern_id"
+
+        # Try node-context --node
+        local ok_json=0 ok_agent=0
+        local stderr_tmp; stderr_tmp="$(mktemp)"
+
+        if "$bin" awareness node-context --node "$node_ref" --zoom all --format json \
+                "${extra_args[@]}" > "$json_out" 2>"$stderr_tmp"; then
+            ok_json=1
+        else
+            local err_msg; err_msg="$(cat "$stderr_tmp" 2>/dev/null | tail -2 | tr '\n' ' ')"
+            _awareness_log_error "$adir" "pattern-node-context-json($pattern_id)" "exit: $err_msg"
+            # Fallback: try awareness related
+            if "$bin" awareness related --node "$node_ref" --format json \
+                    "${extra_args[@]}" > "$json_out" 2>/dev/null; then
+                ok_json=1
+                echo "  [awareness] pattern fallback(json): $pattern_id"
+            else
+                rm -f "$json_out"
+            fi
+        fi
+        rm -f "$stderr_tmp"
+
+        stderr_tmp="$(mktemp)"
+        if "$bin" awareness node-context --node "$node_ref" --zoom all --format agent \
+                "${extra_args[@]}" > "$agent_out" 2>"$stderr_tmp"; then
+            ok_agent=1
+        else
+            local err_msg; err_msg="$(cat "$stderr_tmp" 2>/dev/null | tail -2 | tr '\n' ' ')"
+            _awareness_log_error "$adir" "pattern-node-context-agent($pattern_id)" "exit: $err_msg"
+            rm -f "$agent_out"
+        fi
+        rm -f "$stderr_tmp"
+
+        if [ "$ok_json" -eq 1 ] || [ "$ok_agent" -eq 1 ]; then
+            with_output+=("$pattern_id")
+        else
+            missing+=("$pattern_id")
+            echo "  [awareness] WARNING: no output for pattern $pattern_id (continuing)"
+        fi
+    done
+
+    # Build validation.json
+    python3 - "$pdir" "$preflight_json_path" \
+        "$(IFS=','; printf '%s' "${attempted[*]}")" \
+        "$(IFS=','; printf '%s' "${with_output[*]}")" \
+        "$(IFS=','; printf '%s' "${missing[*]}")" <<'PYEOF'
+import json, sys, os
+
+pdir           = sys.argv[1]
+preflight_path = sys.argv[2] if len(sys.argv) > 2 else ""
+attempted_csv  = sys.argv[3] if len(sys.argv) > 3 else ""
+with_out_csv   = sys.argv[4] if len(sys.argv) > 4 else ""
+missing_csv    = sys.argv[5] if len(sys.argv) > 5 else ""
+
+def csv_to_list(s):
+    return [x.strip() for x in s.split(",") if x.strip()] if s else []
+
+attempted   = csv_to_list(attempted_csv)
+with_output = csv_to_list(with_out_csv)
+missing     = csv_to_list(missing_csv)
+
+# Load preflight.json if provided
+pf = {}
+if preflight_path and os.path.exists(preflight_path):
+    try:
+        with open(preflight_path) as fh:
+            pf = json.load(fh)
+    except Exception:
+        pass
+
+pf_invariants   = pf.get("matched_invariants") or pf.get("invariants") or []
+pf_code_smells  = pf.get("code_smells") or []
+pf_fail_modes   = pf.get("matched_failure_modes") or pf.get("failure_modes") or []
+pf_forbidden    = pf.get("forbidden_fixes") or []
+
+# Per-pattern entries
+pattern_entries = []
+for pid in attempted:
+    json_file  = os.path.join(pdir, f"{pid}.json")
+    agent_file = os.path.join(pdir, f"{pid}.agent.txt")
+    has_json   = os.path.exists(json_file)
+    has_agent  = os.path.exists(agent_file)
+
+    # Try to extract code_smells from the pattern's own JSON
+    pat_code_smells = []
+    if has_json:
+        try:
+            with open(json_file) as fh:
+                pdata = json.load(fh)
+            pat_code_smells = pdata.get("code_smells") or []
+        except Exception:
+            pass
+
+    # Match code_smells from preflight against pattern
+    matched_smells = [s for s in pf_code_smells
+                      if any(str(s).lower() in str(ps).lower() or
+                             str(ps).lower() in str(s).lower()
+                             for ps in pat_code_smells)]
+
+    if pid in with_output:
+        status = "PASS"
+    else:
+        status = "FAIL"
+
+    pattern_entries.append({
+        "id":              pid,
+        "status":          status,
+        "json_produced":   has_json,
+        "agent_produced":  has_agent,
+        "matched_code_smells": matched_smells,
+    })
+
+# Determine overall result
+if not attempted:
+    overall = "SKIPPED"
+elif not with_output and attempted:
+    # All patterns failed to produce output
+    overall = "FAIL"
+elif missing:
+    # Some patterns missing
+    overall = "WARN"
+else:
+    # All patterns have output
+    overall = "PASS"
+
+validation = {
+    "overall_result":           overall,
+    "patterns_attempted":       attempted,
+    "patterns_with_output":     with_output,
+    "patterns_missing":         missing,
+    "patterns":                 pattern_entries,
+    "preflight_invariants":     pf_invariants,
+    "preflight_code_smells":    pf_code_smells[:10],
+    "preflight_failure_modes":  pf_fail_modes,
+    "preflight_forbidden_fixes": pf_forbidden,
+    "recommended_next_scenario": "",
+}
+
+out_file = os.path.join(pdir, "validation.json")
+with open(out_file, "w") as fh:
+    json.dump(validation, fh, indent=2)
+print(json.dumps({"written": out_file, "overall_result": overall}))
+PYEOF
+
+    echo "  [awareness] patterns: collection complete"
+    return 0
+}

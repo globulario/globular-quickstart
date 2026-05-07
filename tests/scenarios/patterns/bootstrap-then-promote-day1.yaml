@@ -1,0 +1,78 @@
+version: 1
+name: bootstrap-then-promote-day1
+suite: patterns
+description: |
+  Pattern simulation: bootstrap_then_promote + control_plane_data_plane + leased_leadership_single_writer.
+  Validates that Day-1 join does not treat bootstrap/seed state as authoritative desired state.
+  Verifies heartbeat/discovered state does not become desired authority and that bootstrap state
+  is explicitly promoted before steady-state convergence.
+
+awareness:
+  enabled: true
+  task: "day-1 join bootstrap state treated as desired authority heartbeat creates desired state seed state promotion"
+  phase: "bootstrap"
+  include_runtime: true
+  runtime_window: "30m"
+  create_incident_on_failure: true
+  create_proposal_on_failure: false
+  expected_invariants:
+    - desired.bootstrap_state_requires_promotion
+    - infra.heartbeat_not_desired_authority
+    - critical_state.registry_ownership_required
+    - infra.desired_hash_consistency
+  expected_failure_modes:
+    - bootstrap_state_treated_as_authority
+    - heartbeat_created_infrastructure_release
+  patterns:
+    validate:
+      - pattern.bootstrap_then_promote
+      - pattern.control_plane_data_plane
+      - pattern.leased_leadership_single_writer
+    expected_invariants:
+      - desired.bootstrap_state_requires_promotion
+      - infra.heartbeat_not_desired_authority
+    expected_code_smells_absent:
+      - heartbeat creates or overwrites desired-state record
+      - bootstrap record used by steady-state reconciler as authority
+    expected_behavior:
+      - no desired state created from heartbeat alone
+      - bootstrap state carries marker and promotion path
+      - first boot claims CONVERGED only after all four layers agree
+
+preconditions:
+  - id: node-1-running
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: true
+
+baseline:
+  - id: initial-health
+    probe: cluster.health
+  - id: initial-nodes
+    probe: cluster.nodes
+
+assertions:
+  - id: cluster-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+  - id: node-agent-active
+    probe: service.status
+    params:
+      node: node-1
+      service: node-agent
+    expect:
+      unit_state: "active"
+  - id: controller-active
+    probe: service.status
+    params:
+      node: node-1
+      service: cluster-controller
+    expect:
+      unit_state: "active"
+  - id: nodes-heartbeating
+    probe: cluster.nodes
+    expect:
+      count_gte: 1

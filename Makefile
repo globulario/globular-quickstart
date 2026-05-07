@@ -63,7 +63,8 @@ UNITS = $(wildcard $(UNIT_SRC)/globular-*.service)
 	check-test-schemas check-test-scenarios test-debug-shell \
 	test-awareness-smoke test-awareness-recovery test-awareness-debug awareness-latest \
 	awareness-train-day0 awareness-train-day1 awareness-train-scenario \
-	awareness-reset awareness-training-suite awareness-ledger
+	awareness-reset awareness-training-suite awareness-ledger \
+	awareness-patterns awareness-pattern awareness-pattern-latest awareness-pattern-day1
 
 ## collect — copy binaries + units into build context
 collect:
@@ -314,6 +315,59 @@ for line in sys.stdin: \
     except Exception: \
         print(f'  {line[:120]}') \
 "
+
+## awareness-patterns — run all pattern simulation scenarios
+awareness-patterns:
+	@echo "=== Awareness Pattern Simulations ===" && \
+	AWARENESS_TRAINING=1 AWARENESS_INCLUDE_RUNTIME=1 \
+		tests/harness/bin/globular-test suite patterns
+
+## awareness-pattern — run one pattern scenario (SCENARIO=path)
+## Usage: make awareness-pattern SCENARIO=tests/scenarios/patterns/desired-state-reconciliation.yaml
+awareness-pattern:
+	@if [ -z "$(SCENARIO)" ]; then \
+		echo "Usage: make awareness-pattern SCENARIO=tests/scenarios/patterns/<name>.yaml"; \
+		exit 1; \
+	fi
+	@AWARENESS_TRAINING=1 AWARENESS_INCLUDE_RUNTIME=1 \
+		tests/harness/bin/globular-test scenario "$(SCENARIO)"
+
+## awareness-pattern-latest — print latest pattern report PATTERNS.md summaries
+awareness-pattern-latest:
+	@LATEST=$$(readlink -f tests/reports/latest 2>/dev/null); \
+	if [ -z "$$LATEST" ] || [ ! -d "$$LATEST" ]; then \
+		echo "No latest run found. Run a pattern scenario first."; exit 1; \
+	fi; \
+	echo "Latest run: $$LATEST"; \
+	echo ""; \
+	for pmd in "$$LATEST"/*/PATTERNS.md; do \
+		[ -f "$$pmd" ] || continue; \
+		scenario=$$(basename "$$(dirname "$$pmd")"); \
+		echo "── $$scenario ──"; \
+		cat "$$pmd"; \
+		echo ""; \
+	done; \
+	LEDGER=tests/reports/awareness-pattern-ledger.jsonl; \
+	if [ -f "$$LEDGER" ]; then \
+		echo "=== Pattern Ledger (last 10) ==="; \
+		tail -10 "$$LEDGER" | python3 -c " \
+import json,sys \
+for line in sys.stdin: \
+    line=line.strip() \
+    if not line: continue \
+    try: \
+        d=json.loads(line) \
+        tested=','.join(d.get('patterns_tested',[])[:2]) \
+        print(f\"  {d.get('timestamp','')}  {d.get('scenario','?'):<40}  {d.get('pattern_result','?'):<8}  patterns={tested}\") \
+    except: pass \
+"; \
+	fi
+
+## awareness-pattern-day1 — run the Day-1 bootstrap pattern scenario
+awareness-pattern-day1:
+	@AWARENESS_TRAINING=1 AWARENESS_INCLUDE_RUNTIME=1 \
+		tests/harness/bin/globular-test scenario \
+		tests/scenarios/patterns/bootstrap-then-promote-day1.yaml
 
 ## awareness-latest — print path to latest awareness artifacts and show preflight/debug-session
 awareness-latest:

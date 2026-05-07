@@ -1,0 +1,76 @@
+version: 1
+name: day1-join-second-node-awareness
+suite: training
+description: |
+  Day-1 second-node join awareness training scenario.
+  Verifies that node-2 is participating in the cluster alongside node-1,
+  etcd quorum spans at least 2 members, and the awareness graph captures
+  any join-related failure modes.
+  Use with AWARENESS_TRAINING=1 to produce incident artifacts on join failure.
+
+awareness:
+  enabled: true
+  task: "day-1 second node join and etcd quorum expansion"
+  phase: "day1_join"
+  include_runtime: true
+  runtime_window: "20m"
+  create_incident_on_failure: true
+  create_proposal_on_failure: false
+  expected_invariants:
+    - infra.founding_quorum
+    - cluster.etcd_quorum_maintained
+  expected_failure_modes:
+    - node_agent.join_timeout
+    - etcd.quorum_loss_during_join
+    - scylladb.raft_stall_on_join
+
+preconditions:
+  - id: node-1-running
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: true
+
+  - id: node-2-running
+    probe: node.container_running
+    params:
+      node: node-2
+    expect:
+      running: true
+
+  - id: cluster-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+
+baseline:
+  - id: pre-check-node-count
+    probe: cluster.nodes
+
+assertions:
+  - id: etcd-quorum-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+      members_gte: 2
+
+  - id: node-2-agent-active
+    probe: service.status
+    params:
+      node: node-2
+      service: node-agent
+    expect:
+      unit_state: "active"
+
+  - id: node-2-registered
+    probe: node.etcd_registered
+    params:
+      node: node-2
+    expect:
+      registered: true
+
+  - id: all-nodes-heartbeating
+    probe: cluster.nodes
+    expect:
+      count_gte: 2

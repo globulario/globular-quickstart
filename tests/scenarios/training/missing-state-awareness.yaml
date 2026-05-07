@@ -1,0 +1,71 @@
+version: 1
+name: missing-state-awareness
+suite: training
+description: |
+  Missing desired state awareness training scenario.
+  Verifies that the 4-layer state model holds in the quickstart cluster:
+  Layer 3 (installed in etcd) and Layer 4 (systemd runtime) must be
+  independently observable.
+
+  Note: In the quickstart lab topology, packages are pre-installed in the
+  container image and NOT registered via the Globular package system.
+  Layer 3 (installed packages in etcd) will therefore be empty.
+  This is a known lab exception: quickstart.topology_lab_only_exception.
+
+  This scenario tests what IS observable: Layer 4 (services active) and
+  that etcd write quorum is intact. It does not assert Layer 3 parity
+  because that requires a full Globular package deployment cycle.
+
+awareness:
+  enabled: true
+  task: "4-layer observability check — Layer 4 runtime active, Layer 3 etcd write quorum intact"
+  phase: "reconcile"
+  include_runtime: true
+  runtime_window: "15m"
+  create_incident_on_failure: true
+  create_proposal_on_failure: false
+  expected_invariants:
+    - runtime.installed_state_not_liveness
+
+preconditions:
+  - id: cluster-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+
+  - id: etcd-write-quorum
+    probe: etcd.write_test
+    expect:
+      success: true
+
+baseline:
+  - id: desired-state-snapshot
+    probe: cluster.desired_state
+
+  - id: health-snapshot
+    probe: cluster.health
+
+assertions:
+  - id: etcd-write-quorum-maintained
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - id: node-agent-runtime-active-node1
+    probe: service.status
+    params:
+      node: node-1
+      service: node-agent
+    expect:
+      unit_state: "active"
+
+  - id: node-agent-runtime-active-node2
+    probe: service.status
+    params:
+      node: node-2
+      service: node-agent
+    expect:
+      unit_state: "active"
+
+  - id: no-stuck-workflows
+    probe: workflow.last_run

@@ -60,7 +60,10 @@ UNITS = $(wildcard $(UNIT_SRC)/globular-*.service)
 	test-recovery test-soak test-v1-certification ci-smoke \
 	test-scenario test-scenario-keep \
 	test-parity-report test-health-matrix test-authz-report test-recovery-report \
-	check-test-schemas check-test-scenarios test-debug-shell
+	check-test-schemas check-test-scenarios test-debug-shell \
+	test-awareness-smoke test-awareness-recovery test-awareness-debug awareness-latest \
+	awareness-train-day0 awareness-train-day1 awareness-train-scenario \
+	awareness-reset awareness-training-suite awareness-ledger
 
 ## collect — copy binaries + units into build context
 collect:
@@ -232,3 +235,108 @@ check-test-scenarios:
 ## test-debug-shell — open shell on a node (NODE=node-1)
 test-debug-shell:
 	$(TEST_BIN) debug shell $(NODE)
+
+# ── Awareness targets ─────────────────────────────────────────────────────────
+
+## test-awareness-smoke — run smoke/cluster-cold-boot with awareness enabled
+test-awareness-smoke:
+	@echo "=== Awareness: smoke/cluster-cold-boot ==="
+	$(TEST_BIN) scenario tests/scenarios/smoke/cluster-cold-boot.yaml --keep-artifacts
+	@echo ""
+	@echo "Awareness artifacts:"
+	@ls tests/reports/latest/cluster-cold-boot/awareness/ 2>/dev/null || \
+		echo "  (no artifacts — run 'make test-wait' first if cluster is not up)"
+
+## test-awareness-recovery — run recovery/layer-parity-spot-check with awareness enabled
+test-awareness-recovery:
+	@echo "=== Awareness: recovery/layer-parity-spot-check ==="
+	$(TEST_BIN) scenario tests/scenarios/recovery/layer-parity-spot-check.yaml --keep-artifacts
+	@echo ""
+	@echo "Awareness artifacts:"
+	@ls tests/reports/latest/layer-parity-spot-check/awareness/ 2>/dev/null || \
+		echo "  (no artifacts)"
+
+## test-awareness-debug — run a scenario and keep all awareness artifacts (SCENARIO=path)
+test-awareness-debug:
+	$(TEST_BIN) scenario $(SCENARIO) --keep-cluster --keep-artifacts
+
+## awareness-train-day0 — run Day-0 bootstrap training scenario with full awareness
+awareness-train-day0:
+	@AWARENESS_TRAINING=1 AWARENESS_INCLUDE_RUNTIME=1 \
+		tests/harness/bin/globular-test scenario \
+		tests/scenarios/training/day0-single-node-awareness.yaml
+
+## awareness-train-day1 — run Day-1 join training scenario with full awareness
+awareness-train-day1:
+	@AWARENESS_TRAINING=1 AWARENESS_INCLUDE_RUNTIME=1 \
+		tests/harness/bin/globular-test scenario \
+		tests/scenarios/training/day1-join-second-node-awareness.yaml
+
+## awareness-train-scenario — run a single training scenario (SCENARIO=path)
+## Usage: make awareness-train-scenario SCENARIO=tests/scenarios/training/my-scenario.yaml
+awareness-train-scenario:
+	@if [ -z "$(SCENARIO)" ]; then \
+		echo "Usage: make awareness-train-scenario SCENARIO=tests/scenarios/training/<name>.yaml"; \
+		exit 1; \
+	fi
+	@AWARENESS_TRAINING=1 AWARENESS_INCLUDE_RUNTIME=1 \
+		tests/harness/bin/globular-test scenario "$(SCENARIO)"
+
+## awareness-training-suite — run all training scenarios sequentially
+awareness-training-suite:
+	@echo "=== Awareness Training Suite ===" && \
+	AWARENESS_TRAINING=1 AWARENESS_INCLUDE_RUNTIME=1 \
+		tests/harness/bin/globular-test suite training
+
+## awareness-reset — reset cluster containers, preserve training ledger
+awareness-reset:
+	@echo "[awareness-reset] Stopping cluster..."
+	@docker compose down -v 2>&1 | sed 's/^/  /'
+	@echo "[awareness-reset] Starting cluster..."
+	@docker compose up -d 2>&1 | sed 's/^/  /'
+	@echo "[awareness-reset] Done. Ledger preserved at tests/reports/awareness-training-ledger.jsonl"
+
+## awareness-ledger — print the last 20 training ledger entries
+awareness-ledger:
+	@LEDGER=tests/reports/awareness-training-ledger.jsonl; \
+	if [ ! -f "$$LEDGER" ]; then \
+		echo "No ledger yet. Run a training scenario first."; exit 0; \
+	fi; \
+	echo "=== Training Ledger (last 20 entries) ==="; \
+	tail -20 "$$LEDGER" | python3 -c " \
+import json,sys \
+for line in sys.stdin: \
+    line=line.strip() \
+    if not line: continue \
+    try: \
+        d=json.loads(line) \
+        print(f\"  {d.get('timestamp','')}  {d.get('scenario','?'):<40}  {d.get('result','?'):<12}  awareness={d.get('awareness_status','?')}\") \
+    except Exception: \
+        print(f'  {line[:120]}') \
+"
+
+## awareness-latest — print path to latest awareness artifacts and show preflight/debug-session
+awareness-latest:
+	@LATEST=$$(readlink -f tests/reports/latest 2>/dev/null); \
+	if [ -z "$$LATEST" ] || [ ! -d "$$LATEST" ]; then \
+		echo "No latest run found. Run a scenario first."; exit 1; \
+	fi; \
+	echo "Latest run: $$LATEST"; \
+	echo ""; \
+	for adir in "$$LATEST"/*/awareness; do \
+		[ -d "$$adir" ] || continue; \
+		scenario=$$(basename "$$(dirname "$$adir")"); \
+		echo "── $$scenario/awareness ──"; \
+		ls "$$adir/" 2>/dev/null; \
+		echo ""; \
+		if [ -f "$$adir/preflight.agent.txt" ]; then \
+			echo "=== preflight.agent.txt ==="; \
+			cat "$$adir/preflight.agent.txt"; \
+			echo ""; \
+		fi; \
+		if [ -f "$$adir/debug-session.agent.txt" ]; then \
+			echo "=== debug-session.agent.txt ==="; \
+			cat "$$adir/debug-session.agent.txt"; \
+			echo ""; \
+		fi; \
+	done

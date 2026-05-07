@@ -25,6 +25,22 @@ echo "    profiles: $PROFILES"
 echo "    peers:    $CLUSTER_PEERS"
 echo "    mac:      $NODE_MAC"
 
+# ── 0. /etc/hosts pre-seed ──────────────────────────────
+# Globular services resolve peer hostnames before the DNS service is up.
+# Seed /etc/hosts from CLUSTER_PEERS so they resolve immediately via libc.
+# The controller will push canonical A records to the DNS service later.
+CLUSTER_DOMAIN="${GLOBULAR_CLUSTER_DOMAIN:-globular.internal}"
+{
+    echo "# Globular cluster peers (seeded by entrypoint — pre-DNS bootstrap)"
+    IFS=',' read -ra _PEERS <<< "$CLUSTER_PEERS"
+    for _peer in "${_PEERS[@]}"; do
+        _name="${_peer%%=*}"
+        _ip="${_peer##*=}"
+        echo "$_ip  $_name ${_name}.${CLUSTER_DOMAIN}"
+    done
+} >> /etc/hosts
+echo "[hosts] Seeded cluster hostnames → /etc/hosts"
+
 # ── 1. PKI bootstrap ────────────────────────────────────
 if [ "$CA_MODE" = "generate" ]; then
     if [ ! -f "$PKI/ca.key" ]; then
@@ -194,6 +210,13 @@ peer-transport-security:
   client-cert-auth: false
   trusted-ca-file: "$PKI/ca.pem"
   auto-tls: false
+
+# Quota: 8 GiB — prevents NOSPACE alarm on simulated workloads
+quota-backend-bytes: 8589934592
+
+# Compact every 1000 revisions; defrag every 3h
+auto-compaction-mode: revision
+auto-compaction-retention: "1000"
 
 logger: "zap"
 ETCD

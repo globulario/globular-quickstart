@@ -4,6 +4,69 @@
 # Functions that produce markdown and JSON evidence outputs.
 # REPORTS_DIR must be set by the caller.
 
+# _awareness_artifact_line <adir>
+# Print a compact one-line status string for awareness artifacts in adir.
+_awareness_artifact_line() {
+    local adir="$1"
+    local skipped=false
+    [ -f "$adir/SKIPPED.txt" ] && skipped=true
+
+    _aw_status() {
+        local label="$1"; shift
+        local status="SKIPPED"
+        if $skipped; then
+            printf '%s=SKIPPED' "$label"
+            return
+        fi
+        for f in "$@"; do
+            [ -f "$adir/$f" ] && status="PASS" && break
+        done
+        printf '%s=%s' "$label" "$status"
+    }
+
+    local preflight debug_s snapshot incident
+
+    if $skipped; then
+        printf 'preflight=SKIPPED debug-session=SKIPPED runtime-snapshot=SKIPPED incident=SKIPPED'
+        return
+    fi
+
+    # preflight
+    if [ -f "$adir/preflight.agent.txt" ] || [ -f "$adir/preflight.json" ]; then
+        preflight="PASS"
+    else
+        preflight="SKIPPED"
+    fi
+
+    # debug-session
+    if [ -f "$adir/debug-session.agent.txt" ] || [ -f "$adir/debug-session.json" ]; then
+        debug_s="PASS"
+    else
+        debug_s="SKIPPED"
+    fi
+
+    # runtime-snapshot
+    if [ -f "$adir/runtime-snapshot.json" ]; then
+        snapshot="PASS"
+    elif [ -f "$adir/runtime-snapshot.error.txt" ]; then
+        snapshot="ERROR"
+    else
+        snapshot="SKIPPED"
+    fi
+
+    # incident
+    if [ -f "$adir/incident.yaml" ]; then
+        incident="CREATED"
+    elif [ -f "$adir/incident.error.txt" ]; then
+        incident="ERROR"
+    else
+        incident="SKIPPED"
+    fi
+
+    printf 'preflight=%s debug-session=%s runtime-snapshot=%s incident=%s' \
+        "$preflight" "$debug_s" "$snapshot" "$incident"
+}
+
 # report_suite_summary <suite> <pass> <fail> <skip> <run_dir>
 # Writes a markdown summary for a completed suite run.
 report_suite_summary() {
@@ -41,6 +104,14 @@ EOF
             echo "- **[$scenario_pass]** $scenario_name" >> "$summary_file"
         else
             echo "- **[NO DATA]** $scenario_name" >> "$summary_file"
+        fi
+
+        # Awareness artifact summary (one compact line per scenario)
+        local adir="$scenario_dir/awareness"
+        if [ -d "$adir" ]; then
+            local aw_summary
+            aw_summary="$(_awareness_artifact_line "$adir")"
+            echo "  - Awareness: $aw_summary" >> "$summary_file"
         fi
     done
 

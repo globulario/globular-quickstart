@@ -1,0 +1,92 @@
+version: 1
+name: install-loop-awareness
+suite: training
+description: |
+  Service install convergence loop awareness training scenario.
+  Triggers a controller restart storm by force-killing cluster-controller
+  and verifies the cluster self-heals. The awareness graph should capture
+  install-loop and reconcile-storm failure modes.
+  Use with AWARENESS_TRAINING=1 for incident creation on failure to converge.
+
+awareness:
+  enabled: true
+  task: "service install loop and reconciler convergence after controller restart"
+  phase: "recovery"
+  include_runtime: true
+  runtime_window: "30m"
+  create_incident_on_failure: true
+  create_proposal_on_failure: false
+  expected_failure_modes:
+    - controller.reconcile_storm
+    - node_agent.install_loop
+    - workflow.stale_lease
+  expected_invariants:
+    - runtime.installed_state_not_liveness
+
+preconditions:
+  - id: cluster-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+
+  - id: controller-registered
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+steps:
+  - id: kill-controller-node1
+    action: chaos.sigkill_service
+    params:
+      node: node-1
+      service: cluster-controller
+
+  - id: pause-for-crash
+    action: wait
+    params:
+      timeout: 10
+
+  - id: wait-for-recovery
+    action: wait
+    params:
+      timeout: 90
+      until:
+        probe: service.registered
+        params:
+          service: cluster_controller
+        expect:
+          registered: true
+
+assertions:
+  - id: controller-recovered
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+  - id: node-agent-still-active-node1
+    probe: service.status
+    params:
+      node: node-1
+      service: node-agent
+    expect:
+      unit_state: "active"
+
+  - id: cluster-healthy-after
+    probe: cluster.health
+    expect:
+      status: "healthy"
+
+  - id: write-quorum-intact
+    probe: etcd.write_test
+    expect:
+      success: true
+
+cleanup:
+  - id: verify-stable
+    action: wait
+    params:
+      timeout: 10

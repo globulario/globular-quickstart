@@ -235,6 +235,20 @@ if missing:
 if d['version'] != 1:
     print(f'FAIL $f: unsupported version {d[\"version\"]}')
     sys.exit(1)
+aw = d.get('awareness')
+if aw is not None:
+    if not isinstance(aw, dict):
+        print(f'FAIL $f: awareness must be a mapping')
+        sys.exit(1)
+    valid_keys = {
+        'enabled', 'task', 'phase', 'include_runtime', 'runtime_window',
+        'create_incident_on_failure', 'expected_invariants', 'expected_forbidden_fixes',
+        'create_proposal_on_failure', 'expected_failure_modes', 'training',
+    }
+    unknown = set(aw.keys()) - valid_keys
+    if unknown:
+        print(f'FAIL $f: unknown awareness keys: {sorted(unknown)}')
+        sys.exit(1)
 print(f'OK   $f')
 " 2>&1; then
                     :

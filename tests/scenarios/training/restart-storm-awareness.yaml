@@ -1,0 +1,119 @@
+version: 1
+name: restart-storm-awareness
+suite: training
+description: |
+  Multi-service restart storm awareness training scenario.
+  Stops node-4 to simulate a node failure and verifies the remaining
+  nodes maintain quorum. Then restarts node-4 and verifies it rejoins.
+  The awareness graph should capture quorum-related failure modes and
+  the restart storm that occurs when a node comes back online.
+
+  Timing note: container_running ≠ service active. Docker reports the
+  container up before systemd finishes starting node-agent inside it.
+  Two wait steps are used: first wait for container_running, then wait
+  for service.status active (up to 60s additional). The assertion then
+  confirms the already-active state.
+
+awareness:
+  enabled: true
+  task: "node failure and restart storm — quorum maintenance and node recovery"
+  phase: "resilience"
+  include_runtime: true
+  runtime_window: "30m"
+  create_incident_on_failure: true
+  create_proposal_on_failure: false
+  expected_failure_modes:
+    - node_agent.restart_storm
+    - controller.reconcile_storm
+    - etcd.quorum_stress_during_rejoin
+  expected_invariants:
+    - infra.founding_quorum
+    - cluster.etcd_quorum_maintained
+
+preconditions:
+  - id: cluster-healthy
+    probe: cluster.health
+    expect:
+      status: "healthy"
+
+  - id: node-4-running
+    probe: node.container_running
+    params:
+      node: node-4
+    expect:
+      running: true
+
+baseline:
+  - id: pre-stop-health
+    probe: cluster.health
+
+steps:
+  - id: stop-node-4
+    action: chaos.stop_node
+    params:
+      node: node-4
+
+  - id: wait-node-down
+    action: wait
+    params:
+      timeout: 15
+
+  - id: start-node-4
+    action: chaos.start_node
+    params:
+      node: node-4
+
+  - id: wait-node-recovery
+    action: wait
+    params:
+      timeout: 90
+      until:
+        probe: node.container_running
+        params:
+          node: node-4
+        expect:
+          running: true
+
+  - id: wait-agent-active-after-restart
+    action: wait
+    params:
+      timeout: 60
+      until:
+        probe: service.status
+        params:
+          node: node-4
+          service: node-agent
+        expect:
+          unit_state: "active"
+
+assertions:
+  - id: quorum-maintained
+    probe: cluster.health
+    expect:
+      status: "healthy"
+
+  - id: node-4-agent-recovered
+    probe: service.status
+    params:
+      node: node-4
+      service: node-agent
+    expect:
+      unit_state: "active"
+
+  - id: node-4-registered
+    probe: node.etcd_registered
+    params:
+      node: node-4
+    expect:
+      registered: true
+
+  - id: all-nodes-present
+    probe: cluster.nodes
+    expect:
+      count: 5
+
+cleanup:
+  - id: ensure-node-4-running
+    action: chaos.start_node
+    params:
+      node: node-4

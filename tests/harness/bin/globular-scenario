@@ -34,6 +34,117 @@ except ImportError:
 HARNESS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIB_DIR = os.path.join(HARNESS_DIR, "lib")
 PROBES_SH = os.path.join(LIB_DIR, "probes.sh")
+AWARENESS_SH = os.path.join(LIB_DIR, "awareness.sh")
+EVIDENCE_SH = os.path.join(LIB_DIR, "evidence.sh")
+TRAINING_SH = os.path.join(LIB_DIR, "training.sh")
+LEDGER_FILE = os.path.join(
+    os.path.dirname(HARNESS_DIR), "reports", "awareness-training-ledger.jsonl"
+)
+
+
+class AwarenessCollector:
+    """
+    Calls awareness.sh functions to collect evidence before/after a scenario.
+    All calls are non-fatal — awareness failures never hide scenario failures.
+    """
+
+    def __init__(self, cfg: dict, output_dir: str):
+        self.cfg = cfg or {}
+        self.output_dir = output_dir
+        self.enabled = bool(self.cfg.get("enabled", False))
+        self.task = self.cfg.get("task", "")
+        self.phase = self.cfg.get("phase", "")
+        self.include_runtime = bool(self.cfg.get("include_runtime",
+            os.environ.get("AWARENESS_INCLUDE_RUNTIME", "0") == "1"))
+        self.runtime_window = self.cfg.get("runtime_window",
+            os.environ.get("AWARENESS_RUNTIME_WINDOW", "30m"))
+        self.create_incident = bool(self.cfg.get("create_incident_on_failure", False))
+        self.create_proposal = bool(self.cfg.get("create_proposal_on_failure", False))
+        self.expected_failure_modes = self.cfg.get("expected_failure_modes", [])
+        training = self.cfg.get("training", {}) or {}
+        self.training_enabled = bool(training.get("enabled",
+            os.environ.get("AWARENESS_TRAINING", "0") == "1"))
+        self._had_error = False
+
+    def _run(self, func: str, *args) -> bool:
+        """Source awareness.sh and call func with args via bash. Returns True on success."""
+        if not os.path.exists(AWARENESS_SH):
+            return False
+        quoted = " ".join(shlex.quote(str(a)) for a in args)
+        cmd = f'source "{AWARENESS_SH}" && {func} {quoted}'
+        try:
+            proc = subprocess.run(["bash", "-c", cmd], timeout=180)
+            return proc.returncode == 0
+        except subprocess.TimeoutExpired:
+            print(f"  [awareness] WARNING: {func} timed out after 180s")
+            self._had_error = True
+            return False
+        except Exception as e:
+            print(f"  [awareness] WARNING: {func} error: {e}")
+            self._had_error = True
+            return False
+
+    def preflight(self) -> None:
+        if self.task:
+            ok = self._run("awareness_preflight", self.task, self.phase, self.output_dir,
+                           "1" if self.include_runtime else "0", self.runtime_window)
+            if not ok:
+                skipped = os.path.join(self.output_dir, "awareness", "SKIPPED.txt")
+                if not os.path.exists(skipped):
+                    self._had_error = True
+
+    def runtime_snapshot(self) -> None:
+        if self.enabled and self.include_runtime:
+            self._run("awareness_runtime_snapshot", self.output_dir)
+
+    def on_failure(self) -> None:
+        if not self.task:
+            return
+        self._run("awareness_debug_session", self.task, self.phase, self.output_dir)
+        self._run("awareness_did_we_fix", self.task, self.output_dir)
+        want_incident = self.create_incident or self.training_enabled
+        if want_incident:
+            self._run("awareness_incident_from_failure", self.task, self.output_dir)
+            if self.create_proposal:
+                self._run("awareness_propose_from_incident", self.output_dir)
+
+    def get_result(self) -> str:
+        """Return AWARENESS_PASS, AWARENESS_SKIPPED, or AWARENESS_ERROR."""
+        adir = os.path.join(self.output_dir, "awareness")
+        if not os.path.isdir(adir):
+            return "AWARENESS_SKIPPED"
+        if os.path.exists(os.path.join(adir, "SKIPPED.txt")):
+            return "AWARENESS_SKIPPED"
+        if self._had_error:
+            return "AWARENESS_ERROR"
+        for artifact in ["preflight.agent.txt", "preflight.json",
+                         "debug-session.agent.txt", "debug-session.json"]:
+            if os.path.exists(os.path.join(adir, artifact)):
+                return "AWARENESS_PASS"
+        return "AWARENESS_SKIPPED"
+
+
+class EvidenceCollector:
+    """Calls evidence.sh to collect full cluster state after scenario failure."""
+
+    def __init__(self, output_dir: str):
+        self.output_dir = output_dir
+
+    def collect(self, scenario_file: str = "", result_json_path: str = "") -> None:
+        if not os.path.exists(EVIDENCE_SH):
+            return
+        args = [shlex.quote(self.output_dir)]
+        if scenario_file:
+            args.append(shlex.quote(scenario_file))
+        if result_json_path:
+            args.append(shlex.quote(result_json_path))
+        cmd = f'source "{EVIDENCE_SH}" && evidence_collect_all {" ".join(args)}'
+        try:
+            subprocess.run(["bash", "-c", cmd], timeout=180)
+        except subprocess.TimeoutExpired:
+            print("  [evidence] WARNING: collection timed out after 180s")
+        except Exception as e:
+            print(f"  [evidence] WARNING: collection error: {e}")
 
 
 class Evidence:
@@ -85,6 +196,9 @@ class ScenarioExecutor:
         suite = self.scenario.get("suite", "unknown")
         self.evidence = Evidence(name, suite)
         self.baseline_captures: dict = {}
+        self.awareness = AwarenessCollector(
+            self.scenario.get("awareness", {}), output_dir)
+        self.evidence_collector = EvidenceCollector(output_dir)
 
     # ── public entry point ────────────────────────────────────────────────────
 
@@ -97,6 +211,14 @@ class ScenarioExecutor:
 
         if not self._validate_schema():
             return False
+
+        # Check cluster reachability for INFRA_ERROR classification.
+        cluster_ok = self._cluster_reachable()
+        if not cluster_ok:
+            print("  [WARNING] Cluster nodes not reachable — running in degraded mode")
+
+        # Awareness preflight — before any scenario sections run.
+        self.awareness.preflight()
 
         # Execute sections in order. Stop early on precondition or assertion failure,
         # but ALWAYS run cleanup regardless of earlier failures so chaos tests can
@@ -111,6 +233,7 @@ class ScenarioExecutor:
 
         overall_ok = True
         stopped_at = None
+        steps_ok = True
         for section, handler, stop_on_fail in sections:
             items = self.scenario.get(section, [])
             if not items:
@@ -121,14 +244,46 @@ class ScenarioExecutor:
                 continue
             print(f"  [{section}]")
             ok = handler(items, section)
+            if section == "steps" and not ok:
+                steps_ok = False
             if not ok:
                 overall_ok = False
                 if stop_on_fail and stopped_at is None:
                     stopped_at = section
                     print(f"  STOPPED: {section} failed — cleanup will still run")
 
-        self._write_output(overall_ok)
+        # Determine result classification.
+        if not cluster_ok and not overall_ok and stopped_at == "preconditions":
+            result = "INFRA_ERROR"
+        elif not overall_ok and steps_ok and stopped_at == "assertions":
+            result = "FAIL"
+        elif not overall_ok and not steps_ok:
+            result = "PARTIAL"
+        else:
+            result = "PASS" if overall_ok else "FAIL"
+
+        # Awareness post-scenario collection.
+        self.awareness.runtime_snapshot()
+        if not overall_ok:
+            self.awareness.on_failure()
+            result_json_path = os.path.join(self.output_dir, "evidence.json")
+            self.evidence_collector.collect(self.scenario_file, result_json_path)
+
+        awareness_result = self.awareness.get_result()
+        self._write_output(overall_ok, result, awareness_result)
+        self._append_to_ledger(result, awareness_result)
         return overall_ok
+
+    def _cluster_reachable(self) -> bool:
+        """Quick check if globular-node-1 container is running."""
+        try:
+            proc = subprocess.run(
+                ["docker", "inspect", "globular-node-1",
+                 "--format", "{{.State.Running}}"],
+                capture_output=True, text=True, timeout=10)
+            return proc.returncode == 0 and proc.stdout.strip() == "true"
+        except Exception:
+            return False
 
     # ── section handlers ──────────────────────────────────────────────────────
 
@@ -614,28 +769,117 @@ class ScenarioExecutor:
                 f"  ERROR: unsupported schema version: {self.scenario.get('version')}",
                 file=sys.stderr)
             return False
+        # Validate optional awareness block if present.
+        aw = self.scenario.get("awareness")
+        if aw is not None:
+            if not isinstance(aw, dict):
+                print("  ERROR: 'awareness' must be a mapping", file=sys.stderr)
+                return False
+            valid_keys = {
+                "enabled", "task", "phase", "include_runtime", "runtime_window",
+                "create_incident_on_failure", "expected_invariants", "expected_forbidden_fixes",
+                "create_proposal_on_failure", "expected_failure_modes", "training",
+            }
+            unknown = set(aw.keys()) - valid_keys
+            if unknown:
+                print(f"  ERROR: unknown keys in awareness block: {sorted(unknown)}",
+                      file=sys.stderr)
+                return False
         return True
 
     # ── output ────────────────────────────────────────────────────────────────
 
-    def _write_output(self, passed: bool):
+    def _awareness_artifact_status(self) -> dict:
+        """Return a status dict for each awareness artifact type."""
+        adir = os.path.join(self.output_dir, "awareness")
+        if not os.path.isdir(adir):
+            return {}
+        skipped = os.path.exists(os.path.join(adir, "SKIPPED.txt"))
+
+        def _status(base_names, error_names=None):
+            if skipped:
+                return "SKIPPED"
+            for n in (base_names if isinstance(base_names, list) else [base_names]):
+                if os.path.exists(os.path.join(adir, n)):
+                    return "PASS"
+            for n in (error_names or []):
+                if os.path.exists(os.path.join(adir, n)):
+                    return "ERROR"
+            return "SKIPPED"
+
+        incident_status = "SKIPPED"
+        if not skipped:
+            if os.path.exists(os.path.join(adir, "incident.yaml")):
+                incident_status = "CREATED"
+            elif os.path.exists(os.path.join(adir, "incident.error.txt")):
+                incident_status = "ERROR"
+
+        proposal_status = "SKIPPED"
+        if not skipped:
+            if os.path.exists(os.path.join(adir, "proposal.yaml")):
+                proposal_status = "DRAFT"
+            elif os.path.exists(os.path.join(adir, "proposal.error.txt")):
+                proposal_status = "ERROR"
+
+        return {
+            "preflight": _status(
+                ["preflight.agent.txt", "preflight.json"]),
+            "debug-session": _status(
+                ["debug-session.agent.txt", "debug-session.json"]),
+            "runtime-snapshot": _status(
+                ["runtime-snapshot.json"],
+                ["runtime-snapshot.error.txt"]),
+            "incident": incident_status,
+            "proposal": proposal_status,
+        }
+
+    def _write_output(self, passed: bool, result: str = "", awareness_result: str = ""):
         os.makedirs(self.output_dir, exist_ok=True)
+        result = result or ("PASS" if passed else "FAIL")
 
         # evidence.json
         ev = self.evidence.to_dict()
         ev["passed"] = passed
+        ev["result"] = result
+        ev["awareness_result"] = awareness_result or "AWARENESS_SKIPPED"
         with open(os.path.join(self.output_dir, "evidence.json"), "w") as f:
             json.dump(ev, f, indent=2)
 
         # RESULT.md
-        result_str = "PASS" if passed else "FAIL"
         pass_count = sum(1 for i in ev["items"] if i.get("passed"))
         fail_count = len(ev["items"]) - pass_count
+        awareness_status = self._awareness_artifact_status()
+
+        # Parse matched invariants/failure modes from awareness JSON artifacts
+        matched_inv: list = []
+        matched_fm: list = []
+        learning_rec = ""
+        adir = os.path.join(self.output_dir, "awareness")
+        for fname in ("preflight.json", "debug-session.json"):
+            fpath = os.path.join(adir, fname)
+            if os.path.exists(fpath):
+                try:
+                    with open(fpath) as fh:
+                        d = json.load(fh)
+                    for item in (d.get("matched_invariants") or d.get("invariants") or []):
+                        n = item if isinstance(item, str) else (item.get("id") or str(item))
+                        if n and n not in matched_inv:
+                            matched_inv.append(n)
+                    for item in (d.get("matched_failure_modes") or d.get("failure_modes") or []):
+                        n = item if isinstance(item, str) else (item.get("id") or str(item))
+                        if n and n not in matched_fm:
+                            matched_fm.append(n)
+                    if not learning_rec:
+                        learning_rec = (d.get("learning_recommendation")
+                                        or d.get("recommendation") or "")
+                except Exception:
+                    pass
 
         with open(os.path.join(self.output_dir, "RESULT.md"), "w") as f:
             f.write(f"# {ev['scenario']}\n\n")
             f.write(f"**Suite**: {ev['suite']}  \n")
-            f.write(f"**Result**: {result_str}  \n")
+            f.write(f"**Result**: {result}  \n")
+            f.write(f"**Awareness**: {awareness_result or 'AWARENESS_SKIPPED'}  \n")
             f.write(f"**Time**: {ev['start_time']}  \n")
             f.write(f"**Checks**: {pass_count} passed, {fail_count} failed\n\n")
 
@@ -648,10 +892,79 @@ class ScenarioExecutor:
                     f.write(
                         f"| {item['section']} | {item['id']} | {item['probe']} | {icon} |\n")
 
+            if awareness_status:
+                f.write("\n## Awareness\n\n")
+                f.write("| Artifact | Status |\n")
+                f.write("|----------|--------|\n")
+                for key, status in awareness_status.items():
+                    f.write(f"| {key} | {status} |\n")
+
+                if matched_inv:
+                    f.write(f"\n**Matched invariants**: {', '.join(matched_inv[:5])}")
+                    if len(matched_inv) > 5:
+                        f.write(f" (+{len(matched_inv)-5} more)")
+                    f.write("\n")
+                if matched_fm:
+                    f.write(f"**Matched failure modes**: {', '.join(matched_fm[:5])}")
+                    if len(matched_fm) > 5:
+                        f.write(f" (+{len(matched_fm)-5} more)")
+                    f.write("\n")
+                if learning_rec:
+                    f.write(f"**Recommendation**: {learning_rec[:120]}\n")
+
+                adir_rel = "awareness"
+                f.write(f"\nArtifacts: `{adir_rel}/`\n")
+                for fname, label in [
+                    ("preflight.agent.txt", "preflight.agent.txt"),
+                    ("debug-session.agent.txt", "debug-session.agent.txt"),
+                    ("runtime-snapshot.json", "runtime-snapshot.json"),
+                    ("incident.yaml", "incident.yaml"),
+                    ("proposal.yaml", "proposal.yaml [DRAFT — manual review required]"),
+                ]:
+                    if os.path.exists(os.path.join(self.output_dir, adir_rel, fname)):
+                        f.write(f"- [{label}]({adir_rel}/{fname})\n")
+
+                if os.path.exists(os.path.join(self.output_dir, adir_rel, "proposal.yaml")):
+                    f.write("\n> **DRAFT PROPOSAL** — manual review required before approval.\n")
+                    f.write("> Run: `globular awareness validate-proposal --file "
+                            f"{adir_rel}/proposal.yaml`\n")
+
             if self.baseline_captures:
                 f.write("\n## Baseline Captures\n\n```json\n")
                 f.write(json.dumps(self.baseline_captures, indent=2))
                 f.write("\n```\n")
+
+    def _append_to_ledger(self, result: str, awareness_result: str) -> None:
+        if not os.path.exists(TRAINING_SH):
+            return
+        scenario_name = self.scenario.get("name", "unknown")
+        task = self.awareness.task or ""
+        phase = self.awareness.phase or ""
+        run_id = os.path.basename(self.output_dir)
+        adir = os.path.join(self.output_dir, "awareness")
+        incident_created = "true" if os.path.exists(
+            os.path.join(adir, "incident.yaml")) else "false"
+        proposal_created = "true" if os.path.exists(
+            os.path.join(adir, "proposal.yaml")) else "false"
+        awareness_status = awareness_result.replace("AWARENESS_", "")
+        cmd = (
+            f'source "{TRAINING_SH}" && '
+            f'training_ledger_append '
+            f'{shlex.quote(LEDGER_FILE)} '
+            f'{shlex.quote(run_id)} '
+            f'{shlex.quote(scenario_name)} '
+            f'{shlex.quote(result)} '
+            f'{shlex.quote(awareness_status)} '
+            f'{shlex.quote(task)} '
+            f'{shlex.quote(phase)} '
+            f'{shlex.quote(incident_created)} '
+            f'{shlex.quote(proposal_created)} '
+            f'{shlex.quote(self.output_dir)}'
+        )
+        try:
+            subprocess.run(["bash", "-c", cmd], timeout=30)
+        except Exception as e:
+            print(f"  [training] WARNING: ledger append error: {e}")
 
 
 # ── main ──────────────────────────────────────────────────────────────────────

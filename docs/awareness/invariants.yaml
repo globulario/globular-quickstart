@@ -1,0 +1,153 @@
+# invariants.yaml — globular-quickstart
+#
+# Laws the quickstart lab must uphold. An AI agent editing bootstrap scripts,
+# test harness libraries, scenario YAML, or Dockerfile must not introduce
+# changes that violate these.
+
+invariants:
+
+    - id: testharness.probes_readonly
+      title: All probe functions must be read-only — no mutations inside a probe
+      severity: critical
+      status: active
+      # origin: { type: principle, confidence: high }
+      summary: |
+          The 1,049-LOC probes.sh library is the read-only observation layer of the test
+          harness. Every function in it must be safe to call repeatedly without changing
+          cluster state. No etcdctl put, no docker exec that modifies files, no systemctl
+          commands that start/stop services may appear inside a probe function.
+          Chaos and mutations are separate YAML action steps, never inside probes.
+          Violating this makes tests non-idempotent: a second probe call changes the
+          result of a subsequent probe call.
+      protects:
+          files:
+              - tests/harness/lib/probes.sh
+      forbidden_fixes:
+          - no.mutation.in.probe
+
+    - id: testharness.scenario_isolation
+      title: Each scenario run must start from a verified baseline and restore it on exit
+      severity: error
+      status: active
+      # origin: { type: principle, confidence: high }
+      summary: |
+          Scenarios must not assume the cluster is in a known-good state from a prior
+          scenario. Every scenario must verify its baseline preconditions before executing
+          and must restore the cluster to a clean state in its cleanup steps.
+          Tests that pollute state for subsequent scenarios are false negatives: the next
+          test appears to fail for the wrong reason, masking real bugs.
+      protects:
+          files:
+              - tests/scenarios/
+              - tests/harness/bin/globular-test
+      forbidden_fixes:
+          - no.scenario.state.leak
+
+    - id: cluster.ca.generated.once
+      title: Cluster CA must be generated exactly once (on node-1) and never regenerated
+      severity: critical
+      status: active
+      # origin: { type: principle, confidence: high }
+      summary: |
+          scripts/entrypoint.sh generates the cluster CA only when running as node-1
+          (GLOBULAR_CA_MODE=generate). All other nodes copy the CA from the shared volume
+          (GLOBULAR_CA_MODE=copy). The CA must never be regenerated after the cluster is
+          bootstrapped — all existing service certs are signed by the original CA and will
+          fail mTLS verification if the CA changes. Regenerating the CA is a full
+          cluster teardown, not a fix.
+      protects:
+          files:
+              - scripts/entrypoint.sh
+      forbidden_fixes:
+          - no.ca.regenerate.midcluster
+
+    - id: cluster.dns.seeded.before.services
+      title: /etc/hosts must be seeded with peer IPs before any service starts
+      severity: critical
+      status: active
+      # origin: { type: inferred_from_code, confidence: high }
+      summary: |
+          Services perform peer discovery using hostnames (node-1, node-2, etc.) before
+          the DNS service is running. If /etc/hosts is not pre-seeded by entrypoint.sh,
+          peer hostname resolution fails and services cannot connect, causing a cascade
+          of startup failures. entrypoint.sh must complete its /etc/hosts seeding before
+          systemd starts any service unit.
+      protects:
+          files:
+              - scripts/entrypoint.sh
+      forbidden_fixes:
+          - no.services.before.hosts.seeded
+
+    - id: cluster.layer3.not.layer4
+      title: Installed state (etcd Layer 3) must never be treated as proof of running (Layer 4)
+      severity: error
+      status: active
+      # origin: { type: principle, confidence: high }
+      summary: |
+          An etcd record in /globular/nodes/{node_id}/packages/ proves that the package
+          was installed on that node — not that the service is currently running. The test
+          harness must always check both Layer 3 (etcd installed record) and Layer 4
+          (systemctl status) independently. Assertions that check only one layer produce
+          false positives: a service can be installed but crashed, disabled, or missing its
+          unit file.
+      protects:
+          files:
+              - tests/harness/lib/probes.sh
+              - tests/harness/lib/assertions.sh
+              - tests/scenarios/
+      forbidden_fixes:
+          - no.layer.collapse.in.assertions
+
+    - id: testharness.sigkill.for.crash.tests
+      title: Crash recovery tests must use SIGKILL, not SIGTERM or systemctl stop
+      severity: error
+      status: active
+      # origin: { type: inferred_from_code, confidence: high }
+      summary: |
+          systemctl stop sends SIGTERM, which causes a graceful exit (exit code 0).
+          systemd's Restart=on-failure does NOT trigger on a clean exit — only on
+          non-zero exit or signal death. A crash recovery test that uses systemctl stop
+          or SIGTERM will never exercise the auto-restart path. Use SIGKILL (kill -9 or
+          pkill -SIGKILL) to simulate a real crash and trigger Restart=on-failure.
+      protects:
+          files:
+              - tests/scenarios/resilience/
+              - tests/scenarios/training/
+              - tests/harness/lib/cluster.sh
+      forbidden_fixes:
+          - no.sigterm.for.crash.test
+
+    - id: awareness.proposals.draft.only
+      title: Awareness proposals generated from quickstart training are DRAFT; require manual review before production promotion
+      severity: error
+      status: active
+      # origin: { type: principle, confidence: high }
+      summary: |
+          Quickstart has documented lab exceptions (external ScyllaDB, relaxed MinIO quorum,
+          single-node etcd for some smoke tests) that do not apply to production clusters.
+          A failure learning proposal generated from a quickstart training scenario may
+          encode lab-exception behavior as a production invariant. All quickstart-originated
+          proposals must remain in DRAFT state until a human reviewer has verified that the
+          encoded rule is safe for production.
+      protects:
+          files:
+              - tests/harness/lib/training.sh
+              - tests/harness/lib/awareness.sh
+      forbidden_fixes:
+          - no.auto.promote.lab.proposals
+
+    - id: cluster.etcd.quorum.awareness
+      title: Test scenarios that reduce etcd quorum must document expected read-only mode
+      severity: error
+      status: active
+      # origin: { type: inferred_from_code, confidence: high }
+      summary: |
+          Scenarios in tests/scenarios/catastrophic/ deliberately reduce etcd quorum to
+          test cluster behavior under failure. These scenarios must assert the expected
+          outcome (etcd enters read-only mode, controller stops writing desired state)
+          rather than asserting cluster health. A scenario that kills 2 of 3 etcd nodes
+          and then asserts cluster.healthy = true is a broken test, not a passing one.
+      protects:
+          files:
+              - tests/scenarios/catastrophic/
+              - tests/harness/lib/assertions.sh

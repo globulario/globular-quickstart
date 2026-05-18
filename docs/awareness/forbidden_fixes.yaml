@@ -1,0 +1,77 @@
+# forbidden_fixes.yaml — globular-quickstart
+#
+# Patterns that look like reasonable shortcuts but are wrong in this codebase.
+# Re-running registration ADDS entries; IDs are stable identity.
+
+forbidden_fixes:
+
+    - id: no.mutation.in.probe
+      summary: |
+          Do not add etcdctl put, docker exec (file-writing or service-modifying), or
+          systemctl start/stop/restart calls inside any function in tests/harness/lib/probes.sh.
+          Probes are the read-only observation layer. A mutating probe produces different
+          results on the second call, making test runs non-idempotent and masking real failures.
+          Put all mutations in separate YAML action steps or cluster.sh helpers.
+      related_invariants:
+          - testharness.probes_readonly
+
+    - id: no.scenario.state.leak
+      summary: |
+          Do not write scenario steps that depend on state left behind by a previous scenario.
+          Do not skip cleanup steps to save time. If a scenario leaves iptables rules,
+          stopped services, or extra etcd keys, the next scenario's baseline check will
+          fail for a misleading reason. Each scenario must restore the cluster to a
+          known-good state in its cleanup, verified by baseline probes.
+      related_invariants:
+          - testharness.scenario_isolation
+
+    - id: no.ca.regenerate.midcluster
+      summary: |
+          Do not run the CA generation block of entrypoint.sh (openssl genpkey + openssl req
+          for the cluster CA) on any node after the cluster has completed its first
+          successful bootstrap. The CA is immutable once service certs have been issued.
+          If you need to rotate the CA, this requires a full cluster teardown, CA regeneration,
+          and reissuing all service certs — not a partial fix.
+      related_invariants:
+          - cluster.ca.generated.once
+
+    - id: no.services.before.hosts.seeded
+      summary: |
+          Do not add systemd unit files or ExecStartPre hooks that start Globular services
+          before entrypoint.sh has completed its /etc/hosts seeding step.
+          Do not remove or shorten the entrypoint.sh completion gate.
+          Services that start before peer hostnames are resolvable will fail to connect
+          to etcd or the controller, causing a silent cascade of startup failures.
+      related_invariants:
+          - cluster.dns.seeded.before.services
+
+    - id: no.layer.collapse.in.assertions
+      summary: |
+          Do not write test assertions that check an etcd installed record
+          (/globular/nodes/{id}/packages/) and conclude that the service is running.
+          Always assert both layers: (1) etcd installed record exists (Layer 3), and
+          (2) systemctl status shows active (Layer 4). Skipping Layer 4 produces
+          false positives in crash recovery tests and resilience scenarios.
+      related_invariants:
+          - cluster.layer3.not.layer4
+
+    - id: no.sigterm.for.crash.test
+      summary: |
+          Do not use systemctl stop or kill -SIGTERM to simulate a service crash in a
+          resilience or recovery test scenario. systemctl stop causes a graceful exit
+          (exit code 0), which does NOT trigger systemd's Restart=on-failure.
+          Use SIGKILL (kill -9, pkill -SIGKILL, or kill -KILL) to force a crash signal
+          and exercise the auto-restart path.
+      related_invariants:
+          - testharness.sigkill.for.crash.tests
+
+    - id: no.auto.promote.lab.proposals
+      summary: |
+          Do not add automation that promotes awareness failure learning proposals from
+          DRAFT to ACTIVE without a human review step when the proposal originated from
+          a quickstart training scenario. Quickstart has three documented lab exceptions
+          (external ScyllaDB, relaxed MinIO quorum, single-node etcd training) that
+          do not reflect valid production state. Auto-promotion would encode these
+          exceptions as production invariants.
+      related_invariants:
+          - awareness.proposals.draft.only

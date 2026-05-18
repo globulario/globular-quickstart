@@ -1,0 +1,143 @@
+# failure_modes.yaml — globular-quickstart
+#
+# Failure modes specific to the quickstart lab environment.
+# Re-running registration ADDS entries; IDs are stable identity.
+
+failure_modes:
+
+    - id: fm.probe.mutation.breaks.idempotency
+      title: Probe function contains a mutation — test results change on re-run
+      severity: critical
+      # origin: { type: principle, confidence: high }
+      root_cause: |
+          If a probe function in probes.sh calls etcdctl put, docker exec to modify files,
+          or systemctl to start/stop services, then calling the probe a second time changes
+          the cluster state. Subsequent probes return different results depending on how
+          many times the probe was called. The test harness calls probes at baseline,
+          after each step, and in assertions — a single mutating probe corrupts all of
+          these readings.
+      symptoms:
+          - Test passes on first run, fails on second run of the same scenario
+          - Probe function shows in etcd diff output between baseline and assertion
+          - A chaos scenario passes even when the chaos step was skipped
+      forbidden_fixes:
+          - no.mutation.in.probe
+      related_invariants:
+          - testharness.probes_readonly
+
+    - id: fm.scenario.state.pollution
+      title: Scenario cleanup fails — next scenario inherits partial or broken cluster state
+      severity: error
+      # origin: { type: principle, confidence: high }
+      root_cause: |
+          If a scenario's cleanup steps fail (service left stopped, iptables rule not
+          cleared, etcd key not deleted), the next scenario starts from a broken baseline.
+          The next scenario may fail for a completely unrelated reason, producing a
+          misleading failure report. The root failure is in the cleanup, not the next test.
+      symptoms:
+          - Scenario B fails but the logs show a problem that should have been from Scenario A
+          - cluster.health probe returns false at the start of a new scenario
+          - docker exec to a node shows unexpected iptables rules or stopped services
+      forbidden_fixes:
+          - no.scenario.state.leak
+      related_invariants:
+          - testharness.scenario_isolation
+
+    - id: fm.ca.regenerated.midcluster
+      title: CA key regenerated after bootstrap — all service certs become invalid
+      severity: critical
+      # origin: { type: principle, confidence: high }
+      root_cause: |
+          If scripts/entrypoint.sh regenerates the CA key (openssl genpkey + openssl req)
+          on a container that was already running, the new CA public key does not match
+          the certificate authority that signed the existing service certs. Every mTLS
+          handshake in the cluster fails: the peer presents a cert signed by the old CA,
+          but the verifier only trusts the new CA. The cluster becomes completely
+          disconnected.
+      symptoms:
+          - All inter-service gRPC calls fail with TLS handshake error or certificate not trusted
+          - etcd peer connections fail (etcd cannot achieve quorum)
+          - Restarting any service does not help (its cert was signed by the old CA)
+      forbidden_fixes:
+          - no.ca.regenerate.midcluster
+      related_invariants:
+          - cluster.ca.generated.once
+
+    - id: fm.hosts.not.seeded.before.services
+      title: Services start before /etc/hosts is populated — peer hostname resolution fails
+      severity: critical
+      # origin: { type: inferred_from_code, confidence: high }
+      root_cause: |
+          If entrypoint.sh fails partway through, exits early, or is bypassed, systemd
+          may start services before /etc/hosts contains the cluster peer entries. Services
+          that resolve peer hostnames (e.g. node-2, node-3) at startup fail with
+          "name or service not known" because the DNS service itself is not yet running
+          and /etc/hosts is the only resolution path at this point.
+      symptoms:
+          - Node agent fails to start with connection refused or name resolution error
+          - etcd cannot form quorum because peer URLs (node-2:2380) are unresolvable
+          - scripts/seed-etcd.sh fails because cluster-controller is unreachable
+      related_invariants:
+          - cluster.dns.seeded.before.services
+      forbidden_fixes:
+          - no.services.before.hosts.seeded
+
+    - id: fm.layer.collapse.in.test.assertion
+      title: Test asserts Layer 3 (etcd installed) and concludes Layer 4 (service running) — false positive
+      severity: error
+      # origin: { type: principle, confidence: high }
+      root_cause: |
+          A test that checks /globular/nodes/{id}/packages/SERVICE/node-agent and sees an
+          entry concludes "node agent is running". But Layer 3 only records what was
+          installed, not what is currently running. A crash-recovery test that uses this
+          assertion will show pass even when the service is dead. The test is measuring
+          the wrong layer.
+      symptoms:
+          - Resilience scenario passes but manual check shows service is not running
+          - probe_service_status returns ok but systemctl status shows inactive
+          - Crash injection step appears to have no effect (test still passes)
+      related_invariants:
+          - cluster.layer3.not.layer4
+      forbidden_fixes:
+          - no.layer.collapse.in.assertions
+
+    - id: fm.sigterm.crash.test.false.pass
+      title: Crash test uses systemctl stop — Restart=on-failure never triggers — test always passes
+      severity: error
+      # origin: { type: inferred_from_code, confidence: high }
+      root_cause: |
+          systemctl stop sends SIGTERM, which causes a graceful shutdown with exit code 0.
+          systemd's Restart=on-failure only triggers on crash signals or non-zero exit.
+          A crash recovery test that uses systemctl stop will: (1) stop the service cleanly,
+          (2) systemd will NOT restart it, (3) the test then checks if the service came back
+          up, which it did not. The test fails — but for the wrong reason: the test itself
+          is broken, not the service.
+      symptoms:
+          - Crash recovery scenario always fails at the "service restarted" assertion
+          - journalctl shows clean exit (code=exited, status=0) not a crash
+          - Removing Restart=on-failure from unit file has no effect on test outcome
+      related_invariants:
+          - testharness.sigkill.for.crash.tests
+      forbidden_fixes:
+          - no.sigterm.for.crash.test
+
+    - id: fm.lab.exception.promoted.to.production
+      title: Quickstart lab exception encoded as production invariant via awareness proposal
+      severity: error
+      # origin: { type: principle, confidence: high }
+      root_cause: |
+          Quickstart has three documented lab exceptions: external ScyllaDB, relaxed MinIO
+          quorum (1-2 nodes for smoke), and single-node etcd in some training scenarios.
+          If an awareness training scenario generates a proposal from behavior observed
+          under a lab exception, and that proposal is auto-promoted, the production
+          awareness graph may encode "MinIO can run on 1 node" or "ScyllaDB is external"
+          as a valid production state. This would suppress correct warnings about
+          production quorum violations.
+      symptoms:
+          - Production awareness graph shows invariant MinIO quorum >= 1 node
+          - Awareness stops warning about missing storage profiles on founding nodes
+          - A quickstart-origin proposal appears in production graph without DRAFT marker
+      related_invariants:
+          - awareness.proposals.draft.only
+      forbidden_fixes:
+          - no.auto.promote.lab.proposals

@@ -1,0 +1,1420 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "forbidden_fix:no.mutation.in.probe",
+      "type": "forbidden_fix",
+      "name": "no.mutation.in.probe",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "failure_mode:fm.scenario.state.pollution",
+      "type": "failure_mode",
+      "name": "fm.scenario.state.pollution",
+      "summary": "If a scenario's cleanup steps fail (service left stopped, iptables rule not\ncleared, etcd key not deleted), the next scenario starts from a broken baseline.\nThe next scenario may fail for a completely unrelated reason, producing a\nmisleading failure report. The root failure is in the cleanup, not the next test.\n",
+      "metadata": {
+        "coverage_state": "",
+        "deprecated": false,
+        "intentional_gap": false,
+        "severity": "error"
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "invariant:cluster.ca.generated.once",
+      "type": "invariant",
+      "name": "cluster.ca.generated.once",
+      "summary": "scripts/entrypoint.sh generates the cluster CA only when running as node-1\n(GLOBULAR_CA_MODE=generate). All other nodes copy the CA from the shared volume\n(GLOBULAR_CA_MODE=copy). The CA must never be regenerated after the cluster is\nbootstrapped — all existing service certs are signed by the original CA and will\nfail mTLS verification if the CA changes. Regenerating the CA is a full\ncluster teardown, not a fix.\n",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "invariant:awareness.proposals.draft.only",
+      "type": "invariant",
+      "name": "awareness.proposals.draft.only",
+      "summary": "Quickstart has documented lab exceptions (external ScyllaDB, relaxed MinIO quorum,\nsingle-node etcd for some smoke tests) that do not apply to production clusters.\nA failure learning proposal generated from a quickstart training scenario may\nencode lab-exception behavior as a production invariant. All quickstart-originated\nproposals must remain in DRAFT state until a human reviewer has verified that the\nencoded rule is safe for production.\n",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "source_file:tests/harness/lib/awareness.sh",
+      "type": "source_file",
+      "name": "tests/harness/lib/awareness.sh",
+      "path": "tests/harness/lib/awareness.sh",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "doc:CLAUDE.md#hard-rules--never-violate",
+      "type": "documentation_section",
+      "name": "HARD RULES — NEVER VIOLATE",
+      "path": "CLAUDE.md#hard-rules--never-violate",
+      "summary": "HARD RULES — NEVER VIOLATE",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "doc:CLAUDE.md#build-commands",
+      "type": "documentation_section",
+      "name": "BUILD COMMANDS",
+      "path": "CLAUDE.md#build-commands",
+      "summary": "BUILD COMMANDS",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "doc:CLAUDE.md#known-issues-check-before-assuming-things-work",
+      "type": "documentation_section",
+      "name": "KNOWN ISSUES (check before assuming things work)",
+      "path": "CLAUDE.md#known-issues-check-before-assuming-things-work",
+      "summary": "KNOWN ISSUES (check before assuming things work)",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "forbidden_fix:no.auto.promote.lab.proposals",
+      "type": "forbidden_fix",
+      "name": "no.auto.promote.lab.proposals",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "source_file:tests/harness/lib/cluster.sh",
+      "type": "source_file",
+      "name": "tests/harness/lib/cluster.sh",
+      "path": "tests/harness/lib/cluster.sh",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "invariant:cluster.etcd.quorum.awareness",
+      "type": "invariant",
+      "name": "cluster.etcd.quorum.awareness",
+      "summary": "Scenarios in tests/scenarios/catastrophic/ deliberately reduce etcd quorum to\ntest cluster behavior under failure. These scenarios must assert the expected\noutcome (etcd enters read-only mode, controller stops writing desired state)\nrather than asserting cluster health. A scenario that kills 2 of 3 etcd nodes\nand then asserts cluster.healthy = true is a broken test, not a passing one.\n",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "metric_warning_rule:workflow_failed_runs_15m",
+      "type": "metric_warning_rule",
+      "name": "metric_warning:workflow_failed_runs_15m",
+      "summary": "Workflow failures indicate convergence risk and may threaten reconcile fairness",
+      "metadata": {
+        "critical": 0,
+        "explanation": "Workflow failures indicate convergence risk and may threaten reconcile fairness",
+        "linked_drs": 0,
+        "linked_fms": 0,
+        "linked_invs": 0,
+        "missing_drs": 0,
+        "missing_fms": 1,
+        "missing_invs": 1,
+        "query_id": "workflow_failed_runs_15m",
+        "threshold_key": "workflow:failed_runs_15m",
+        "warn": 0
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "metric_warning_rule:minio_offline_disks",
+      "type": "metric_warning_rule",
+      "name": "metric_warning:minio_offline_disks",
+      "summary": "Offline MinIO disks risk artifact availability and violate topology contract",
+      "metadata": {
+        "critical": 0,
+        "explanation": "Offline MinIO disks risk artifact availability and violate topology contract",
+        "linked_drs": 0,
+        "linked_fms": 0,
+        "linked_invs": 0,
+        "missing_drs": 1,
+        "missing_fms": 1,
+        "missing_invs": 1,
+        "query_id": "minio_offline_disks",
+        "threshold_key": "minio:offline_disks",
+        "warn": 0
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "forbidden_fix:no.scenario.state.leak",
+      "type": "forbidden_fix",
+      "name": "no.scenario.state.leak",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "invariant:testharness.scenario_isolation",
+      "type": "invariant",
+      "name": "testharness.scenario_isolation",
+      "summary": "Scenarios must not assume the cluster is in a known-good state from a prior\nscenario. Every scenario must verify its baseline preconditions before executing\nand must restore the cluster to a clean state in its cleanup steps.\nTests that pollute state for subsequent scenarios are false negatives: the next\ntest appears to fail for the wrong reason, masking real bugs.\n",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "failure_mode:fm.layer.collapse.in.test.assertion",
+      "type": "failure_mode",
+      "name": "fm.layer.collapse.in.test.assertion",
+      "summary": "A test that checks /globular/nodes/{id}/packages/SERVICE/node-agent and sees an\nentry concludes \"node agent is running\". But Layer 3 only records what was\ninstalled, not what is currently running. A crash-recovery test that uses this\nassertion will show pass even when the service is dead. The test is measuring\nthe wrong layer.\n",
+      "metadata": {
+        "coverage_state": "",
+        "deprecated": false,
+        "intentional_gap": false,
+        "severity": "error"
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "source_file:tests/harness/bin/globular-test",
+      "type": "source_file",
+      "name": "tests/harness/bin/globular-test",
+      "path": "tests/harness/bin/globular-test",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "source_file:tests/harness/lib/training.sh",
+      "type": "source_file",
+      "name": "tests/harness/lib/training.sh",
+      "path": "tests/harness/lib/training.sh",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "doc:CLAUDE.md",
+      "type": "documentation_section",
+      "name": "CLAUDE.md",
+      "path": "CLAUDE.md",
+      "summary": "This file is read automatically by Claude Code at the start of every session. It contains the rules, invariants, and operational knowledge needed to work safely with the Globular codebase.",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "doc:CLAUDE.md#ai-memory-service",
+      "type": "documentation_section",
+      "name": "AI MEMORY SERVICE",
+      "path": "CLAUDE.md#ai-memory-service",
+      "summary": "AI MEMORY SERVICE",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "forbidden_fix:no.ca.regenerate.midcluster",
+      "type": "forbidden_fix",
+      "name": "no.ca.regenerate.midcluster",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "failure_mode:fm.hosts.not.seeded.before.services",
+      "type": "failure_mode",
+      "name": "fm.hosts.not.seeded.before.services",
+      "summary": "If entrypoint.sh fails partway through, exits early, or is bypassed, systemd\nmay start services before /etc/hosts contains the cluster peer entries. Services\nthat resolve peer hostnames (e.g. node-2, node-3) at startup fail with\n\"name or service not known\" because the DNS service itself is not yet running\nand /etc/hosts is the only resolution path at this point.\n",
+      "metadata": {
+        "coverage_state": "",
+        "deprecated": false,
+        "intentional_gap": false,
+        "severity": "critical"
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "invariant:cluster.dns.seeded.before.services",
+      "type": "invariant",
+      "name": "cluster.dns.seeded.before.services",
+      "summary": "Services perform peer discovery using hostnames (node-1, node-2, etc.) before\nthe DNS service is running. If /etc/hosts is not pre-seeded by entrypoint.sh,\npeer hostname resolution fails and services cannot connect, causing a cascade\nof startup failures. entrypoint.sh must complete its /etc/hosts seeding before\nsystemd starts any service unit.\n",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "source_file:tests/harness/lib/probes.sh",
+      "type": "source_file",
+      "name": "tests/harness/lib/probes.sh",
+      "path": "tests/harness/lib/probes.sh",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "source_file:tests/scenarios/catastrophic/",
+      "type": "source_file",
+      "name": "tests/scenarios/catastrophic/",
+      "path": "tests/scenarios/catastrophic/",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "metric_warning_rule:scylla_disk_percent",
+      "type": "metric_warning_rule",
+      "name": "metric_warning:scylla_disk_percent",
+      "summary": "ScyllaDB disk pressure risks workflow/AI memory backend availability",
+      "metadata": {
+        "critical": 0,
+        "explanation": "ScyllaDB disk pressure risks workflow/AI memory backend availability",
+        "linked_drs": 0,
+        "linked_fms": 0,
+        "linked_invs": 0,
+        "missing_drs": 0,
+        "missing_fms": 1,
+        "missing_invs": 1,
+        "query_id": "scylla_disk_percent",
+        "threshold_key": "scylla:disk_percent",
+        "warn": 0
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "source_file:tests/scenarios/resilience/",
+      "type": "source_file",
+      "name": "tests/scenarios/resilience/",
+      "path": "tests/scenarios/resilience/",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "source_file:tests/scenarios/training/",
+      "type": "source_file",
+      "name": "tests/scenarios/training/",
+      "path": "tests/scenarios/training/",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "failure_mode:fm.probe.mutation.breaks.idempotency",
+      "type": "failure_mode",
+      "name": "fm.probe.mutation.breaks.idempotency",
+      "summary": "If a probe function in probes.sh calls etcdctl put, docker exec to modify files,\nor systemctl to start/stop services, then calling the probe a second time changes\nthe cluster state. Subsequent probes return different results depending on how\nmany times the probe was called. The test harness calls probes at baseline,\nafter each step, and in assertions — a single mutating probe corrupts all of\nthese readings.\n",
+      "metadata": {
+        "coverage_state": "",
+        "deprecated": false,
+        "intentional_gap": false,
+        "severity": "critical"
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "failure_mode:fm.sigterm.crash.test.false.pass",
+      "type": "failure_mode",
+      "name": "fm.sigterm.crash.test.false.pass",
+      "summary": "systemctl stop sends SIGTERM, which causes a graceful shutdown with exit code 0.\nsystemd's Restart=on-failure only triggers on crash signals or non-zero exit.\nA crash recovery test that uses systemctl stop will: (1) stop the service cleanly,\n(2) systemd will NOT restart it, (3) the test then checks if the service came back\nup, which it did not. The test fails — but for the wrong reason: the test itself\nis broken, not the service.\n",
+      "metadata": {
+        "coverage_state": "",
+        "deprecated": false,
+        "intentional_gap": false,
+        "severity": "error"
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "source_file:scripts/entrypoint.sh",
+      "type": "source_file",
+      "name": "scripts/entrypoint.sh",
+      "path": "scripts/entrypoint.sh",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "invariant:testharness.probes_readonly",
+      "type": "invariant",
+      "name": "testharness.probes_readonly",
+      "summary": "The 1,049-LOC probes.sh library is the read-only observation layer of the test\nharness. Every function in it must be safe to call repeatedly without changing\ncluster state. No etcdctl put, no docker exec that modifies files, no systemctl\ncommands that start/stop services may appear inside a probe function.\nChaos and mutations are separate YAML action steps, never inside probes.\nViolating this makes tests non-idempotent: a second probe call changes the\nresult of a subsequent probe call.\n",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "doc:CLAUDE.md#architecture-notes",
+      "type": "documentation_section",
+      "name": "ARCHITECTURE NOTES",
+      "path": "CLAUDE.md#architecture-notes",
+      "summary": "ARCHITECTURE NOTES",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "doc:CLAUDE.md#documentation",
+      "type": "documentation_section",
+      "name": "DOCUMENTATION",
+      "path": "CLAUDE.md#documentation",
+      "summary": "DOCUMENTATION",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "doc:CLAUDE.md#ai-rules-for-ai-agents-operating-on-this-codebase",
+      "type": "documentation_section",
+      "name": "AI RULES (for AI agents operating on this codebase)",
+      "path": "CLAUDE.md#ai-rules-for-ai-agents-operating-on-this-codebase",
+      "summary": "AI RULES (for AI agents operating on this codebase)",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "metric_warning_rule:etcd_disk_percent",
+      "type": "metric_warning_rule",
+      "name": "metric_warning:etcd_disk_percent",
+      "summary": "etcd disk full triggers NOSPACE alarm, blocks all writes, halts convergence",
+      "metadata": {
+        "critical": 0,
+        "explanation": "etcd disk full triggers NOSPACE alarm, blocks all writes, halts convergence",
+        "linked_drs": 0,
+        "linked_fms": 0,
+        "linked_invs": 0,
+        "missing_drs": 1,
+        "missing_fms": 2,
+        "missing_invs": 1,
+        "query_id": "etcd_disk_percent",
+        "threshold_key": "etcd:disk_percent",
+        "warn": 0
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "forbidden_fix:no.services.before.hosts.seeded",
+      "type": "forbidden_fix",
+      "name": "no.services.before.hosts.seeded",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "invariant:testharness.sigkill.for.crash.tests",
+      "type": "invariant",
+      "name": "testharness.sigkill.for.crash.tests",
+      "summary": "systemctl stop sends SIGTERM, which causes a graceful exit (exit code 0).\nsystemd's Restart=on-failure does NOT trigger on a clean exit — only on\nnon-zero exit or signal death. A crash recovery test that uses systemctl stop\nor SIGTERM will never exercise the auto-restart path. Use SIGKILL (kill -9 or\npkill -SIGKILL) to simulate a real crash and trigger Restart=on-failure.\n",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "source_file:tests/scenarios/",
+      "type": "source_file",
+      "name": "tests/scenarios/",
+      "path": "tests/scenarios/",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "doc:CLAUDE.md#claudemd",
+      "type": "documentation_section",
+      "name": "CLAUDE.md",
+      "path": "CLAUDE.md#claudemd",
+      "summary": "CLAUDE.md",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "metric_warning_rule:etcd_fsync_latency_ms",
+      "type": "metric_warning_rule",
+      "name": "metric_warning:etcd_fsync_latency_ms",
+      "summary": "High etcd fsync latency risks leader election instability and workflow dispatch timeouts",
+      "metadata": {
+        "critical": 0,
+        "explanation": "High etcd fsync latency risks leader election instability and workflow dispatch timeouts",
+        "linked_drs": 0,
+        "linked_fms": 0,
+        "linked_invs": 0,
+        "missing_drs": 1,
+        "missing_fms": 2,
+        "missing_invs": 1,
+        "query_id": "etcd_fsync_latency_ms",
+        "threshold_key": "etcd:fsync_latency_ms",
+        "warn": 0
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "source_file:tests/harness/lib/assertions.sh",
+      "type": "source_file",
+      "name": "tests/harness/lib/assertions.sh",
+      "path": "tests/harness/lib/assertions.sh",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "failure_mode:fm.ca.regenerated.midcluster",
+      "type": "failure_mode",
+      "name": "fm.ca.regenerated.midcluster",
+      "summary": "If scripts/entrypoint.sh regenerates the CA key (openssl genpkey + openssl req)\non a container that was already running, the new CA public key does not match\nthe certificate authority that signed the existing service certs. Every mTLS\nhandshake in the cluster fails: the peer presents a cert signed by the old CA,\nbut the verifier only trusts the new CA. The cluster becomes completely\ndisconnected.\n",
+      "metadata": {
+        "coverage_state": "",
+        "deprecated": false,
+        "intentional_gap": false,
+        "severity": "critical"
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "forbidden_fix:no.layer.collapse.in.assertions",
+      "type": "forbidden_fix",
+      "name": "no.layer.collapse.in.assertions",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "invariant:cluster.layer3.not.layer4",
+      "type": "invariant",
+      "name": "cluster.layer3.not.layer4",
+      "summary": "An etcd record in /globular/nodes/{node_id}/packages/ proves that the package\nwas installed on that node — not that the service is currently running. The test\nharness must always check both Layer 3 (etcd installed record) and Layer 4\n(systemctl status) independently. Assertions that check only one layer produce\nfalse positives: a service can be installed but crashed, disabled, or missing its\nunit file.\n",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "forbidden_fix:no.sigterm.for.crash.test",
+      "type": "forbidden_fix",
+      "name": "no.sigterm.for.crash.test",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "failure_mode:fm.lab.exception.promoted.to.production",
+      "type": "failure_mode",
+      "name": "fm.lab.exception.promoted.to.production",
+      "summary": "Quickstart has three documented lab exceptions: external ScyllaDB, relaxed MinIO\nquorum (1-2 nodes for smoke), and single-node etcd in some training scenarios.\nIf an awareness training scenario generates a proposal from behavior observed\nunder a lab exception, and that proposal is auto-promoted, the production\nawareness graph may encode \"MinIO can run on 1 node\" or \"ScyllaDB is external\"\nas a valid production state. This would suppress correct warnings about\nproduction quorum violations.\n",
+      "metadata": {
+        "coverage_state": "",
+        "deprecated": false,
+        "intentional_gap": false,
+        "severity": "error"
+      },
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    },
+    {
+      "id": "doc:CLAUDE.md#common-mistakes-to-avoid",
+      "type": "documentation_section",
+      "name": "COMMON MISTAKES TO AVOID",
+      "path": "CLAUDE.md#common-mistakes-to-avoid",
+      "summary": "COMMON MISTAKES TO AVOID",
+      "created_at": 1779062470,
+      "updated_at": 1779062470
+    }
+  ],
+  "edges": [
+    {
+      "src": "failure_mode:fm.probe.mutation.breaks.idempotency",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.mutation.in.probe",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.probe.mutation.breaks.idempotency",
+      "kind": "violates",
+      "dst": "invariant:testharness.probes_readonly",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.scenario.state.pollution",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.scenario.state.leak",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.scenario.state.pollution",
+      "kind": "violates",
+      "dst": "invariant:testharness.scenario_isolation",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.ca.regenerated.midcluster",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.ca.regenerate.midcluster",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.ca.regenerated.midcluster",
+      "kind": "violates",
+      "dst": "invariant:cluster.ca.generated.once",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.hosts.not.seeded.before.services",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.services.before.hosts.seeded",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.hosts.not.seeded.before.services",
+      "kind": "violates",
+      "dst": "invariant:cluster.dns.seeded.before.services",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.layer.collapse.in.test.assertion",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.layer.collapse.in.assertions",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.layer.collapse.in.test.assertion",
+      "kind": "violates",
+      "dst": "invariant:cluster.layer3.not.layer4",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.sigterm.crash.test.false.pass",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.sigterm.for.crash.test",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.sigterm.crash.test.false.pass",
+      "kind": "violates",
+      "dst": "invariant:testharness.sigkill.for.crash.tests",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.lab.exception.promoted.to.production",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.auto.promote.lab.proposals",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "failure_mode:fm.lab.exception.promoted.to.production",
+      "kind": "violates",
+      "dst": "invariant:awareness.proposals.draft.only",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "invariant:testharness.probes_readonly",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.mutation.in.probe",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "invariant:testharness.scenario_isolation",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.scenario.state.leak",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "invariant:cluster.ca.generated.once",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.ca.regenerate.midcluster",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "invariant:cluster.dns.seeded.before.services",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.services.before.hosts.seeded",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "invariant:cluster.layer3.not.layer4",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.layer.collapse.in.assertions",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "invariant:testharness.sigkill.for.crash.tests",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.sigterm.for.crash.test",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "invariant:awareness.proposals.draft.only",
+      "kind": "forbids",
+      "dst": "forbidden_fix:no.auto.promote.lab.proposals",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1
+    },
+    {
+      "src": "invariant:testharness.probes_readonly",
+      "kind": "protects",
+      "dst": "source_file:tests/harness/lib/probes.sh",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/harness/lib/probes.sh",
+      "kind": "implements",
+      "dst": "invariant:testharness.probes_readonly",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "forbidden_fix:no.mutation.in.probe",
+      "kind": "blocks_forbidden_action",
+      "dst": "invariant:testharness.probes_readonly",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared"
+      }
+    },
+    {
+      "src": "source_file:tests/harness/lib/probes.sh",
+      "kind": "partially_implements",
+      "dst": "invariant:testharness.probes_readonly",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "invariant:testharness.scenario_isolation",
+      "kind": "protects",
+      "dst": "source_file:tests/scenarios/",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/scenarios/",
+      "kind": "implements",
+      "dst": "invariant:testharness.scenario_isolation",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "invariant:testharness.scenario_isolation",
+      "kind": "protects",
+      "dst": "source_file:tests/harness/bin/globular-test",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/harness/bin/globular-test",
+      "kind": "implements",
+      "dst": "invariant:testharness.scenario_isolation",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "forbidden_fix:no.scenario.state.leak",
+      "kind": "blocks_forbidden_action",
+      "dst": "invariant:testharness.scenario_isolation",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared"
+      }
+    },
+    {
+      "src": "source_file:tests/scenarios/",
+      "kind": "partially_implements",
+      "dst": "invariant:testharness.scenario_isolation",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "source_file:tests/harness/bin/globular-test",
+      "kind": "partially_implements",
+      "dst": "invariant:testharness.scenario_isolation",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "invariant:cluster.ca.generated.once",
+      "kind": "protects",
+      "dst": "source_file:scripts/entrypoint.sh",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:scripts/entrypoint.sh",
+      "kind": "implements",
+      "dst": "invariant:cluster.ca.generated.once",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "forbidden_fix:no.ca.regenerate.midcluster",
+      "kind": "blocks_forbidden_action",
+      "dst": "invariant:cluster.ca.generated.once",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared"
+      }
+    },
+    {
+      "src": "source_file:scripts/entrypoint.sh",
+      "kind": "partially_implements",
+      "dst": "invariant:cluster.ca.generated.once",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "invariant:cluster.dns.seeded.before.services",
+      "kind": "protects",
+      "dst": "source_file:scripts/entrypoint.sh",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:scripts/entrypoint.sh",
+      "kind": "implements",
+      "dst": "invariant:cluster.dns.seeded.before.services",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "forbidden_fix:no.services.before.hosts.seeded",
+      "kind": "blocks_forbidden_action",
+      "dst": "invariant:cluster.dns.seeded.before.services",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared"
+      }
+    },
+    {
+      "src": "source_file:scripts/entrypoint.sh",
+      "kind": "partially_implements",
+      "dst": "invariant:cluster.dns.seeded.before.services",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "invariant:cluster.layer3.not.layer4",
+      "kind": "protects",
+      "dst": "source_file:tests/harness/lib/probes.sh",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/harness/lib/probes.sh",
+      "kind": "implements",
+      "dst": "invariant:cluster.layer3.not.layer4",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "invariant:cluster.layer3.not.layer4",
+      "kind": "protects",
+      "dst": "source_file:tests/harness/lib/assertions.sh",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/harness/lib/assertions.sh",
+      "kind": "implements",
+      "dst": "invariant:cluster.layer3.not.layer4",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "invariant:cluster.layer3.not.layer4",
+      "kind": "protects",
+      "dst": "source_file:tests/scenarios/",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/scenarios/",
+      "kind": "implements",
+      "dst": "invariant:cluster.layer3.not.layer4",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "forbidden_fix:no.layer.collapse.in.assertions",
+      "kind": "blocks_forbidden_action",
+      "dst": "invariant:cluster.layer3.not.layer4",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared"
+      }
+    },
+    {
+      "src": "source_file:tests/harness/lib/probes.sh",
+      "kind": "partially_implements",
+      "dst": "invariant:cluster.layer3.not.layer4",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "source_file:tests/harness/lib/assertions.sh",
+      "kind": "partially_implements",
+      "dst": "invariant:cluster.layer3.not.layer4",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "source_file:tests/scenarios/",
+      "kind": "partially_implements",
+      "dst": "invariant:cluster.layer3.not.layer4",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "invariant:testharness.sigkill.for.crash.tests",
+      "kind": "protects",
+      "dst": "source_file:tests/scenarios/resilience/",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/scenarios/resilience/",
+      "kind": "implements",
+      "dst": "invariant:testharness.sigkill.for.crash.tests",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "invariant:testharness.sigkill.for.crash.tests",
+      "kind": "protects",
+      "dst": "source_file:tests/scenarios/training/",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/scenarios/training/",
+      "kind": "implements",
+      "dst": "invariant:testharness.sigkill.for.crash.tests",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "invariant:testharness.sigkill.for.crash.tests",
+      "kind": "protects",
+      "dst": "source_file:tests/harness/lib/cluster.sh",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/harness/lib/cluster.sh",
+      "kind": "implements",
+      "dst": "invariant:testharness.sigkill.for.crash.tests",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "forbidden_fix:no.sigterm.for.crash.test",
+      "kind": "blocks_forbidden_action",
+      "dst": "invariant:testharness.sigkill.for.crash.tests",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared"
+      }
+    },
+    {
+      "src": "source_file:tests/scenarios/resilience/",
+      "kind": "partially_implements",
+      "dst": "invariant:testharness.sigkill.for.crash.tests",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "source_file:tests/scenarios/training/",
+      "kind": "partially_implements",
+      "dst": "invariant:testharness.sigkill.for.crash.tests",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "source_file:tests/harness/lib/cluster.sh",
+      "kind": "partially_implements",
+      "dst": "invariant:testharness.sigkill.for.crash.tests",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "invariant:awareness.proposals.draft.only",
+      "kind": "protects",
+      "dst": "source_file:tests/harness/lib/training.sh",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/harness/lib/training.sh",
+      "kind": "implements",
+      "dst": "invariant:awareness.proposals.draft.only",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "invariant:awareness.proposals.draft.only",
+      "kind": "protects",
+      "dst": "source_file:tests/harness/lib/awareness.sh",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/harness/lib/awareness.sh",
+      "kind": "implements",
+      "dst": "invariant:awareness.proposals.draft.only",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "forbidden_fix:no.auto.promote.lab.proposals",
+      "kind": "blocks_forbidden_action",
+      "dst": "invariant:awareness.proposals.draft.only",
+      "confidence": 1,
+      "class": "decision",
+      "weight": 1,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared"
+      }
+    },
+    {
+      "src": "source_file:tests/harness/lib/training.sh",
+      "kind": "partially_implements",
+      "dst": "invariant:awareness.proposals.draft.only",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "source_file:tests/harness/lib/awareness.sh",
+      "kind": "partially_implements",
+      "dst": "invariant:awareness.proposals.draft.only",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "invariant:cluster.etcd.quorum.awareness",
+      "kind": "protects",
+      "dst": "source_file:tests/scenarios/catastrophic/",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/scenarios/catastrophic/",
+      "kind": "implements",
+      "dst": "invariant:cluster.etcd.quorum.awareness",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "invariant:cluster.etcd.quorum.awareness",
+      "kind": "protects",
+      "dst": "source_file:tests/harness/lib/assertions.sh",
+      "confidence": 1,
+      "class": "information",
+      "weight": 0.3
+    },
+    {
+      "src": "source_file:tests/harness/lib/assertions.sh",
+      "kind": "implements",
+      "dst": "invariant:cluster.etcd.quorum.awareness",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "source_file:tests/scenarios/catastrophic/",
+      "kind": "partially_implements",
+      "dst": "invariant:cluster.etcd.quorum.awareness",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "source_file:tests/harness/lib/assertions.sh",
+      "kind": "partially_implements",
+      "dst": "invariant:cluster.etcd.quorum.awareness",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7,
+      "metadata": {
+        "source_file": "docs/awareness/invariants.yaml",
+        "trust_level": "declared",
+        "weight_reason": "protects.files backward compat"
+      }
+    },
+    {
+      "src": "doc:CLAUDE.md",
+      "kind": "owns",
+      "dst": "doc:CLAUDE.md#claudemd",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "doc:CLAUDE.md",
+      "kind": "owns",
+      "dst": "doc:CLAUDE.md#hard-rules--never-violate",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "doc:CLAUDE.md",
+      "kind": "owns",
+      "dst": "doc:CLAUDE.md#architecture-notes",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "doc:CLAUDE.md",
+      "kind": "owns",
+      "dst": "doc:CLAUDE.md#build-commands",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "doc:CLAUDE.md",
+      "kind": "owns",
+      "dst": "doc:CLAUDE.md#documentation",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "doc:CLAUDE.md",
+      "kind": "owns",
+      "dst": "doc:CLAUDE.md#known-issues-check-before-assuming-things-work",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "doc:CLAUDE.md",
+      "kind": "owns",
+      "dst": "doc:CLAUDE.md#ai-rules-for-ai-agents-operating-on-this-codebase",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "doc:CLAUDE.md",
+      "kind": "owns",
+      "dst": "doc:CLAUDE.md#ai-memory-service",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    },
+    {
+      "src": "doc:CLAUDE.md",
+      "kind": "owns",
+      "dst": "doc:CLAUDE.md#common-mistakes-to-avoid",
+      "confidence": 1,
+      "class": "structural",
+      "weight": 0.7
+    }
+  ],
+  "invariants": [
+    {
+      "id": "cluster.ca.generated.once",
+      "title": "Cluster CA must be generated exactly once (on node-1) and never regenerated",
+      "summary": "scripts/entrypoint.sh generates the cluster CA only when running as node-1\n(GLOBULAR_CA_MODE=generate). All other nodes copy the CA from the shared volume\n(GLOBULAR_CA_MODE=copy). The CA must never be regenerated after the cluster is\nbootstrapped — all existing service certs are signed by the original CA and will\nfail mTLS verification if the CA changes. Regenerating the CA is a full\ncluster teardown, not a fix.\n",
+      "severity": "critical",
+      "status": "active"
+    },
+    {
+      "id": "cluster.dns.seeded.before.services",
+      "title": "/etc/hosts must be seeded with peer IPs before any service starts",
+      "summary": "Services perform peer discovery using hostnames (node-1, node-2, etc.) before\nthe DNS service is running. If /etc/hosts is not pre-seeded by entrypoint.sh,\npeer hostname resolution fails and services cannot connect, causing a cascade\nof startup failures. entrypoint.sh must complete its /etc/hosts seeding before\nsystemd starts any service unit.\n",
+      "severity": "critical",
+      "status": "active"
+    },
+    {
+      "id": "cluster.layer3.not.layer4",
+      "title": "Installed state (etcd Layer 3) must never be treated as proof of running (Layer 4)",
+      "summary": "An etcd record in /globular/nodes/{node_id}/packages/ proves that the package\nwas installed on that node — not that the service is currently running. The test\nharness must always check both Layer 3 (etcd installed record) and Layer 4\n(systemctl status) independently. Assertions that check only one layer produce\nfalse positives: a service can be installed but crashed, disabled, or missing its\nunit file.\n",
+      "severity": "error",
+      "status": "active"
+    },
+    {
+      "id": "testharness.sigkill.for.crash.tests",
+      "title": "Crash recovery tests must use SIGKILL, not SIGTERM or systemctl stop",
+      "summary": "systemctl stop sends SIGTERM, which causes a graceful exit (exit code 0).\nsystemd's Restart=on-failure does NOT trigger on a clean exit — only on\nnon-zero exit or signal death. A crash recovery test that uses systemctl stop\nor SIGTERM will never exercise the auto-restart path. Use SIGKILL (kill -9 or\npkill -SIGKILL) to simulate a real crash and trigger Restart=on-failure.\n",
+      "severity": "error",
+      "status": "active"
+    },
+    {
+      "id": "awareness.proposals.draft.only",
+      "title": "Awareness proposals generated from quickstart training are DRAFT; require manual review before production promotion",
+      "summary": "Quickstart has documented lab exceptions (external ScyllaDB, relaxed MinIO quorum,\nsingle-node etcd for some smoke tests) that do not apply to production clusters.\nA failure learning proposal generated from a quickstart training scenario may\nencode lab-exception behavior as a production invariant. All quickstart-originated\nproposals must remain in DRAFT state until a human reviewer has verified that the\nencoded rule is safe for production.\n",
+      "severity": "error",
+      "status": "active"
+    },
+    {
+      "id": "cluster.etcd.quorum.awareness",
+      "title": "Test scenarios that reduce etcd quorum must document expected read-only mode",
+      "summary": "Scenarios in tests/scenarios/catastrophic/ deliberately reduce etcd quorum to\ntest cluster behavior under failure. These scenarios must assert the expected\noutcome (etcd enters read-only mode, controller stops writing desired state)\nrather than asserting cluster health. A scenario that kills 2 of 3 etcd nodes\nand then asserts cluster.healthy = true is a broken test, not a passing one.\n",
+      "severity": "error",
+      "status": "active"
+    },
+    {
+      "id": "testharness.probes_readonly",
+      "title": "All probe functions must be read-only — no mutations inside a probe",
+      "summary": "The 1,049-LOC probes.sh library is the read-only observation layer of the test\nharness. Every function in it must be safe to call repeatedly without changing\ncluster state. No etcdctl put, no docker exec that modifies files, no systemctl\ncommands that start/stop services may appear inside a probe function.\nChaos and mutations are separate YAML action steps, never inside probes.\nViolating this makes tests non-idempotent: a second probe call changes the\nresult of a subsequent probe call.\n",
+      "severity": "critical",
+      "status": "active"
+    },
+    {
+      "id": "testharness.scenario_isolation",
+      "title": "Each scenario run must start from a verified baseline and restore it on exit",
+      "summary": "Scenarios must not assume the cluster is in a known-good state from a prior\nscenario. Every scenario must verify its baseline preconditions before executing\nand must restore the cluster to a clean state in its cleanup steps.\nTests that pollute state for subsequent scenarios are false negatives: the next\ntest appears to fail for the wrong reason, masking real bugs.\n",
+      "severity": "error",
+      "status": "active"
+    }
+  ],
+  "failure_modes": [
+    {
+      "id": "fm.sigterm.crash.test.false.pass",
+      "title": "Crash test uses systemctl stop — Restart=on-failure never triggers — test always passes",
+      "summary": "systemctl stop sends SIGTERM, which causes a graceful shutdown with exit code 0.\nsystemd's Restart=on-failure only triggers on crash signals or non-zero exit.\nA crash recovery test that uses systemctl stop will: (1) stop the service cleanly,\n(2) systemd will NOT restart it, (3) the test then checks if the service came back\nup, which it did not. The test fails — but for the wrong reason: the test itself\nis broken, not the service.\n",
+      "symptoms": [
+        "Crash recovery scenario always fails at the \"service restarted\" assertion",
+        "journalctl shows clean exit (code=exited, status=0) not a crash",
+        "Removing Restart=on-failure from unit file has no effect on test outcome"
+      ],
+      "root_cause": "systemctl stop sends SIGTERM, which causes a graceful shutdown with exit code 0.\nsystemd's Restart=on-failure only triggers on crash signals or non-zero exit.\nA crash recovery test that uses systemctl stop will: (1) stop the service cleanly,\n(2) systemd will NOT restart it, (3) the test then checks if the service came back\nup, which it did not. The test fails — but for the wrong reason: the test itself\nis broken, not the service.\n"
+    },
+    {
+      "id": "fm.lab.exception.promoted.to.production",
+      "title": "Quickstart lab exception encoded as production invariant via awareness proposal",
+      "summary": "Quickstart has three documented lab exceptions: external ScyllaDB, relaxed MinIO\nquorum (1-2 nodes for smoke), and single-node etcd in some training scenarios.\nIf an awareness training scenario generates a proposal from behavior observed\nunder a lab exception, and that proposal is auto-promoted, the production\nawareness graph may encode \"MinIO can run on 1 node\" or \"ScyllaDB is external\"\nas a valid production state. This would suppress correct warnings about\nproduction quorum violations.\n",
+      "symptoms": [
+        "Production awareness graph shows invariant MinIO quorum \u003e= 1 node",
+        "Awareness stops warning about missing storage profiles on founding nodes",
+        "A quickstart-origin proposal appears in production graph without DRAFT marker"
+      ],
+      "root_cause": "Quickstart has three documented lab exceptions: external ScyllaDB, relaxed MinIO\nquorum (1-2 nodes for smoke), and single-node etcd in some training scenarios.\nIf an awareness training scenario generates a proposal from behavior observed\nunder a lab exception, and that proposal is auto-promoted, the production\nawareness graph may encode \"MinIO can run on 1 node\" or \"ScyllaDB is external\"\nas a valid production state. This would suppress correct warnings about\nproduction quorum violations.\n"
+    },
+    {
+      "id": "fm.probe.mutation.breaks.idempotency",
+      "title": "Probe function contains a mutation — test results change on re-run",
+      "summary": "If a probe function in probes.sh calls etcdctl put, docker exec to modify files,\nor systemctl to start/stop services, then calling the probe a second time changes\nthe cluster state. Subsequent probes return different results depending on how\nmany times the probe was called. The test harness calls probes at baseline,\nafter each step, and in assertions — a single mutating probe corrupts all of\nthese readings.\n",
+      "symptoms": [
+        "Test passes on first run, fails on second run of the same scenario",
+        "Probe function shows in etcd diff output between baseline and assertion",
+        "A chaos scenario passes even when the chaos step was skipped"
+      ],
+      "root_cause": "If a probe function in probes.sh calls etcdctl put, docker exec to modify files,\nor systemctl to start/stop services, then calling the probe a second time changes\nthe cluster state. Subsequent probes return different results depending on how\nmany times the probe was called. The test harness calls probes at baseline,\nafter each step, and in assertions — a single mutating probe corrupts all of\nthese readings.\n"
+    },
+    {
+      "id": "fm.scenario.state.pollution",
+      "title": "Scenario cleanup fails — next scenario inherits partial or broken cluster state",
+      "summary": "If a scenario's cleanup steps fail (service left stopped, iptables rule not\ncleared, etcd key not deleted), the next scenario starts from a broken baseline.\nThe next scenario may fail for a completely unrelated reason, producing a\nmisleading failure report. The root failure is in the cleanup, not the next test.\n",
+      "symptoms": [
+        "Scenario B fails but the logs show a problem that should have been from Scenario A",
+        "cluster.health probe returns false at the start of a new scenario",
+        "docker exec to a node shows unexpected iptables rules or stopped services"
+      ],
+      "root_cause": "If a scenario's cleanup steps fail (service left stopped, iptables rule not\ncleared, etcd key not deleted), the next scenario starts from a broken baseline.\nThe next scenario may fail for a completely unrelated reason, producing a\nmisleading failure report. The root failure is in the cleanup, not the next test.\n"
+    },
+    {
+      "id": "fm.ca.regenerated.midcluster",
+      "title": "CA key regenerated after bootstrap — all service certs become invalid",
+      "summary": "If scripts/entrypoint.sh regenerates the CA key (openssl genpkey + openssl req)\non a container that was already running, the new CA public key does not match\nthe certificate authority that signed the existing service certs. Every mTLS\nhandshake in the cluster fails: the peer presents a cert signed by the old CA,\nbut the verifier only trusts the new CA. The cluster becomes completely\ndisconnected.\n",
+      "symptoms": [
+        "All inter-service gRPC calls fail with TLS handshake error or certificate not trusted",
+        "etcd peer connections fail (etcd cannot achieve quorum)",
+        "Restarting any service does not help (its cert was signed by the old CA)"
+      ],
+      "root_cause": "If scripts/entrypoint.sh regenerates the CA key (openssl genpkey + openssl req)\non a container that was already running, the new CA public key does not match\nthe certificate authority that signed the existing service certs. Every mTLS\nhandshake in the cluster fails: the peer presents a cert signed by the old CA,\nbut the verifier only trusts the new CA. The cluster becomes completely\ndisconnected.\n"
+    },
+    {
+      "id": "fm.hosts.not.seeded.before.services",
+      "title": "Services start before /etc/hosts is populated — peer hostname resolution fails",
+      "summary": "If entrypoint.sh fails partway through, exits early, or is bypassed, systemd\nmay start services before /etc/hosts contains the cluster peer entries. Services\nthat resolve peer hostnames (e.g. node-2, node-3) at startup fail with\n\"name or service not known\" because the DNS service itself is not yet running\nand /etc/hosts is the only resolution path at this point.\n",
+      "symptoms": [
+        "Node agent fails to start with connection refused or name resolution error",
+        "etcd cannot form quorum because peer URLs (node-2:2380) are unresolvable",
+        "scripts/seed-etcd.sh fails because cluster-controller is unreachable"
+      ],
+      "root_cause": "If entrypoint.sh fails partway through, exits early, or is bypassed, systemd\nmay start services before /etc/hosts contains the cluster peer entries. Services\nthat resolve peer hostnames (e.g. node-2, node-3) at startup fail with\n\"name or service not known\" because the DNS service itself is not yet running\nand /etc/hosts is the only resolution path at this point.\n"
+    },
+    {
+      "id": "fm.layer.collapse.in.test.assertion",
+      "title": "Test asserts Layer 3 (etcd installed) and concludes Layer 4 (service running) — false positive",
+      "summary": "A test that checks /globular/nodes/{id}/packages/SERVICE/node-agent and sees an\nentry concludes \"node agent is running\". But Layer 3 only records what was\ninstalled, not what is currently running. A crash-recovery test that uses this\nassertion will show pass even when the service is dead. The test is measuring\nthe wrong layer.\n",
+      "symptoms": [
+        "Resilience scenario passes but manual check shows service is not running",
+        "probe_service_status returns ok but systemctl status shows inactive",
+        "Crash injection step appears to have no effect (test still passes)"
+      ],
+      "root_cause": "A test that checks /globular/nodes/{id}/packages/SERVICE/node-agent and sees an\nentry concludes \"node agent is running\". But Layer 3 only records what was\ninstalled, not what is currently running. A crash-recovery test that uses this\nassertion will show pass even when the service is dead. The test is measuring\nthe wrong layer.\n"
+    }
+  ],
+  "builds": [
+    {
+      "id": "build-1779062470",
+      "repo_root": ".",
+      "git_commit": "0ed75b9b274bed1f138b88155639a4b460f0594d",
+      "created_at": 1779062470,
+      "stats": {
+        "nodes": 48,
+        "edges": 82,
+        "invariants": 8,
+        "failure_modes": 7
+      },
+      "collector_health": [
+        {
+          "collector_id": "metrics",
+          "source_tier": "knowledge_base",
+          "status": "ok",
+          "nodes_emitted": 0,
+          "priority": "P0"
+        }
+      ]
+    }
+  ]
+}

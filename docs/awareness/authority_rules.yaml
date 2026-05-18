@@ -1,0 +1,106 @@
+# authority_rules.yaml — globular-quickstart
+#
+# Maps every category of state the quickstart cluster manages to its canonical authority.
+# An AI agent editing bootstrap scripts, test harness code, or scenario YAML must check
+# this map first.
+#
+# Core mental model: quickstart is a HIGH-FIDELITY LAB — it runs unmodified production
+# binaries under systemd inside Docker containers. It is NOT a toy demo. Its authority
+# model mirrors production except for three documented lab exceptions:
+#   1. ScyllaDB is external (10.10.0.20), not on nodes 1-3
+#   2. MinIO quorum may be relaxed for smoke testing (1–2 nodes)
+#   3. Awareness proposals generated here are DRAFT-only; production requires manual review
+
+authorities:
+
+  - id: cluster.pki
+    owns:
+      - cluster CA key and certificate (generated once on node-1)
+      - per-node service certificates (issued from cluster CA)
+      - shared PKI volume distributed to all nodes
+    source: /shared-pki/ Docker volume (entrypoint.sh generates on node-1, others copy)
+    must_not_infer:
+      - CA is current from file presence alone (check expiry)
+      - a node has its cert from container running state (cert generation may have failed)
+    stale_states:
+      - CA regenerated after cluster was bootstrapped (breaks all existing service certs)
+      - node cert expired but service has not been restarted
+    consumers:
+      - scripts/entrypoint.sh (CA generation and cert issuance)
+      - all service binaries (mTLS)
+
+  - id: cluster.etcd
+    owns:
+      - Layer 2 (Desired): /globular/resources/DesiredService/, /globular/resources/ServiceRelease/
+      - Layer 3 (Installed): /globular/nodes/{node_id}/packages/
+      - system config, service endpoints, ingress spec, domain records
+    source: etcd cluster (Raft consensus across nodes 1-3)
+    must_not_infer:
+      - desired state == installed state (check both layers independently)
+      - etcd key presence == service running (Layer 3 ≠ Layer 4)
+    stale_states:
+      - etcd quorum lost (2+ of 3 control-plane nodes down) — reads succeed, writes rejected
+      - seed-etcd.sh failed partway through (partial desired state)
+    consumers:
+      - cluster_controller (Layer 2 writes)
+      - node_agent (Layer 3 writes, Layer 2 reads)
+      - scripts/seed-etcd.sh (initial seeding)
+
+  - id: cluster.runtime
+    owns:
+      - which services are currently active (Layer 4)
+      - systemd unit state per node
+    source: systemctl status on each container node (NOT etcd)
+    must_not_infer:
+      - service is running from etcd installed record (installed ≠ running)
+      - service is healthy from running state (active ≠ healthy — service may be crash-looping)
+    stale_states:
+      - systemd shows active but process is in a restart loop
+      - service stopped via systemctl stop (clean exit) — etcd still says installed
+    consumers:
+      - tests/harness/lib/probes.sh (probe_service_status, probe_cluster_health)
+
+  - id: test.scenario.state
+    owns:
+      - which test scenarios have run and their results
+      - evidence artifacts (logs, etcd dumps, Prometheus snapshots)
+      - training ledger entries
+    source: tests/reports/ directory and tests/reports/awareness-training-ledger.jsonl
+    must_not_infer:
+      - prior scenario left cluster in a known-good state (always verify baseline)
+      - evidence from one run applies to another (each run produces independent artifacts)
+    stale_states:
+      - cleanup step failed, leaving cluster in chaos state for next scenario
+      - training ledger entry written but scenario actually failed silently
+    consumers:
+      - tests/harness/bin/globular-test (orchestrator)
+      - tests/harness/lib/evidence.sh
+      - tests/harness/lib/training.sh
+
+  - id: awareness.proposals
+    owns:
+      - failure learning proposals generated from quickstart training scenarios
+      - awareness incident bundles from docs/awareness/incidents/
+    source: tests/reports/awareness-training-ledger.jsonl and docs/awareness/incidents/
+    must_not_infer:
+      - a quickstart proposal is production-ready from lab validation alone
+      - a DRAFT proposal can be promoted without manual review
+    stale_states:
+      - proposal generated from a lab-exception scenario (relaxed MinIO quorum) applied to production
+    consumers:
+      - tests/harness/lib/training.sh
+      - tests/harness/lib/awareness.sh
+
+  - id: cluster.hosts
+    owns:
+      - /etc/hosts peer entries for all cluster nodes
+      - DNS resolution order before the DNS service is running
+    source: scripts/entrypoint.sh (pre-seeds /etc/hosts) and DNS service (appends later)
+    must_not_infer:
+      - DNS resolution will succeed from /etc/hosts alone (resolver order matters post-boot)
+      - services can resolve peers before entrypoint.sh completes
+    stale_states:
+      - /etc/hosts seeded with wrong IPs (container IP changed between runs)
+    consumers:
+      - scripts/entrypoint.sh
+      - all services at startup (peer discovery before DNS is up)

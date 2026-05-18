@@ -253,3 +253,46 @@ Types: feedback, architecture, decision, debug, session, user, project, referenc
 - Writing env var sections in READMEs (etcd is the only config source)
 - Referencing `clustercontroller` directory (it's `cluster_controller` with underscore)
 - Assuming DNS zones persist across restarts (they're in-memory, re-register after restart)
+
+---
+
+## AI RULES — Awareness workflow
+
+This project is registered with the awareness system. The graph lives at
+`.globular/awareness/graph.json`. The knowledge files are in `docs/awareness/`.
+
+### Required sequence for any non-trivial edit
+
+1. **`awareness session-start`** — open a session before touching files. Records intent and establishes the edit boundary.
+2. **`awareness impact <file>`** — before editing a file, check blast radius. Returns affected invariants, rules, and tests.
+3. **`awareness scan-violations`** — after editing, scan for invariant violations before committing.
+
+**`NO_MATCH` ≠ safe.** When awareness returns NO_MATCH (no graph nodes matched), it means the graph has no coverage for that file — not that the edit is safe. Always grep `docs/awareness/failure_modes.yaml`, `docs/awareness/invariants.yaml`, and `docs/awareness/forbidden_fixes.yaml` directly on NO_MATCH.
+
+**`UNKNOWN_IMPACT`** — treat as high-risk. Do not proceed without reading the file and understanding the blast radius manually.
+
+### High-risk files — call `awareness decision_context` before editing
+
+- `tests/harness/lib/probes.sh` — must remain read-only; any mutation here corrupts test idempotency
+- `tests/harness/lib/training.sh` — awareness proposal lifecycle; no auto-promotion of DRAFT proposals
+- `scripts/entrypoint.sh` — CA generation and /etc/hosts seeding; wrong order cascades to all services
+- `tests/scenarios/resilience/` and `tests/scenarios/catastrophic/` — crash tests must use SIGKILL, not SIGTERM
+- `docker-compose.yml` — cluster topology; IP changes break /etc/hosts seeding
+- Any scenario cleanup steps — incomplete cleanup poisons the next scenario's baseline
+
+### Awareness token discipline — HARD LIMIT
+
+- **1 preflight per task** — compact (default) unless deep/forensic is justified.
+- **Do NOT call `awareness agent_context` in the same turn as `awareness preflight`**.
+- **Choose the smallest sufficient mode**: micro → standard → deep → forensic.
+- **Never call `awareness session_resume_latest` mid-task** — only at session start if resuming.
+
+### Key invariants enforced
+
+- `testharness.probes_readonly` — probe functions are observation-only; no mutations allowed
+- `testharness.scenario_isolation` — each scenario verifies baseline, restores cluster on exit
+- `cluster.ca.generated.once` — CA generated exactly once on node-1; never regenerated midcluster
+- `cluster.dns.seeded.before.services` — /etc/hosts seeded by entrypoint.sh before any service starts
+- `cluster.layer3.not.layer4` — etcd installed record ≠ service running; always check both layers
+- `testharness.sigkill.for.crash.tests` — crash recovery tests must use SIGKILL, not SIGTERM
+- `awareness.proposals.draft.only` — quickstart-originated proposals stay DRAFT until human review

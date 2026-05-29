@@ -54,7 +54,7 @@ ALL_BINS = $(CORE_BINS) $(STORAGE_BINS) $(AI_BINS) $(EXTRA_BINS)
 # ── Unit files to include ────────────────────────────────
 UNITS = $(wildcard $(UNIT_SRC)/globular-*.service)
 
-.PHONY: collect build up down clean logs status shell test \
+.PHONY: collect check-units build up down clean logs status shell test \
 	quickstart-up quickstart-down quickstart-reset quickstart-logs \
 	test-wait test-smoke test-functional test-security test-resilience \
 	test-recovery test-soak test-v1-certification ci-smoke \
@@ -83,7 +83,13 @@ collect:
 		cp "$$u" units/; \
 		echo "  ✓ $$(basename $$u)"; \
 	done
+	@$(MAKE) --no-print-directory check-units
 	@echo "=== Done ==="
+
+## check-units — fail if any collected unit has bare WorkingDirectory=/var/lib/globular/...
+## (services repo INC-2026-0018: bare WD causes status=200/CHDIR before ExecStartPre)
+check-units:
+	@./scripts/check-systemd-working-directory.sh
 
 ## build — build the Docker image (runs collect first)
 build: collect

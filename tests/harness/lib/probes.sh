@@ -1047,3 +1047,121 @@ probe_pki_cert_expiry_days() {
     [[ "$days_remaining" -lt 0 ]] 2>/dev/null && expired=true
     echo "{\"days_remaining\":$days_remaining,\"expired\":$expired,\"node\":\"$node\",\"cert_path\":\"$cert_path\"}"
 }
+
+# ── install-anchor probes ─────────────────────────────────────────────────────
+
+# probe_install_anchor_sane — SCAR 2026-07-30.
+#
+# installed_state records the moment an artifact was committed to disk, as
+# metadata.installed_at. A process cannot execute a binary before that binary
+# exists, so for any RUNNING service:
+#
+#     installed_at <= process_start
+#
+# release_boundary evalA4 is built on exactly that rule. The bug was on the
+# other side of it: StampMigrationFromLegacySidecar is an ADOPTION path — it
+# discovers a unit already on disk and installs nothing — yet it stamped
+# installed_at = time.Now(). Adoption necessarily runs AFTER the service is
+# already up, so the minted install-commit was always later than the process
+# start and A4 reported FAILED "stale process" for 24/24 services on a node that
+# was installed perfectly.
+#
+# Fix: anchor to the unit file's mtime (services@b862793f).
+#
+# Emits: {"checked":N,"violations":M,"worst_skew_s":S,"detail":"..."}
+# A violation is installed_at STRICTLY GREATER than process start.
+#
+# PRECONDITION — NOT YET MET BY THE QUICKSTART IMAGE (2026-07-31).
+# This probe needs installed_state records that carry metadata.installed_at,
+# which only the real node-agent install/adoption path writes. The quickstart's
+# records are seeded directly and contain no metadata field at all:
+#
+#   {"nodeId":"...","name":"ai-executor","version":"1.2.288","kind":"SERVICE",
+#    "installedUnix":"1785513749","updatedUnix":"1785513749","status":"installed"}
+#
+# So the defect this probe exists to catch is currently UNREACHABLE here — the
+# buggy code never executes. The probe reports violations:-1 with an error in
+# that case rather than 0 violations, because "the evidence is absent" must not
+# be reported as "the property holds". Closing the gap means having the
+# container exercise node-agent's real install path instead of seeding etcd.
+# Until then this probe is intentionally unused by any scenario.
+probe_install_anchor_sane() {
+    local node="${1:-node-1}"
+    local container="globular-${node}"
+    if ! _container_running "$container"; then
+        echo "{\"checked\":0,\"violations\":0,\"error\":\"container ${container} not running\"}"
+        return 0
+    fi
+
+    # Resolve this node's id from the installed_state key space, using the
+    # harness's own etcd helper rather than a second hand-rolled one — the
+    # endpoint is the node IP, not loopback.
+    local node_id
+    node_id=$(_etcd_keys /globular/nodes/ 2>/dev/null \
+              | grep "/packages/SERVICE/" | head -1 | cut -d/ -f4)
+    if [ -z "$node_id" ]; then
+        echo "{\"checked\":0,\"violations\":-1,\"error\":\"no SERVICE installed_state records found\"}"
+        return 0
+    fi
+
+    # Stage the records inside the container so the systemd lookups below run
+    # on the same host that owns the units.
+    _etcd_values "/globular/nodes/$node_id/packages/SERVICE/" 2>/dev/null \
+        | docker exec -i "$container" bash -c 'cat > /tmp/_pkgs.json'
+
+    # Walk every SERVICE-kind installed_state record, pull metadata.installed_at,
+    # and compare against the unit's ExecMainStartTimestamp.
+    local out
+    out=$(docker exec "$container" bash -c '
+      python3 - <<PY
+import json,subprocess,sys
+raw=open("/tmp/_pkgs.json").read()
+dec=json.JSONDecoder(); objs=[]; i=0
+while i < len(raw):
+    while i < len(raw) and raw[i] != "{": i += 1
+    if i >= len(raw): break
+    try:
+        o,j = dec.raw_decode(raw,i)
+    except Exception:
+        break
+    objs.append(o); i = j
+checked=0; viol=0; worst=0; detail=[]
+for o in objs:
+    name=o.get("name","")
+    ia=o.get("metadata",{}).get("installed_at","")
+    if not name or not ia: continue
+    unit="globular-%s.service" % name.replace("_","-")
+    ts=subprocess.run(["systemctl","show",unit,"-p","ExecMainStartTimestamp","--value"],
+                      capture_output=True,text=True).stdout.strip()
+    if not ts: continue
+    r=subprocess.run(["date","-d",ts,"+%s"],capture_output=True,text=True)
+    if r.returncode != 0 or not r.stdout.strip().isdigit(): continue
+    ps=int(r.stdout.strip())
+    try: iau=int(ia)
+    except Exception: continue
+    checked+=1
+    skew=iau-ps
+    if skew > 0:
+        viol+=1
+        if skew>worst: worst=skew
+        detail.append("%s:+%ds" % (name,skew))
+print("RESULT %d %d %d %s" % (checked,viol,worst,",".join(detail[:6])))
+PY
+    ' 2>/dev/null)
+
+    if echo "$out" | grep -q "PROBE_ERROR"; then
+        echo "{\"checked\":0,\"violations\":-1,\"error\":\"$(echo "$out" | tr -d '"' | head -1)\"}"
+        return 0
+    fi
+    local line checked viol worst detail
+    line=$(echo "$out" | grep '^RESULT ' | head -1)
+    if [ -z "$line" ]; then
+        echo "{\"checked\":0,\"violations\":-1,\"error\":\"probe produced no result\"}"
+        return 0
+    fi
+    checked=$(echo "$line" | awk '{print $2}')
+    viol=$(echo "$line" | awk '{print $3}')
+    worst=$(echo "$line" | awk '{print $4}')
+    detail=$(echo "$line" | cut -d' ' -f5-)
+    echo "{\"checked\":${checked:-0},\"violations\":${viol:-0},\"worst_skew_s\":${worst:-0},\"detail\":\"${detail}\"}"
+}

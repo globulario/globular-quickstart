@@ -433,6 +433,7 @@ class ScenarioExecutor:
         """
         Execute a chaos action. Supported actions:
           chaos.stop_node      params: node (e.g. "node-4")
+          chaos.detach_node_etcd params: node, self_ip, peer_ip (decommission: removes own member)
           chaos.start_node     params: node
           chaos.kill_service   params: node, service (systemd unit suffix)
           chaos.restart_service params: node, service
@@ -477,6 +478,82 @@ class ScenarioExecutor:
                 result = {"action": action, "container": container,
                           "exit_code": proc.returncode,
                           "stdout": proc.stdout.strip()[:100]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.detach_node_etcd":
+                # Remove this node's OWN etcd member from the cluster, the way
+                # clean-node.sh step 0.3 does before wiping a node.
+                #
+                # This is the decommission path, NOT a failure: after it runs the
+                # member list must SHRINK, so the survivors' quorum requirement
+                # drops with it. A node that is stopped without detaching stays
+                # in the member list and keeps counting toward quorum forever —
+                # that is what stranded the real cluster twice on 2026-07-30.
+                #
+                # Deliberately executed with the node's own etcd STOPPED, and
+                # authenticating with the service cert rather than the etcd
+                # client cert. Both were the real-world blockers: a node is
+                # wiped after a failed join, so its etcd is already down and
+                # pki/issued/etcd/ was never materialised.
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                peer = params.get("peer", "node-1")
+                peer_ip = params.get("peer_ip", "10.10.0.11")
+                self_ip = params.get("self_ip", "")
+                if not self_ip:
+                    return self._chaos_fail(section, item_id, action, params, "self_ip param required")
+                # NOTE ON FAIL-CLOSED, learned the hard way in this very action:
+                # the first version piped `member list` through 2>/dev/null, so a
+                # lookup that could not run at all (etcdctl was not on PATH)
+                # produced an empty ID and reported NOT_A_MEMBER — "the probe
+                # could not answer" silently became "there is nothing to do".
+                # That is the identical shape as the clean-node bug this scenario
+                # exists to pin. A failed lookup must ERROR, never be read as
+                # absence.
+                script = (
+                    "set -e; "
+                    # The local etcd is deliberately LEFT RUNNING. clean-node.sh
+                    # runs step 0.3 in Phase 0, BEFORE Phase 1 stops services,
+                    # and that order is load-bearing: in a 2-member cluster,
+                    # stopping this node's etcd first drops the survivors to
+                    # 1-of-2, so the member-remove can no longer reach quorum to
+                    # commit. It times out and the phantom member survives — the
+                    # exact trap that made the live incident unrecoverable
+                    # without --force-new-cluster.
+                    "P=/var/lib/globular/pki; "
+                    "ETCDCTL=''; "
+                    "for c in /usr/lib/globular/bin/etcdctl /usr/local/bin/etcdctl "
+                    "         /var/lib/globular/bin/etcdctl /usr/bin/etcdctl; do "
+                    "  if [ -x \"$c\" ]; then ETCDCTL=$c; break; fi; done; "
+                    "if [ -z \"$ETCDCTL\" ]; then ETCDCTL=$(command -v etcdctl || true); fi; "
+                    "if [ -z \"$ETCDCTL\" ]; then echo 'ERROR: etcdctl not found'; exit 3; fi; "
+                    # Service-cert fallback: a node wiped after a partial join has
+                    # no pki/issued/etcd/. Mirrors services@b82bcbf9.
+                    "C=$P/issued/etcd/client.crt; K=$P/issued/etcd/client.key; "
+                    "if [ ! -f \"$C\" ] || [ ! -f \"$K\" ]; then "
+                    "  C=$P/issued/services/service.crt; K=$P/issued/services/service.key; fi; "
+                    "if [ ! -f \"$C\" ] || [ ! -f \"$K\" ]; then "
+                    "  echo 'ERROR: no usable client cert'; exit 3; fi; "
+                    f"E=https://{peer_ip}:2379; "
+                    "LIST=$($ETCDCTL --endpoints=$E --command-timeout=15s "
+                    "  --cacert=$P/ca.crt --cert=$C --key=$K member list 2>&1) "
+                    "  || { echo \"ERROR: member list failed: $LIST\"; exit 3; }; "
+                    f"ID=$(printf '%s\\n' \"$LIST\" | grep '{self_ip}' | cut -d, -f1); "
+                    "if [ -z \"$ID\" ]; then echo 'NOT_A_MEMBER'; exit 0; fi; "
+                    "$ETCDCTL --endpoints=$E --command-timeout=15s "
+                    "  --cacert=$P/ca.crt --cert=$C --key=$K member remove $ID "
+                    "  && echo DETACHED"
+                )
+                proc = subprocess.run(
+                    ["docker", "exec", container, "bash", "-c", script],
+                    capture_output=True, text=True, timeout=90)
+                out = (proc.stdout or "").strip()
+                ok = proc.returncode == 0 and "DETACHED" in out
+                result = {"action": action, "container": container,
+                          "exit_code": proc.returncode,
+                          "stdout": out[-200:],
+                          "stderr": (proc.stderr or "").strip()[-200:]}
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 

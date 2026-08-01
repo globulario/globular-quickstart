@@ -1,0 +1,139 @@
+version: 1
+name: reconcile-clean
+description: |
+  The controller's reconcile loop must actually converge, not merely run.
+
+  WHY THIS EXISTS
+
+  On 2026-07-31 the cluster reported healthy by every existing probe — five
+  nodes heartbeating, services registered, etcd quorate — while the reconcile
+  loop failed on every single pass and converged nothing. `cluster.health`
+  said "healthy" the whole time. Nothing in the suite contradicted it, so a
+  48-minute run produced 18 failures whose shared root cause was invisible.
+
+  A liveness signal is not a convergence signal. This scenario asserts the
+  difference.
+
+  WHAT IT CATCHES
+
+    - workflow definition "cluster.reconcile" not found
+      (Day-0 did not deploy /var/lib/globular/workflows — the whole 2026-07-31
+      cascade started here)
+    - reconcile circuit breaker stuck OPEN
+    - intent resolution failed: unknown profile: "ai"
+      (cluster_controller/handlers_status.go derives profiles["ai"] from
+      installed AI packages, but component_catalog/profilemap.go defines only
+      compute/control-plane/core/database/dns/gateway/media-server/scylla/
+      storage — so the node's intent never resolves)
+    - INVARIANT VIOLATION: MinioPoolNodes[N] is not a valid IP
+      (join flow writing hostnames where the contract requires IPs)
+
+  WHAT IT DELIBERATELY IGNORES
+
+  "handled by release pipeline workflow" and "materialize-infra: skipping …"
+  are normal delegation, not errors.
+
+  NOTE ON TIMING: bootstrap legitimately logs transient reconcile failures
+  while services are still coming up. The settle wait below exists so this
+  measures steady state, not Day-0 noise.
+
+suite: functional
+tags:
+  - reconcile
+  - convergence
+  - controller
+  - layer-2
+  - regression
+
+cluster:
+  profile: quickstart-5node
+  # Deliberately NOT gated on cluster health. A convergence test that refuses
+  # to run unless the cluster is already healthy is gated on the very signal it
+  # exists to distrust — and it would skip exactly the case worth catching: a
+  # cluster that reports healthy (or degraded) while reconcile converges
+  # nothing. The first draft of this scenario had require_healthy_before_start
+  # plus a `status: healthy` precondition, and it aborted at preconditions
+  # against a degraded cluster without ever evaluating reconcile.
+  require_healthy_before_start: false
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  # Only a real precondition: reconcile runs in the controller, so the
+  # controller must exist. Health is captured as baseline evidence below,
+  # never as a gate.
+  - type: probe
+    id: controller_registered
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+baseline:
+  # Recorded for evidence, deliberately unasserted — a degraded cluster is a
+  # legitimate (indeed interesting) context for this scenario.
+  - type: probe
+    id: cluster_health_context
+    probe: cluster.health
+
+
+  # Capture the pre-settle picture for evidence. Not asserted — Day-0 and join
+  # churn legitimately appear here.
+  - type: probe
+    id: reconcile_baseline
+    probe: cluster.reconcile_clean
+    params:
+      node: node-1
+      since: 30 min ago
+
+steps:
+  # Let the cluster settle so we measure steady state rather than bootstrap.
+  - id: settle
+    action: wait
+    params:
+      timeout: 120
+
+assertions:
+  # The core assertion: no reconcile errors in the recent window.
+  - type: probe
+    id: reconcile_clean_recent
+    probe: cluster.reconcile_clean
+    params:
+      node: node-1
+      since: 2 min ago
+    expect:
+      clean: true
+      error_count: 0
+
+  # Layer 2 must be populated. NOTE: the key is ServiceDesiredVersion in
+  # 1.2.288 — NOT DesiredService, which CLAUDE.md documents and which this
+  # release does not write. Probing the documented key waits forever on a
+  # cluster that is in fact converged.
+  - type: probe
+    id: desired_state_present
+    probe: cluster.desired_state
+    expect:
+      count_gte: 1
+
+  # A leader must exist — reconcile only runs on the leader, so no leader means
+  # no convergence regardless of how quiet the journal is.
+  - type: probe
+    id: leader_elected
+    probe: cluster.leader
+    expect:
+      is_leader: true
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-1
+      service: cluster-controller
+
+cleanup:
+  - type: probe
+    id: final_reconcile_state
+    probe: cluster.reconcile_clean
+    params:
+      node: node-1
+      since: 5 min ago

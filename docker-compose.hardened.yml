@@ -1,0 +1,56 @@
+# Hardened-host variant: /tmp mounted noexec.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.hardened.yml up -d node-1
+#   (or: make test-hardened-tmp)
+#
+# WHY THIS EXISTS
+#
+# CIS benchmarks recommend mounting /tmp noexec, and hardened production servers
+# commonly do. Globular's fetch-at-install packages stage downloaded payloads
+# under /tmp and then gate on `[[ -x <path> ]]`, which calls access(X_OK) and
+# HONOURS the mount flag. On such a host a correctly downloaded, sha512-verified,
+# mode-755 binary tests as non-executable and the install reports it as absent:
+#
+#   [codex/install] ERROR: extracted payload missing bin/codex
+#   error: script install-codex.sh failed: exit status 1
+#   ✗ ERROR: Failed to install codex_0.142.3
+#
+# The file was present the whole time — 109,295,518 bytes, sha512 matching the
+# pinned value, mode 755. Only the mount flag differed. The error message sends
+# the reader hunting for a missing file that exists.
+#
+# This variant reproduces that class deliberately. Day-0 completing here means
+# install scripts survive a hardened host; Day-0 failing here means some
+# `[[ -x ]]`-gated step has the same defect codex had.
+#
+# NOTE: the default docker-compose.yml mounts /tmp WITH exec precisely so the
+# normal suite is not testing this. Keep the two separate — a simulation that
+# only ever tests the hardened case would miss the ordinary one and vice versa.
+
+services:
+  node-1:
+    tmpfs: !override
+      - /run
+      - /run/lock
+      - /tmp          # Docker default options include noexec — that is the point.
+  node-2:
+    tmpfs: !override
+      - /run
+      - /run/lock
+      - /tmp
+  node-3:
+    tmpfs: !override
+      - /run
+      - /run/lock
+      - /tmp
+  node-4:
+    tmpfs: !override
+      - /run
+      - /run/lock
+      - /tmp
+  node-5:
+    tmpfs: !override
+      - /run
+      - /run/lock
+      - /tmp

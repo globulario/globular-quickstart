@@ -2,7 +2,7 @@
 #
 # check-systemd-working-directory.sh
 #
-# Fail if any *.service file under units/ or units-extra/ contains a bare
+# Fail if any *.service file shipped in the release packages contains a bare
 #   WorkingDirectory=/var/lib/globular/...
 # without the '-' prefix that makes the state dir optional.
 #
@@ -11,9 +11,10 @@
 # status=200/CHDIR before the unit's mkdir hook can run. The '-' prefix
 # tells systemd to fall back to "/" silently when the dir is missing.
 #
-# Wired into Makefile after the `collect` step so corrupted units coming
-# from a host with pre-c529310e systemd files (services repo INC-2026-0018)
-# never get baked into the Docker image.
+# Wired into the Makefile so corrupted units (services repo INC-2026-0018)
+# never reach the image. It inspects the STAGED RELEASE, because that is what
+# the installer will deploy — the image no longer collects units from the
+# build host, and checking host units would prove nothing about the release.
 #
 # Exit codes:
 #   0  no bare WorkingDirectory= lines found
@@ -24,14 +25,34 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-dirs=()
-[ -d units ]       && dirs+=(units)
-[ -d units-extra ] && dirs+=(units-extra)
-
-if [ ${#dirs[@]} -eq 0 ]; then
-  echo "check-systemd-working-directory: no units/ or units-extra/ dir found — run 'make collect' first" >&2
+# Units now ship inside the release packages, not in a units/ directory
+# collected from the build host. Check the units that will ACTUALLY be
+# installed by unpacking each package's systemd/ entries from the staged
+# release tarball.
+tarball=$(ls release/globular-*-linux-amd64.tar.gz 2>/dev/null | head -1)
+if [ -z "$tarball" ]; then
+  echo "check-systemd-working-directory: no release tarball under release/ — run 'make collect' first" >&2
   exit 2
 fi
+
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+
+# Pull only the packages/ member out of the release, then each package's units.
+tar xzf "$tarball" -C "$work" --strip-components=1 --wildcards '*/packages/*.tgz' 2>/dev/null \
+  || { echo "check-systemd-working-directory: could not extract packages/ from $tarball" >&2; exit 2; }
+
+mkdir -p "$work/units"
+for pkg in "$work"/packages/*.tgz; do
+  [ -f "$pkg" ] || continue
+  name=$(basename "$pkg" .tgz)
+  mkdir -p "$work/units/$name"
+  # Service packages store members as ./systemd/*.service; infra packages
+  # carry no systemd/ at all. Both cases are fine — ignore extraction misses.
+  tar xzf "$pkg" -C "$work/units/$name" --wildcards '*systemd/*.service' 2>/dev/null || true
+done
+
+dirs=("$work/units")
 
 # Bare line pattern: starts with WorkingDirectory=, value points at /var/lib/globular/, no '-' prefix.
 pattern='^WorkingDirectory=/var/lib/globular/'
@@ -46,7 +67,7 @@ while IFS= read -r f; do
 done < <(find "${dirs[@]}" -type f -name "*.service")
 
 if [ "$total" -eq 0 ]; then
-  echo "check-systemd-working-directory: no .service files found under ${dirs[*]}" >&2
+  echo "check-systemd-working-directory: no .service files found in $(basename "$tarball")" >&2
   exit 2
 fi
 

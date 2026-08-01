@@ -39,31 +39,61 @@ If you want to **simulate, validate, and break a cluster safely**, this reposito
 
 ```text
 globular-quickstart/
-├── Dockerfile                  # Ubuntu + systemd + Globular runtime image
+├── Dockerfile                  # bare Ubuntu + systemd; NO Globular bits
 ├── docker-compose.yml          # multi-node cluster topology
 ├── Makefile                    # build, cluster lifecycle, and test targets
-├── scripts/                    # bootstrapping and node configuration scripts
-├── units/                      # systemd service units copied into the image
-├── units-extra/                # quickstart-specific helper units
+├── scripts/
+│   ├── entrypoint.sh           # pre-systemd machine prep, then exec init
+│   ├── bootstrap.sh            # plays the operator: Day-0 install, or join
+│   └── check-systemd-working-directory.sh
 ├── tests/                      # YAML scenario test harness + reports
-├── policy/                     # cluster policy fixtures
-└── binaries/                   # compiled binaries copied into the image build context
+└── release/                    # staged release tarball (gitignored)
 ```
+
+The image contains **no Globular binaries, unit files, users, or state
+directories**. It is a bare machine plus the release tarball; everything else
+is produced by running the real installer at first boot.
+
+## How the cluster is built
+
+The simulation installs Globular exactly the way an operator does — this is the
+point of the repo, not an implementation detail:
+
+| Node | Path |
+|------|------|
+| node-1 | unpacks the release, runs `install.sh` (Day-0), then `globular cluster bootstrap` |
+| node-2..5 | `curl -sfL https://10.10.0.11:8443/join -k \| bash -s -- --token <token>` |
+
+Consequently bring-up takes **~10–15 minutes**, not two. That is the real cost
+of forming a real cluster, and paying it is what makes the test results mean
+something.
+
+> **Do not add Globular content to the Dockerfile or the entrypoint.** If a
+> thing is missing at runtime, it is missing from the *release* — fix it there.
+> This repo previously assembled the image from `/usr/lib/globular/bin` and
+> `/etc/systemd/system` on the build host and reimplemented Day-0 in 579 lines
+> of shell. The resulting cluster had no workflow definitions, no desired
+> state, no RBAC bindings and no repository artifacts, so 18 of 38 scenarios
+> failed against artifacts of that divergence rather than real defects.
 
 ## Cluster topology
 
-The quickstart environment models a **5-node Globular cluster plus ScyllaDB** on a dedicated Docker network.
+A **5-node Globular cluster** on a dedicated Docker network. Profiles are only
+those the release actually defines — `core`, `compute`, `control-plane`,
+`storage`.
 
-| Node | IP | Profiles | Main role |
-|------|----|----------|-----------|
-| node-1 | 10.10.0.11 | control-plane, core, gateway | ingress, xDS, gateway, auth, RBAC, workflow |
-| node-2 | 10.10.0.12 | control-plane, core, storage | repository, MinIO, monitoring, backup |
-| node-3 | 10.10.0.13 | control-plane, core, ai | AI services, MCP, controller replica |
-| node-4 | 10.10.0.14 | compute | worker / node-agent |
-| node-5 | 10.10.0.15 | compute | worker / node-agent |
-| scylladb | 10.10.0.20 | infrastructure | shared ScyllaDB service |
+| Node | IP | Role | Profiles |
+|------|----|------|----------|
+| node-1 | 10.10.0.11 | founding (Day-0) | core, control-plane, storage |
+| node-2 | 10.10.0.12 | joining | core, control-plane, storage |
+| node-3 | 10.10.0.13 | joining | core, control-plane |
+| node-4 | 10.10.0.14 | joining | core, compute |
+| node-5 | 10.10.0.15 | joining | core, compute |
 
-That gives you a realistic control-plane / storage / AI / worker split without needing physical machines.
+ScyllaDB is **not** a sidecar container: the installer puts it on the node, on
+the founder during Day-0 and on joiners only where placement assigns `storage`.
+That is two instances, each capped to 1 shard / 1500M via `/etc/scylla.d` so
+several nodes can share one Docker host.
 
 ## Why this repo matters
 
@@ -85,21 +115,31 @@ It is useful for:
 ### Prerequisites
 
 - Docker Engine / Docker Compose
-- enough CPU and memory for a 5-node simulation
-- compiled Globular binaries available on the host at `/usr/lib/globular/bin`
-- systemd unit files available on the host at `/etc/systemd/system`
+- enough CPU and memory for a 5-node simulation (~15 GB RAM in practice)
+- a **release tarball** at `../services/dist/globular-<version>-linux-amd64.tar.gz`
+
+  Build one with `cd ../services && ./scripts/build-local-release.sh`. Nothing
+  is taken from the build host's installed Globular — the tarball is the only
+  source of Globular bits in the image.
 
 ### Build and start the cluster
 
 ```bash
-make up
+make up                              # uses RELEASE_VERSION from the Makefile
+make up RELEASE_VERSION=1.2.290      # or pin a specific release
 ```
 
 This performs:
 
-1. `make collect` — copies binaries and unit files into the build context
-2. `docker build` — builds the node image
-3. `docker compose up -d` — starts the cluster
+1. `make collect` — stages the release tarball (+ `.sha256`) into the build context
+2. `docker build` — builds a bare systemd image carrying that tarball
+3. `docker compose up -d` — boots the nodes; node-1 runs Day-0, the rest join
+
+Watch it form:
+
+```bash
+docker exec globular-node-1 journalctl -u globular-quickstart-bootstrap -f
+```
 
 ### Check status
 
@@ -123,9 +163,9 @@ make quickstart-reset
 
 | Target | Description |
 |--------|-------------|
-| `make up` | Collect binaries, build image, and start cluster |
+| `make up` | Stage the release, build image, and start cluster |
 | `make down` | Stop cluster, keep state |
-| `make clean` | Stop cluster, remove volumes, remove collected binaries/units |
+| `make clean` | Stop cluster, remove volumes, remove the staged release |
 | `make logs` | Follow all container logs |
 | `make log-1` | Follow logs for a specific node |
 | `make status` | Container state + etcd health |
@@ -261,9 +301,11 @@ sudo bash install.sh
 ## Typical workflow for contributors
 
 ```bash
-# 1. Rebuild / install latest host binaries first
-# 2. Start quickstart
-make up
+# 1. Build a release in the services repo (NOT a host install)
+cd ../services && ./scripts/build-local-release.sh && cd -
+
+# 2. Start quickstart against it (~10-15 min: real Day-0 + real joins)
+make up RELEASE_VERSION=<the version you just built>
 
 # 3. Wait for healthy cluster
 make test-wait

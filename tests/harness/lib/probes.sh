@@ -1165,3 +1165,66 @@ PY
     detail=$(echo "$line" | cut -d' ' -f5-)
     echo "{\"checked\":${checked:-0},\"violations\":${viol:-0},\"worst_skew_s\":${worst:-0},\"detail\":\"${detail}\"}"
 }
+
+# ── cluster.reconcile_clean ──────────────────────────────────────────────────
+# probe: cluster.reconcile_clean
+# Params: --node <node> (default node-1), --since <systemd time> (default "30 min ago")
+# Returns: {"clean":true|false,"error_count":N,"kinds":"...","sample":"...","node":"..."}
+#
+# Asserts the controller's reconcile loop is not continuously failing. A cluster
+# can look healthy by every other probe — nodes heartbeating, services
+# registered, etcd quorate — while reconcile fails on every pass and converges
+# nothing. That is exactly the 2026-07-31 state: `cluster.reconcile` was absent,
+# the circuit breaker sat permanently open, and desired state stayed empty while
+# `cluster.health` happily reported "healthy".
+#
+# It also catches the controller/catalog profile disagreement: the controller
+# derives profiles["ai"] from installed AI packages (handlers_status.go), but
+# component_catalog/profilemap.go defines no such profile, so every reconcile
+# pass logs `intent resolution failed: unknown profile: "ai"` and that node's
+# intent never resolves.
+#
+# Deliberately NOT matched: "reconcile: service X — handled by release pipeline
+# workflow" and "materialize-infra: skipping …" are normal delegation messages.
+probe_cluster_reconcile_clean() {
+    local node="node-1" since="30 min ago"
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --node)  node="$2";  shift 2 ;;
+            --since) since="$2"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+
+    local container="globular-${node}"
+    if ! _container_running "$container"; then
+        echo "{\"clean\":false,\"error_count\":-1,\"kinds\":\"\",\"sample\":\"container not running\",\"node\":\"$node\"}"
+        return
+    fi
+
+    local journal
+    journal=$(docker exec "$container" journalctl -u globular-cluster-controller \
+                --since "$since" --no-pager 2>/dev/null || true)
+
+    if [ -z "$journal" ]; then
+        # Absence of evidence is not evidence of health — report -1, never 0.
+        echo "{\"clean\":false,\"error_count\":-1,\"kinds\":\"\",\"sample\":\"no controller journal\",\"node\":\"$node\"}"
+        return
+    fi
+
+    local matches
+    matches=$(echo "$journal" | grep -oE \
+        "intent resolution failed[^\"]*|unknown profile: \"[a-z-]+\"|INVARIANT VIOLATION[^\"]*|reconcile-workflow: [a-z.]+ FAILED|circuit OPEN|workflow definition \"[a-z.]+\" not found" \
+        2>/dev/null || true)
+
+    local count=0 kinds="" sample=""
+    if [ -n "$matches" ]; then
+        count=$(echo "$matches" | grep -c . || echo 0)
+        kinds=$(echo "$matches" | sed 's/[0-9]\+//g' | sort -u | head -4 | tr '\n' ';' | tr -d '"' | cut -c1-200)
+        sample=$(echo "$matches" | head -1 | tr -d '"' | cut -c1-160)
+    fi
+
+    local clean="true"
+    [ "$count" -gt 0 ] && clean="false"
+    echo "{\"clean\":${clean},\"error_count\":${count},\"kinds\":\"${kinds}\",\"sample\":\"${sample}\",\"node\":\"${node}\"}"
+}

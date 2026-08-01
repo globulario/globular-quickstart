@@ -1,60 +1,27 @@
 SERVICES_DIR ?= ../services
-BIN_SRC       = /usr/lib/globular/bin
-UNIT_SRC      = /etc/systemd/system
 
-# ── Binaries to include in the image ─────────────────────
-# Core services (always needed)
-CORE_BINS = \
-	etcd etcdctl \
-	node_agent_server \
-	cluster_controller_server \
-	workflow_server \
-	cluster_doctor_server \
-	dns_server \
-	authentication_server \
-	rbac_server \
-	resource_server \
-	discovery_server \
-	event_server \
-	log_server \
-	xds envoy gateway
-
-# Storage / monitoring
-STORAGE_BINS = \
-	minio mc \
-	repository_server \
-	monitoring_server \
-	prometheus promtool \
-	alertmanager amtool \
-	node_exporter \
-	backup_manager_server
-
-# AI stack
-AI_BINS = \
-	ai_memory_server \
-	ai_executor_server \
-	ai_watcher_server \
-	ai_router_server \
-	globular-mcp-server
-
-# Optional / user-facing
-EXTRA_BINS = \
-	echo_server \
-	file_server \
-	mcp \
-	persistence_server \
-	search_server \
-	title_server \
-	blog_server \
-	media_server \
-	globularcli
-
-ALL_BINS = $(CORE_BINS) $(STORAGE_BINS) $(AI_BINS) $(EXTRA_BINS)
-
-# ── Unit files to include ────────────────────────────────
-UNITS = $(wildcard $(UNIT_SRC)/globular-*.service)
+# ── Release artifact — the ONLY source of Globular bits ──
+# The image installs Globular exactly the way an operator does: by unpacking
+# the published release tarball and running its install.sh (which delegates to
+# scripts/install-day0.sh). Nothing is copied from the build host.
+#
+# Historical note — why this matters:
+#   This used to be BIN_SRC=/usr/lib/globular/bin + UNIT_SRC=/etc/systemd/system,
+#   i.e. the image was assembled from whatever happened to be installed on the
+#   developer's workstation, with a 579-line entrypoint standing in for the
+#   3013-line real installer. The simulation then validated a cluster that no
+#   operator ever builds: no workflow definitions, no desired state, no RBAC
+#   bindings, no repository artifacts. 18/38 scenarios failed on 2026-07-31
+#   against artifacts of that divergence rather than real defects.
+#   Keep the release tarball as the single source. Do not reintroduce host copies.
+RELEASE_VERSION ?= 1.2.289
+RELEASE_NAME     = globular-$(RELEASE_VERSION)-linux-amd64
+RELEASE_TARBALL  = $(SERVICES_DIR)/dist/$(RELEASE_NAME).tar.gz
+RELEASE_SHA256   = $(RELEASE_TARBALL).sha256
 
 .PHONY: collect check-units build up down clean logs status shell test \
+	snapshot snapshot-restore snapshot-list \
+	check-glibc-floor test-hardened-tmp test-concurrent-join \
 	quickstart-up quickstart-down quickstart-reset quickstart-logs \
 	test-wait test-smoke test-functional test-security test-resilience \
 	test-recovery test-soak test-v1-certification ci-smoke \
@@ -66,34 +33,41 @@ UNITS = $(wildcard $(UNIT_SRC)/globular-*.service)
 	awareness-reset awareness-training-suite awareness-ledger \
 	awareness-patterns awareness-pattern awareness-pattern-latest awareness-pattern-day1
 
-## collect — copy binaries + units into build context
+## collect — stage the release tarball into the build context
+## The tarball IS the install source. If it is missing, build it in the services
+## repo (scripts/build-local-release.sh) rather than falling back to host copies.
 collect:
-	@echo "=== Collecting binaries ==="
-	@mkdir -p binaries units
-	@for b in $(ALL_BINS); do \
-		if [ -f "$(BIN_SRC)/$$b" ]; then \
-			cp "$(BIN_SRC)/$$b" binaries/; \
-			echo "  ✓ $$b"; \
-		else \
-			echo "  ✗ $$b (not found, skipping)"; \
-		fi \
-	done
-	@echo "=== Collecting unit files ==="
-	@for u in $(UNITS); do \
-		cp "$$u" units/; \
-		echo "  ✓ $$(basename $$u)"; \
-	done
-	@$(MAKE) --no-print-directory check-units
+	@echo "=== Staging release $(RELEASE_VERSION) ==="
+	@test -f "$(RELEASE_TARBALL)" || { \
+		echo "  ✗ $(RELEASE_TARBALL) not found."; \
+		echo "    Build it first:  cd $(SERVICES_DIR) && ./scripts/build-local-release.sh"; \
+		echo "    Or pick another: make build RELEASE_VERSION=<x.y.z>"; \
+		exit 1; \
+	}
+	@mkdir -p release
+	@cp "$(RELEASE_TARBALL)" release/
+	@echo "  ✓ $(RELEASE_NAME).tar.gz"
+	@if [ -f "$(RELEASE_SHA256)" ]; then \
+		cp "$(RELEASE_SHA256)" release/; \
+		echo "  ✓ $(RELEASE_NAME).tar.gz.sha256"; \
+	else \
+		( cd release && sha256sum "$(RELEASE_NAME).tar.gz" > "$(RELEASE_NAME).tar.gz.sha256" ); \
+		echo "  ✓ $(RELEASE_NAME).tar.gz.sha256 (generated)"; \
+	fi
 	@echo "=== Done ==="
 
-## check-units — fail if any collected unit has bare WorkingDirectory=/var/lib/globular/...
-## (services repo INC-2026-0018: bare WD causes status=200/CHDIR before ExecStartPre)
+## check-units — verify the RELEASE's unit files, not host-collected ones.
+## (services repo INC-2026-0018: bare WorkingDirectory=/var/lib/globular/... causes
+## status=200/CHDIR before ExecStartPre.) Units now ship inside the packages, so
+## this inspects the staged tarball instead of a units/ directory.
 check-units:
 	@./scripts/check-systemd-working-directory.sh
 
 ## build — build the Docker image (runs collect first)
 build: collect
-	docker build -t globulario/globular-node:latest .
+	docker build \
+		--build-arg RELEASE_VERSION=$(RELEASE_VERSION) \
+		-t globulario/globular-node:latest .
 
 ## up — start the 5-node cluster
 up: build
@@ -112,7 +86,7 @@ down:
 ## clean — stop + remove all volumes (full reset)
 clean:
 	docker compose down -v
-	rm -rf binaries/ units/
+	rm -rf release/
 
 ## logs — follow all container logs
 logs:
@@ -161,6 +135,62 @@ quickstart-down:
 quickstart-reset:
 	docker compose down -v
 	docker compose up -d
+
+# ── Snapshots ────────────────────────────────────────────────────────────────
+# Scenario work (especially resilience/recovery, which deliberately stop nodes
+# and wipe etcd) leaves the cluster damaged. Rebuilding costs ~8 min of Day-0
+# plus ~4 min of serialized joins. A snapshot returns you to a converged
+# 5-node cluster in about a minute.
+#
+# This is an ITERATION aid only. `make clean && make up` remains the way to
+# exercise the real install path — never let a snapshot stand in for that.
+
+## snapshot — freeze the current converged cluster (~2 GB)
+snapshot:
+	./scripts/snapshot.sh save
+
+## snapshot-restore — return to the frozen cluster (~1 min)
+snapshot-restore:
+	./scripts/snapshot.sh restore
+
+## snapshot-list — show what is stored
+snapshot-list:
+	./scripts/snapshot.sh list
+
+# ── Environment-matrix checks ────────────────────────────────────────────────
+# These validate properties of the RELEASE and the HOST, not of a running
+# cluster, so they are make targets rather than YAML scenarios.
+
+## check-glibc-floor — every shipped binary must run on the oldest supported OS
+## (services repo gate; catches file_server-style build-provenance drift)
+check-glibc-floor:
+	$(SERVICES_DIR)/scripts/check-glibc-floor.sh \
+		$(SERVICES_DIR)/dist/$(RELEASE_NAME)
+
+## test-concurrent-join — regression for the Day-1 join race (5.4 writes
+## etcd.yaml from a pre-member-add snapshot). Destructive: wipes node-4/5.
+test-concurrent-join:
+	./scripts/test-concurrent-join.sh
+
+## test-hardened-tmp — prove Day-0 survives a CIS-style noexec /tmp.
+## Destructive: wipes the cluster. Run standalone, ~10 min.
+test-hardened-tmp:
+	@echo "=== Day-0 on a hardened host (/tmp noexec) ==="
+	docker compose down -v
+	docker compose -f docker-compose.yml -f docker-compose.hardened.yml up -d node-1
+	@echo "Watching Day-0; a failure here means an [[ -x ]]-gated install step"
+	@echo "has the same defect codex_0.142.3 had."
+	@for i in $$(seq 1 120); do \
+		if docker exec globular-node-1 test -f /var/lib/globular/.quickstart-bootstrap-complete 2>/dev/null; then \
+			echo "  PASS: Day-0 completed with noexec /tmp"; exit 0; \
+		fi; \
+		if [ "$$(docker exec globular-node-1 systemctl is-active globular-quickstart-bootstrap 2>/dev/null)" = "failed" ]; then \
+			echo "  FAIL: Day-0 aborted under noexec /tmp:"; \
+			docker exec globular-node-1 journalctl -u globular-quickstart-bootstrap --no-pager -n 20 | tail -20; \
+			exit 1; \
+		fi; \
+		sleep 15; \
+	done; echo "  FAIL: timeout"; exit 1
 
 ## quickstart-logs — follow all container logs
 quickstart-logs:

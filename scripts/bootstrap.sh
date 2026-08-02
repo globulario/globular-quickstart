@@ -189,9 +189,18 @@ bootstrap_joining() {
     # services, node-agent). We deliberately do NOT call
     # `globular cluster join` directly — it skips TLS, user creation, unit
     # files and etcd add ordering that the script performs.
-    log "━━━ running join script from https://${CONTROLLER_IP}:8443/join ━━━"
+    # --profiles carries this node's declared placement intent to the controller
+    # (join script → requested_profiles → v2 JoinAuthorization). Without it the
+    # controller has nothing to place on but hardware, and deduceProfiles() gives
+    # every node that clears the thresholds the SAME maximal set —
+    # control-plane+core+gateway+storage. In this simulation all five containers
+    # share one Docker host and therefore report identical RAM/CPU/disk, so all
+    # five looked like storage nodes and five ScyllaDB instances came up where
+    # docker-compose.yml asks for two. The founding node was never affected: it
+    # passes its profiles to `globular cluster bootstrap` above.
+    log "━━━ running join script from https://${CONTROLLER_IP}:8443/join (profiles: $PROFILES) ━━━"
     curl -sfL -k "https://${CONTROLLER_IP}:8443/join" \
-        | bash -s -- --token "$token" \
+        | bash -s -- --token "$token" --profiles "$PROFILES" \
         || die "join failed"
     log "━━━ joined cluster ━━━"
 

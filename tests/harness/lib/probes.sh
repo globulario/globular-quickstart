@@ -649,8 +649,21 @@ probe_pki_signing_keys() {
 
     local key_count node_key_present=false
     key_count=$(docker exec "$container" ls /var/lib/globular/keys/ 2>/dev/null | wc -l)
-    docker exec "$container" ls /var/lib/globular/keys/ 2>/dev/null | \
-        grep -q "${node}_private" && node_key_present=true
+
+    # Key files are named after the node's MAC (colons -> underscores), e.g.
+    # 02_42_0a_0a_00_0b_private — NOT after the container's short name. This
+    # used to grep for "${node}_private" (i.e. literally "node-1_private"),
+    # which no node has ever had, so node_key_present was false on every node
+    # whose scenario bothered to assert it. The keys were present the whole
+    # time. Derive the real identity instead of guessing at the filename.
+    local mac
+    mac=$(docker exec "$container" cat /sys/class/net/eth0/address 2>/dev/null | tr -d '\r\n' | tr ':' '_')
+    if [ -n "$mac" ]; then
+        # Accept both the bare <mac>_private and the suffixed
+        # <mac>_<keyid>_private form the key rotation writes.
+        docker exec "$container" ls /var/lib/globular/keys/ 2>/dev/null | \
+            grep -qE "^${mac}(_[A-Za-z0-9_-]+)?_private$" && node_key_present=true
+    fi
 
     local present=false
     [ "$key_count" -gt 0 ] && present=true
@@ -708,7 +721,18 @@ probe_pki_mtls_connect() {
 # Verifies the cluster-roles.json policy file is deployed and parseable.
 probe_rbac_policy_file() {
     local node="node-1"
-    local policy_path="/var/lib/globular/policy/rbac/cluster-roles.json"
+    # The cluster roles file is GENERATED (from proto AuthzRule annotations) and
+    # lands as cluster-roles.generated.json. This probe used to hardcode the
+    # legacy hand-authored name cluster-roles.json, so it reported
+    # present:false on a cluster whose RBAC was fully deployed and loaded —
+    # the controller logs "loaded cluster roles from file
+    # path=.../cluster-roles.generated.json roles=22" at the same moment.
+    # Check the generated name first, keep the legacy one as a fallback so this
+    # probe still works against an older bundle.
+    local policy_candidates=(
+        "/var/lib/globular/policy/rbac/cluster-roles.generated.json"
+        "/var/lib/globular/policy/rbac/cluster-roles.json"
+    )
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --node) node="$2"; shift 2 ;;
@@ -722,8 +746,15 @@ probe_rbac_policy_file() {
         return
     fi
 
-    # Check file exists
-    if ! docker exec "$container" test -f "$policy_path" 2>/dev/null; then
+    local policy_path=""
+    local candidate
+    for candidate in "${policy_candidates[@]}"; do
+        if docker exec "$container" test -f "$candidate" 2>/dev/null; then
+            policy_path="$candidate"
+            break
+        fi
+    done
+    if [ -z "$policy_path" ]; then
         echo "{\"present\":false,\"role_count\":0,\"valid_json\":false,\"node\":\"$node\"}"
         return
     fi

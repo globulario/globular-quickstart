@@ -148,12 +148,104 @@ def eligible_scenarios():
     return elig, excl
 
 
+
+def doctor_findings():
+    """Doctor findings via the product's own authority (not a reimplementation
+    of placement rules). Returns (findings, error)."""
+    n = live_node()
+    if not n:
+        return [], "no live node"
+    r = sh(["docker", "exec", n, "bash", "-c",
+            "/usr/lib/globular/bin/globular doctor report cluster "
+            "--endpoint 10.10.0.11:12005 --timeout 180s --json 2>/dev/null"], 300)
+    try:
+        return json.loads(r.stdout).get("findings", []), None
+    except Exception as e:
+        return [], f"doctor unreadable: {e}"
+
+
+def admit_baseline(quiet_s=90, out=None):
+    """
+    Converged-baseline admission gate.
+
+    Five healthy etcd endpoints prove AVAILABILITY. They do not prove that
+    installed state matches placement authority. Only a converged cluster is a
+    valid contamination baseline: starting a shuffle from an unconverged cluster
+    reports the cluster getting HEALTHIER as contamination, because the first
+    scenario that forces reconciliation sheds the unauthorized state.
+
+    Returns (admitted: bool, reasons: list[str], fingerprint: dict).
+    Disposition on failure is BASELINE_UNCONVERGED — not a scenario failure, and
+    emphatically not a pass.
+    """
+    reasons = []
+    fp = canonical_fingerprint()
+
+    if len(fp.get("containers", [])) != 5:
+        reasons.append(f"expected 5 running nodes, found {len(fp.get('containers', []))}")
+    if fp.get("etcd_healthy") != 5:
+        reasons.append(f"expected 5 healthy etcd endpoints, found {fp.get('etcd_healthy')}")
+
+    # Phantom members: an "unstarted" member counts toward quorum and silently
+    # raises the requirement for every later scenario.
+    n = live_node()
+    if n:
+        ml = sh(["docker", "exec", n, "bash", "-c",
+                 f"{ETCDCTL} --endpoints=https://10.10.0.11:2379 member list"], 90).stdout
+        phantoms = [l for l in ml.split("\n") if "unstarted" in l]
+        if phantoms:
+            reasons.append(f"{len(phantoms)} phantom (unstarted) etcd member(s): "
+                           + "; ".join(x.strip()[:60] for x in phantoms))
+
+    # Residue left by a previous run.
+    for node, v in (fp.get("pki") or {}).items():
+        if isinstance(v, str) and v.endswith("/0") is False and v.split("/")[-1].isdigit():
+            if int(v.split("/")[-1]) > 0:
+                reasons.append(f"{node}: {v.split('/')[-1]} leftover chaos-backup file(s)")
+
+    findings, derr = doctor_findings()
+    if derr:
+        reasons.append(f"cannot prove convergence: {derr}")
+    else:
+        orphans = [f for f in findings if "orphan" in str(f.get("invariant_id", ""))]
+        if orphans:
+            per = {}
+            for f in orphans:
+                ent = str(f.get("entity_ref", ""))
+                per[ent.split("/")[0]] = per.get(ent.split("/")[0], 0) + 1
+            reasons.append("installed state does not match placement authority — "
+                           f"{len(orphans)} orphaned installation(s): "
+                           + ", ".join(f"{k[:12]}={v}" for k, v in sorted(per.items())))
+        severe = [f for f in findings if f.get("severity", 0) >= 4]
+        if severe:
+            reasons.append(f"{len(severe)} CRITICAL doctor finding(s): "
+                           + "; ".join(str(f.get("invariant_id"))[:40] for f in severe[:4]))
+
+    # Quiet interval: one clean snapshot can still catch the cluster mid-flight.
+    # Require two structurally identical fingerprints separated by a bounded gap.
+    if not reasons:
+        print(f"  baseline looks clean — proving quiet for {quiet_s}s...")
+        time.sleep(quiet_s)
+        fp2 = canonical_fingerprint()
+        moved = diff(fp, fp2)
+        if moved:
+            reasons.append(f"cluster still moving during {quiet_s}s quiet interval: "
+                           + "; ".join(m.split(":")[0] for m in moved))
+        fp = fp2
+
+    if out:
+        json.dump({"admitted": not reasons, "reasons": reasons, "fingerprint": fp},
+                  open(os.path.join(out, "baseline-admission.json"), "w"), indent=1)
+    return (not reasons), reasons, fp
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", default="1,2,3")
     ap.add_argument("--scenarios", default="")
     ap.add_argument("--baseline-only", action="store_true")
     ap.add_argument("--out", default="/tmp/shuffle-proof")
+    ap.add_argument("--quiet", type=int, default=90,
+                    help="quiet interval (s) the baseline must hold still for")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
 
@@ -169,10 +261,19 @@ def main():
         print(f"  EXCLUDED {os.path.basename(e)} — UNRESTORABLE mutation "
               f"(governed etcd reconstruction not transactionally safe)")
 
-    base = canonical_fingerprint()
+    print("\n=== converged-baseline admission gate ===")
+    admitted, reasons, base = admit_baseline(quiet_s=args.quiet, out=args.out)
     json.dump(base, open(os.path.join(args.out, "baseline.json"), "w"), indent=1)
-    print(f"\nbaseline captured: etcd_members={len(base.get('etcd_members', []))} "
-          f"healthy={base.get('etcd_healthy')}")
+    if not admitted:
+        print("  BASELINE_UNCONVERGED — refusing to start the shuffle proof:")
+        for r in reasons:
+            print(f"    - {r}")
+        print("\n  A healthy cluster is not necessarily a converged cluster, and only a\n"
+              "  converged cluster is a valid contamination baseline. Reconcile or rebuild\n"
+              "  before running the proof.")
+        return 2
+    print(f"  ADMITTED: etcd_members={len(base.get('etcd_members', []))} "
+          f"healthy={base.get('etcd_healthy')} (quiet {args.quiet}s)")
     if args.baseline_only:
         return 0
 

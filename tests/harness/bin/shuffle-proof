@@ -309,6 +309,32 @@ def main():
         for line in d:
             print(f"    {line}")
 
+    # Receipt: a run must be reproducible from its own record. Seed alone is not
+    # enough — the same seed over a different scenario set, release, or harness
+    # commit is a different experiment.
+    def _cap(argv):
+        r = sh(argv, 60)
+        return (r.stdout or "").strip()
+    receipt = {
+        "harness_commit": _cap(["git", "-C", QS, "rev-parse", "HEAD"]),
+        "harness_dirty": bool(_cap(["git", "-C", QS, "status", "--porcelain",
+                                    "tests/harness", "tests/scenarios"])),
+        "release_version": _cap(["docker", "exec", live_node() or "globular-node-1",
+                                 "bash", "-c",
+                                 "ls /opt/globular/release/ | grep -oE '[0-9]+\\.[0-9]+\\.[0-9]+' | head -1"]),
+        "seeds": [int(x) for x in args.seeds.split(",")],
+        "eligible_count": len(pool),
+        "eligible": [os.path.basename(x) for x in pool],
+        "excluded": [{"scenario": os.path.basename(e),
+                      "reason": "UNRESTORABLE mutation — governed etcd membership "
+                                "reconstruction is not transactionally safe"} for e in excl],
+        "baseline_admission": "ADMITTED",
+        "baseline_fingerprint": base,
+        "quiet_interval_s": args.quiet,
+        "convergence_window_s": CONVERGE_S,
+        "results": results,
+    }
+    json.dump(receipt, open(os.path.join(args.out, "receipt.json"), "w"), indent=1)
     json.dump(results, open(os.path.join(args.out, "seeds.json"), "w"), indent=1)
     ok = all(v["equivalent"] for v in results.values())
     print(f"\n=== SHUFFLE PROOF: {'PASS' if ok else 'FAIL'} "

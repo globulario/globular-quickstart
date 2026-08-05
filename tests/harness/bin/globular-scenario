@@ -624,7 +624,12 @@ class ScenarioExecutor:
                           "stdout": out[-200:],
                           "stderr": (proc.stderr or "").strip()[-200:]}
                 if ok:
-                    self._mutation_open("etcd_detached", node=node)
+                    # Carry the identity coordinates the reconstruction needs.
+                    # The obligation has to be self-describing: teardown may run
+                    # long after this action, from a failure path that never saw
+                    # these params.
+                    self._mutation_open("etcd_detached", node=node,
+                                        self_ip=self_ip, peer_ip=peer_ip)
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
@@ -1034,7 +1039,11 @@ class ScenarioExecutor:
         # It is EQUIVALENT_RECONSTRUCTION rather than EXACT_RESTORATION only
         # because the rebuilt member gets a NEW etcd member id — capability
         # returns, identity does not.
-        "etcd_detached":   EQUIVALENT_RECONSTRUCTION,
+        # Mode is EQUIVALENT_RECONSTRUCTION in principle (etcd content is fully
+        # rebuildable; only the member id changes). Declared UNRESTORABLE in
+        # practice until reconstruction is proven safe on partial failure — see
+        # the phantom-member note in _enforce_restoration.
+        "etcd_detached":   UNRESTORABLE,
         # Service kills: the product is supposed to bring these back (node-agent
         # convergence / systemd Restart=). The obligation is therefore not "run
         # an inverse" but "prove recovery actually happened" — an assumed
@@ -1050,10 +1059,19 @@ class ScenarioExecutor:
             self.outstanding.append(entry)
 
     def _mutation_close(self, kind: str, **key) -> None:
-        """Record that a mutation's inverse succeeded."""
-        entry = {"kind": kind, **key}
-        if entry in self.outstanding:
-            self.outstanding.remove(entry)
+        """
+        Record that a mutation's obligation is satisfied.
+
+        Matches on the SUBSET of keys given, not on exact dict equality: an
+        obligation may carry extra diagnostic fields the closer never saw (the
+        etcd one carries self_ip/peer_ip so teardown can reconstruct without the
+        original params). Requiring the closer to reproduce every field would
+        silently leave obligations open and report phantom residue.
+        """
+        want = {"kind": kind, **key}
+        for entry in list(self.outstanding):
+            if all(entry.get(k) == v for k, v in want.items()):
+                self.outstanding.remove(entry)
 
     def _sh(self, argv: list, timeout: int = 60):
         return subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
@@ -1144,6 +1162,36 @@ class ScenarioExecutor:
                     ok = self._exec_chaos(
                         {"id": "auto-restore-cert", "action": "chaos.restore_cert",
                          "params": {"node": node}}, "restoration")
+                elif kind == "etcd_detached":
+                    # DELIBERATELY NOT auto-reconstructed. chaos.reconstruct_
+                    # node_etcd_membership exists and is wired, but it is NOT
+                    # proven and must not run unattended, because a PARTIAL
+                    # failure leaves the cluster worse than it found it:
+                    #
+                    #   member add succeeds -> node fails to start
+                    #   -> phantom "unstarted" member persists
+                    #   -> phantom counts toward quorum (2-of-3 becomes 3-of-4)
+                    #   -> next rejoin: "learner slot contended ...
+                    #      etcdserver: unhealthy cluster" -> another phantom
+                    #
+                    # Observed 2026-08-05 with member a255b6c28231fd7b; recovery
+                    # required a manual `member remove`. A cleanup path that can
+                    # degrade the cluster on partial failure is worse than no
+                    # cleanup path, because unattended suites amplify it.
+                    #
+                    # Fail loudly instead. Re-enable only once the operation can
+                    # add-and-verify-started atomically and roll the member add
+                    # back when the node does not come up — that rollback is
+                    # exactly what would have prevented the phantom.
+                    report["unrestorable"].append(
+                        {**entry, "mode": self.UNRESTORABLE,
+                         "reason": "reconstruction unproven; partial failure creates "
+                                   "quorum-inflating phantom members"})
+                    print(f"    UNRESTORABLE: {entry} — etcd membership reconstruction "
+                          f"is not suite-safe (partial failure leaves a phantom member "
+                          f"that inflates quorum and blocks the next rejoin). Repair "
+                          f"this node with the operator path before the next run.")
+                    continue
                 elif self.RESTORATION_MODE.get(kind) == self.UNRESTORABLE:
                     report["unrestorable"].append({**entry, "mode": self.UNRESTORABLE})
                     print(f"    UNRESTORABLE: {entry} — no harness inverse exists. "

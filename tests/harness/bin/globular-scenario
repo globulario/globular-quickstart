@@ -276,31 +276,50 @@ class ScenarioExecutor:
         overall_ok = True
         stopped_at = None
         steps_ok = True
-        for section, handler, stop_on_fail in sections:
-            items = self.scenario.get(section, [])
-            if not items:
-                continue
-            # Skip intermediate sections if stopped, but ALWAYS run cleanup
-            if stopped_at and section != "cleanup":
-                print(f"  [SKIP] {section} (stopped at {stopped_at})")
-                continue
-            print(f"  [{section}]")
-            ok = handler(items, section)
-            if section == "steps" and not ok:
-                steps_ok = False
-            if not ok:
-                overall_ok = False
-                if stop_on_fail and stopped_at is None:
-                    stopped_at = section
-                    print(f"  STOPPED: {section} failed — cleanup will still run")
+        crashed = None
+        # The section loop is wrapped because restoration must be reachable from
+        # EVERY path, not just the anticipated ones. _exec_chaos catches its own
+        # exceptions, but _exec_steps/_exec_probes/_exec_wait/_call_probe do not:
+        # a malformed probe response or a type error in _check_expect raised
+        # AFTER a mutation had landed would propagate out of run() and skip
+        # teardown entirely — losing restoration at exactly the moment the
+        # scenario went most wrong. An unconditional law with an unguarded loop
+        # is only unconditional on the happy path.
+        try:
+            for section, handler, stop_on_fail in sections:
+                items = self.scenario.get(section, [])
+                if not items:
+                    continue
+                # Skip intermediate sections if stopped, but ALWAYS run cleanup
+                if stopped_at and section != "cleanup":
+                    print(f"  [SKIP] {section} (stopped at {stopped_at})")
+                    continue
+                print(f"  [{section}]")
+                ok = handler(items, section)
+                if section == "steps" and not ok:
+                    steps_ok = False
+                if not ok:
+                    overall_ok = False
+                    if stop_on_fail and stopped_at is None:
+                        stopped_at = section
+                        print(f"  STOPPED: {section} failed — cleanup will still run")
 
-        # Enforce restoration AFTER cleanup, unconditionally. The YAML `cleanup`
-        # section is best-effort and only covers what its author remembered; this
-        # covers what the scenario actually did, including when it stopped early
-        # and never reached its own restore step. Residue fails the scenario:
-        # a successful mutation followed by an unverified cleanup is still a
-        # failed scenario, and residue is how one test becomes the next test's
-        # ghost.
+            # Enforce restoration AFTER cleanup, unconditionally. The YAML `cleanup`
+            # section is best-effort and only covers what its author remembered; this
+            # covers what the scenario actually did, including when it stopped early
+            # and never reached its own restore step. Residue fails the scenario:
+            # a successful mutation followed by an unverified cleanup is still a
+            # failed scenario, and residue is how one test becomes the next test's
+            # ghost.
+
+        except Exception as exc:
+            crashed = f"{type(exc).__name__}: {exc}"
+            overall_ok = False
+            steps_ok = False
+            print(f"  CRASH: scenario raised {crashed} — teardown still runs")
+            self.evidence.record("steps", "scenario_crash", "exception", {}, {},
+                                 {"error": crashed[:500]}, False)
+
         residue_failure = False
         if not self._enforce_restoration():
             overall_ok = False
@@ -621,6 +640,8 @@ class ScenarioExecutor:
                 result = {"action": action, "container": container, "unit": unit,
                           "exit_code": proc.returncode,
                           "stderr": proc.stderr.strip()[:200]}
+                if ok:
+                    self._mutation_open("service_killed", node=node, service=service)
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
@@ -637,6 +658,8 @@ class ScenarioExecutor:
                 result = {"action": action, "container": container, "unit": unit,
                           "signal": "SIGKILL", "exit_code": proc.returncode,
                           "stderr": proc.stderr.strip()[:200]}
+                if ok:
+                    self._mutation_open("service_killed", node=node, service=service)
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
@@ -930,7 +953,18 @@ class ScenarioExecutor:
         """
         base = self.baseline_captures.get("_health_fingerprint")
         if not base:
-            return True  # nothing captured (non-destructive scenario) — nothing to prove
+            # No baseline means the cluster was unreachable when the scenario
+            # started, so there is nothing to compare against. That is UNPROVEN,
+            # not proven-good. Returning True here would hand a green
+            # postcondition to precisely the runs least able to earn one — the
+            # same "absence of evidence read as evidence of absence" shape the
+            # doctor's reduced-harvest policy exists to prevent.
+            print("  POSTCONDITION: UNPROVEN — no baseline fingerprint was "
+                  "captured (cluster unreachable at scenario start)")
+            self.evidence.record("postconditions", "cluster_returned_to_baseline",
+                                 "health.fingerprint", {}, {"diffs": []},
+                                 {"unproven": "no baseline captured"}, False)
+            return False
         deadline = time.time() + timeout
         diffs, now = [], {}
         while True:
@@ -988,11 +1022,25 @@ class ScenarioExecutor:
         "network_blocked": EXACT_RESTORATION,
         "disk_filled":     EXACT_RESTORATION,
         "cert_injected":   EXACT_RESTORATION,
-        # No inverse exists today. Re-adding would be EQUIVALENT_RECONSTRUCTION
-        # (new member ID), and is deliberately not implemented here: etcd
-        # membership repair is an operator-governed path (--repair-etcd), not
-        # routine scenario cleanup.
-        "etcd_detached":   UNRESTORABLE,
+        # etcd content is 100% rebuildable from ground, so nothing about etcd is
+        # ever irreversibly lost and UNRESTORABLE is the wrong disposition:
+        #   - a detached member's DATA never needed preserving — it re-syncs from
+        #     the surviving quorum;
+        #   - --repair-etcd backs up and wipes the local data dir, then rejoins;
+        #   - even total loss rebuilds: Day-0 seeds desired state from installed
+        #     packages, workflow definitions from local disk, RBAC from generated
+        #     policy, and cluster.invariant.enforcement's repair_missing_workflows
+        #     re-seeds etcd from disk as an in-product self-heal.
+        # It is EQUIVALENT_RECONSTRUCTION rather than EXACT_RESTORATION only
+        # because the rebuilt member gets a NEW etcd member id — capability
+        # returns, identity does not.
+        "etcd_detached":   EQUIVALENT_RECONSTRUCTION,
+        # Service kills: the product is supposed to bring these back (node-agent
+        # convergence / systemd Restart=). The obligation is therefore not "run
+        # an inverse" but "prove recovery actually happened" — an assumed
+        # recovery that silently did not occur is how a dead service rides into
+        # the next scenario.
+        "service_killed":  EXACT_RESTORATION,
     }
 
     def _mutation_open(self, kind: str, **key) -> None:
@@ -1024,7 +1072,7 @@ class ScenarioExecutor:
         out of quorum for every later suite on 2026-08-05.
         """
         report = {"outstanding_at_teardown": list(self.outstanding),
-                  "reversed": [], "failed": [], "unrestorable": []}
+                  "reversed": [], "discharged": [], "failed": [], "unrestorable": []}
         if not self.outstanding:
             self.restoration_report = report
             return True
@@ -1032,6 +1080,9 @@ class ScenarioExecutor:
         print(f"  [restore] {len(self.outstanding)} outstanding mutation(s) — reversing")
         for entry in list(self.outstanding):
             kind = entry.get("kind")
+            # Only self-healing obligations set this; everything else stays False
+            # so the generic "we reversed it ourselves" path applies.
+            self_healed = False
             node = entry.get("node", "")
             container = f"globular-{node}" if node else ""
             try:
@@ -1051,6 +1102,43 @@ class ScenarioExecutor:
                               f"rm -f {path}; true"], timeout=45)
                     ok = self._sh(["docker", "exec", container, "bash", "-c",
                                    f"test ! -e {path}"], timeout=30).returncode == 0
+                elif kind == "service_killed":
+                    # SELF-HEALING obligation. The contract here is "prove
+                    # recovery happened", not "run an inverse", so an obligation
+                    # still open at teardown is NOT automatically residue: if the
+                    # product restarted the service as designed, the obligation
+                    # is DISCHARGED and the scenario is clean. Residue is only
+                    # the case where the product did not recover and the harness
+                    # had to intervene — which is a real product finding, not
+                    # scenario sloppiness. Conflating the two would fail every
+                    # correct crash-recovery scenario in the suite.
+                    # The product is supposed to restart this itself. Give
+                    # convergence a bounded window and PROVE it happened; only
+                    # intervene if it did not. An assumed recovery that silently
+                    # failed is how a dead service reaches the next scenario,
+                    # and "systemd active" alone was already shown to be
+                    # insufficient evidence (node-3's etcd was active and
+                    # non-functional), so this also waits for the unit to be
+                    # active rather than merely present.
+                    unit = f"globular-{entry.get('service','')}"
+                    ok = False
+                    for _ in range(12):  # ~60s
+                        st = self._sh(["docker", "exec", container, "systemctl",
+                                       "is-active", unit], timeout=30).stdout.strip()
+                        if st == "active":
+                            ok = True
+                            self_healed = True
+                            break
+                        time.sleep(5)
+                    if not ok:
+                        print(f"    {unit} did not self-recover — the product "
+                              f"failed to restart it; starting it so the next "
+                              f"scenario is not poisoned, and failing this one.")
+                        self._sh(["docker", "exec", container, "systemctl",
+                                  "start", unit], timeout=60)
+                        st = self._sh(["docker", "exec", container, "systemctl",
+                                       "is-active", unit], timeout=30).stdout.strip()
+                        ok = (st == "active")
                 elif kind == "cert_injected":
                     # Reuse the verified restore path (ownership + readability).
                     ok = self._exec_chaos(
@@ -1072,7 +1160,13 @@ class ScenarioExecutor:
                           f"Add it to RESTORATION_MODE; an untracked mutation kind "
                           f"must not silently pass as restored.")
                     continue
-                if ok:
+                if ok and self_healed:
+                    # The product recovered this itself, which is what the
+                    # scenario was testing. Obligation DISCHARGED — not residue.
+                    report["discharged"].append({**entry, "recovered_by": "product"})
+                    self._mutation_close(**entry)
+                    print(f"    discharged (product self-healed): {entry}")
+                elif ok:
                     report["reversed"].append(entry)
                     self._mutation_close(**entry)
                     print(f"    restored: {entry}")
@@ -1090,7 +1184,10 @@ class ScenarioExecutor:
         # clean up after itself. If a successful auto-restore counted as a pass,
         # the safety net would quietly become a crutch and every scenario could
         # keep leaking forever without anyone being told.
-        ok = False
+        # Residue = anything we had to reverse ourselves, could not reverse, or
+        # that the product failed to self-heal. Obligations the product
+        # discharged on its own are not residue and must not fail the scenario.
+        ok = not (report["reversed"] or report["failed"] or report["unrestorable"])
         self.evidence.record("restoration", "enforce_restoration", "restoration",
                              {}, {"residue_free": True}, report, ok)
         return ok

@@ -1,0 +1,219 @@
+#!/usr/bin/env python3
+"""
+shuffle-proof — deterministic scenario-order contamination proof.
+
+Runs the suite-safe scenarios in several deterministic shuffled orders and
+requires every order to end at the SAME canonical cluster state as the baseline
+it started from.
+
+Why order matters: a suite whose result depends on execution order is a suite
+whose scenarios are consuming each other's residue. The per-scenario ledger and
+postcondition gate make each scenario individually residue-safe; this proves the
+COMPOSITION is safe, which is a different claim. Structural equality is required
+rather than "still healthy" — a cluster that is healthy but structurally altered
+(a member replaced, a profile changed, a cert re-owned) has not returned.
+
+Eligibility: a scenario is suite-safe only if it performs no UNRESTORABLE
+mutation. etcd-detach-before-wipe is excluded because governed etcd membership
+reconstruction is not yet transactionally safe — a partial failure leaves a
+quorum-inflating phantom member. That exclusion does not weaken this proof; it
+defines the safe suite boundary, and is reported rather than hidden.
+
+Usage:
+  shuffle-proof --seeds 1,2,3 [--scenarios a.yaml,b.yaml] [--baseline-only]
+"""
+import argparse
+import json
+import os
+import random
+import subprocess
+import sys
+import time
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+QS = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))  # quickstart repo root
+NODES = [f"node-{i}" for i in range(1, 6)]
+EPS = ",".join(f"https://10.10.0.1{i}:2379" for i in range(1, 6))
+ETCDCTL = ("/usr/lib/globular/bin/etcdctl "
+           "--cacert=/var/lib/globular/pki/ca.crt "
+           "--cert=/var/lib/globular/pki/issued/services/service.crt "
+           "--key=/var/lib/globular/pki/issued/services/service.key ")
+UNSAFE_ACTIONS = {"detach_node_etcd"}
+# Post-suite convergence window. Node restarts re-install services over minutes.
+CONVERGE_S = 420
+
+
+def sh(argv, timeout=120):
+    try:
+        return subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        class R:
+            stdout = ""
+            stderr = "timeout"
+            returncode = 124
+        return R()
+
+
+def live_node():
+    running = sh(["docker", "ps", "--filter", "name=globular-node",
+                  "--format", "{{.Names}}"]).stdout.split()
+    return running[0] if running else None
+
+
+def canonical_fingerprint() -> dict:
+    """
+    Canonical final-state fingerprint. Deliberately structural, not merely
+    "healthy": membership, roles, service state, and PKI posture must all match,
+    because a cluster can be green while being a different cluster.
+    """
+    fp = {}
+    fp["containers"] = sorted(sh(["docker", "ps", "--filter", "name=globular-node",
+                                  "--format", "{{.Names}}"]).stdout.split())
+    n = live_node()
+    if not n:
+        return {"error": "no live node"}
+
+    # etcd member set: names + peer URLs + learner flag, sorted. Catches a member
+    # that was replaced (new id, same role) as well as one simply missing.
+    ml = sh(["docker", "exec", n, "bash", "-c",
+             f"{ETCDCTL} --endpoints=https://10.10.0.11:2379 member list"], 90).stdout
+    members = []
+    for line in ml.strip().split("\n"):
+        parts = [p.strip() for p in line.split(",")]
+        if len(parts) >= 5:
+            members.append(f"{parts[2]}|{parts[3]}|learner={parts[-1]}")
+    fp["etcd_members"] = sorted(members)
+    fp["etcd_healthy"] = sh(["docker", "exec", n, "bash", "-c",
+                             f"{ETCDCTL} --endpoints={EPS} endpoint health --cluster 2>&1"],
+                            120).stdout.count("is healthy")
+
+    # Node identity + profiles from controller authority.
+    nodes_out = sh(["docker", "exec", n, "bash", "-c",
+                    "/usr/lib/globular/bin/globular cluster nodes list 2>/dev/null"], 150).stdout
+    ids, host = [], None
+    for ln in nodes_out.split("\n"):
+        if "hostname:" in ln:
+            host = ln.split('"')[1] if '"' in ln else None
+        if host and "profiles:" in ln:
+            ids.append(f"{host}:{ln.split(chr(34))[1] if chr(34) in ln else ''}")
+    fp["node_profiles"] = sorted(set(ids))
+
+    # Per-node service + PKI posture.
+    svc, pki = {}, {}
+    for node in NODES:
+        c = f"globular-{node}"
+        if c not in fp["containers"]:
+            svc[node] = pki[node] = "absent"
+            continue
+        svc[node] = sh(["docker", "exec", c, "bash", "-c",
+                        "systemctl list-units 'globular-*' --state=running --no-legend "
+                        "--no-pager 2>/dev/null | awk '{print $1}' | sort | tr '\\n' ','"],
+                       90).stdout.strip()
+        pki[node] = sh(["docker", "exec", c, "bash", "-c",
+                        "K=/var/lib/globular/pki/issued/services/service.key; "
+                        "stat -c '%U:%G/%a' $K 2>/dev/null; "
+                        "ls /var/lib/globular/pki/issued/services/*.chaos-backup 2>/dev/null | wc -l"],
+                       60).stdout.split()
+        pki[node] = "/".join(pki[node])
+    fp["services_running"] = svc
+    fp["pki"] = pki
+    return fp
+
+
+def diff(a, b):
+    out = []
+    for k in sorted(set(a) | set(b)):
+        if a.get(k) != b.get(k):
+            out.append(f"{k}:\n    baseline={a.get(k)!r}\n    final   ={b.get(k)!r}")
+    return out
+
+
+def eligible_scenarios():
+    import glob
+    import yaml
+    elig, excl = [], []
+    for f in sorted(glob.glob(os.path.join(QS, "tests/scenarios/*/*.yaml"))):
+        try:
+            d = yaml.safe_load(open(f))
+        except Exception:
+            continue
+        if not isinstance(d, dict) or "name" not in d:
+            continue
+        if d.get("suite") not in ("smoke", "functional", "security", "resilience", "recovery"):
+            continue
+        acts = {i.get("action", "")[6:] for sec in ("steps", "cleanup")
+                for i in (d.get(sec) or [])
+                if isinstance(i, dict) and str(i.get("action", "")).startswith("chaos.")}
+        (excl if acts & UNSAFE_ACTIONS else elig).append(f)
+    return elig, excl
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--seeds", default="1,2,3")
+    ap.add_argument("--scenarios", default="")
+    ap.add_argument("--baseline-only", action="store_true")
+    ap.add_argument("--out", default="/tmp/shuffle-proof")
+    args = ap.parse_args()
+    os.makedirs(args.out, exist_ok=True)
+
+    if args.scenarios:
+        pool = [os.path.join(QS, s) if not s.startswith("/") else s
+                for s in args.scenarios.split(",")]
+        excl = []
+    else:
+        pool, excl = eligible_scenarios()
+
+    print(f"eligible scenarios: {len(pool)}")
+    for e in excl:
+        print(f"  EXCLUDED {os.path.basename(e)} — UNRESTORABLE mutation "
+              f"(governed etcd reconstruction not transactionally safe)")
+
+    base = canonical_fingerprint()
+    json.dump(base, open(os.path.join(args.out, "baseline.json"), "w"), indent=1)
+    print(f"\nbaseline captured: etcd_members={len(base.get('etcd_members', []))} "
+          f"healthy={base.get('etcd_healthy')}")
+    if args.baseline_only:
+        return 0
+
+    results = {}
+    for seed in [int(s) for s in args.seeds.split(",")]:
+        order = list(pool)
+        random.Random(seed).shuffle(order)
+        print(f"\n=== SEED {seed} — {len(order)} scenarios ===")
+        for i, sc in enumerate(order, 1):
+            name = os.path.basename(sc)
+            r = sh([os.path.join(HERE, "globular-test"), "scenario", sc], 3600)
+            verdict = "PASS" if r.returncode == 0 else "FAIL"
+            print(f"  [{i}/{len(order)}] {verdict:<4} {name}")
+        # Bounded convergence, mirroring the per-scenario postcondition gate.
+        # An instantaneous comparison is wrong for the same reason it was wrong
+        # there: after a node restart the agent re-installs and re-starts
+        # services over MINUTES, so a snapshot taken the moment the last
+        # scenario returns catches the cluster mid-convergence and reports
+        # divergence for a cluster that is still coming back. Poll until
+        # equivalent or the window expires; only then is divergence real.
+        deadline = time.time() + CONVERGE_S
+        while True:
+            final = canonical_fingerprint()
+            d = diff(base, final)
+            if not d or time.time() >= deadline:
+                break
+            print(f"    converging... {len(d)} key(s) still differ")
+            time.sleep(20)
+        results[seed] = {"order": [os.path.basename(x) for x in order],
+                         "final": final, "diffs": d,
+                         "equivalent": not d}
+        print(f"  seed {seed}: {'STRUCTURALLY EQUIVALENT' if not d else 'DIVERGED'}")
+        for line in d:
+            print(f"    {line}")
+
+    json.dump(results, open(os.path.join(args.out, "seeds.json"), "w"), indent=1)
+    ok = all(v["equivalent"] for v in results.values())
+    print(f"\n=== SHUFFLE PROOF: {'PASS' if ok else 'FAIL'} "
+          f"({sum(v['equivalent'] for v in results.values())}/{len(results)} seeds equivalent) ===")
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -37,6 +37,38 @@ _container_running() {
     docker inspect "$1" --format '{{.State.Running}}' 2>/dev/null | grep -q true
 }
 
+# _node_agent_node_id <container> — the node agent's UUID, or "" if unresolvable.
+#
+# The state file lives at ONE of two paths and the probe must try both:
+#   /var/lib/globular/node-agent/state.json  — canonical
+#   /var/lib/globular/nodeagent/state.json   — pre-Project-O legacy
+#
+# node-agent's MigrateLegacyStatePathOnce relocates legacy -> canonical AND
+# REMOVES the legacy directory, while the Day-1 join script writes the legacy
+# path before the agent first starts. So at any moment some nodes have one and
+# some have the other. Reading only the legacy path made every probe on a
+# migrated node return "cannot_resolve_uuid", failing compute-node-stop-restart
+# and node-agent-crash-recovery for a reason that had nothing to do with what
+# they test.
+_node_agent_node_id() {
+    local container="$1" path
+    for path in /var/lib/globular/node-agent/state.json \
+                /var/lib/globular/nodeagent/state.json; do
+        local out
+        out=$(docker exec "$container" cat "$path" 2>/dev/null | \
+            python3 -c "
+import sys, json
+try:
+    print(json.load(sys.stdin).get('node_id', ''))
+except Exception:
+    pass
+" 2>/dev/null || echo "")
+        out=$(echo "$out" | tr -d '[:space:]')
+        [[ -n "$out" ]] && { echo "$out"; return 0; }
+    done
+    echo ""
+}
+
 # ── cluster probes ────────────────────────────────────────────────────────────
 
 # probe: cluster.health
@@ -145,11 +177,14 @@ probe_cluster_desired_state() {
 # Params: --node <node-name>  --service <systemd-unit-name-suffix>
 # Returns: {"unit_state":"active"|"inactive"|"failed"|"unknown","node":"...","service":"..."}
 probe_service_status() {
-    local node="" service=""
+    local node="" service="" unit=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --node)    node="$2"; shift 2 ;;
             --service) service="$2"; shift 2 ;;
+            # Most units are globular-<service>.service, but not all: ScyllaDB
+            # ships upstream's scylla-server.service. --unit names one directly.
+            --unit)    unit="$2"; shift 2 ;;
             *) shift ;;
         esac
     done
@@ -164,7 +199,7 @@ probe_service_status() {
         return
     fi
 
-    local unit_name="globular-${service}.service"
+    local unit_name="${unit:-globular-${service}.service}"
     local state
     # Use || true so exit codes 1-4 (inactive/failed/activating/deactivating) don't
     # trigger a fallback echo — we want the actual state word, not "unknown" appended.
@@ -389,6 +424,16 @@ probe_authz_role_bindings() {
 # probe: doctor.finding
 # Params: --service <service>
 # Returns: {"present":true|false,"severity":"...","count":N}
+#
+# WARNING — this probe reads /globular/doctor/findings in etcd, and NOTHING
+# WRITES THAT PREFIX. Verified empty on a live 5-node cluster (2026-08-12) at
+# the same moment `globular doctor report cluster` returned 4 findings. It
+# therefore always answers present:false/count:0 and CANNOT FAIL. No scenario
+# currently uses it, which is the only reason it has not manufactured a green.
+#
+# Do not assert on this probe. Use doctor.report_severity below, which asks the
+# cluster-doctor RPC — the component that actually owns the verdict. Kept only
+# so an existing reference does not break; delete once nothing names it.
 probe_doctor_finding() {
     local service=""
     while [[ $# -gt 0 ]]; do
@@ -412,6 +457,74 @@ probe_doctor_finding() {
     fi
 }
 
+# probe: doctor.report_severity
+# Params: (none)
+# Returns: {"reachable":true|false,"error":N,"warn":N,"info":N,"total":N,
+#           "worst":"NONE|INFO|WARN|ERROR|CRITICAL","reduced_harvest":true|false}
+#
+# Asks cluster-doctor for a FRESH cluster report and counts findings by
+# severity. This is the only honest way to assert on doctor state: the findings
+# live behind GetClusterReport, not in etcd (see probe_doctor_finding above).
+#
+# --fresh bypasses the snapshot cache. Without it a scenario can assert against
+# a report harvested before its own chaos step ran and pass on stale evidence.
+#
+# reduced_harvest is surfaced, not hidden. When collector sub-fetches fail the
+# doctor marks findings "[reduced-harvest]" and its verdict is bounded by
+# partial data — an UNKNOWN dressed as a count. A scenario that treats a
+# reduced-harvest zero as proof of health is asserting on absence of evidence
+# (ops.always.doctor.reduced-harvest-honesty). Callers should gate on it.
+#
+# Severity ints come from proto/cluster_doctor.proto: 1=INFO 2=WARN 3=ERROR
+# 4=CRITICAL. If the RPC is unreachable this reports reachable:false rather
+# than zero counts — an unreachable doctor is not a clean cluster.
+probe_doctor_report_severity() {
+    local raw
+    raw=$(docker exec "$ETCD_CONTAINER" \
+        globular doctor report cluster --fresh --json --timeout 120s 2>/dev/null)
+
+    if [ -z "$raw" ]; then
+        echo '{"reachable":false,"error":0,"warn":0,"info":0,"total":0,"worst":"UNREACHABLE","reduced_harvest":false}'
+        return
+    fi
+
+    echo "$raw" | python3 -c '
+import sys, json
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    print(json.dumps({"reachable": False, "error": 0, "warn": 0, "info": 0,
+                      "total": 0, "worst": "UNPARSEABLE", "reduced_harvest": False}))
+    sys.exit(0)
+
+findings = d.get("findings") or []
+counts = {}
+reduced = False
+for f in findings:
+    sev = f.get("severity", 0)
+    counts[sev] = counts.get(sev, 0) + 1
+    if "[reduced-harvest]" in (f.get("summary") or ""):
+        reduced = True
+
+names = {1: "INFO", 2: "WARN", 3: "ERROR", 4: "CRITICAL"}
+worst = "NONE"
+for sev in (4, 3, 2, 1):
+    if counts.get(sev):
+        worst = names[sev]
+        break
+
+print(json.dumps({
+    "reachable": True,
+    "info":  counts.get(1, 0),
+    "warn":  counts.get(2, 0),
+    "error": counts.get(3, 0) + counts.get(4, 0),
+    "total": len(findings),
+    "worst": worst,
+    "reduced_harvest": reduced,
+}))
+'
+}
+
 # ── node probes ───────────────────────────────────────────────────────────────
 
 # probe: node.installed_packages
@@ -431,15 +544,7 @@ probe_node_installed_packages() {
 
     # Resolve UUID from the node agent's state file
     local uuid
-    uuid=$(docker exec "$container" cat /var/lib/globular/nodeagent/state.json 2>/dev/null | \
-        python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    print(d.get('node_id', ''))
-except:
-    pass
-" 2>/dev/null || echo "")
+    uuid=$(_node_agent_node_id "$container")
 
     if [ -z "$uuid" ]; then
         # Fallback: scan all node package values for one with a matching hostname/name
@@ -548,7 +653,7 @@ probe_pki_cert_info() {
 
     local container="globular-${node}"
     if ! _container_running "$container"; then
-        echo "{\"valid\":false,\"error\":\"container not running\",\"node\":\"$node\"}"
+        echo "{\"valid\":false,\"chain_valid\":false,\"error\":\"container not running\",\"node\":\"$node\"}"
         return
     fi
 
@@ -556,6 +661,19 @@ probe_pki_cert_info() {
     local valid_30d=false
     docker exec "$container" openssl x509 -noout \
         -checkend $((30*24*3600)) -in "$cert" >/dev/null 2>&1 && valid_30d=true
+
+    # Chain validity — is this leaf actually issued by the cluster CA?
+    #
+    # Distinct from `valid`, which only answers "not expiring within 30 days".
+    # A cert can be well within its window and still be signed by a retired CA
+    # or self-signed (the shape chaos.inject_expired_cert produces), so an
+    # expiry check cannot stand in for a chain check. cert-expiry-detection
+    # asserts chain_valid precisely to prove a re-issued cert came from the
+    # cluster CA rather than from whatever happened to land on disk; the field
+    # simply did not exist, so that assertion could never pass.
+    local chain_valid=false
+    docker exec "$container" openssl verify \
+        -CAfile /var/lib/globular/pki/ca.crt "$cert" >/dev/null 2>&1 && chain_valid=true
 
     # Get expiry date
     local not_after
@@ -582,7 +700,35 @@ except:
     docker exec "$container" openssl x509 -noout -text -in "$cert" 2>/dev/null | \
         grep -q "IP Address:$vip" && has_vip=true
 
-    echo "{\"valid\":$valid_30d,\"days_remaining\":$days_remaining,\"has_vip\":$has_vip,\"not_after\":\"$not_after\",\"node\":\"$node\"}"
+    # Is a VIP actually configured on this cluster? The ingress spec is the
+    # authority. Day-0 writes mode=disabled/explicit_disabled=true ("ingress not
+    # yet configured"), and this simulation never enables it — no keepalived, no
+    # VIP address anywhere in docker-compose. Asking whether an address that
+    # does not exist appears in the SANs is not a security check; it is an
+    # assertion about a topology that was never built.
+    local vip_configured=false
+    if docker exec "$container" sh -c '/usr/lib/globular/bin/etcdctl \
+            --endpoints=https://127.0.0.1:2379 \
+            --cacert=/var/lib/globular/pki/ca.crt \
+            --cert=/var/lib/globular/pki/issued/services/service.crt \
+            --key=/var/lib/globular/pki/issued/services/service.key \
+            get /globular/ingress/v1/spec 2>/dev/null' \
+            | grep -q '"mode":"[^d]'; then
+        vip_configured=true
+    fi
+
+    # vip_san_ok is the assertable form of the rule that matters: WHEN a VIP is
+    # configured it MUST appear in the service cert SANs. A missing VIP SAN is
+    # the silent failure that rejected all VIP traffic for 16 hours
+    # (session_vip_cert_fix.md), so the check keeps its teeth wherever a VIP
+    # exists — while a cluster with ingress disabled passes honestly instead of
+    # failing on an address it was never given.
+    local vip_san_ok=true
+    if [[ "$vip_configured" == "true" && "$has_vip" != "true" ]]; then
+        vip_san_ok=false
+    fi
+
+    echo "{\"valid\":$valid_30d,\"chain_valid\":$chain_valid,\"days_remaining\":$days_remaining,\"has_vip\":$has_vip,\"vip_configured\":$vip_configured,\"vip_san_ok\":$vip_san_ok,\"not_after\":\"$not_after\",\"node\":\"$node\"}"
 }
 
 # probe: pki.ca_valid
@@ -672,22 +818,86 @@ probe_pki_signing_keys() {
 }
 
 # probe: pki.mtls_connect
-# Params: --node <node>  --target_ip <ip>  --target_port <port>
+# Params: --node <node>  --target_ip <ip>  (--target_port <port> | --target_service <id>)
+#         --target_node <node>   node whose service config resolves target_service
 # Returns: {"connected":true|false,"target":"IP:port","node":"..."}
 # Uses openssl s_client with mTLS (service cert + CA) to verify TLS handshake.
+#
+# Prefer --target_service. Globular allocates gRPC ports at RUNTIME from etcd
+# ("service X port allocated NNNNN range=10000-20000"), so a literal
+# --target_port is a snapshot that rots the moment allocation order changes.
+# Two assertions in this suite were pinned that way and had drifted:
+# event was probed on :10000 while it listens on :10019, and cluster-doctor on
+# node-2 was probed on :12100 while it listens on :12005. Both reported
+# connected=false — read as an mTLS failure when nothing was listening at all.
+# Resolving from the node's own service config is the same rule the platform
+# enforces on itself: no hardcoded service ports.
 probe_pki_mtls_connect() {
-    local node="node-1" target_ip="" target_port=""
+    local node="node-1" target_ip="" target_port="" target_service="" target_node=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --node)        node="$2"; shift 2 ;;
-            --target_ip)   target_ip="$2"; shift 2 ;;
-            --target_port) target_port="$2"; shift 2 ;;
+            --node)           node="$2"; shift 2 ;;
+            --target_ip)      target_ip="$2"; shift 2 ;;
+            --target_port)    target_port="$2"; shift 2 ;;
+            --target_service) target_service="$2"; shift 2 ;;
+            --target_node)    target_node="$2"; shift 2 ;;
             *) shift ;;
         esac
     done
 
-    [[ -z "$target_ip" || -z "$target_port" ]] && {
-        echo '{"connected":false,"error":"target_ip and target_port required"}'
+    # Resolve the port from the target's runtime service config when asked.
+    if [[ -z "$target_port" && -n "$target_service" ]]; then
+        local resolve_node="${target_node:-$node}"
+        local resolve_container="globular-${resolve_node}"
+        # Resolve from the RUNNING PROCESS — the only dependable answer to
+        # "what port is this service serving on".
+        #
+        # The on-disk service configs cannot be used. They are incomplete (no
+        # /var/lib/globular/services/*.json carries Name=workflow at all, yet
+        # workflow serves on 10220) and internally inconsistent (rbac, resource
+        # and cluster_doctor configs all report Port=10001 on the same node,
+        # while the legacy event.EventService.json says 10019 where the process
+        # listens on 10050). Every earlier attempt to pin or look up a port here
+        # produced a probe aimed at a dead socket and a "connected: false" that
+        # read as an mTLS failure.
+        #
+        # The unit's MainPID plus its listening sockets is ground truth. A
+        # Globular service binds its gRPC port and a higher proxy/metrics port
+        # (10050/10051, 10220/10221); the gRPC port is the lower of the two.
+        # Enumerate every port the service's process is listening on. The probe
+        # then asserts that AT LEAST ONE of them completes an mTLS handshake —
+        # the honest form of "this service's transport is mTLS-protected and
+        # reachable", which is what this suite tests (it explicitly does not
+        # test authorization).
+        #
+        # A single port cannot be resolved reliably. The on-disk service configs
+        # are right for repository/event/rbac, WRONG for cluster_doctor (they say
+        # 10001 while it serves 12005), and absent entirely for workflow. Nor is
+        # the lowest port a rule: repository serves gRPC on 10004 on both nodes
+        # but also binds 10001 on node-2. Every fixed guess produced a probe
+        # aimed at a dead socket and a "connected: false" that read as an mTLS
+        # failure. Failing only when NO port speaks mTLS keeps the real signal
+        # (wrong CA, unsigned cert, service down) without pinning a number that
+        # runtime allocation is free to change.
+        target_ports="$(docker exec "$resolve_container" bash -c '
+            svc="$1"
+            pid=$(systemctl show -p MainPID --value "globular-${svc}" 2>/dev/null)
+            if [ -z "$pid" ] || [ "$pid" = "0" ]; then exit 0; fi
+            ss -lntp 2>/dev/null | grep "pid=${pid}," \
+              | sed -E "s/.*[[:space:]][^[:space:]]*:([0-9]+)[[:space:]]+.*/\1/" \
+              | grep -E "^[0-9]+$" | sort -nu
+        ' _ "$target_service" 2>/dev/null | tr '\n' ' ')"
+        if [[ -z "${target_ports// /}" ]]; then
+            echo "{\"connected\":false,\"error\":\"service '${target_service}' is not running on ${resolve_node} (no listening port)\",\"node\":\"$node\"}"
+            return
+        fi
+    fi
+
+    # An explicit --target_port stays a single-port assertion; --target_service
+    # yields the service's full listening set (see above).
+    [[ -n "$target_port" ]] && target_ports="$target_port"
+    [[ -z "$target_ip" || -z "${target_ports// /}" ]] && {
+        echo '{"connected":false,"error":"target_ip and (target_port or target_service) required"}'
         return
     }
 
@@ -699,20 +909,26 @@ probe_pki_mtls_connect() {
 
     # Send empty string to openssl s_client; exit 0 = TLS handshake succeeded.
     # Timeout 5s so we don't hang on unreachable hosts.
-    local connected=false
-    if docker exec "$container" bash -c "
-        echo '' | timeout 5 openssl s_client \
-            -connect ${target_ip}:${target_port} \
-            -cert /var/lib/globular/pki/issued/services/service.crt \
-            -key /var/lib/globular/pki/issued/services/service.key \
-            -CAfile /var/lib/globular/pki/ca.crt \
-            -verify_return_error \
-            -quiet 2>/dev/null
-    " >/dev/null 2>&1; then
-        connected=true
-    fi
+    local connected=false hit_port=""
+    local p
+    for p in $target_ports; do
+        if docker exec "$container" bash -c "
+            echo '' | timeout 5 openssl s_client \
+                -connect ${target_ip}:${p} \
+                -cert /var/lib/globular/pki/issued/services/service.crt \
+                -key /var/lib/globular/pki/issued/services/service.key \
+                -CAfile /var/lib/globular/pki/ca.crt \
+                -verify_return_error \
+                -quiet 2>/dev/null
+        " >/dev/null 2>&1; then
+            connected=true
+            hit_port="$p"
+            break
+        fi
+    done
+    [[ -z "$hit_port" ]] && hit_port="$(echo $target_ports | awk '{print $1}')"
 
-    echo "{\"connected\":$connected,\"target\":\"${target_ip}:${target_port}\",\"node\":\"$node\"}"
+    echo "{\"connected\":$connected,\"target\":\"${target_ip}:${hit_port}\",\"ports_tried\":\"$(echo $target_ports | tr -s ' ')\",\"node\":\"$node\"}"
 }
 
 # probe: rbac.policy_file
@@ -815,12 +1031,22 @@ while pos < len(data):
             continue
         total += 1
         status = obj.get('status', {}) or {}
-        phase = (status.get('phase') or '').lower()
-        if phase == 'succeeded':
+        phase = (status.get('phase') or '').upper()
+        # Terminal-success phase per ReleasePhase* in
+        # cluster_controllerpb/resources_types.go: AVAILABLE means all target
+        # nodes are at the desired version. There is NO SUCCEEDED phase in the
+        # release vocabulary, so testing for it made this counter structurally
+        # zero -- a cluster with 18 AVAILABLE releases reported succeeded=0 and
+        # filed all 18 under pending, which is what made release-failure-audit
+        # look like a permanently broken pipeline.
+        # DEGRADED is converged-but-partial (some nodes failed, min replicas
+        # still met), so it is counted with failures rather than in flight.
+        if phase == 'AVAILABLE':
             succeeded += 1
-        elif phase == 'failed':
+        elif phase in ('FAILED', 'DEGRADED'):
             failed += 1
         else:
+            # PENDING / WAITING / RESOLVED / PLANNED / APPLYING / DEFERRED
             pending += 1
     except json.JSONDecodeError:
         nxt = stripped_s.find('{', 1)
@@ -916,16 +1142,7 @@ probe_node_etcd_registered() {
     local container="globular-${node}"
 
     local uuid
-    uuid=$(docker exec "$container" \
-        cat /var/lib/globular/nodeagent/state.json 2>/dev/null | \
-        python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    print(d.get('node_id', ''))
-except:
-    pass
-" 2>/dev/null || echo "")
+    uuid=$(_node_agent_node_id "$container")
 
     if [ -z "$uuid" ]; then
         echo "{\"registered\":false,\"node\":\"$node\",\"uuid\":\"\",\"error\":\"cannot_resolve_uuid\"}"
@@ -1016,9 +1233,22 @@ probe_cluster_quorum_loss_alert() {
 }
 
 # probe: node.partition_fenced
-# Params: --node <node-id>
+# Params: --node <node-name>
 # Returns: {"fenced":true|false,"fenced_since":"...","node_id":"..."}
-# Checks if Metadata["partition_fenced_since"] is set in the node's cluster state.
+#
+# The fence marker is Metadata["partition_fenced_since"] on the node record in
+# the CONTROLLER's cluster state, which is persisted to etcd as one JSON blob
+# at /globular/clustercontroller/state.
+#
+# This used to scan /globular/nodes/<id>/status — keys that do not exist in
+# this schema at all (the /globular/nodes/ prefix holds packages/,
+# node_agent_metrics_port, objectstore/...). With nothing to match, the probe
+# returned fenced:false unconditionally, so node.partition_fenced could never
+# report true no matter what the controller did, and every fencing assertion in
+# dual-node-failure and network-partition-fencing failed by construction.
+#
+# It also ignored --node when matching: any fenced node satisfied a query about
+# any other. Match the requested node explicitly, by hostname or by UUID.
 probe_node_partition_fenced() {
     local node=""
     while [[ $# -gt 0 ]]; do
@@ -1027,22 +1257,44 @@ probe_node_partition_fenced() {
             *) shift ;;
         esac
     done
-    # Node state is stored at /globular/nodes/<node_id>/status as JSON.
-    # We check if any node status JSON contains partition_fenced_since.
-    local node_keys
-    node_keys=$(_etcd_keys "/globular/nodes/" 2>/dev/null | grep '/status$' || echo "")
-    while IFS= read -r key; do
-        [[ -z "$key" ]] && continue
-        local val
-        val=$(_etcd_get "$key" 2>/dev/null || echo "")
-        if echo "$val" | grep -q "partition_fenced_since"; then
-            local fenced_since
-            fenced_since=$(echo "$val" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('Metadata',{}).get('partition_fenced_since',''))" 2>/dev/null || echo "")
-            echo "{\"fenced\":true,\"fenced_since\":\"$fenced_since\",\"node_id\":\"$node\"}"
-            return
-        fi
-    done <<< "$node_keys"
-    echo "{\"fenced\":false,\"node_id\":\"$node\"}"
+
+    local state
+    state=$(_etcd_get "/globular/clustercontroller/state" 2>/dev/null || echo "")
+    if [[ -z "$state" ]]; then
+        echo "{\"fenced\":false,\"node_id\":\"$node\",\"error\":\"cluster state unreadable\"}"
+        return
+    fi
+
+    echo "$state" | NODE="$node" python3 -c '
+import json, os, sys
+
+want = os.environ.get("NODE", "")
+try:
+    state = json.load(sys.stdin)
+except Exception as e:
+    print(json.dumps({"fenced": False, "node_id": want, "error": f"state parse failed: {e}"}))
+    sys.exit(0)
+
+nodes = state.get("Nodes") or state.get("nodes") or {}
+for node_id, n in nodes.items():
+    if not isinstance(n, dict):
+        continue
+    identity = n.get("Identity") or n.get("identity") or {}
+    hostname = identity.get("Hostname") or identity.get("hostname") or ""
+    if want and want != node_id and want != hostname:
+        continue
+    meta = n.get("Metadata") or n.get("metadata") or {}
+    since = meta.get("partition_fenced_since", "")
+    print(json.dumps({
+        "fenced": bool(since),
+        "fenced_since": since,
+        "node_id": node_id,
+        "hostname": hostname,
+    }))
+    sys.exit(0)
+
+print(json.dumps({"fenced": False, "node_id": want, "error": "node not found in cluster state"}))
+' 2>/dev/null || echo "{\"fenced\":false,\"node_id\":\"$node\",\"error\":\"probe failed\"}"
 }
 
 # probe: pki.cert_expiry_days

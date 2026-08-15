@@ -1,0 +1,245 @@
+version: 1
+name: authz-scope-unavailable
+description: |
+  Verify the cluster's behaviour when the RBAC service — and therefore the
+  resource-info lookup that scopes authorization — is unavailable.
+
+  WHY THIS EXISTS
+
+  Until 2026-08-14 the gRPC interceptor handled a failed resource-info lookup by
+  logging a warning, substituting an empty resource-info slice, and CONTINUING
+  into authorization:
+
+      resource lookup fails -> warning -> resources = [] -> action check runs
+                            -> request may proceed WITHOUT resource scope
+
+  The action-level permission check still ran, so this was never a total bypass.
+  What was silently dropped was the per-resource binding: a caller was evaluated
+  as though the method touched no resources at all, precisely when authorization
+  data was least trustworthy (RBAC restarting, slow, or partitioned).
+
+  Commit 01bc3e9c changed it to deny:
+
+      resource lookup fails -> authorization scope unknown -> DENY
+
+  That is the correct security direction, and it creates a specific operational
+  risk worth testing rather than assuming: a latent RBAC reliability problem that
+  used to be invisible now becomes visible as denied RPCs. The interceptor is
+  reached through the shared globular_service lifecycle by most services, so this
+  is a platform-wide semantic change, not a single-service one.
+
+  WHAT THIS SCENARIO CAN AND CANNOT ASSERT — read before trusting a green run
+
+  CAN:
+    - the cluster survives RBAC being unavailable without cascading failure
+    - RBAC re-registers and the cluster returns to healthy afterwards
+    - no ERROR-severity doctor findings persist once RBAC is back
+    - service logs are collected so the denial signature can be inspected
+
+  CANNOT (harness limitation, not a design choice):
+    - assert an allow/deny VERDICT. The authz.check probe currently proves only
+      that the authz layer is reachable — smoke/authz-basic states this plainly:
+      "proves the authz infrastructure is present, not that it makes the right
+      decisions". Asserting a verdict needs the gRPC-level ValidateAccess check
+      the security suite has declared as future work.
+
+  Until that exists, the canary predicate below must be checked BY A HUMAN in
+  the collected logs. Write it down here so the check is not reinvented:
+
+      expected during normal operation:   no occurrences
+      expected while RBAC is down:        resource-info lookup failed for <method>
+                                          (authorization scope unknown)
+
+  Zero unexpected occurrences of that signature during NORMAL operation is the
+  strong evidence. General cluster health staying green is the weak evidence —
+  health can stay green while scoped authorization quietly denies a minority of
+  calls.
+
+  THE ASSERTION THAT MATTERS MOST IS THE NEGATIVE ONE
+
+  An unmapped method must still pass through. getActionResourceInfos converts a
+  "not found" into an empty result with a NIL error, so only genuine failures
+  reach the deny path. If that classification is ever removed, denying on error
+  would start rejecting every unmapped method and take the platform down. The
+  unit-level guard for this lives in
+  services/golang/interceptors/resource_scope_failclosed_test.go; this scenario
+  is the cluster-level companion, and it is the reason the fix is safe to ship
+  at all.
+
+suite: security
+tags:
+  - rbac
+  - authz
+  - fail-closed
+  - chaos
+  - release-gate
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: rbac_registered_before
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true
+
+  - type: probe
+    id: authz_reachable_before
+    probe: authz.check
+    params:
+      subject: system:sa:cluster-controller
+      action: cluster.read
+      resource: nodes
+    expect:
+      rbac_registered: true
+
+baseline:
+  - type: probe
+    id: role_bindings_before
+    probe: authz.role_bindings
+
+  - type: probe
+    id: policy_file_before
+    probe: rbac.policy_file
+
+steps:
+  # Induce the condition the fix is about: the resource-info lookup cannot be
+  # answered. Killing the service is the closest the harness can get to
+  # "authority information unavailable".
+  - id: kill_rbac
+    action: chaos.kill_service
+    params:
+      node: node-2
+      service: rbac
+
+  - id: observe_under_unavailable_rbac
+    action: wait
+    params:
+      timeout: 90
+      poll_interval: 15
+      until:
+        probe: cluster.health
+        # Not asserted: the cluster may legitimately report degraded here. The
+        # point is to hold the condition open long enough for the interceptor
+        # path to be exercised and logged, not to demand health while a
+        # dependency is down.
+
+  - id: restart_rbac
+    action: chaos.restart_service
+    params:
+      node: node-2
+      service: rbac
+
+  - id: wait_for_rbac_recovery
+    action: wait
+    params:
+      timeout: 300
+      poll_interval: 10
+      until:
+        probe: service.registered
+        params:
+          service: rbac
+        expect:
+          registered: true
+
+  - id: wait_for_cluster_recovery
+    action: wait
+    params:
+      timeout: 300
+      poll_interval: 15
+      until:
+        probe: cluster.health
+        expect:
+          status: healthy
+
+assertions:
+  # Recovery, not survival-while-down. A deny-on-uncertainty policy is only
+  # acceptable if the deny is transient and clears when authority returns.
+  - type: probe
+    id: rbac_registered_after
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true
+
+  - type: probe
+    id: authz_reachable_after
+    probe: authz.check
+    params:
+      subject: system:sa:cluster-controller
+      action: cluster.read
+      resource: nodes
+    expect:
+      rbac_registered: true
+
+  - type: probe
+    id: role_bindings_intact
+    probe: authz.role_bindings
+
+  - type: probe
+    id: policy_file_intact
+    probe: rbac.policy_file
+
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # If deny-on-unknown-scope were wedging the cluster, it would surface here as
+  # unconverged state after RBAC returned.
+  - type: probe
+    id: reconcile_clean_after
+    probe: cluster.reconcile_clean
+    expect:
+      clean: true
+
+  - type: probe
+    id: no_error_findings_after
+    probe: doctor.report_severity
+    expect:
+      error_count: 0
+
+artifacts:
+  collect:
+    # These logs carry the canary evidence. Grep them for:
+    #   resource-info lookup failed for <method> (authorization scope unknown)
+    # Occurrences are EXPECTED between kill_rbac and wait_for_rbac_recovery.
+    # Occurrences outside that window are the finding.
+    - type: logs
+      node: node-1
+      service: cluster-controller
+    - type: logs
+      node: node-2
+      service: rbac
+    - type: logs
+      node: node-3
+      service: repository
+
+cleanup:
+  - type: probe
+    id: final_cluster_health
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: final_rbac_registered
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true

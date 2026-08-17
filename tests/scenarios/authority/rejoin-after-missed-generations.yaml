@@ -1,0 +1,209 @@
+version: 1
+name: rejoin-after-missed-generations
+description: |
+  A node that missed several generations must converge FORWARD, and must never
+  be treated as evidence that its old generation should be restored.
+
+  THE FAULT. Stop a node. While it is down, advance the cluster through several
+  desired-state changes. Restart it.
+
+      node-5 down, holding a complete and internally consistent view of
+      generation N
+            ↓
+      cluster advances: N → N+1 → N+2 → N+3
+            ↓
+      node-5 returns, still coherent, still wrong
+
+  WHY THIS IS NOT ORDINARY REJOIN. etcd-member-resync already covers a member
+  catching up on writes it missed, and compute-node-rejoin covers a node coming
+  back. Both return a node to a cluster whose desired state it merely lags.
+  This returns a node holding an ALTERNATE HISTORY: locally complete, internally
+  consistent, and contradicted by the cluster.
+
+  The law under test is the one that makes local state safe to keep at all:
+
+      local persisted state is evidence of what happened,
+      never authority over what should happen.
+
+  A node that returns with generation N must be read as an observer of the
+  current generation, not as a witness that N should be reconstructed. The
+  failure mode this hunts is a returning node whose stale local records win a
+  merge, or whose reappearance makes the controller re-derive an older desired
+  state from installed evidence.
+
+  WHAT MUST HOLD. The returning node ends on the cluster's current generation,
+  the desired state written while it was away is unchanged, no drift storm
+  follows, and the cluster is healthy with every node accounted for.
+
+suite: authority
+tags:
+  - generation
+  - rejoin
+  - authority
+  - gray-failure
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+      nodes_gte: 5
+
+  - type: probe
+    id: target_node_running
+    probe: node.container_running
+    params:
+      node: node-5
+    expect:
+      running: true
+
+baseline:
+  - type: probe
+    id: desired_state_before
+    probe: cluster.desired_state
+
+  - type: probe
+    id: convergence_before
+    probe: cluster.installed_version_convergence
+    params:
+      package: node-agent
+
+steps:
+  - type: action
+    id: take_the_node_down
+    action: chaos.stop_node
+    params:
+      node: node-5
+
+  # Several distinct desired-state writes, so the node misses a sequence rather
+  # than a single change. One write it could plausibly catch up on; a sequence is
+  # what produces a divergent history.
+  - type: action
+    id: advance_generation_1
+    action: ops.set_desired
+    params:
+      node: node-1
+      name: dns
+      version: 1.2.312
+      expect: accepted
+
+  - type: action
+    id: advance_generation_2
+    action: ops.set_desired
+    params:
+      node: node-1
+      name: ai-watcher
+      version: 1.2.312
+      expect: accepted
+
+  - type: action
+    id: advance_generation_3
+    action: ops.set_desired
+    params:
+      node: node-2
+      name: authentication
+      version: 1.2.312
+      expect: accepted
+
+  - type: action
+    id: let_the_cluster_settle_without_it
+    action: wait
+    params:
+      seconds: 90
+      reason: "let the surviving nodes converge on the new generation before the stale node returns"
+
+  - type: action
+    id: bring_the_node_back
+    action: chaos.start_node
+    params:
+      node: node-5
+
+  - type: action
+    id: allow_forward_convergence
+    action: wait
+    params:
+      seconds: 300
+      reason: "a returning node must catch up to current, which takes longer than a restart"
+
+assertions:
+  # ── It came back, and as a participant ────────────────────────────────────
+  - type: probe
+    id: node_registered_again
+    probe: node.etcd_registered
+    params:
+      node: node-5
+    expect:
+      registered: true
+
+  - type: probe
+    id: cluster_sees_all_five
+    probe: cluster.health
+    expect:
+      status: healthy
+      nodes_gte: 5
+
+  # ── It converged FORWARD, not backward ────────────────────────────────────
+  # A single installed version cluster-wide is the observable form of "the
+  # returning node adopted current, rather than the cluster adopting its past".
+  - type: probe
+    id: single_version_cluster_wide
+    probe: cluster.installed_version_convergence
+    params:
+      package: node-agent
+    expect:
+      unique_lte: 1
+      nodes_gte: 5
+
+  - type: probe
+    id: desired_state_not_rolled_back
+    probe: cluster.desired_state
+    expect:
+      count_gte: 1
+
+  # ── Its stale records did not win anything ────────────────────────────────
+  - type: probe
+    id: no_identity_conflicts
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+      conflict: 0
+      missing_blob: 0
+
+  - type: probe
+    id: no_doctor_errors
+    probe: doctor.report_severity
+    expect:
+      error: 0
+      reachable: true
+
+  # ── And no drift storm followed ───────────────────────────────────────────
+  - type: probe
+    id: reconcile_settled
+    probe: cluster.reconcile_clean
+    params:
+      since: "3 min ago"
+    expect:
+      clean: true
+
+  - type: probe
+    id: liveness_current_everywhere
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+      nodes_gte: 5
+
+cleanup:
+  # Idempotent: starting a running container is a no-op, and this guarantees the
+  # node is not left down if the scenario aborted mid-way.
+  - type: action
+    id: ensure_node_running
+    action: chaos.start_node
+    params:
+      node: node-5

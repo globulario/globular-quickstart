@@ -1121,7 +1121,23 @@ class ScenarioExecutor:
                     capture_output=True, text=True, timeout=180)
                 out = (proc.stdout or "").strip()
                 accepted = proc.returncode == 0
-                ok = accepted if expect == "accepted" else (not accepted)
+                # expect: accepted | refused | any
+                #
+                # "any" exists for faults where BOTH outcomes are correct and only
+                # a partial result is forbidden — a mutation attempted while etcd
+                # cannot write may be committed or rejected, but never half-applied.
+                # Without it, such a scenario would have to assert one arbitrary
+                # outcome and would fail half the time for the wrong reason.
+                if expect == "any":
+                    ok = True
+                elif expect == "accepted":
+                    ok = accepted
+                elif expect == "refused":
+                    ok = not accepted
+                else:
+                    return self._chaos_fail(
+                        section, item_id, action, params,
+                        f"unknown expect value {expect!r} (want accepted|refused|any)")
                 result = {"action": action, "service": name, "version": version,
                           "expect": expect, "accepted": accepted,
                           "exit_code": proc.returncode, "output": out[-400:]}

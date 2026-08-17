@@ -150,12 +150,14 @@ Based on the current repository contents, this harness includes:
 | `soak` | time-based stability checks |
 | `catastrophic` | majority-loss and blackout style drills |
 | `upgrade` | package and platform upgrade, and the regressions from the 2026-08-16 incident |
+| `authority` | gray failure — zombie leaders, identity collisions, missed generations, atomicity |
 
 ### Current scenario counts
 
 The repository currently contains:
 
-- **6 upgrade** scenarios
+- **10 upgrade** scenarios
+- **6 authority** scenarios
 - **3 smoke** scenarios
 - **6 functional** scenarios
 - **8 security** scenarios

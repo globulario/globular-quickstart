@@ -1981,3 +1981,69 @@ probe_controller_leadership() {
 
     echo "{\"leader_addr\":\"${addr}\",\"leader_node\":\"${leader_node}\",\"has_leader\":${has_leader},\"claimants\":${claimants},\"instances\":\"${instances}\",\"leader_instance\":\"${leader_instance}\",\"distinct_leaders\":${distinct:-0}}"
 }
+
+# probe: cluster.node_identity_collisions
+# Returns: {"registered_ids":N,"distinct_ids":N,"collisions":N,
+#           "hostnames":N,"distinct_hostnames":N,"colliding":"id,..."}
+#
+# Counts node identities that are claimed more than once.
+#
+# Availability testing cannot see this fault: nothing is down, no packet is
+# dropped, and every claimant is internally consistent. Two machines restored
+# from one backup, or a VM cloned from a snapshot, both produce a cluster where
+# a single node_id has two writers — after which every per-node record
+# (heartbeat, installed state, runtime proof) is written by two actors with no
+# way to tell them apart.
+#
+# Collisions are counted two ways because either alone can be fooled: by node_id
+# across the per-node key space, and by hostname across the registered set. A
+# clone that was admitted under a fresh id still shows up as a duplicate
+# hostname, and one admitted under the same id shows up as a duplicate id.
+probe_cluster_node_identity_collisions() {
+    if ! _container_running "$ETCD_CONTAINER"; then
+        echo '{"registered_ids":0,"distinct_ids":0,"collisions":0,"hostnames":0,"distinct_hostnames":0,"colliding":"","error":"etcd container not running"}'
+        return
+    fi
+
+    # Node ids as they appear in the per-node key space.
+    local ids
+    ids=$(_etcd_keys /globular/nodes/ 2>/dev/null \
+            | awk -F/ 'NF>=4 && $4 != "" {print $4}' | sort -u | grep . || true)
+    local total distinct
+    total=$(printf '%s\n' "$ids" | grep . | wc -l)
+    distinct=$(printf '%s\n' "$ids" | grep . | sort -u | wc -l)
+
+    # Hostnames from the controller's node records: a second machine claiming an
+    # existing hostname is the same fault wearing a different label.
+    local blob hostcount hostdistinct colliding
+    blob=$(_etcd_get /globular/clustercontroller/state 2>/dev/null || echo "")
+    if [ -n "$blob" ]; then
+        read -r hostcount hostdistinct colliding <<<"$(printf '%s' "$blob" | python3 -c '
+import sys, json, collections
+try:
+    doc = json.load(sys.stdin)
+except Exception:
+    print("0 0 "); raise SystemExit
+nodes = doc.get("nodes") or {}
+names = []
+for nid, n in nodes.items():
+    if isinstance(n, dict):
+        names.append(str(n.get("hostname") or n.get("name") or nid))
+c = collections.Counter(names)
+dupes = sorted(k for k, v in c.items() if v > 1)
+print(len(names), len(set(names)), ",".join(dupes))
+' 2>/dev/null)"
+    fi
+    hostcount="${hostcount:-0}"; hostdistinct="${hostdistinct:-0}"; colliding="${colliding:-}"
+
+    # A collision is any claimed identity with more than one claimant, counted on
+    # whichever axis shows it.
+    local id_coll=$(( total - distinct ))
+    local host_coll=$(( hostcount - hostdistinct ))
+    [ "$id_coll" -lt 0 ] && id_coll=0
+    [ "$host_coll" -lt 0 ] && host_coll=0
+    local collisions=$id_coll
+    [ "$host_coll" -gt "$collisions" ] && collisions=$host_coll
+
+    echo "{\"registered_ids\":${total},\"distinct_ids\":${distinct},\"collisions\":${collisions},\"hostnames\":${hostcount},\"distinct_hostnames\":${hostdistinct},\"colliding\":\"${colliding}\"}"
+}

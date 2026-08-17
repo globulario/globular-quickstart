@@ -14,7 +14,7 @@ SERVICES_DIR ?= ../services
 #   bindings, no repository artifacts. 18/38 scenarios failed on 2026-07-31
 #   against artifacts of that divergence rather than real defects.
 #   Keep the release tarball as the single source. Do not reintroduce host copies.
-RELEASE_VERSION ?= 1.2.318
+RELEASE_VERSION ?= 1.2.319
 RELEASE_NAME     = globular-$(RELEASE_VERSION)-linux-amd64
 RELEASE_TARBALL  = $(SERVICES_DIR)/dist/$(RELEASE_NAME).tar.gz
 RELEASE_SHA256   = $(RELEASE_TARBALL).sha256
@@ -24,7 +24,7 @@ RELEASE_SHA256   = $(RELEASE_TARBALL).sha256
 	check-glibc-floor check-host-aio test-hardened-tmp test-concurrent-join \
 	quickstart-up quickstart-down quickstart-reset quickstart-logs \
 	test-wait test-smoke test-functional test-security test-resilience \
-	test-recovery test-soak test-upgrade test-v1-certification ci-smoke \
+	test-recovery test-soak test-upgrade test-authority test-v1-certification ci-smoke \
 	test-scenario test-scenario-keep \
 	test-parity-report test-health-matrix test-authz-report test-recovery-report \
 	check-test-schemas check-test-scenarios test-debug-shell \
@@ -270,6 +270,11 @@ test-soak:
 test-upgrade:
 	$(TEST_BIN) suite upgrade
 
+## test-authority — run the authority suite (gray failure: zombie leaders,
+## identity collisions, missed generations, atomicity under crash and ENOSPC)
+test-authority:
+	$(TEST_BIN) suite authority
+
 ## test-v1-certification — full V1 certification run (all suites)
 test-v1-certification:
 	@echo "=== V1 CERTIFICATION RUN ==="
@@ -278,7 +283,8 @@ test-v1-certification:
 	$(TEST_BIN) suite security && \
 	$(TEST_BIN) suite resilience && \
 	$(TEST_BIN) suite recovery && \
-	$(TEST_BIN) suite upgrade
+	$(TEST_BIN) suite upgrade && \
+	$(TEST_BIN) suite authority
 	@echo "=== V1 CERTIFICATION COMPLETE ==="
 
 ## ci-smoke — bring up cluster then run smoke suite (CI entry point)

@@ -104,12 +104,17 @@ steps:
   # Without this the scenario would pass on a control plane that refuses
   # everything, including correct requests — a fail-closed system that is
   # simply closed.
+  # dns rather than blog: both resolve with publish_state 3 and ref.kind 1, but
+  # `desired set` refuses blog with a kind error that its own resolver
+  # contradicts (desired_state.refusal_message_misattributes_cause). The control
+  # must be a target the platform genuinely accepts, or this scenario would fail
+  # on a diagnostic bug rather than on the property it tests.
   - type: action
     id: accept_the_published_version
     action: ops.set_desired
     params:
       node: node-1
-      name: blog
+      name: dns
       version: 1.2.312
       expect: accepted
 

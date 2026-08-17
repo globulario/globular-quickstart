@@ -1916,3 +1916,68 @@ probe_etcd_defrag_evidence() {
     done
     echo "{\"nodes_seen\":${total},\"loops_started\":${started},\"defrags_run\":${run},\"defrags_complete\":${done_ct},\"total_freed_bytes\":${freed},\"last\":\"${last}\"}"
 }
+
+# probe: controller.leadership
+# Returns: {"leader_addr":"host:port","leader_node":"node-N","claimants":N,
+#           "instances":"node-1:pid:uuid,...","leader_instance":"...",
+#           "distinct_leaders":N}
+#
+# Controller leadership is an etcd lease election: every candidate holds a
+# lease-backed key /globular/clustercontroller/leader/<lease-hex> whose value is
+# "<node>:<pid>:<instance-uuid>", and /globular/clustercontroller/leader/addr
+# names the current winner. The instance UUID is the identity of one AUTHORITY
+# INSTANCE — not of the node and not of the process image.
+#
+# That distinction is the whole point. A SIGSTOPed leader keeps its memory and
+# wakes up still believing it holds generation N. Testing that leader election
+# works says nothing about whether losing authority is IRREVERSIBLE for the
+# instance that lost it. This probe exposes the evidence needed to ask the
+# second question: who is leader, how many claim to be, and is the leader the
+# same instance as before.
+probe_controller_leadership() {
+    if ! _container_running "$ETCD_CONTAINER"; then
+        echo '{"leader_addr":"","leader_node":"","claimants":0,"instances":"","leader_instance":"","distinct_leaders":0,"error":"etcd container not running"}'
+        return
+    fi
+
+    local addr
+    addr=$(_etcd_get /globular/clustercontroller/leader/addr 2>/dev/null | tr -d '[:space:]')
+
+    local instances="" claimants=0 leader_node="" leader_instance=""
+    local k v
+    for k in $(_etcd_keys /globular/clustercontroller/leader 2>/dev/null | grep -v '/addr$'); do
+        v=$(_etcd_get "$k" 2>/dev/null | tr -d '[:space:]')
+        [ -z "$v" ] && continue
+        claimants=$(( claimants + 1 ))
+        instances="${instances}${instances:+,}${v}"
+    done
+
+    # Map the leader endpoint back to a node by matching the container IP.
+    if [ -n "$addr" ]; then
+        local ip="${addr%%:*}" c
+        for c in $(_all_node_containers); do
+            local cip
+            cip=$(docker inspect "$c" --format \
+                '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 2>/dev/null)
+            if [ "$cip" = "$ip" ]; then
+                leader_node="${c#globular-}"
+                break
+            fi
+        done
+    fi
+
+    # The claimant whose node matches the leader endpoint is the leader instance.
+    if [ -n "$leader_node" ]; then
+        leader_instance=$(printf '%s' "$instances" | tr ',' '\n' \
+            | grep "^${leader_node}:" | head -1)
+    fi
+
+    # More than one node asserting the leader address is dual authority.
+    local distinct
+    distinct=$(printf '%s' "$instances" | tr ',' '\n' | grep . | cut -d: -f1 | sort -u | grep . | wc -l)
+
+    local has_leader=false
+    [ -n "$addr" ] && [ -n "$leader_node" ] && has_leader=true
+
+    echo "{\"leader_addr\":\"${addr}\",\"leader_node\":\"${leader_node}\",\"has_leader\":${has_leader},\"claimants\":${claimants},\"instances\":\"${instances}\",\"leader_instance\":\"${leader_instance}\",\"distinct_leaders\":${distinct:-0}}"
+}

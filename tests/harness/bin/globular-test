@@ -101,7 +101,7 @@ cmd_suite() {
     echo "║  Run ID: $run_id"
     echo "╚══════════════════════════════════════════════╝"
 
-    local pass=0 fail=0
+    local pass=0 fail=0 unsupported=0 infra=0
 
     # Collect scenario files sorted
     local scenarios=()
@@ -131,8 +131,31 @@ cmd_suite() {
             echo "  → PASS"
             ((pass++)) || true
         else
-            echo "  → FAIL"
-            ((fail++)) || true
+            # Read the outcome the scenario recorded rather than calling every
+            # non-zero exit FAIL. UNSUPPORTED means the property was never
+            # tested, INFRA_ERROR means we could not tell — reporting either as
+            # FAIL hides a gap behind a number that looks like a known problem.
+            local outcome="FAIL"
+            if [ -f "$scenario_out/evidence.json" ]; then
+                outcome="$(python3 -c "
+import json,sys
+try:
+    print(json.load(open(sys.argv[1])).get('result','FAIL'))
+except Exception:
+    print('FAIL')
+" "$scenario_out/evidence.json" 2>/dev/null || echo FAIL)"
+            fi
+            case "$outcome" in
+                UNSUPPORTED)
+                    echo "  → UNSUPPORTED (property not tested — does not certify)"
+                    ((unsupported++)) || true ;;
+                INFRA_ERROR)
+                    echo "  → INFRA_ERROR (harness/environment; cluster behaviour unknown)"
+                    ((infra++)) || true ;;
+                *)
+                    echo "  → $outcome"
+                    ((fail++)) || true ;;
+            esac
         fi
     done
 
@@ -146,8 +169,15 @@ cmd_suite() {
     echo "Full report: $run_dir"
     echo ""
 
-    if [ "$fail" -gt 0 ]; then
-        echo "RESULT: FAIL ($fail scenario(s) failed)"
+    # Certification requires PASS on every scenario. UNSUPPORTED and
+    # INFRA_ERROR are reported separately and neither of them certifies: a suite
+    # that is green only because some scenarios never ran their own setup is the
+    # exact failure this taxonomy exists to make visible.
+    if [ "$fail" -gt 0 ] || [ "$unsupported" -gt 0 ] || [ "$infra" -gt 0 ]; then
+        echo "RESULT: FAIL (pass=$pass fail=$fail unsupported=$unsupported infra_error=$infra)"
+        [ "$unsupported" -gt 0 ] && \
+            echo "  NOTE: $unsupported scenario(s) UNSUPPORTED — a required primitive is missing," \
+                 "so those properties are untested, not proven."
         exit 1
     fi
     echo "RESULT: PASS (all $pass scenario(s) passed)"

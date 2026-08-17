@@ -234,6 +234,8 @@ class ScenarioExecutor:
         self.evidence_collector = EvidenceCollector(output_dir)
 
     # ── public entry point ────────────────────────────────────────────────────
+        # Primitives a scenario needed but this harness does not provide.
+        self.unsupported = []
 
     def run(self) -> bool:
         name = self.scenario.get("name", "?")
@@ -365,6 +367,9 @@ class ScenarioExecutor:
             result = "FAIL"
         elif not overall_ok and not steps_ok:
             result = "PARTIAL"
+        elif self.unsupported and overall_ok:
+            # Everything that RAN held, but something required never ran.
+            result = "UNSUPPORTED"
         else:
             result = "PASS" if overall_ok else "FAIL"
 
@@ -376,9 +381,14 @@ class ScenarioExecutor:
             self.evidence_collector.collect(self.scenario_file, result_json_path)
 
         awareness_result = self.awareness.get_result()
+        if self.unsupported:
+            print(f"  UNSUPPORTED primitives ({len(self.unsupported)}): " +
+                  ", ".join(f"{u['action']}" for u in self.unsupported))
         self._write_output(overall_ok, result, awareness_result)
         self._append_to_ledger(result, awareness_result)
-        return overall_ok
+        # Only PASS certifies. UNSUPPORTED is returned as a non-pass so a suite
+        # cannot be green on scenarios that never exercised their property.
+        return result == "PASS"
 
     def _cluster_cfg(self) -> dict:
         """The scenario's `cluster:` block, or an empty dict."""
@@ -469,7 +479,14 @@ class ScenarioExecutor:
                     print(f"    FAIL: {item_id} (wait timed out)")
                     ok = False
 
-            elif action.startswith("chaos."):
+            elif action.startswith("chaos.") or action.startswith("ops."):
+                # ops.* are operator actions (set desired state, remove a node)
+                # and live in the same dispatcher as chaos.*. Routing only
+                # "chaos." meant every ops.* step fell through to the
+                # not-implemented branch and was skipped — silently, under the
+                # old behaviour — so scenarios whose entire setup was ops.*
+                # asserted a steady state they never disturbed and reported PASS.
+                # Three did exactly that before the UNSUPPORTED outcome exposed it.
                 if self._exec_chaos(item, section):
                     print(f"    OK:   {item_id}")
                 else:
@@ -480,7 +497,12 @@ class ScenarioExecutor:
                             "desired_state.upsert", "workflow.dispatch",
                             "backup.create", "backup.restore",
                             "node.recover.full_reseed"):
-                print(f"    SKIP: {item_id} ({action} — not yet implemented)")
+                # These primitives do not exist yet. Recording UNSUPPORTED is the
+                # whole point: a scenario that could not perform its own setup has
+                # NOT passed, and must never satisfy certification. Previously this
+                # printed SKIP and left ok=True, so a scenario asserting a steady
+                # state it never disturbed reported PASS.
+                self._mark_unsupported(item_id, action, "action not implemented in this harness")
 
             elif item.get("probe"):
                 # Step is actually a probe-style check
@@ -488,7 +510,10 @@ class ScenarioExecutor:
                     ok = False
 
             else:
-                print(f"    SKIP: {item_id} (unknown action: {action})")
+                # A typo in an action name is indistinguishable from a primitive
+                # that does not exist, and both mean the scenario did not do what
+                # it says. Neither may be silently green.
+                self._mark_unsupported(item_id, action, "unknown action")
 
         return ok
 
@@ -501,7 +526,7 @@ class ScenarioExecutor:
         item_id = item.get("id") or probe or "probe"
 
         if not probe:
-            print(f"    SKIP: {item_id} (no probe specified)")
+            self._mark_unsupported(item_id, "<no probe>", "assertion has no probe to evaluate")
             return True
 
         result = self._call_probe(probe, params)
@@ -1106,6 +1131,168 @@ class ScenarioExecutor:
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
+            elif action in ("chaos.pause_service", "chaos.resume_service"):
+                # SIGSTOP / SIGCONT, which is a fundamentally different fault from
+                # SIGKILL and cannot be reached by any existing primitive.
+                #
+                # A killed process loses its memory. A STOPPED process keeps every
+                # byte of it and wakes up believing whatever it believed before —
+                # including that it still holds a lease that has since expired and
+                # been taken by someone else. That is the only way to test whether
+                # losing authority is IRREVERSIBLE for the instance that lost it,
+                # as opposed to merely testing that leader election works.
+                if not container or not service:
+                    return self._chaos_fail(section, item_id, action, params,
+                                            "node and service params required")
+                unit = params.get("unit") or f"globular-{service}.service"
+                sig = "SIGSTOP" if action == "chaos.pause_service" else "SIGCONT"
+                proc = subprocess.run(
+                    ["docker", "exec", container, "systemctl", "kill",
+                     f"--signal={sig}", "--kill-whom=all", unit],
+                    capture_output=True, text=True, timeout=60)
+                ok = proc.returncode == 0
+                # Confirm the process really is in the state we asked for: a
+                # pause that did not take would make the whole scenario vacuous.
+                state = subprocess.run(
+                    ["docker", "exec", container, "bash", "-c",
+                     f"systemctl show {unit} --property=MainPID --value | "
+                     "xargs -r -I{} awk '/^State:/{print $2}' /proc/{}/status 2>/dev/null"],
+                    capture_output=True, text=True, timeout=60)
+                proc_state = (state.stdout or "").strip()
+                if action == "chaos.pause_service":
+                    ok = ok and proc_state.startswith("T")  # T = stopped
+                    if ok:
+                        self._mutation_open("service_paused", node=node, service=service)
+                else:
+                    ok = ok and not proc_state.startswith("T")
+                    if ok:
+                        self._mutation_close("service_paused", node=node, service=service)
+                result = {"action": action, "container": container, "unit": unit,
+                          "signal": sig, "proc_state": proc_state or "unknown",
+                          "exit_code": proc.returncode,
+                          "stderr": (proc.stderr or "").strip()[-200:]}
+                if not ok:
+                    print(f"    {item_id}: {sig} did not take — /proc State={proc_state or '?'}")
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.clone_node_state":
+                # Copy one node's persisted identity onto another node's volume,
+                # so two machines claim the same node_id.
+                #
+                # This is the identity-collision fault: not a network problem and
+                # not a crash, but two actors each holding internally coherent
+                # evidence that they are the same node. Restoring a backup onto a
+                # replacement machine produces exactly this.
+                src = params.get("source", "")
+                dst = params.get("target", "")
+                if not src or not dst:
+                    return self._chaos_fail(section, item_id, action, params,
+                                            "source and target params required")
+                src_vol = f"globular-quickstart_{src.replace('-', '')}-state"
+                dst_vol = f"globular-quickstart_{dst.replace('-', '')}-state"
+                proc = subprocess.run(
+                    ["docker", "run", "--rm",
+                     "-v", f"{src_vol}:/src:ro", "-v", f"{dst_vol}:/dst",
+                     "alpine:3", "sh", "-c",
+                     "rm -rf /dst/* /dst/.[!.]* 2>/dev/null; "
+                     "cp -a /src/. /dst/ && "
+                     "cat /dst/node-agent/state.json 2>/dev/null || "
+                     "cat /dst/nodeagent/state.json 2>/dev/null || echo NO_STATE"],
+                    capture_output=True, text=True, timeout=600)
+                ok = proc.returncode == 0
+                if ok:
+                    self._mutation_open("node_cloned", node=dst)
+                result = {"action": action, "source": src, "target": dst,
+                          "exit_code": proc.returncode,
+                          "cloned_identity": (proc.stdout or "").strip()[-200:],
+                          "stderr": (proc.stderr or "").strip()[-200:]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.fill_etcd_volume":
+                # Exhaust the filesystem etcd writes to, rather than the node's
+                # root disk.
+                #
+                # chaos.fill_disk pressures the node and trips disk-pressure
+                # detection; this targets the specific filesystem a state commit
+                # must land on, so a mutation is attempted while the write cannot
+                # succeed. The question is whether the transaction is atomic —
+                # committed or rejected — never half-published.
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                leave_mb = int(params.get("leave_free_mb", 2))
+                script = (
+                    "set -e\n"
+                    "D=/var/lib/globular/etcd\n"
+                    "mkdir -p $D\n"
+                    "AVAIL=$(df -Pm $D | awk 'NR==2{print $4}')\n"
+                    f"FILL=$(( AVAIL - {leave_mb} ))\n"
+                    "if [ $FILL -le 0 ]; then echo ALREADY_FULL avail=$AVAIL; exit 0; fi\n"
+                    "dd if=/dev/zero of=$D/.chaos_fill bs=1M count=$FILL 2>/dev/null || true\n"
+                    "df -Pm $D | awk 'NR==2{print \"avail_mb=\" $4}'\n"
+                )
+                proc = subprocess.run(
+                    ["docker", "exec", container, "bash", "-c", script],
+                    capture_output=True, text=True, timeout=600)
+                ok = proc.returncode == 0
+                if ok:
+                    self._mutation_open("etcd_volume_filled", node=node)
+                result = {"action": action, "container": container,
+                          "exit_code": proc.returncode,
+                          "df": (proc.stdout or "").strip()[-120:],
+                          "stderr": (proc.stderr or "").strip()[-200:]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.clear_etcd_volume_fill":
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                proc = subprocess.run(
+                    ["docker", "exec", container, "bash", "-c",
+                     "rm -f /var/lib/globular/etcd/.chaos_fill; "
+                     "df -Pm /var/lib/globular/etcd | awk 'NR==2{print \"avail_mb=\" $4}'"],
+                    capture_output=True, text=True, timeout=180)
+                ok = proc.returncode == 0
+                if ok:
+                    self._mutation_close("etcd_volume_filled", node=node)
+                result = {"action": action, "container": container,
+                          "exit_code": proc.returncode, "df": (proc.stdout or "").strip()[-120:]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action in ("chaos.stop_all_nodes", "chaos.start_all_nodes"):
+                # Every node at once, in one docker invocation.
+                #
+                # Sequential stop/start is a different experiment: it staggers the
+                # restart and lets one node win leadership before the others are
+                # even up. A simultaneous bring-up is what produces the
+                # thundering herd — five nodes racing to establish authority from
+                # identical starting conditions.
+                names = subprocess.run(
+                    ["docker", "ps", "-a", "--format", "{{.Names}}"],
+                    capture_output=True, text=True, timeout=60)
+                nodes = sorted(n for n in (names.stdout or "").split()
+                               if n.startswith("globular-node-"))
+                if not nodes:
+                    return self._chaos_fail(section, item_id, action, params,
+                                            "no globular-node-* containers found")
+                verb = "stop" if action == "chaos.stop_all_nodes" else "start"
+                cmd = ["docker", verb]
+                if verb == "stop":
+                    cmd += ["-t", "15"]
+                proc = subprocess.run(cmd + nodes, capture_output=True, text=True, timeout=900)
+                ok = proc.returncode == 0
+                if ok:
+                    if verb == "stop":
+                        self._mutation_open("all_nodes_stopped")
+                    else:
+                        self._mutation_close("all_nodes_stopped")
+                result = {"action": action, "nodes": nodes, "exit_code": proc.returncode,
+                          "stderr": (proc.stderr or "").strip()[-200:]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
             elif action == "ops.remove_node":
                 # Remove a node's identity from the CONTROLLER, not just its
                 # local state.
@@ -1570,6 +1757,27 @@ class ScenarioExecutor:
                              {}, {"residue_free": True}, report, ok)
         return ok
 
+    # ── outcome taxonomy ──────────────────────────────────────────────────────
+    #
+    # PASS         every assertion held and every step actually ran
+    # FAIL         the cluster violated a property this scenario asserts
+    # PARTIAL      a step failed, so the assertions were never reached
+    # UNSUPPORTED  a required primitive does not exist here, so the property was
+    #              NOT tested. Never satisfies certification.
+    # INFRA_ERROR  the harness or environment broke; the cluster's behaviour is
+    #              unknown rather than wrong
+    # RESIDUE      the scenario leaked state it should have restored
+    # POSTCONDITION the cluster was left in a worse state than it was found
+    #
+    # The distinction that matters most is UNSUPPORTED vs PASS. A scenario that
+    # skipped its own mutation and then asserted a steady state it never
+    # disturbed used to report PASS — which is the same defect class this whole
+    # suite exists to catch, living inside the tool that catches it.
+    def _mark_unsupported(self, item_id: str, action: str, why: str) -> None:
+        entry = {"id": item_id, "action": action, "reason": why}
+        self.unsupported.append(entry)
+        print(f"    UNSUPPORTED: {item_id} ({action} — {why})")
+
     def _chaos_fail(self, section, item_id, action, params, reason) -> bool:
         result = {"action": action, "error": reason}
         self.evidence.record(section, item_id, action, params, {}, result, False)
@@ -1669,8 +1877,37 @@ class ScenarioExecutor:
                     failures.append(
                         f"field '{field}': expected to contain {expected_val!r}, got {actual!r}")
 
+            elif raw_key.endswith("_ne"):
+                # Documented in this docstring but never implemented: a scenario
+                # writing `field_ne: x` fell into the exact-equality branch below
+                # and compared a field literally named "field_ne" — which no probe
+                # emits — against x. It failed closed here, but `field_ne: null`
+                # would have passed while testing nothing.
+                field = raw_key[:-3]
+                actual = result.get(field)
+                if field not in result:
+                    failures.append(
+                        f"field '{field}' (from '{raw_key}') is not emitted by this probe; "
+                        f"available: {sorted(result.keys())}")
+                elif actual == expected_val:
+                    failures.append(
+                        f"field '{field}': expected anything but {expected_val!r}, got {actual!r}")
+
             else:
-                # Exact equality
+                # Exact equality.
+                #
+                # An assertion naming a field the probe does not emit is reported
+                # as a MISSING FIELD rather than a value mismatch, and lists what
+                # the probe actually returns. Five scenarios were written against
+                # imagined field names in one sitting — doctor.report_severity has
+                # no `critical`, cluster.nodes has no `total`, cluster.service_matrix
+                # has no `unhealthy` — and each failed with "expected 0, got None",
+                # which reads like a cluster problem rather than a typo.
+                if raw_key not in result:
+                    failures.append(
+                        f"field '{raw_key}' is not emitted by this probe; "
+                        f"available: {sorted(result.keys())}")
+                    continue
                 actual = result.get(raw_key)
                 if actual != expected_val:
                     failures.append(

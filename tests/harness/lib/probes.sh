@@ -1502,7 +1502,11 @@ probe_cluster_reconcile_clean() {
 
     local count=0 kinds="" sample=""
     if [ -n "$matches" ]; then
-        count=$(echo "$matches" | grep -c . || echo 0)
+        # grep -c prints 0 AND exits 1 on no matches, so `|| echo 0` yields
+        # "0\n0" — the hazard documented at the top of this file. Guarded by
+        # `if [ -n "$matches" ]` today, so it does not currently misfire, but
+        # it is one edit away from doing so.
+        count=$(echo "$matches" | grep . | wc -l)
         kinds=$(echo "$matches" | sed 's/[0-9]\+//g' | sort -u | head -4 | tr '\n' ';' | tr -d '"' | cut -c1-200)
         sample=$(echo "$matches" | head -1 | tr -d '"' | cut -c1-160)
     fi
@@ -1657,7 +1661,10 @@ except Exception:
         defrag=true
     fi
 
-    alarms=$(_etcd alarm list 2>/dev/null | grep -c . || echo 0)
+    # grep -c exits 1 on zero matches while still printing 0, so the usual
+    # `|| echo 0` fallback emits "0\n0" and corrupts the JSON. See the
+    # warning at the top of this file. `grep . | wc -l` always exits 0.
+    alarms=$(_etcd alarm list 2>/dev/null | grep . | wc -l)
 
     local pct=0
     if [[ "$quota" -gt 0 ]]; then
@@ -1855,9 +1862,9 @@ except Exception:
         fi
     done
 
+    # Same grep -c hazard as above; and the first assignment was dead.
     local unique
-    unique=$(printf '%s' "$versions" | tr ',' '\n' | grep -c . || echo 0)
-    unique=$(printf '%s' "$versions" | tr ',' '\n' | sort -u | grep -c . || echo 0)
+    unique=$(printf '%s' "$versions" | tr ',' '\n' | sort -u | grep . | wc -l)
     [[ -z "$expect" ]] && converged=$total
 
     echo "{\"nodes\":${total},\"converged\":${converged},\"lagging\":$(( total - converged )),\"versions\":\"${versions}\",\"unique\":${unique:-0}}"

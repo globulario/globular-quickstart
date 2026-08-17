@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""Proof-boundary wrapper around the legacy scenario executor."""
+
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+
+def main() -> None:
+    args = sys.argv[1:]
+    verbose_args = [a for a in args if a in ("--verbose", "-v")]
+    positional = [a for a in args if a not in ("--verbose", "-v")]
+    if len(positional) < 2:
+        print(
+            "Usage: globular-scenario-proof <scenario.yaml> <output-dir> [--verbose]",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    scenario = Path(positional[0])
+    output_dir = Path(positional[1])
+    script_dir = Path(__file__).resolve().parent
+    harness_dir = script_dir.parent
+    contract = harness_dir / "lib" / "scenario_contract.py"
+    executor = script_dir / "globular-scenario"
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    pre = subprocess.run(
+        [sys.executable, str(contract), "preflight", str(scenario), str(output_dir)]
+    )
+    if pre.returncode != 0:
+        # UNSUPPORTED/invalid proof is intentionally a failing certification result.
+        sys.exit(1)
+
+    run = subprocess.run(
+        [sys.executable, str(executor), str(scenario), str(output_dir), *verbose_args]
+    )
+
+    # Finalization must never hide the executor's result.
+    subprocess.run(
+        [
+            sys.executable,
+            str(contract),
+            "finalize",
+            str(scenario),
+            str(output_dir),
+            "--executor-exit",
+            str(run.returncode),
+        ],
+        check=False,
+    )
+    sys.exit(run.returncode)
+
+
+if __name__ == "__main__":
+    main()

@@ -14,17 +14,17 @@ SERVICES_DIR ?= ../services
 #   bindings, no repository artifacts. 18/38 scenarios failed on 2026-07-31
 #   against artifacts of that divergence rather than real defects.
 #   Keep the release tarball as the single source. Do not reintroduce host copies.
-RELEASE_VERSION ?= 1.2.289
+RELEASE_VERSION ?= 1.2.317
 RELEASE_NAME     = globular-$(RELEASE_VERSION)-linux-amd64
 RELEASE_TARBALL  = $(SERVICES_DIR)/dist/$(RELEASE_NAME).tar.gz
 RELEASE_SHA256   = $(RELEASE_TARBALL).sha256
 
 .PHONY: collect check-units build up down clean logs status shell test \
 	snapshot snapshot-restore snapshot-list \
-	check-glibc-floor test-hardened-tmp test-concurrent-join \
+	check-glibc-floor check-host-aio test-hardened-tmp test-concurrent-join \
 	quickstart-up quickstart-down quickstart-reset quickstart-logs \
 	test-wait test-smoke test-functional test-security test-resilience \
-	test-recovery test-soak test-v1-certification ci-smoke \
+	test-recovery test-soak test-upgrade test-v1-certification ci-smoke \
 	test-scenario test-scenario-keep \
 	test-parity-report test-health-matrix test-authz-report test-recovery-report \
 	check-test-schemas check-test-scenarios test-debug-shell \
@@ -68,9 +68,50 @@ build: collect
 	docker build \
 		--build-arg RELEASE_VERSION=$(RELEASE_VERSION) \
 		-t globulario/globular-node:latest .
+	@$(MAKE) --no-print-directory prune-cache
+
+## prune-cache — reclaim BuildKit cache and dead volumes
+##
+## Every image build leaves BuildKit cache that is never reused across release
+## versions, and every `compose down -v` leaves its volumes behind. Left alone
+## these grow without bound: seven release cycles put 46 GB of build cache and
+## 3.7 GB of dead volumes on a 338 GB disk and took it to 94% full, which
+## eventually wedged a run mid-suite. Both are pure cache — safe to drop; the
+## only cost is a slower next build.
+prune-cache:
+	@before=$$(df --output=avail -BG / | tail -1 | tr -d ' G'); \
+	docker builder prune -af >/dev/null 2>&1 || true; \
+	docker volume prune -f  >/dev/null 2>&1 || true; \
+	after=$$(df --output=avail -BG / | tail -1 | tr -d ' G'); \
+	echo "prune-cache: freed $$((after-before))G (now $${after}G free)"
+
+## check-host-aio — the host kernel must have enough AIO contexts for every
+## ScyllaDB instance in the sim.
+##
+## fs.aio-max-nr is a HOST-WIDE budget shared by all containers; seastar needs
+## ~66.5k per node, so the 65536 default is not enough for even one storage
+## node. It fails late and confusingly: dpkg installs, the package reports
+## installed, and scylla-server crash-loops on "Your system does not satisfy
+## minimum AIO requirements" — which then strands every service whose
+## ExecStartPre waits on :9042 (2026-08-11: node-2 stuck in start-pre with 9
+## units queued, then its etcd data dir corrupted under the restart churn).
+## The cluster-doctor sees only the downstream convergence errors, never the
+## sysctl. Check it before the containers exist.
+check-host-aio:
+	@need=$$(( 66563 * 3 )); \
+	have=$$(cat /proc/sys/fs/aio-max-nr 2>/dev/null || echo 0); \
+	if [ "$$have" -lt "$$need" ]; then \
+		echo "  ✗ fs.aio-max-nr=$$have is below $$need (3 storage nodes x 66563)."; \
+		echo "    ScyllaDB will crash-loop on every storage node. Raise it with:"; \
+		echo "      sudo sysctl -w fs.aio-max-nr=1048576"; \
+		echo "    Persist it with:"; \
+		echo "      echo 'fs.aio-max-nr = 1048576' | sudo tee /etc/sysctl.d/99-globular-scylla.conf"; \
+		exit 1; \
+	fi; \
+	echo "  ✓ fs.aio-max-nr=$$have"
 
 ## up — start the 5-node cluster
-up: build
+up: check-host-aio build
 	docker compose up -d
 	@echo ""
 	@echo "Cluster starting..."
@@ -224,6 +265,11 @@ test-recovery:
 test-soak:
 	$(TEST_BIN) suite soak
 
+## test-upgrade — run the upgrade suite (package + platform upgrade, and the
+## 2026-08-16 incident regressions: liveness, etcd backend, CAS reachability)
+test-upgrade:
+	$(TEST_BIN) suite upgrade
+
 ## test-v1-certification — full V1 certification run (all suites)
 test-v1-certification:
 	@echo "=== V1 CERTIFICATION RUN ==="
@@ -231,7 +277,8 @@ test-v1-certification:
 	$(TEST_BIN) suite functional && \
 	$(TEST_BIN) suite security && \
 	$(TEST_BIN) suite resilience && \
-	$(TEST_BIN) suite recovery
+	$(TEST_BIN) suite recovery && \
+	$(TEST_BIN) suite upgrade
 	@echo "=== V1 CERTIFICATION COMPLETE ==="
 
 ## ci-smoke — bring up cluster then run smoke suite (CI entry point)

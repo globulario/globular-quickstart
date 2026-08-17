@@ -240,10 +240,22 @@ if aw is not None:
     if not isinstance(aw, dict):
         print(f'FAIL $f: awareness must be a mapping')
         sys.exit(1)
+    # 'patterns' is consumed by globular-scenario: AwarenessCollector reads
+    # awareness.patterns for validate / expected_invariants /
+    # expected_code_smells_absent. It was never added here, so all five
+    # scenarios under patterns/ failed validation, which made this command exit
+    # non-zero unconditionally. A check that always fails gets ignored exactly
+    # like one that can never fail.
+    #
+    # NOTE: this Python runs inside a DOUBLE-QUOTED shell string. Backticks and
+    # double quotes here are interpreted by the shell, not by Python: a stray
+    # double quote silently truncates the program, and the loop then reports
+    # success while validating nothing. Keep this comment single-quoted ASCII.
     valid_keys = {
         'enabled', 'task', 'phase', 'include_runtime', 'runtime_window',
         'create_incident_on_failure', 'expected_invariants', 'expected_forbidden_fixes',
         'create_proposal_on_failure', 'expected_failure_modes', 'training',
+        'patterns',
     }
     unknown = set(aw.keys()) - valid_keys
     if unknown:

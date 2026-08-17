@@ -1,0 +1,120 @@
+version: 1
+name: service-restart-reports-truthfully
+description: |
+  A control action must report what actually happened to the unit, not what it
+  intended.
+
+  THE INCIDENT (2026-08-16). During recovery, the node-agent's restart RPC
+  returned ok:true with state:"active" for a unit that was still failed — and
+  the journal showed no start attempt at all. The RPC reported the outcome it
+  meant to produce rather than the one it produced.
+
+  This is worse than a failure. A restart that returns an error sends the
+  operator looking; a restart that returns success while doing nothing sends
+  the operator away. During an incident that misdirection costs more than the
+  original fault: the node was crossed off the list of suspects while still
+  broken, and the real state was rediscovered much later by another route.
+
+  It is the same shape as the two other defects this suite was written for — a
+  publish gate that matched failure text as success, and a state writer that
+  suppressed the field readers depended on. In each case a check existed, the
+  check could not fail, and nobody could tell the difference between that and
+  it passing.
+
+  WHAT THIS PINS. After a restart action, the unit's reported state and its
+  observed state agree, and the service is genuinely serving. The scenario
+  restarts a real service and then asks systemd directly, rather than trusting
+  the response of the thing that performed the action.
+suite: upgrade
+tags:
+  - node-agent
+  - systemd
+  - honesty
+  - incident-2026-08-16
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: target_service_running_before
+    probe: service.status
+    params:
+      node: node-2
+      service: globular-echo
+    expect:
+      active: true
+
+baseline:
+  - type: probe
+    id: restart_truthful_at_baseline
+    probe: service.restart_is_truthful
+    params:
+      node: node-2
+      unit: globular-echo
+
+steps:
+  - type: action
+    id: restart_the_service
+    action: chaos.restart_service
+    params:
+      node: node-2
+      service: globular-echo
+
+  # Give systemd time to settle. Asserting immediately would test the race, not
+  # the property — and a flaky assertion here would train people to ignore it.
+  - type: action
+    id: settle
+    action: wait
+    params:
+      seconds: 20
+      reason: "allow the unit to reach a terminal state before comparing claim against reality"
+
+assertions:
+  # ── Claim matches reality ─────────────────────────────────────────────────
+  - type: probe
+    id: reported_state_matches_actual_state
+    probe: service.restart_is_truthful
+    params:
+      node: node-2
+      unit: globular-echo
+    expect:
+      truthful: true
+      actual: active
+
+  # ── And it is genuinely serving, not merely "active" ──────────────────────
+  # ActiveState=active only means systemd believes the process is up. Health is
+  # the property callers depend on, and the two can disagree — a unit can be
+  # active while the service inside it never finished starting.
+  - type: probe
+    id: service_is_actually_healthy
+    probe: service.health
+    params:
+      node: node-2
+      service: globular-echo
+    expect:
+      healthy: true
+
+  # ── The restart did not disturb anything else ─────────────────────────────
+  - type: probe
+    id: cluster_still_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: liveness_unaffected
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+
+cleanup: []

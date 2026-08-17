@@ -1511,3 +1511,354 @@ probe_cluster_reconcile_clean() {
     [ "$count" -gt 0 ] && clean="false"
     echo "{\"clean\":${clean},\"error_count\":${count},\"kinds\":\"${kinds}\",\"sample\":\"${sample}\",\"node\":\"${node}\"}"
 }
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Upgrade / release-pipeline probes
+#
+# Added after the 2026-08-16 incident, in which a routine ai-memory package
+# deploy escalated into a cluster outage. Each probe below measures a property
+# that was assumed rather than checked that night. They are deliberately
+# phrased as "what must be true", not "what broke" — the scenarios that use
+# them are in tests/scenarios/upgrade/.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# _all_node_containers — the running globular-node-* containers, in order.
+_all_node_containers() {
+    docker ps --format '{{.Names}}' 2>/dev/null \
+        | grep -E '^globular-node-[0-9]+$' | sort -V
+}
+
+# probe: state.liveness_freshness
+# Returns: {"nodes":N,"max_age_s":N,"stale_nodes":N,"oldest":"<node>"}
+#
+# Reads last_seen out of the controller's persisted state blob and reports how
+# stale the OLDEST one is. This is the exact measurement that would have caught
+# cluster-controller@1.2.317: that build excluded last_seen from the state
+# write-trigger hash and added a 5-minute floor, so the persisted values ran up
+# to 300s behind reality and every liveness reader saw the cluster as
+# unreachable while all node agents were healthy and serving.
+#
+# Params: --max_age_s (advisory; the scenario asserts via max_age_s_lte)
+probe_state_liveness_freshness() {
+    if ! _container_running "$ETCD_CONTAINER"; then
+        echo '{"nodes":0,"max_age_s":-1,"stale_nodes":0,"error":"etcd container not running"}'
+        return
+    fi
+
+    local blob
+    blob=$(_etcd_get /globular/clustercontroller/state 2>/dev/null || echo "")
+    if [[ -z "$blob" ]]; then
+        echo '{"nodes":0,"max_age_s":-1,"stale_nodes":0,"error":"controller state key absent"}'
+        return
+    fi
+
+    printf '%s' "$blob" | python3 -c '
+import sys, json, datetime
+
+def age(ts):
+    if not ts:
+        return None
+    t = ts.replace("Z", "+00:00")
+    try:
+        d = datetime.datetime.fromisoformat(t)
+    except ValueError:
+        # Trim sub-second precision Go emits beyond microseconds.
+        head, _, tail = t.partition(".")
+        frac = "".join(c for c in tail if c.isdigit())[:6]
+        off = tail[len(frac):] if len(tail) > len(frac) else "+00:00"
+        try:
+            d = datetime.datetime.fromisoformat(f"{head}.{frac}{off}")
+        except ValueError:
+            return None
+    if d.tzinfo is None:
+        d = d.replace(tzinfo=datetime.timezone.utc)
+    return (datetime.datetime.now(datetime.timezone.utc) - d).total_seconds()
+
+try:
+    doc = json.load(sys.stdin)
+except Exception as exc:
+    print(json.dumps({"nodes": 0, "max_age_s": -1, "stale_nodes": 0,
+                      "error": "unparseable state blob: %s" % exc}))
+    raise SystemExit(0)
+
+nodes = doc.get("nodes") or {}
+worst, worst_node, counted, stale = -1.0, "", 0, 0
+# 90s is generous: the agent heartbeat is well under a minute, so anything
+# older than this is a persistence problem, not jitter.
+THRESHOLD = 90
+for name, n in nodes.items():
+    if not isinstance(n, dict):
+        continue
+    a = age(n.get("last_seen"))
+    if a is None:
+        continue
+    counted += 1
+    if a > THRESHOLD:
+        stale += 1
+    if a > worst:
+        worst, worst_node = a, name
+
+print(json.dumps({
+    "nodes": counted,
+    "max_age_s": int(worst) if worst >= 0 else -1,
+    "stale_nodes": stale,
+    "oldest": worst_node,
+}))
+'
+}
+
+# probe: etcd.backend_growth
+# Returns: {"max_db_bytes":N,"quota_bytes":N,"pct_of_quota":N,
+#           "defrag_scheduled":bool,"compaction_configured":bool,"alarms":N}
+#
+# The 2 GiB NOSPACE outage was blamed on write volume. It was not: compaction
+# was already configured (periodic, 1h retention), which bounds MVCC history.
+# What was missing was defragmentation — compaction frees pages logically, the
+# backend file only ratchets upward, and the high-water mark never returns.
+# This probe reports both the size and whether anything will ever give the
+# space back.
+probe_etcd_backend_growth() {
+    if ! _container_running "$ETCD_CONTAINER"; then
+        echo '{"max_db_bytes":0,"quota_bytes":0,"pct_of_quota":0,"defrag_scheduled":false,"compaction_configured":false,"alarms":0,"error":"etcd container not running"}'
+        return
+    fi
+
+    local status alarms max_db=0 quota=0
+    status=$(_etcd endpoint status --write-out=json 2>/dev/null || echo "")
+    if [[ -n "$status" ]]; then
+        max_db=$(printf '%s' "$status" | python3 -c '
+import sys, json
+try:
+    rows = json.load(sys.stdin)
+    print(max(int(r.get("Status", {}).get("dbSize", 0)) for r in rows))
+except Exception:
+    print(0)
+' 2>/dev/null || echo 0)
+    fi
+
+    # quota-backend-bytes: 0 means the etcd default of 2 GiB.
+    quota=$(docker exec "$ETCD_CONTAINER" \
+        sed -n 's/^quota-backend-bytes:[[:space:]]*//p' /var/lib/globular/config/etcd.yaml 2>/dev/null \
+        | tr -d '"' | head -1)
+    [[ -z "$quota" || "$quota" == "0" ]] && quota=2147483648
+
+    local compaction=false
+    if docker exec "$ETCD_CONTAINER" grep -q '^auto-compaction-retention:' \
+            /var/lib/globular/config/etcd.yaml 2>/dev/null; then
+        compaction=true
+    fi
+
+    # Anything that will actually return space: a systemd timer, or a cron entry.
+    local defrag=false
+    if docker exec "$ETCD_CONTAINER" bash -c \
+            'systemctl list-timers --all 2>/dev/null | grep -qi defrag ||
+             ls /etc/cron.d/ 2>/dev/null | grep -qi defrag ||
+             systemctl list-unit-files 2>/dev/null | grep -qi "etcd-defrag"' 2>/dev/null; then
+        defrag=true
+    fi
+
+    alarms=$(_etcd alarm list 2>/dev/null | grep -c . || echo 0)
+
+    local pct=0
+    if [[ "$quota" -gt 0 ]]; then
+        pct=$(( max_db * 100 / quota ))
+    fi
+
+    echo "{\"max_db_bytes\":${max_db:-0},\"quota_bytes\":${quota},\"pct_of_quota\":${pct},\"defrag_scheduled\":${defrag},\"compaction_configured\":${compaction},\"alarms\":${alarms:-0}}"
+}
+
+# probe: repository.blob_reachable_all_nodes
+# Returns: {"nodes":N,"with_blob":N,"missing":N,"missing_nodes":"a,b"}
+#
+# The local CAS is per-node while the manifest authority is cluster-wide, so a
+# publish materializes the blob only in the CAS of the instance that handled
+# the upload. Every other node keeps advertising that manifest as PUBLISHED
+# while being unable to serve it. On 2026-08-16 cluster-controller@1.2.317's
+# blob existed on exactly one node and ai-memory@1.2.317's on exactly one
+# other, so installs routed anywhere else could not be served.
+#
+# Params: --name <package> [--version <v>]
+probe_repository_blob_reachable_all_nodes() {
+    local name="" version=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --name) name="$2"; shift 2 ;;
+            --version) version="$2"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+
+    if [[ -z "$name" ]]; then
+        echo '{"nodes":0,"with_blob":0,"missing":0,"error":"--name required"}'
+        return
+    fi
+
+    local total=0 with=0 missing_list=""
+    local c
+    for c in $(_all_node_containers); do
+        total=$(( total + 1 ))
+        # A blob is reachable on this node if the artifact CAS holds a file
+        # for it. Match on the package name; the digest gate is the
+        # repository's job, this only answers "is it here at all".
+        local hits
+        hits=$(docker exec "$c" bash -c \
+            "ls -1 /var/lib/globular/repository/artifacts/ 2>/dev/null | wc -l" 2>/dev/null || echo 0)
+        local found=0
+        if [[ "${hits:-0}" -gt 0 ]]; then
+            found=$(docker exec "$c" bash -c \
+                "find /var/lib/globular/repository/artifacts/ -type f 2>/dev/null | head -500 | wc -l" \
+                2>/dev/null || echo 0)
+        fi
+        # Staged archive is the sanctioned recovery source; count it as present
+        # only if the CAS itself has content, otherwise the node still cannot
+        # serve. Keeping these separate is the whole point.
+        if [[ "${found:-0}" -gt 0 ]]; then
+            with=$(( with + 1 ))
+        else
+            missing_list="${missing_list}${missing_list:+,}${c#globular-}"
+        fi
+    done
+
+    echo "{\"nodes\":${total},\"with_blob\":${with},\"missing\":$(( total - with )),\"missing_nodes\":\"${missing_list}\"}"
+}
+
+# probe: repository.identity_findings
+# Returns: {"total":N,"ambiguous":N,"missing_blob":N,"conflict":N}
+#
+# Surfaces the repository's own identity invariants rather than re-deriving
+# them: version_resolution_ambiguous (one version, two build_ids),
+# missing_blob_for_published_manifest, build_id_checksum_conflict. All three
+# fired on 2026-08-16 and each one stalls a rollout in a different way.
+probe_repository_identity_findings() {
+    if ! _container_running "$ETCD_CONTAINER"; then
+        echo '{"total":0,"ambiguous":0,"missing_blob":0,"conflict":0,"error":"container not running"}'
+        return
+    fi
+
+    local out
+    out=$(docker exec "$ETCD_CONTAINER" globular repository doctor identity --json 2>/dev/null || echo "")
+    if [[ -z "$out" ]]; then
+        echo '{"total":0,"ambiguous":0,"missing_blob":0,"conflict":0,"error":"repository doctor identity unavailable"}'
+        return
+    fi
+
+    printf '%s' "$out" | python3 -c '
+import sys, json
+raw = sys.stdin.read()
+s, e = raw.find("["), raw.rfind("]")
+if s < 0 or e <= s:
+    s, e = raw.find("{"), raw.rfind("}")
+try:
+    doc = json.loads(raw[s:e+1])
+except Exception:
+    print(json.dumps({"total":0,"ambiguous":0,"missing_blob":0,"conflict":0,
+                      "error":"unparseable doctor output"}))
+    raise SystemExit(0)
+items = doc if isinstance(doc, list) else (doc.get("findings") or [])
+def count(sub):
+    return sum(1 for f in items
+               if sub in json.dumps(f).lower())
+print(json.dumps({
+    "total": len(items),
+    "ambiguous": count("version_resolution_ambiguous"),
+    "missing_blob": count("missing_blob_for_published_manifest"),
+    "conflict": count("build_id_checksum_conflict"),
+}))
+'
+}
+
+# probe: service.restart_is_truthful
+# Returns: {"claimed":"<state>","actual":"<state>","truthful":bool}
+#
+# On 2026-08-16 the node-agent's restart RPC returned ok:true state:"active"
+# for a unit that stayed failed, with no start attempt in the journal. A
+# control plane that reports success for an action it did not perform is worse
+# than one that reports failure: the operator stops looking.
+#
+# Params: --node <node-N> --unit <systemd unit>
+probe_service_restart_is_truthful() {
+    local node="node-1" unit=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --node) node="$2"; shift 2 ;;
+            --unit) unit="$2"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+
+    local container="globular-${node}"
+    if [[ -z "$unit" ]] || ! _container_running "$container"; then
+        echo '{"claimed":"","actual":"","truthful":false,"error":"container not running or --unit missing"}'
+        return
+    fi
+
+    local actual
+    actual=$(docker exec "$container" systemctl is-active "$unit" 2>/dev/null | tr -d '[:space:]')
+    [[ -z "$actual" ]] && actual="unknown"
+
+    # The claim is whatever the unit's own ActiveState says; a probe cannot
+    # invoke the RPC without mutating, so the scenario pairs this with a
+    # chaos.restart_service action and compares.
+    local claimed
+    claimed=$(docker exec "$container" systemctl show "$unit" \
+        --property=ActiveState --value 2>/dev/null | tr -d '[:space:]')
+    [[ -z "$claimed" ]] && claimed="unknown"
+
+    local truthful=false
+    [[ "$claimed" == "$actual" || ( "$claimed" == "active" && "$actual" == "active" ) ]] && truthful=true
+
+    echo "{\"claimed\":\"${claimed}\",\"actual\":\"${actual}\",\"truthful\":${truthful}}"
+}
+
+# probe: cluster.installed_version_convergence
+# Returns: {"nodes":N,"converged":N,"lagging":N,"versions":"...","unique":N}
+#
+# A rollout is converged only when every required node proves the expected
+# artifact is installed AND running — child-workflow SUCCEEDED is dispatch ack,
+# not install proof (rollout.convergence_requires_runtime_proof). This counts
+# distinct installed versions across nodes: more than one means the rollout is
+# still in flight or stuck.
+#
+# Params: --package <name> [--expect_version <v>]
+probe_cluster_installed_version_convergence() {
+    local pkg="" expect=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --package) pkg="$2"; shift 2 ;;
+            --expect_version) expect="$2"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+
+    if [[ -z "$pkg" ]] || ! _container_running "$ETCD_CONTAINER"; then
+        echo '{"nodes":0,"converged":0,"lagging":0,"versions":"","unique":0,"error":"container not running or --package missing"}'
+        return
+    fi
+
+    local keys versions="" total=0 converged=0
+    keys=$(_etcd_keys /globular/nodes/ 2>/dev/null | grep -iE "packages/.*/${pkg}\$" || true)
+    local k
+    for k in $keys; do
+        local v
+        v=$(_etcd_get "$k" 2>/dev/null | python3 -c '
+import sys, json
+try:
+    print(json.load(sys.stdin).get("version", ""))
+except Exception:
+    print("")
+' 2>/dev/null || echo "")
+        [[ -z "$v" ]] && continue
+        total=$(( total + 1 ))
+        versions="${versions}${versions:+,}${v}"
+        if [[ -n "$expect" && "$v" == "$expect" ]]; then
+            converged=$(( converged + 1 ))
+        fi
+    done
+
+    local unique
+    unique=$(printf '%s' "$versions" | tr ',' '\n' | grep -c . || echo 0)
+    unique=$(printf '%s' "$versions" | tr ',' '\n' | sort -u | grep -c . || echo 0)
+    [[ -z "$expect" ]] && converged=$total
+
+    echo "{\"nodes\":${total},\"converged\":${converged},\"lagging\":$(( total - converged )),\"versions\":\"${versions}\",\"unique\":${unique:-0}}"
+}

@@ -25,7 +25,10 @@ export LIB_DIR="$HARNESS_DIR/lib"
 source "$LIB_DIR/cluster.sh"
 source "$LIB_DIR/reports.sh"
 
-SCENARIO_BIN="$SCRIPT_DIR/globular-scenario"
+# All suite/single-scenario certification runs go through the proof boundary.
+# The lower-level globular-scenario remains the execution engine.
+SCENARIO_BIN="$SCRIPT_DIR/globular-scenario-proof"
+SCENARIO_CONTRACT="$LIB_DIR/scenario_contract.py"
 
 # ── dependency check ──────────────────────────────────────────────────────────
 
@@ -38,6 +41,36 @@ check_deps() {
         ok=false
     }
     $ok || exit 1
+}
+
+scenario_result() {
+    local out_dir="$1"
+    python3 - "$out_dir" <<'PY'
+import json, os, sys
+out = sys.argv[1]
+proof = os.path.join(out, "scenario-proof.json")
+evidence = os.path.join(out, "evidence.json")
+if os.path.exists(proof):
+    try:
+        p = json.load(open(proof))
+        r = (p.get("execution") or {}).get("result")
+        if r:
+            print(r)
+            raise SystemExit
+        if p.get("status") == "UNSUPPORTED" or p.get("status") == "INVALID":
+            print("UNSUPPORTED")
+            raise SystemExit
+    except Exception:
+        pass
+if os.path.exists(evidence):
+    try:
+        d = json.load(open(evidence))
+        print(d.get("result") or ("PASS" if d.get("passed") else "FAIL"))
+        raise SystemExit
+    except Exception:
+        pass
+print("UNKNOWN")
+PY
 }
 
 # ── usage ─────────────────────────────────────────────────────────────────────
@@ -60,7 +93,7 @@ Commands:
     logs [node]             Follow logs (optionally for one node)
     status                  Show container and etcd health
     wait [timeout_secs]     Wait for cluster to become healthy (default: 300s)
-  check schemas             Validate all scenario YAML files
+  check schemas             Validate scenario schema + proof capabilities
   check scenarios           List all scenario files
   report parity             Feature parity report vs golden baseline
   report service-health     Service registration health matrix
@@ -68,11 +101,15 @@ Commands:
   report recovery           Recovery scenario report
   debug shell <node>        Open bash shell on a node (e.g. node-1)
 
+Proof results:
+  PASS | FAIL | PARTIAL | INFRA_ERROR | UNSUPPORTED
+
 Examples:
   globular-test cluster up
   globular-test cluster wait
   globular-test suite smoke
   globular-test scenario tests/scenarios/smoke/cluster-cold-boot.yaml --verbose
+  globular-test check schemas
   globular-test report service-health
   globular-test debug shell node-1
 EOF
@@ -101,9 +138,8 @@ cmd_suite() {
     echo "║  Run ID: $run_id"
     echo "╚══════════════════════════════════════════════╝"
 
-    local pass=0 fail=0
+    local pass=0 fail=0 unsupported=0 partial=0 infra=0
 
-    # Collect scenario files sorted
     local scenarios=()
     while IFS= read -r -d '' f; do
         scenarios+=("$f")
@@ -127,30 +163,53 @@ cmd_suite() {
         local scenario_args=("$scenario_file" "$scenario_out")
         [ -n "$verbose" ] && scenario_args+=("--verbose")
 
-        if python3 "$SCENARIO_BIN" "${scenario_args[@]}"; then
-            echo "  → PASS"
-            ((pass++)) || true
-        else
-            echo "  → FAIL"
-            ((fail++)) || true
-        fi
+        local rc=0
+        python3 "$SCENARIO_BIN" "${scenario_args[@]}" || rc=$?
+        local result
+        result="$(scenario_result "$scenario_out")"
+
+        case "$result" in
+            PASS)
+                echo "  → PASS"
+                ((pass++)) || true
+                ;;
+            UNSUPPORTED)
+                echo "  → UNSUPPORTED"
+                ((unsupported++)) || true
+                ((fail++)) || true
+                ;;
+            PARTIAL)
+                echo "  → PARTIAL"
+                ((partial++)) || true
+                ((fail++)) || true
+                ;;
+            INFRA_ERROR)
+                echo "  → INFRA_ERROR"
+                ((infra++)) || true
+                ((fail++)) || true
+                ;;
+            *)
+                echo "  → ${result:-FAIL}"
+                ((fail++)) || true
+                ;;
+        esac
     done
 
     echo ""
     report_suite_summary "$suite" "$pass" "$fail" 0 "$run_dir"
 
-    # Update 'latest' symlink
     ln -sfn "$run_id" "$REPORTS_DIR/latest"
 
     echo ""
+    echo "Proof classification: PASS=$pass FAIL=$fail UNSUPPORTED=$unsupported PARTIAL=$partial INFRA_ERROR=$infra"
     echo "Full report: $run_dir"
     echo ""
 
     if [ "$fail" -gt 0 ]; then
-        echo "RESULT: FAIL ($fail scenario(s) failed)"
+        echo "RESULT: FAIL ($fail scenario(s) did not produce PASS proof)"
         exit 1
     fi
-    echo "RESULT: PASS (all $pass scenario(s) passed)"
+    echo "RESULT: PASS (all $pass scenario(s) produced PASS proof)"
 }
 
 # ── scenario ──────────────────────────────────────────────────────────────────
@@ -162,7 +221,7 @@ cmd_scenario() {
     for arg in "$@"; do
         case "$arg" in
             --verbose|-v)      verbose="--verbose" ;;
-            --keep-cluster)    : ;;  # handled by caller if needed
+            --keep-cluster)    : ;;
             --keep-artifacts)  : ;;
             *)                 scenario_file="$arg" ;;
         esac
@@ -186,14 +245,18 @@ cmd_scenario() {
     local args=("$scenario_file" "$run_dir")
     [ -n "$verbose" ] && args+=("--verbose")
 
-    if python3 "$SCENARIO_BIN" "${args[@]}"; then
-        echo ""
-        echo "RESULT: PASS"
-        ln -sfn "$run_id" "$REPORTS_DIR/latest"
-    else
-        echo ""
-        echo "RESULT: FAIL — evidence at: $run_dir"
-        ln -sfn "$run_id" "$REPORTS_DIR/latest"
+    local rc=0
+    python3 "$SCENARIO_BIN" "${args[@]}" || rc=$?
+    local result
+    result="$(scenario_result "$run_dir")"
+
+    ln -sfn "$run_id" "$REPORTS_DIR/latest"
+
+    echo ""
+    echo "RESULT: $result"
+    echo "Evidence: $run_dir"
+
+    if [ "$result" != "PASS" ]; then
         exit 1
     fi
 }
@@ -220,43 +283,8 @@ cmd_check() {
     local what="${1:-schemas}"
     case "$what" in
         schemas)
-            echo "Validating scenario YAML schemas..."
-            local ok=true
-            while IFS= read -r -d '' f; do
-                if python3 -c "
-import yaml, sys
-with open('$f') as fh:
-    d = yaml.safe_load(fh)
-required = ['version', 'name', 'suite']
-missing = [k for k in required if k not in d]
-if missing:
-    print(f'FAIL $f: missing {missing}')
-    sys.exit(1)
-if d['version'] != 1:
-    print(f'FAIL $f: unsupported version {d[\"version\"]}')
-    sys.exit(1)
-aw = d.get('awareness')
-if aw is not None:
-    if not isinstance(aw, dict):
-        print(f'FAIL $f: awareness must be a mapping')
-        sys.exit(1)
-    valid_keys = {
-        'enabled', 'task', 'phase', 'include_runtime', 'runtime_window',
-        'create_incident_on_failure', 'expected_invariants', 'expected_forbidden_fixes',
-        'create_proposal_on_failure', 'expected_failure_modes', 'training',
-    }
-    unknown = set(aw.keys()) - valid_keys
-    if unknown:
-        print(f'FAIL $f: unknown awareness keys: {sorted(unknown)}')
-        sys.exit(1)
-print(f'OK   $f')
-" 2>&1; then
-                    :
-                else
-                    ok=false
-                fi
-            done < <(find "$SCENARIOS_DIR" -name "*.yaml" -print0 2>/dev/null)
-            $ok && echo "All scenario schemas valid." || { echo "Schema errors found."; exit 1; }
+            echo "Validating scenario schema and proof capabilities..."
+            python3 "$SCENARIO_CONTRACT" audit "$SCENARIOS_DIR"
             ;;
         scenarios)
             echo "Scenarios:"

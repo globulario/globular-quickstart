@@ -14,7 +14,7 @@ SERVICES_DIR ?= ../services
 #   bindings, no repository artifacts. 18/38 scenarios failed on 2026-07-31
 #   against artifacts of that divergence rather than real defects.
 #   Keep the release tarball as the single source. Do not reintroduce host copies.
-RELEASE_VERSION ?= 1.2.317
+RELEASE_VERSION ?= 1.2.318
 RELEASE_NAME     = globular-$(RELEASE_VERSION)-linux-amd64
 RELEASE_TARBALL  = $(SERVICES_DIR)/dist/$(RELEASE_NAME).tar.gz
 RELEASE_SHA256   = $(RELEASE_TARBALL).sha256

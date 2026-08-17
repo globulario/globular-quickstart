@@ -320,6 +320,22 @@ class ScenarioExecutor:
             self.evidence.record("steps", "scenario_crash", "exception", {}, {},
                                  {"error": crashed[:500]}, False)
 
+        # `cluster.reset_after: true` means this scenario does damage it cannot
+        # itself undo, and the cluster must be rebuilt before anything else
+        # runs. Do it BEFORE residue/postcondition checks so those judge the
+        # rebuilt cluster rather than the wreckage.
+        #
+        # This field was declared by scenarios and implemented NOWHERE — the
+        # whole harness had no reference to it. etcd-detach-before-wipe removes
+        # two of three etcd members and set reset_after: true precisely so it
+        # "cannot leave a 1-member cluster behind for whatever runs next"; with
+        # the flag inert it did exactly that, and etcd-member-resync then failed
+        # its precondition with healthy=1/3 for reasons that had nothing to do
+        # with what it tests. A declared safety mechanism that does not exist is
+        # worse than no mechanism, because scenarios are written trusting it.
+        if self._cluster_cfg().get("reset_after"):
+            self._reset_cluster()
+
         residue_failure = False
         if not self._enforce_restoration():
             overall_ok = False
@@ -363,6 +379,60 @@ class ScenarioExecutor:
         self._write_output(overall_ok, result, awareness_result)
         self._append_to_ledger(result, awareness_result)
         return overall_ok
+
+    def _cluster_cfg(self) -> dict:
+        """The scenario's `cluster:` block, or an empty dict."""
+        cfg = self.scenario.get("cluster") if isinstance(self.scenario, dict) else None
+        return cfg if isinstance(cfg, dict) else {}
+
+    def _reset_cluster(self, ready_timeout: int = 3600) -> bool:
+        """Tear the cluster down and bring it back, then wait for all nodes ready.
+
+        Used by `cluster.reset_after`. Expensive (a full Day-0 + Day-1 bring-up),
+        so it only runs for scenarios that explicitly ask for it.
+        """
+        # HARNESS_DIR is <repo>/tests/harness, so the compose file lives two
+        # levels up. Derive it rather than relying on the caller's cwd.
+        compose_dir = os.path.dirname(os.path.dirname(HARNESS_DIR))
+        print("    RESET: rebuilding cluster (scenario declared reset_after)")
+        self._sh(["docker", "compose", "down", "-v"], timeout=300, cwd=compose_dir)
+        up = self._sh(["docker", "compose", "up", "-d"], timeout=600, cwd=compose_dir)
+        if up.returncode != 0:
+            print(f"    RESET FAILED: compose up returned {up.returncode}")
+            return False
+
+        deadline = time.time() + ready_timeout
+        while time.time() < deadline:
+            proc = self._sh(["docker", "exec", "globular-node-1",
+                             "globular", "cluster", "nodes", "list",
+                             "--controller", "10.10.0.11:12000",
+                             "--insecure", "--timeout", "30s"], timeout=90)
+            ready = proc.stdout.count('status: "ready"')
+            if ready >= 5:
+                print(f"    RESET: cluster ready ({ready}/5)")
+                # `compose down -v` destroyed the MinIO drive volumes, so the
+                # rebuilt cluster is back in standalone mode. Restore the
+                # intended distributed topology, or every scenario after a
+                # reset_after runs against a different objectstore than the
+                # one the suite started on — and the post-run doctor reports
+                # objectstore.standalone_in_cluster for a state the harness
+                # itself created.
+                prov = os.path.join(compose_dir, "scripts",
+                                    "provision-distributed-objectstore.sh")
+                if os.path.exists(prov):
+                    print("    RESET: restoring distributed objectstore")
+                    r = self._sh(["bash", prov], timeout=2400, cwd=compose_dir)
+                    if r.returncode != 0:
+                        print(f"    RESET: objectstore provisioning failed "
+                              f"(rc={r.returncode}) — scenarios continue against standalone")
+                # The mutations this scenario made are gone with the old
+                # cluster; keeping them outstanding would report residue that
+                # no longer exists anywhere.
+                self.outstanding = []
+                return True
+            time.sleep(60)
+        print("    RESET: timed out waiting for cluster ready")
+        return False
 
     def _cluster_reachable(self) -> bool:
         """Quick check if globular-node-1 container is running."""
@@ -637,7 +707,9 @@ class ScenarioExecutor:
                 # Graceful stop (SIGTERM). Use chaos.sigkill_service for SIGKILL.
                 if not container or not service:
                     return self._chaos_fail(section, item_id, action, params, "node and service params required")
-                unit = f"globular-{service}.service"
+                # See chaos.restart_service: `unit:` names a non-Globular unit
+                # such as ScyllaDB's upstream scylla-server.service.
+                unit = params.get("unit") or f"globular-{service}.service"
                 proc = subprocess.run(
                     ["docker", "exec", container, "systemctl", "stop", unit],
                     capture_output=True, text=True, timeout=30)
@@ -646,7 +718,7 @@ class ScenarioExecutor:
                           "exit_code": proc.returncode,
                           "stderr": proc.stderr.strip()[:200]}
                 if ok:
-                    self._mutation_open("service_killed", node=node, service=service)
+                    self._mutation_open("service_killed", node=node, service=service, unit=unit)
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
@@ -654,7 +726,8 @@ class ScenarioExecutor:
                 # Hard kill — sends SIGKILL to main process, triggering Restart=on-failure.
                 if not container or not service:
                     return self._chaos_fail(section, item_id, action, params, "node and service params required")
-                unit = f"globular-{service}.service"
+                # See chaos.restart_service: `unit:` names a non-Globular unit.
+                unit = params.get("unit") or f"globular-{service}.service"
                 proc = subprocess.run(
                     ["docker", "exec", container, "systemctl", "kill",
                      "--kill-who=main", "-s", "KILL", unit],
@@ -664,14 +737,18 @@ class ScenarioExecutor:
                           "signal": "SIGKILL", "exit_code": proc.returncode,
                           "stderr": proc.stderr.strip()[:200]}
                 if ok:
-                    self._mutation_open("service_killed", node=node, service=service)
+                    self._mutation_open("service_killed", node=node, service=service, unit=unit)
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
             elif action == "chaos.restart_service":
                 if not container or not service:
                     return self._chaos_fail(section, item_id, action, params, "node and service params required")
-                unit = f"globular-{service}.service"
+                # Most units follow globular-<service>.service, but not all of
+                # them: ScyllaDB ships upstream's scylla-server.service. An
+                # explicit `unit:` lets a scenario name a non-Globular unit
+                # instead of being restricted to what the prefix can express.
+                unit = params.get("unit") or f"globular-{service}.service"
                 # Use --no-block so systemctl returns immediately without waiting
                 # for the service to reach 'active'. Services using Type=notify
                 # (e.g. cluster-controller) may never reach 'active' if the binary
@@ -694,15 +771,43 @@ class ScenarioExecutor:
                     return self._chaos_fail(section, item_id, action, params, "node param required")
                 path = params.get("path", "/var/lib/globular")
                 target_pct = int(params.get("target_pct", 95))
-                # Calculate how many MB to write: get disk size, compute fill amount
+                # Reserve the space with fallocate, which returns immediately,
+                # and only fall back to dd where the filesystem cannot allocate
+                # without writing.
+                #
+                # dd alone was the original implementation: filling a
+                # multi-gigabyte volume a megabyte at a time cannot finish
+                # inside the step budget, so the action reported "timed out"
+                # and disk-pressure-detection never got to test detection at
+                # all — it failed on how the pressure was created.
+                # Never leave the filesystem with less than this much room,
+                # whatever target_pct asks for.
+                #
+                # In this topology every container shares the HOST filesystem,
+                # so "fill node-3 to 95%" fills the developer's disk to 95%.
+                # At that point docker, the build cache and the containers are
+                # all fighting over the remainder and an unrelated crash is a
+                # plausible outcome — the scenario wants disk PRESSURE, not a
+                # wedged machine. The floor bounds the blast radius; if the
+                # disk is already below it the fill becomes a no-op and the
+                # scenario reports what it could not do rather than pushing the
+                # host over the edge.
+                floor_mb = int(params.get("min_free_mb", 12288))  # 12 GiB
                 fill_cmd = (
-                    f"df -m {path} | awk 'NR==2{{total=$2; used=$3; free=$4; "
-                    f"target=int(total*{target_pct}/100); fill=target-used; "
-                    f"if(fill>0) {{system(\"dd if=/dev/zero of={path}/.chaos-fill bs=1M count=\"fill\" status=none\")}} }}'"
+                    f"set -e; "
+                    f"read -r AVAIL TARGET < <(df -m {path} | awk 'NR==2{{print $4, int($2*{target_pct}/100)-$3}}'); "
+                    f"FILL=$TARGET; "
+                    f"MAX=$(( AVAIL - {floor_mb} )); "
+                    f"if [ \"$MAX\" -lt 0 ]; then MAX=0; fi; "
+                    f"if [ \"$FILL\" -gt \"$MAX\" ]; then FILL=$MAX; fi; "
+                    f"if [ \"$FILL\" -le 0 ]; then "
+                    f"echo \"fill skipped: only ${{AVAIL}}MiB free, floor is {floor_mb}MiB\" >&2; exit 0; fi; "
+                    f"fallocate -l \"${{FILL}}M\" {path}/.chaos-fill 2>/dev/null "
+                    f"|| dd if=/dev/zero of={path}/.chaos-fill bs=1M count=\"$FILL\" status=none"
                 )
                 proc = subprocess.run(
                     ["docker", "exec", container, "bash", "-c", fill_cmd],
-                    capture_output=True, text=True, timeout=60)
+                    capture_output=True, text=True, timeout=120)
                 ok = proc.returncode == 0
                 result = {"action": action, "container": container, "path": path,
                           "target_pct": target_pct, "exit_code": proc.returncode,
@@ -741,9 +846,17 @@ class ScenarioExecutor:
                     cmds.append("iptables -I OUTPUT -j DROP")
                 if direction in ("in", "both"):
                     cmds.append("iptables -I INPUT -j DROP")
-                # Always allow loopback and etcd health checks from localhost
-                cmds.insert(0, "iptables -I OUTPUT -o lo -j ACCEPT")
-                cmds.insert(0, "iptables -I INPUT -i lo -j ACCEPT")
+                # Allow loopback so the node keeps working internally while it
+                # is cut off from its peers — a network partition, not a dead
+                # node.
+                #
+                # These MUST run last. `-I` inserts at the TOP of the chain, so
+                # whichever rule is added last wins. Adding the loopback ACCEPTs
+                # first (the previous order) put the DROP above them, which
+                # dropped loopback as well and broke the node's own local
+                # traffic — a harsher fault than the scenario describes.
+                cmds.append("iptables -I OUTPUT -o lo -j ACCEPT")
+                cmds.append("iptables -I INPUT -i lo -j ACCEPT")
                 cmd = " && ".join(cmds)
                 proc = subprocess.run(
                     ["docker", "exec", "--privileged", container, "bash", "-c", cmd],
@@ -792,21 +905,49 @@ class ScenarioExecutor:
                 # "open .../service.key: permission denied" long after the
                 # scenario had "restored" the cert, which silently took the node
                 # out of the etcd quorum for all later suites.
+                # The cert MUST come out genuinely expired — that is the whole
+                # fault being injected.
+                #
+                # The previous implementation wrote a `-days 1` cert and then
+                # tried to overwrite it with `-days 0`, suffixed `|| true`.
+                # OpenSSL 3.0 rejects that outright ("req: Non-positive number
+                # \"0\" for option -days"), so the failure was swallowed and the
+                # VALID one-day cert stayed in place. The scenario then asserted
+                # `expired: true` against a cert with ~24h left and failed on its
+                # own fixture — meaning cert-expiry repair was never actually
+                # exercised, on any run, while the suite reported a real failure.
+                #
+                # `-not_before`/`-not_after` would be the direct fix but only
+                # exist from OpenSSL 3.5; the nodes ship 3.0.13. `openssl ca`
+                # has honoured explicit -startdate/-enddate for far longer, so
+                # sign through a throwaway CA with both dates in the past. No
+                # `|| true` anywhere: if injection cannot happen, the step must
+                # fail loudly rather than hand the assertions a healthy cert.
                 gen_cmd = (
-                    f"cp -p {cert_path} {cert_path}.chaos-backup && "
-                    f"cp -p {key_path} {key_path}.chaos-backup && "
-                    f"openssl req -x509 -newkey rsa:2048 -keyout {key_path} "
-                    f"-out {cert_path} -days 1 -nodes "
-                    f"-subj '/CN=chaos-expired' "
-                    f"-set_serial 1 "
-                    f"2>/dev/null && "
-                    # Backdate the cert using faketime if available, otherwise use subjectAltName trickery.
-                    # simpler: just write a cert valid from long ago to yesterday.
-                    f"openssl req -x509 -newkey rsa:2048 -keyout {key_path} "
-                    f"-out {cert_path} -nodes "
-                    f"-subj '/CN=chaos-expired' "
-                    f"-days 0 "  # 0-day validity = already expired
-                    f"2>/dev/null || true"
+                    f"set -e; "
+                    f"cp -p {cert_path} {cert_path}.chaos-backup; "
+                    f"cp -p {key_path} {key_path}.chaos-backup; "
+                    f"T=$(mktemp -d); "
+                    f"openssl req -x509 -newkey rsa:2048 -keyout $T/ca.key -out $T/ca.crt "
+                    f"-nodes -subj '/CN=chaos-ca' -days 3650 2>/dev/null; "
+                    f"openssl req -newkey rsa:2048 -keyout $T/svc.key -out $T/svc.csr "
+                    f"-nodes -subj '/CN=chaos-expired' 2>/dev/null; "
+                    f"mkdir -p $T/ca/newcerts; : > $T/ca/index.txt; echo 01 > $T/ca/serial; "
+                    f"printf '%s\\n' "
+                    f"'[ca]' 'default_ca = d' '[d]' \"dir = $T/ca\" "
+                    f"'database = $dir/index.txt' 'serial = $dir/serial' "
+                    f"'new_certs_dir = $dir/newcerts' 'default_md = sha256' "
+                    f"'policy = pol' 'email_in_dn = no' 'rand_serial = no' "
+                    f"'unique_subject = no' '[pol]' 'commonName = supplied' > $T/ca.cnf; "
+                    f"openssl ca -batch -config $T/ca.cnf -cert $T/ca.crt -keyfile $T/ca.key "
+                    f"-in $T/svc.csr -out $T/svc.crt -notext "
+                    f"-startdate 20250101000000Z -enddate 20250102000000Z 2>/dev/null; "
+                    # Fail closed: refuse to install a cert that is not expired.
+                    f"openssl x509 -in $T/svc.crt -checkend 0 >/dev/null 2>&1 && "
+                    f"{{ echo 'chaos: generated cert is not expired' >&2; exit 1; }}; "
+                    # Install over the real cert/key, preserving ownership+mode.
+                    f"cat $T/svc.crt > {cert_path}; cat $T/svc.key > {key_path}; "
+                    f"rm -rf $T"
                 )
                 proc = subprocess.run(
                     ["docker", "exec", container, "bash", "-c", gen_cmd],
@@ -865,9 +1006,143 @@ class ScenarioExecutor:
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
+            elif action in ("chaos.inflate_etcd", "chaos.deflate_etcd"):
+                # Grow etcd's backend past the node-agent maintenance floor so a
+                # defrag has something real to reclaim — then hand it back.
+                #
+                # Writing then DELETING the keys is the point: deleted revisions
+                # become free pages once compaction runs, which is exactly the
+                # state the 2026-08-16 outage lived in — a large file that is
+                # mostly reclaimable. Compaction alone never shrinks the file;
+                # only a defrag returns the space to the filesystem.
+                #
+                # Two mechanics worth keeping: etcd binds listen-client-urls to
+                # the node's interface address and NOT loopback, so the endpoint
+                # is read from etcd's own config rather than assumed; and a
+                # 350 KB value cannot be passed in argv (MAX_ARG_STRLEN, "Argument
+                # list too long"), so values are fed from a file on stdin.
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                mb = int(params.get("mb", 300))
+                inflating = action == "chaos.inflate_etcd"
+
+                preamble = (
+                    'set -e\n'
+                    'EP=$(sed -n "s|^advertise-client-urls:[[:space:]]*\\"\\{0,1\\}\\([^\\"]*\\)\\"\\{0,1\\}$|\\1|p" '
+                    '/var/lib/globular/config/etcd.yaml | head -1)\n'
+                    'PKI=/var/lib/globular/pki\n'
+                    'E="/usr/lib/globular/bin/etcdctl --endpoints=$EP --cacert=$PKI/ca.crt '
+                    '--cert=$PKI/issued/services/service.crt --key=$PKI/issued/services/service.key"\n'
+                )
+                if inflating:
+                    body = (
+                        'head -c 262144 /dev/urandom | base64 -w0 > /tmp/.inflate_blob\n'
+                        f'N=$(( {mb} * 4 ))\n'
+                        'for i in $(seq 1 $N); do $E put "/globular/test/inflate/$i" < /tmp/.inflate_blob >/dev/null; done\n'
+                        'rm -f /tmp/.inflate_blob\n'
+                        '$E del --prefix /globular/test/inflate/ >/dev/null\n'
+                        'REV=$($E endpoint status -w fields | sed -n \'s/^"Revision" : //p\' | head -1)\n'
+                        '$E compact "$REV" --physical >/dev/null 2>&1 || true\n'
+                        '$E endpoint status -w fields | sed -n \'s/^"DBSize" : /DBSIZE=/p\' | head -1\n'
+                    )
+                else:
+                    body = (
+                        '$E del --prefix /globular/test/inflate/ >/dev/null 2>&1 || true\n'
+                        'REV=$($E endpoint status -w fields | sed -n \'s/^"Revision" : //p\' | head -1)\n'
+                        '$E compact "$REV" --physical >/dev/null 2>&1 || true\n'
+                        'for ip in 11 12 13 14 15; do '
+                        '$E --endpoints=https://10.10.0.$ip:2379 defrag --command-timeout=300s >/dev/null 2>&1 || true; done\n'
+                        '$E alarm disarm >/dev/null 2>&1 || true\n'
+                        '$E endpoint status -w fields | sed -n \'s/^"DBSize" : /DBSIZE=/p\' | head -1\n'
+                    )
+
+                proc = subprocess.run(
+                    ["docker", "exec", container, "bash", "-c", preamble + body],
+                    capture_output=True, text=True, timeout=1800)
+                out = (proc.stdout or "").strip()
+                ok = proc.returncode == 0
+                if ok:
+                    if inflating:
+                        self._mutation_open("etcd_inflated", node=node)
+                    else:
+                        self._mutation_close("etcd_inflated", node=node)
+                result = {"action": action, "container": container, "mb": mb if inflating else None,
+                          "exit_code": proc.returncode, "db_size": out[-80:],
+                          "stderr": (proc.stderr or "").strip()[-300:]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "ops.set_desired":
+                # Drive desired state through the CLI, the way an operator does.
+                #
+                # `expect` makes this an action that can FAIL on the wrong
+                # outcome: expect=refused passes only when the control plane
+                # rejects the request. That matters because the interesting
+                # safety properties here are refusals — pointing desired state
+                # at something unresolvable, or regressing without the audited
+                # flag — and a refusal that silently succeeded would be the
+                # worst possible outcome to record as a pass.
+                name = params.get("name", "")
+                version = params.get("version", "")
+                expect = params.get("expect", "accepted")
+                node_c = f"globular-{params.get('node', 'node-1')}"
+                if not name or not version:
+                    return self._chaos_fail(section, item_id, action, params, "name and version params required")
+                cmd = f"globular services desired set {name} {version}"
+                if params.get("allow_regression"):
+                    cmd += " --allow-regression"
+                proc = subprocess.run(
+                    ["docker", "exec", node_c, "bash", "-c", cmd + " 2>&1"],
+                    capture_output=True, text=True, timeout=180)
+                out = (proc.stdout or "").strip()
+                accepted = proc.returncode == 0
+                ok = accepted if expect == "accepted" else (not accepted)
+                result = {"action": action, "service": name, "version": version,
+                          "expect": expect, "accepted": accepted,
+                          "exit_code": proc.returncode, "output": out[-400:]}
+                if not ok:
+                    print(f"    {item_id}: expected {expect}, got "
+                          f"{'accepted' if accepted else 'refused'} — {out[-200:]}")
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.wipe_node_state":
+                # Wipe a node back to pre-install so its next start is a genuine
+                # FIRST join, not a re-join.
+                #
+                # The distinction is not academic: the bootstrap unit short-
+                # circuits on a "already bootstrapped" marker in the state
+                # volume, so a node whose volume survives never exercises the
+                # join path at all. On 2026-08-17 that is exactly how four nodes
+                # appeared to "join" while running no services.
+                if not container:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                stop = subprocess.run(["docker", "stop", "-t", "15", container],
+                                      capture_output=True, text=True, timeout=40)
+                wipe = subprocess.run(
+                    ["docker", "run", "--rm",
+                     "-v", f"globular-quickstart_{node.replace('-', '')}-state:/state",
+                     "alpine:3", "sh", "-c", "rm -rf /state/* /state/.[!.]* 2>/dev/null; ls -A /state | wc -l"],
+                    capture_output=True, text=True, timeout=180)
+                remaining = (wipe.stdout or "").strip().splitlines()[-1:] or ["?"]
+                ok = stop.returncode == 0 and wipe.returncode == 0
+                if ok:
+                    self._mutation_open("node_wiped", node=node)
+                result = {"action": action, "container": container,
+                          "stop_exit": stop.returncode, "wipe_exit": wipe.returncode,
+                          "entries_left_in_state": remaining[0],
+                          "stderr": (wipe.stderr or "").strip()[-200:]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
             else:
-                print(f"    SKIP: {item_id} ({action} — unknown chaos action)")
-                return True  # unknown chaos = skip, not fail
+                # An unknown action used to return True — so a typo in an action
+                # name silently skipped the mutation and the scenario still
+                # reported PASS, asserting a steady state it never disturbed.
+                # A scenario that cannot perform its own setup has not passed.
+                return self._chaos_fail(section, item_id, action, params,
+                                        f"unknown action '{action}' — check the name against "
+                                        "the dispatch list in globular-scenario")
 
         except subprocess.TimeoutExpired:
             return self._chaos_fail(section, item_id, action, params, "timed out after 30s")
@@ -1073,8 +1348,9 @@ class ScenarioExecutor:
             if all(entry.get(k) == v for k, v in want.items()):
                 self.outstanding.remove(entry)
 
-    def _sh(self, argv: list, timeout: int = 60):
-        return subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+    def _sh(self, argv: list, timeout: int = 60, cwd: str = None):
+        return subprocess.run(argv, capture_output=True, text=True,
+                              timeout=timeout, cwd=cwd)
 
     def _enforce_restoration(self) -> bool:
         """
@@ -1138,7 +1414,13 @@ class ScenarioExecutor:
                     # insufficient evidence (node-3's etcd was active and
                     # non-functional), so this also waits for the unit to be
                     # active rather than merely present.
-                    unit = f"globular-{entry.get('service','')}"
+                    # Use the unit the chaos action actually stopped. Rebuilding
+                    # it as globular-<service> is wrong for units that do not
+                    # carry that prefix — ScyllaDB ships scylla-server.service —
+                    # and the restoration then polled a unit that does not
+                    # exist, reported "did not self-recover", and failed the
+                    # scenario with residue while the real service was fine.
+                    unit = entry.get("unit") or f"globular-{entry.get('service','')}"
                     ok = False
                     for _ in range(12):  # ~60s
                         st = self._sh(["docker", "exec", container, "systemctl",

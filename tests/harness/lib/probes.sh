@@ -1880,3 +1880,39 @@ except Exception:
 
     echo "{\"nodes\":${total},\"converged\":${converged},\"lagging\":$(( total - converged )),\"versions\":\"${versions}\",\"unique\":${unique:-0}}"
 }
+
+# probe: etcd.defrag_evidence
+# Returns: {"nodes_seen":N,"loops_started":N,"defrags_run":N,"defrags_complete":N,
+#           "total_freed_bytes":N,"last":"..."}
+#
+# Proves the node-agent maintenance loop DID something, not merely that it
+# started. probe_etcd_backend_growth reports defrag_scheduled=true as soon as
+# the loop announces itself at boot — which is exactly the "a check that cannot
+# fail is indistinguishable from one that passes" shape this suite exists to
+# catch. A loop that starts, skips forever, and never reclaims a byte would
+# satisfy that probe while leaving the 2026-08-16 NOSPACE failure fully armed.
+#
+# Reads the node-agent journal on every node, because the maintenance pass is
+# round-robin: only one member is eligible per interval, so evidence appears on
+# whichever node's turn came up, not on any particular one.
+probe_etcd_defrag_evidence() {
+    local total=0 started=0 run=0 done_ct=0 freed=0 last=""
+    local c
+    for c in $(_all_node_containers); do
+        total=$(( total + 1 ))
+        local j
+        j=$(docker exec "$c" journalctl -u globular-node-agent --no-pager -o cat 2>/dev/null || true)
+        [ -z "$j" ] && continue
+        started=$(( started + $(printf '%s' "$j" | grep 'etcd.maintenance_started' | wc -l) ))
+        run=$(( run + $(printf '%s' "$j" | grep 'etcd.defrag_starting' | wc -l) ))
+        done_ct=$(( done_ct + $(printf '%s' "$j" | grep 'etcd.defrag_complete' | wc -l) ))
+        local f
+        f=$(printf '%s' "$j" | grep -oE 'freed_bytes=[0-9]+' | sed 's/freed_bytes=//' \
+              | awk '{s+=$1} END{print s+0}')
+        freed=$(( freed + ${f:-0} ))
+        local l
+        l=$(printf '%s' "$j" | grep 'etcd.defrag_complete' | tail -1 | cut -c1-160 | tr -d '"')
+        [ -n "$l" ] && last="$l"
+    done
+    echo "{\"nodes_seen\":${total},\"loops_started\":${started},\"defrags_run\":${run},\"defrags_complete\":${done_ct},\"total_freed_bytes\":${freed},\"last\":\"${last}\"}"
+}

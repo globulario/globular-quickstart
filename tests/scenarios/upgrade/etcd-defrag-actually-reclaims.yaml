@@ -1,0 +1,158 @@
+version: 1
+name: etcd-defrag-actually-reclaims
+description: |
+  The node-agent maintenance loop must actually reclaim space, not merely start.
+
+  WHY THIS EXISTS. etcd-backend-does-not-ratchet asserts defrag_scheduled=true,
+  which becomes true the moment the loop logs etcd.maintenance_started at boot.
+  On the first cluster built with the fix, that assertion passed while the
+  measured reality was:
+
+      loops_started: 6, defrags_run: 0, total_freed_bytes: 0
+
+  The backend sat at 79 MB against a 256 MB floor, so the pass had only ever
+  skipped. A loop that starts, skips forever, and reclaims nothing satisfies the
+  scheduled check exactly like a working one — the same shape as every other
+  defect in the 2026-08-16 chain: a check that cannot fail is indistinguishable
+  from one that passes.
+
+  This scenario closes that gap by making the condition real. It writes enough
+  data to push the backend past the maintenance floor, deletes it, and compacts
+  — leaving a large file that is mostly free pages, which is precisely the state
+  the outage lived in. Compaction never shrinks the file; only a defrag returns
+  the space to the filesystem. Then it waits for a maintenance turn and asserts
+  the loop did its job.
+
+  WHY THE WAIT IS LONG. The pass is round-robin over the sorted member list, so
+  exactly one member is eligible per 10-minute interval — that is the property
+  that stops a defrag from taking out quorum by pausing several members at once.
+  Any single node therefore waits up to memberCount intervals for its own turn,
+  but SOME node is eligible every interval, and all members replicate the same
+  data so every backend grows together. 13 minutes guarantees at least one turn
+  has come and gone.
+
+  Covered invariant: the fix for
+  etcd.backend_ratchets_because_nothing_defragments must be observed working,
+  not merely observed to be present.
+
+suite: upgrade
+tags:
+  - etcd
+  - defrag
+  - capacity
+  - incident-2026-08-16
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # The loop must at least be running, or the rest of this scenario is testing
+  # nothing. This is the weak check that motivated the strong one below.
+  - type: probe
+    id: maintenance_loop_is_running
+    probe: etcd.defrag_evidence
+    expect:
+      loops_started_gte: 1
+      nodes_seen_gte: 5
+
+  - type: probe
+    id: etcd_accepts_writes
+    probe: etcd.write_test
+    expect:
+      success: true
+
+baseline:
+  - type: probe
+    id: defrag_evidence_before
+    probe: etcd.defrag_evidence
+
+  - type: probe
+    id: backend_before
+    probe: etcd.backend_growth
+
+steps:
+  # Push the backend past the 256 MB floor with at least 64 MB reclaimable.
+  # Written then deleted then compacted: free pages inside a large file.
+  - type: action
+    id: inflate_backend_past_floor
+    action: chaos.inflate_etcd
+    params:
+      node: node-1
+      mb: 320
+
+  # One full interval plus margin, so at least one member's turn has arrived.
+  - type: action
+    id: wait_for_a_maintenance_turn
+    action: wait
+    params:
+      seconds: 780
+      reason: "round-robin gives one eligible member per 10-minute interval; 13 minutes guarantees a turn has come up"
+
+assertions:
+  # ── The property the whole fix exists for ─────────────────────────────────
+  # Not "a loop is scheduled" — a defrag ran, and space came back.
+  - type: probe
+    id: a_defrag_actually_ran
+    probe: etcd.defrag_evidence
+    expect:
+      defrags_run_gte: 1
+      defrags_complete_gte: 1
+
+  - type: probe
+    id: space_was_actually_reclaimed
+    probe: etcd.defrag_evidence
+    expect:
+      total_freed_bytes_gte: 1
+
+  # ── And the cluster is unharmed by having been defragmented ───────────────
+  # Defrag blocks the member it runs on. If the round-robin or the health guard
+  # were wrong, this is where losing quorum to our own maintenance would show.
+  - type: probe
+    id: etcd_still_accepts_writes
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: all_members_still_healthy
+    probe: cluster.etcd_members
+    expect:
+      healthy_gte: 5
+
+  - type: probe
+    id: cluster_still_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # Liveness must survive maintenance: a paused member must not make the
+  # control plane report healthy nodes as unreachable.
+  - type: probe
+    id: liveness_unaffected_by_maintenance
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+
+cleanup:
+  # Give the space back and disarm anything the inflation raised, so the next
+  # scenario starts from the state this one found.
+  - type: action
+    id: deflate_backend
+    action: chaos.deflate_etcd
+    params:
+      node: node-1
+
+  - type: probe
+    id: backend_returned_to_normal
+    probe: etcd.backend_growth
+    expect:
+      alarms: 0

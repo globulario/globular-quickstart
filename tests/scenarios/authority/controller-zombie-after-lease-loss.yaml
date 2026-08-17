@@ -92,13 +92,15 @@ baseline:
     probe: cluster.desired_state
 
 steps:
-  # node-1 holds the lease in this topology. Freezing it rather than killing it
-  # is the entire experiment.
+  # node: leader is resolved at action time from the cluster's own lease record.
+  # A fixed node name silently targets the wrong process once leadership moves —
+  # this scenario froze node-1 while node-3 held the lease, and so exercised
+  # nothing while appearing correct.
   - type: action
     id: freeze_the_leader
     action: chaos.pause_service
     params:
-      node: node-1
+      node: leader
       service: cluster-controller
 
   # Long enough for the lease to expire and a new election to complete. A short
@@ -118,17 +120,20 @@ steps:
     id: new_leader_mutates_desired_state
     action: ops.set_desired
     params:
+      # dns, not blog: blog is refused with a kind error its own resolver
+      # contradicts (desired_state.refusal_message_misattributes_cause), which
+      # would fail this step for a reason unrelated to fencing.
       node: node-2
-      name: blog
+      name: dns
       version: 1.2.312
       expect: accepted
 
+  # Resumes whichever node was frozen: by now the lease has moved, so "leader"
+  # would resolve to the NEW holder. The frozen node is recorded in the evidence
+  # for the step above, and cleanup resumes every candidate unconditionally.
   - type: action
     id: thaw_the_zombie
-    action: chaos.resume_service
-    params:
-      node: node-1
-      service: cluster-controller
+    action: chaos.resume_all_controllers
 
   # Give the resurrected instance real time to do damage if it can. A short
   # wait here would let the scenario pass simply by not looking.
@@ -202,11 +207,8 @@ assertions:
       stale_nodes: 0
 
 cleanup:
-  # Idempotent: SIGCONT on a running process is harmless, and this guarantees no
-  # frozen controller is left behind if the scenario aborted mid-way.
+  # SIGCONT on a running process is harmless, so resuming every controller is the
+  # safe way to guarantee nothing is left frozen if the scenario aborted.
   - type: action
-    id: ensure_controller_resumed
-    action: chaos.resume_service
-    params:
-      node: node-1
-      service: cluster-controller
+    id: ensure_no_controller_left_frozen
+    action: chaos.resume_all_controllers

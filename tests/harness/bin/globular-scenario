@@ -31,6 +31,15 @@ except ImportError:
     print("ERROR: pyyaml required. Run: pip3 install pyyaml", file=sys.stderr)
     sys.exit(1)
 
+# Resolves the globular CLI inside a container. It is installed on every
+# node, but only on PATH on the founding node.
+GLOBULAR_CLI_RESOLVER = (
+    'G=$(command -v globular 2>/dev/null || '
+    'ls /usr/local/bin/globular 2>/dev/null || '
+    'ls /usr/lib/globular/bin/globular 2>/dev/null); '
+    '[ -n "$G" ] || { echo "globular CLI not found on this node" >&2; exit 127; }; '
+)
+
 HARNESS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIB_DIR = os.path.join(HARNESS_DIR, "lib")
 PROBES_SH = os.path.join(LIB_DIR, "probes.sh")
@@ -605,6 +614,21 @@ class ScenarioExecutor:
 
         node = params.get("node", "")
         service = params.get("service", "")
+
+        # node: leader resolves the CURRENT controller lease holder at action
+        # time. Hardcoding a node name silently targets the wrong process the
+        # moment leadership moves — and it does move: a scenario written when
+        # node-1 led was freezing a non-leader once node-3 held the lease, so it
+        # was exercising nothing while looking correct.
+        if node == "leader":
+            resolved = self._resolve_leader_node()
+            if not resolved:
+                return self._chaos_fail(section, item_id, action, params,
+                                        "could not resolve the current controller leader")
+            print(f"    [resolve] leader = {resolved}")
+            node = resolved
+            params = dict(params, node=resolved)
+
         container = f"globular-{node}" if node else ""
 
         if self.verbose:
@@ -1113,7 +1137,14 @@ class ScenarioExecutor:
                 node_c = f"globular-{params.get('node', 'node-1')}"
                 if not name or not version:
                     return self._chaos_fail(section, item_id, action, params, "name and version params required")
-                cmd = f"globular services desired set {name} {version}"
+                # The CLI is installed on every node but only on PATH on the
+                # founding one (/usr/local/bin there, /usr/lib/globular/bin
+                # elsewhere). Assuming PATH made this action fail with exit 127
+                # on nodes 2-5, and the scenario read that as the cluster
+                # refusing the request — a harness fault reported as a platform
+                # behaviour.
+                cmd = (GLOBULAR_CLI_RESOLVER +
+                       f'"$G" services desired set {name} {version}')
                 if params.get("allow_regression"):
                     cmd += " --allow-regression"
                 proc = subprocess.run(
@@ -1138,12 +1169,51 @@ class ScenarioExecutor:
                     return self._chaos_fail(
                         section, item_id, action, params,
                         f"unknown expect value {expect!r} (want accepted|refused|any)")
+                # Record the HEAD, filtered of log noise. Recording the tail
+                # captured only the CLI's usage block whenever it errored, which
+                # is exactly when the message matters — the real error scrolls off
+                # the top and the evidence shows a help screen.
+                signal = [l for l in out.splitlines()
+                          if l.strip() and " INFO " not in l
+                          and not l.startswith("2026") and "Auto-discovered" not in l]
                 result = {"action": action, "service": name, "version": version,
                           "expect": expect, "accepted": accepted,
-                          "exit_code": proc.returncode, "output": out[-400:]}
+                          "exit_code": proc.returncode,
+                          "error": " | ".join(signal[:3])[:400],
+                          "output": out[-200:]}
                 if not ok:
                     print(f"    {item_id}: expected {expect}, got "
                           f"{'accepted' if accepted else 'refused'} — {out[-200:]}")
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
+            elif action == "chaos.resume_all_controllers":
+                # SIGCONT every controller, whichever one was frozen.
+                #
+                # A scenario that freezes "the leader" cannot resume "the leader"
+                # later: by then the lease has moved, so that name resolves to a
+                # different node and the frozen one stays frozen. SIGCONT on a
+                # running process is a no-op, so resuming all of them is both
+                # correct and idempotent — which is what a cleanup step needs to
+                # be, since it must work after an abort at any point.
+                names = subprocess.run(
+                    ["docker", "ps", "--format", "{{.Names}}"],
+                    capture_output=True, text=True, timeout=60)
+                nodes = sorted(n for n in (names.stdout or "").split()
+                               if n.startswith("globular-node-"))
+                resumed, failed = [], []
+                for c in nodes:
+                    r = subprocess.run(
+                        ["docker", "exec", c, "systemctl", "kill",
+                         "--signal=SIGCONT", "--kill-whom=all",
+                         "globular-cluster-controller.service"],
+                        capture_output=True, text=True, timeout=60)
+                    (resumed if r.returncode == 0 else failed).append(c)
+                # A node without a controller unit is not a failure here.
+                ok = len(resumed) > 0
+                if ok:
+                    self._mutation_close("service_paused")
+                result = {"action": action, "resumed": resumed, "not_applicable": failed}
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
@@ -1346,7 +1416,8 @@ class ScenarioExecutor:
                                             f"could not resolve a node_id for {target}")
                 proc = subprocess.run(
                     ["docker", "exec", node_c, "bash", "-c",
-                     f"globular cluster nodes remove {node_id} --force --drain=false 2>&1"],
+                     GLOBULAR_CLI_RESOLVER +
+                     f'"$G" cluster nodes remove {node_id} --force --drain=false 2>&1'],
                     capture_output=True, text=True, timeout=300)
                 out = (proc.stdout or "").strip()
                 ok = proc.returncode == 0
@@ -1793,6 +1864,41 @@ class ScenarioExecutor:
         entry = {"id": item_id, "action": action, "reason": why}
         self.unsupported.append(entry)
         print(f"    UNSUPPORTED: {item_id} ({action} — {why})")
+
+    def _resolve_leader_node(self) -> str:
+        """Return the node short name (e.g. "node-3") holding the controller lease.
+
+        Reads /globular/clustercontroller/leader/addr and maps the endpoint back
+        to a container by IP, so the answer is the cluster's own view of who
+        leads rather than an assumption baked into a scenario.
+        """
+        etcdctl = ("/usr/lib/globular/bin/etcdctl "
+                   "--endpoints=https://10.10.0.11:2379 "
+                   "--cacert=/var/lib/globular/pki/ca.crt "
+                   "--cert=/var/lib/globular/pki/issued/services/service.crt "
+                   "--key=/var/lib/globular/pki/issued/services/service.key")
+        try:
+            r = subprocess.run(
+                ["docker", "exec", "globular-node-1", "bash", "-c",
+                 f"{etcdctl} get /globular/clustercontroller/leader/addr --print-value-only"],
+                capture_output=True, text=True, timeout=60)
+            addr = (r.stdout or "").strip()
+            if not addr:
+                return ""
+            ip = addr.split(":")[0]
+            names = subprocess.run(["docker", "ps", "--format", "{{.Names}}"],
+                                   capture_output=True, text=True, timeout=60)
+            for c in sorted(n for n in (names.stdout or "").split()
+                            if n.startswith("globular-node-")):
+                got = subprocess.run(
+                    ["docker", "inspect", c, "--format",
+                     "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}"],
+                    capture_output=True, text=True, timeout=60)
+                if (got.stdout or "").strip() == ip:
+                    return c[len("globular-"):]
+        except Exception:
+            return ""
+        return ""
 
     def _chaos_fail(self, section, item_id, action, params, reason) -> bool:
         result = {"action": action, "error": reason}

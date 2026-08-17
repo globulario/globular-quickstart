@@ -1652,10 +1652,21 @@ except Exception:
         compaction=true
     fi
 
-    # Anything that will actually return space: a systemd timer, or a cron entry.
+    # Anything that will actually return space. Three mechanisms count, and the
+    # probe must know about all of them or it reports "no defrag" on a cluster
+    # that defragments perfectly well — a false alarm trains people to ignore
+    # the check, which is as bad as the check not existing:
+    #
+    #   1. node-agent's in-process maintenance loop (the platform mechanism —
+    #      see golang/node_agent/node_agent_server/etcd_maintenance.go). It
+    #      announces itself once at startup with etcd.maintenance_started.
+    #   2. a systemd timer, for operators who schedule it externally.
+    #   3. a cron entry, same.
     local defrag=false
     if docker exec "$ETCD_CONTAINER" bash -c \
-            'systemctl list-timers --all 2>/dev/null | grep -qi defrag ||
+            'journalctl -u globular-node-agent --no-pager 2>/dev/null |
+                 grep -q "etcd.maintenance_started" ||
+             systemctl list-timers --all 2>/dev/null | grep -qi defrag ||
              ls /etc/cron.d/ 2>/dev/null | grep -qi defrag ||
              systemctl list-unit-files 2>/dev/null | grep -qi "etcd-defrag"' 2>/dev/null; then
         defrag=true

@@ -52,7 +52,7 @@ preconditions:
     id: nodes_present
     probe: cluster.nodes
     expect:
-      total_gte: 5
+      count_gte: 5
 
 baseline:
   - type: probe
@@ -94,11 +94,24 @@ assertions:
       clean: true
 
   # ── Layer 4: installed is not the same as running ─────────────────────────
+  # Two separate facts. The registry must actually list the services (a matrix
+  # that lost its entries would make every other assertion vacuous), and the
+  # doctor — which is the only component allowed to render a cross-layer health
+  # verdict (bypass_doctor_for_cross_layer_health_finding) — must report no
+  # errors. Deriving "everything is running" here from raw layer reads would be
+  # exactly the forbidden shortcut.
   - type: probe
-    id: all_services_running
+    id: service_registry_is_populated
     probe: cluster.service_matrix
     expect:
-      unhealthy: 0
+      count_gte: 20
+
+  - type: probe
+    id: doctor_reports_no_errors
+    probe: doctor.report_severity
+    expect:
+      error: 0
+      reachable: true
 
   # ── Deterministic identity ────────────────────────────────────────────────
   # An ambiguous resolution means convergence cannot be decided at all, so it

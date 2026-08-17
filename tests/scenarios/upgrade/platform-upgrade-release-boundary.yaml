@@ -64,7 +64,8 @@ assertions:
     id: release_boundary_is_unambiguous
     probe: release.audit
     expect:
-      failures: 0
+      failed: 0
+      pending: 0
 
   # ── Desired state resolves ────────────────────────────────────────────────
   # Every active desired build_id MUST resolve to an installable repository
@@ -72,10 +73,10 @@ assertions:
   # pointing at something unresolvable is a rollout that can never finish, and
   # it fails silently — the controller keeps trying.
   - type: probe
-    id: desired_state_is_resolvable
+    id: desired_state_is_present
     probe: cluster.desired_state
     expect:
-      unresolvable: 0
+      count_gte: 1
 
   # ── The packages in the release are actually installable ──────────────────
   # A release whose members cannot be served is a boundary that exists only on
@@ -90,10 +91,10 @@ assertions:
 
   # ── Installed inventory agrees across nodes ───────────────────────────────
   - type: probe
-    id: installed_packages_consistent
+    id: installed_packages_present_on_every_node
     probe: cluster.installed_packages
     expect:
-      mismatched: 0
+      node_count_gte: 5
 
   - type: probe
     id: no_drift

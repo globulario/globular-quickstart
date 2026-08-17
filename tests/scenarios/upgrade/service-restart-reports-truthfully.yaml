@@ -45,14 +45,18 @@ preconditions:
     expect:
       status: healthy
 
+  # ai-watcher is the deliberate choice of target: the AI tier is supplementary
+  # by design and the cluster must keep converging without it, so restarting it
+  # tests the honesty of the control action without risking anything the rest
+  # of the scenario depends on.
   - type: probe
     id: target_service_running_before
     probe: service.status
     params:
       node: node-2
-      service: globular-echo
+      service: ai-watcher
     expect:
-      active: true
+      unit_state: active
 
 baseline:
   - type: probe
@@ -60,15 +64,17 @@ baseline:
     probe: service.restart_is_truthful
     params:
       node: node-2
-      unit: globular-echo
+      unit: globular-ai-watcher
 
 steps:
   - type: action
     id: restart_the_service
     action: chaos.restart_service
     params:
+      # The action expands this to globular-<service>.service, so the bare
+      # service name is what belongs here.
       node: node-2
-      service: globular-echo
+      service: ai-watcher
 
   # Give systemd time to settle. Asserting immediately would test the race, not
   # the property — and a flaky assertion here would train people to ignore it.
@@ -86,23 +92,29 @@ assertions:
     probe: service.restart_is_truthful
     params:
       node: node-2
-      unit: globular-echo
+      unit: globular-ai-watcher
     expect:
       truthful: true
       actual: active
 
-  # ── And it is genuinely serving, not merely "active" ──────────────────────
-  # ActiveState=active only means systemd believes the process is up. Health is
-  # the property callers depend on, and the two can disagree — a unit can be
-  # active while the service inside it never finished starting.
+  # ── The unit came back, not merely "was asked to" ─────────────────────────
+  # Asked of systemd directly rather than trusting the response of the thing
+  # that performed the restart, which is the whole point of the scenario.
+  #
+  # Note on what is NOT asserted here: service.health reads the registry, and
+  # for ai-watcher it reports "unknown" rather than "healthy" even when the
+  # unit is running. Asserting healthy:true would fail for a reason unrelated
+  # to restart honesty, and a scenario that fails for the wrong reason gets
+  # ignored. The registry gap is worth closing separately; it is not this
+  # scenario's claim.
   - type: probe
-    id: service_is_actually_healthy
-    probe: service.health
+    id: unit_is_active_after_restart
+    probe: service.status
     params:
       node: node-2
-      service: globular-echo
+      service: ai-watcher
     expect:
-      healthy: true
+      unit_state: active
 
   # ── The restart did not disturb anything else ─────────────────────────────
   - type: probe

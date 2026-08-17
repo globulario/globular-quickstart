@@ -1106,6 +1106,54 @@ class ScenarioExecutor:
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
+            elif action == "ops.remove_node":
+                # Remove a node's identity from the CONTROLLER, not just its
+                # local state.
+                #
+                # Wiping /var/lib/globular makes a node forget the cluster; it
+                # does not make the cluster forget the node. The controller
+                # still holds its record, so the next join is correctly refused:
+                #
+                #     join blocked: controller denied — node identity conflict:
+                #     hostname already present
+                #
+                # A genuine FIRST join therefore needs both halves. This is the
+                # cluster-side half, and it is the step clean-node.sh expects an
+                # operator to have performed.
+                node_c = f"globular-{params.get('runner', 'node-1')}"
+                target = params.get("node", "")
+                if not target:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                # Resolve the node UUID from the target container, since the
+                # controller keys nodes by id and not by container name.
+                idp = subprocess.run(
+                    ["docker", "exec", f"globular-{target}", "bash", "-c",
+                     "cat /var/lib/globular/node-agent/state.json 2>/dev/null || "
+                     "cat /var/lib/globular/nodeagent/state.json 2>/dev/null"],
+                    capture_output=True, text=True, timeout=60)
+                node_id = ""
+                try:
+                    node_id = (json.loads(idp.stdout or "{}") or {}).get("node_id", "")
+                except Exception:
+                    node_id = ""
+                if not node_id:
+                    node_id = params.get("node_id", "")
+                if not node_id:
+                    return self._chaos_fail(section, item_id, action, params,
+                                            f"could not resolve a node_id for {target}")
+                proc = subprocess.run(
+                    ["docker", "exec", node_c, "bash", "-c",
+                     f"globular cluster nodes remove {node_id} --force --drain=false 2>&1"],
+                    capture_output=True, text=True, timeout=300)
+                out = (proc.stdout or "").strip()
+                ok = proc.returncode == 0
+                if ok:
+                    self._mutation_open("node_removed", node=target)
+                result = {"action": action, "node": target, "node_id": node_id,
+                          "exit_code": proc.returncode, "output": out[-400:]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
             elif action == "chaos.wipe_node_state":
                 # Wipe a node back to pre-install so its next start is a genuine
                 # FIRST join, not a re-join.

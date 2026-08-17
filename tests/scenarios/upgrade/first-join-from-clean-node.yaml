@@ -89,6 +89,25 @@ steps:
     params:
       node: node-5
 
+  # Remove the node from the CONTROLLER as well.
+  #
+  # Wiping /var/lib/globular makes the node forget the cluster; it does not make
+  # the cluster forget the node. Skipping this produced exactly the refusal the
+  # guard is there for:
+  #
+  #     join blocked: controller denied — node identity conflict:
+  #     hostname already present
+  #
+  # which is correct behaviour and meant the scenario was testing a conflicted
+  # re-join rather than a first join. Both halves are required, and this is the
+  # half an operator performs.
+  - type: action
+    id: remove_node_from_cluster
+    action: ops.remove_node
+    params:
+      node: node-5
+      runner: node-1
+
   - type: action
     id: wipe_all_node_state
     action: chaos.wipe_node_state

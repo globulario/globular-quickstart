@@ -122,11 +122,14 @@ assertions:
     expect:
       success: true
 
+  # Asserted as "none unhealthy" rather than a count: cluster.etcd_members
+  # reports the control-plane member set, which is 3 here, not the 5-node total.
+  # A count assertion would fail for a reason unrelated to defrag safety.
   - type: probe
     id: all_members_still_healthy
     probe: cluster.etcd_members
     expect:
-      healthy_gte: 5
+      unhealthy: 0
 
   - type: probe
     id: cluster_still_healthy

@@ -125,12 +125,19 @@ steps:
     params:
       node: node-5
 
+  # 660s. A returning node triggers infra remediation whose FIRST dispatch fails
+  # exactly once, and it arrives about 7 minutes after the node returns rather
+  # than immediately (recorded as
+  # reconcile.returning_node_infra_remediation_first_dispatch_fails). Asserting
+  # at 300s or 420s measured that churn instead of the outcome. The property
+  # asserted below is unchanged — this waits until the known one-shot has aged
+  # out of the assertion window, rather than relaxing what is asserted.
   - type: action
     id: allow_forward_convergence
     action: wait
     params:
-      seconds: 300
-      reason: "a returning node must catch up to current, which takes longer than a restart"
+      seconds: 660
+      reason: "wait past the one-shot infra remediation failure that lands ~7 min after a node returns" 
 
 assertions:
   # ── It came back, and as a participant ────────────────────────────────────

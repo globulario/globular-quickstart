@@ -2006,9 +2006,15 @@ probe_cluster_node_identity_collisions() {
     fi
 
     # Node ids as they appear in the per-node key space.
+    # Only UUID-shaped segments are node ids. The key space under
+    # /globular/nodes/ also holds non-node entries — bootstrap_marker among them —
+    # and counting those inflated the id total, which read as a phantom node and
+    # led to a false "orphaned identity" conclusion on a perfectly clean cluster.
     local ids
     ids=$(_etcd_keys /globular/nodes/ 2>/dev/null \
-            | awk -F/ 'NF>=4 && $4 != "" {print $4}' | sort -u | grep . || true)
+            | awk -F/ 'NF>=4 && $4 != "" {print $4}' \
+            | grep -E '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' \
+            | sort -u || true)
     local total distinct
     total=$(printf '%s\n' "$ids" | grep . | wc -l)
     distinct=$(printf '%s\n' "$ids" | grep . | sort -u | wc -l)

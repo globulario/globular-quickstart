@@ -1290,6 +1290,51 @@ class ScenarioExecutor:
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
+            elif action in ("chaos.snapshot_node_state", "chaos.restore_node_state"):
+                # Make a destructive identity test REVERSIBLE.
+                #
+                # node-clone-identity-collision used to remove its victim from the
+                # cluster and wipe it, which left the node needing a full fresh
+                # join — 10+ minutes — and the next scenario in the suite inherited
+                # a four-node cluster. Snapshotting the victim's state and putting
+                # it back afterwards restores the node exactly as it was, so its
+                # identity and cluster record still agree and the return is a fast
+                # re-join rather than a fresh one.
+                #
+                # A scenario that cannot undo itself is a scenario that can only be
+                # run once.
+                if not node:
+                    return self._chaos_fail(section, item_id, action, params, "node param required")
+                vol = f"globular-quickstart_{node.replace('-', '')}-state"
+                snap = f"globular-quickstart_{node.replace('-', '')}-snapshot"
+                if action == "chaos.snapshot_node_state":
+                    subprocess.run(["docker", "volume", "create", snap],
+                                   capture_output=True, text=True, timeout=60)
+                    cmd = ("rm -rf /snap/* /snap/.[!.]* 2>/dev/null; "
+                           "cp -a /state/. /snap/ && du -sm /snap | cut -f1")
+                    src, dst = vol, snap
+                else:
+                    cmd = ("rm -rf /state/* /state/.[!.]* 2>/dev/null; "
+                           "cp -a /snap/. /state/ && du -sm /state | cut -f1")
+                    src, dst = vol, snap
+                proc = subprocess.run(
+                    ["docker", "run", "--rm",
+                     "-v", f"{vol}:/state", "-v", f"{snap}:/snap",
+                     "alpine:3", "sh", "-c", cmd],
+                    capture_output=True, text=True, timeout=900)
+                ok = proc.returncode == 0
+                if ok:
+                    if action == "chaos.snapshot_node_state":
+                        self._mutation_open("node_snapshotted", node=node)
+                    else:
+                        self._mutation_close("node_snapshotted", node=node)
+                result = {"action": action, "node": node, "volume": vol, "snapshot": snap,
+                          "exit_code": proc.returncode,
+                          "size_mb": (proc.stdout or "").strip()[-20:],
+                          "stderr": (proc.stderr or "").strip()[-200:]}
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
             elif action == "chaos.clone_node_state":
                 # Copy one node's persisted identity onto another node's volume,
                 # so two machines claim the same node_id.
@@ -1325,53 +1370,118 @@ class ScenarioExecutor:
                 return ok
 
             elif action == "chaos.fill_etcd_volume":
-                # Exhaust the filesystem etcd writes to, rather than the node's
-                # root disk.
+                # Exhaust etcd's BACKEND QUOTA, not the filesystem.
                 #
-                # chaos.fill_disk pressures the node and trips disk-pressure
-                # detection; this targets the specific filesystem a state commit
-                # must land on, so a mutation is attempted while the write cannot
-                # succeed. The question is whether the transaction is atomic —
-                # committed or rejected — never half-published.
+                # The first version filled the filesystem etcd writes to. That
+                # directory lives on the HOST root filesystem via a docker volume,
+                # so "leave 2 MB free" meant writing ~57 GB to the developer's
+                # disk — and the only reason it did not is that it timed out.
+                # Filling someone's disk to test a cluster property is not an
+                # acceptable trade at any speed.
+                #
+                # Quota exhaustion is also the faithful fault: the 2026-08-16
+                # outage was quota-backend-bytes exceeded — NOSPACE on 4 of 5
+                # members, control plane read-only — not a full disk. The data is
+                # written and KEPT, because deleting it would let compaction
+                # reclaim the space and the quota would never be reached.
+                #
+                # Bounded by construction: it stops the moment the alarm fires, so
+                # it writes the minimum needed to inject the fault, and it refuses
+                # outright if the host cannot spare the room.
                 if not container:
                     return self._chaos_fail(section, item_id, action, params, "node param required")
-                leave_mb = int(params.get("leave_free_mb", 2))
+                headroom_gb = int(params.get("require_host_free_gb", 8))
+                try:
+                    import shutil
+                    free_gb = shutil.disk_usage("/").free / (1024 ** 3)
+                except Exception:
+                    free_gb = 0.0
+                if free_gb < headroom_gb:
+                    self._mark_unsupported(
+                        item_id, action,
+                        f"host has {free_gb:.1f} GB free; refusing to exhaust a 2 GiB "
+                        f"etcd quota without {headroom_gb} GB of headroom")
+                    return True
+
                 script = (
                     "set -e\n"
-                    "D=/var/lib/globular/etcd\n"
-                    "mkdir -p $D\n"
-                    "AVAIL=$(df -Pm $D | awk 'NR==2{print $4}')\n"
-                    f"FILL=$(( AVAIL - {leave_mb} ))\n"
-                    "if [ $FILL -le 0 ]; then echo ALREADY_FULL avail=$AVAIL; exit 0; fi\n"
-                    "dd if=/dev/zero of=$D/.chaos_fill bs=1M count=$FILL 2>/dev/null || true\n"
-                    "df -Pm $D | awk 'NR==2{print \"avail_mb=\" $4}'\n"
+                    "EP=$(sed -n 's|^advertise-client-urls:[[:space:]]*\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\}$|\\1|p' "
+                    "/var/lib/globular/config/etcd.yaml | head -1)\n"
+                    "PKI=/var/lib/globular/pki\n"
+                    "E=\"/usr/lib/globular/bin/etcdctl --endpoints=$EP --cacert=$PKI/ca.crt "
+                    "--cert=$PKI/issued/services/service.crt --key=$PKI/issued/services/service.key\"\n"
+                    "head -c 1048576 /dev/urandom | base64 -w0 > /tmp/.quota_blob\n"
+                    "HIT=no\n"
+                    "for i in $(seq 1 2400); do\n"
+                    "  $E put \"/globular/test/quota/$i\" < /tmp/.quota_blob >/dev/null 2>&1 || true\n"
+                    "  if [ $(( i % 40 )) -eq 0 ]; then\n"
+                    "    if $E alarm list 2>/dev/null | grep -q NOSPACE; then HIT=yes; break; fi\n"
+                    "  fi\n"
+                    "done\n"
+                    "rm -f /tmp/.quota_blob\n"
+                    "echo \"nospace=$HIT\"\n"
+                    "$E endpoint status -w fields 2>/dev/null | sed -n 's/^\"DBSize\" : /dbsize=/p' | head -1\n"
                 )
                 proc = subprocess.run(
                     ["docker", "exec", container, "bash", "-c", script],
-                    capture_output=True, text=True, timeout=600)
-                ok = proc.returncode == 0
+                    capture_output=True, text=True, timeout=1800)
+                out = (proc.stdout or "").strip()
+                # The fault must actually be injected. A run that wrote data
+                # without reaching NOSPACE has not created the condition the
+                # scenario asserts against, and saying so is the difference
+                # between a failed test and a vacuous one.
+                hit = "nospace=yes" in out
+                ok = proc.returncode == 0 and hit
                 if ok:
-                    self._mutation_open("etcd_volume_filled", node=node)
+                    self._mutation_open("etcd_quota_exhausted", node=node)
+                elif proc.returncode == 0 and not hit:
+                    self._mark_unsupported(
+                        item_id, action,
+                        "wrote the full budget without reaching NOSPACE — quota not "
+                        "exhausted, so the fault was never injected")
+                    return True
                 result = {"action": action, "container": container,
-                          "exit_code": proc.returncode,
-                          "df": (proc.stdout or "").strip()[-120:],
+                          "exit_code": proc.returncode, "nospace_reached": hit,
+                          "status": out[-160:],
                           "stderr": (proc.stderr or "").strip()[-200:]}
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
             elif action == "chaos.clear_etcd_volume_fill":
+                # Releasing quota needs delete, compact, defrag and disarm, in that
+                # order. Deleting alone frees nothing: revisions remain until
+                # compaction, the file does not shrink until defrag, and NOSPACE
+                # stays latched until the alarm is disarmed even after space
+                # returns — which is precisely what made the original outage
+                # require an operator.
                 if not container:
                     return self._chaos_fail(section, item_id, action, params, "node param required")
+                clear = (
+                    "EP=$(sed -n 's|^advertise-client-urls:[[:space:]]*\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\}$|\\1|p' "
+                    "/var/lib/globular/config/etcd.yaml | head -1); "
+                    "PKI=/var/lib/globular/pki; "
+                    "E=\"/usr/lib/globular/bin/etcdctl --endpoints=$EP --cacert=$PKI/ca.crt "
+                    "--cert=$PKI/issued/services/service.crt --key=$PKI/issued/services/service.key\"; "
+                    "$E alarm disarm >/dev/null 2>&1 || true; "
+                    "$E del --prefix /globular/test/quota/ >/dev/null 2>&1 || true; "
+                    "REV=$($E endpoint status -w fields 2>/dev/null | sed -n 's/^\"Revision\" : //p' | head -1); "
+                    "[ -n \"$REV\" ] && $E compact \"$REV\" --physical >/dev/null 2>&1 || true; "
+                    "for ip in 11 12 13 14 15; do "
+                    "$E --endpoints=https://10.10.0.$ip:2379 defrag --command-timeout=300s >/dev/null 2>&1 || true; "
+                    "done; "
+                    "$E alarm disarm >/dev/null 2>&1 || true; "
+                    "rm -f /var/lib/globular/etcd/.chaos_fill; "
+                    "$E endpoint status -w fields 2>/dev/null | sed -n 's/^\"DBSize\" : /dbsize=/p' | head -1"
+                )
                 proc = subprocess.run(
-                    ["docker", "exec", container, "bash", "-c",
-                     "rm -f /var/lib/globular/etcd/.chaos_fill; "
-                     "df -Pm /var/lib/globular/etcd | awk 'NR==2{print \"avail_mb=\" $4}'"],
-                    capture_output=True, text=True, timeout=180)
+                    ["docker", "exec", container, "bash", "-c", clear],
+                    capture_output=True, text=True, timeout=1800)
                 ok = proc.returncode == 0
                 if ok:
-                    self._mutation_close("etcd_volume_filled", node=node)
+                    self._mutation_close("etcd_quota_exhausted", node=node)
                 result = {"action": action, "container": container,
-                          "exit_code": proc.returncode, "df": (proc.stdout or "").strip()[-120:]}
+                          "exit_code": proc.returncode,
+                          "status": (proc.stdout or "").strip()[-160:]}
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 

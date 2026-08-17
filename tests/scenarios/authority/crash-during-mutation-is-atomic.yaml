@@ -71,6 +71,18 @@ preconditions:
       ambiguous: 0
       conflict: 0
 
+  # A settled cluster means liveness is current, not merely that cluster.health
+  # says "healthy". require_healthy_before_start passed at a moment when liveness
+  # was 927 seconds stale after the blackout scenario, so the next scenario began
+  # mutating a cluster that had not finished recovering — and left residue when
+  # its first steps failed. Asserting liveness here fails fast, with a reason.
+  - type: probe
+    id: liveness_settled_before
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+      nodes_gte: 5
+
 baseline:
   - type: probe
     id: desired_state_before

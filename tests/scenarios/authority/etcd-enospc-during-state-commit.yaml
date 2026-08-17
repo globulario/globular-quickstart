@@ -4,13 +4,20 @@ description: |
   A desired-state mutation attempted while etcd cannot write must be atomic:
   committed, or rejected. Never half-published.
 
-  THE FAULT. Fill the filesystem etcd writes to, then attempt a real
-  desired-state change, then release the space.
+  THE FAULT. Exhaust etcd's backend QUOTA, then attempt a real desired-state
+  change, then release it.
+
+  WHY QUOTA AND NOT A FULL DISK. The first version of this filled the filesystem
+  etcd writes to. That directory lives on the HOST root filesystem via a docker
+  volume, so "leave 2 MB free" meant writing ~57 GB to the developer's disk — and
+  the only reason it did not is that it timed out first. Filling someone's disk to
+  test a cluster property is not an acceptable trade at any speed.
+  Quota exhaustion is also the faithful fault: the 2026-08-16 outage was
+  quota-backend-bytes exceeded, not a full disk.
 
   WHY THIS IS NOT disk-pressure-detection. That scenario fills the node's root
-  disk and checks the cluster NOTICES. This targets the specific filesystem a
-  state commit has to land on, and attempts a mutation while it cannot succeed —
-  so the question is not detection but atomicity.
+  disk and checks the cluster NOTICES. This makes etcd refuse writes and attempts
+  a mutation into that refusal — so the question is not detection but atomicity.
 
   WHY IT MATTERS HERE SPECIFICALLY. The 2026-08-16 outage was an etcd NOSPACE
   event: the backend hit quota and the control plane went read-only. What was
@@ -65,6 +72,18 @@ preconditions:
     expect:
       success: true
 
+  # A settled cluster means liveness is current, not merely that cluster.health
+  # says "healthy". require_healthy_before_start passed at a moment when liveness
+  # was 927 seconds stale after the blackout scenario, so the next scenario began
+  # mutating a cluster that had not finished recovering — and left residue when
+  # its first steps failed. Asserting liveness here fails fast, with a reason.
+  - type: probe
+    id: liveness_settled_before
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+      nodes_gte: 5
+
 baseline:
   - type: probe
     id: desired_state_before
@@ -75,14 +94,16 @@ baseline:
     probe: repository.identity_findings
 
 steps:
-  # Leave a couple of megabytes so the filesystem is full rather than the node
-  # unbootable — the target is the write path, not the machine.
+  # Writes 1 MB values and stops the moment NOSPACE fires, so it injects the
+  # fault with the minimum data. Refuses outright if the host cannot spare 8 GB,
+  # reporting UNSUPPORTED rather than risking the machine — a property left
+  # untested is honest, filling someone's disk is not.
   - type: action
-    id: exhaust_the_etcd_filesystem
+    id: exhaust_the_etcd_quota
     action: chaos.fill_etcd_volume
     params:
       node: node-1
-      leave_free_mb: 2
+      require_host_free_gb: 8
 
   - type: action
     id: let_etcd_notice
@@ -103,8 +124,10 @@ steps:
       version: 1.2.312
       expect: any
 
+  # Delete, compact, defrag, disarm — in that order. Deleting alone frees
+  # nothing, and NOSPACE stays latched even after space returns.
   - type: action
-    id: release_the_space
+    id: release_the_quota
     action: chaos.clear_etcd_volume_fill
     params:
       node: node-1
@@ -113,8 +136,8 @@ steps:
     id: allow_recovery
     action: wait
     params:
-      seconds: 180
-      reason: "compaction, defrag and alarm disarm need time once space is available again"
+      seconds: 240
+      reason: "compaction, defrag and alarm disarm need time once quota is available again"
 
 assertions:
   # ── Nothing half-published ────────────────────────────────────────────────
@@ -170,10 +193,11 @@ assertions:
       stale_nodes: 0
 
 cleanup:
-  # Idempotent: removing a fill file that is already gone is harmless, and this
-  # guarantees the filesystem is not left full if the scenario aborted.
+  # Idempotent: deleting keys that are already gone and disarming an alarm that is
+  # already clear are both no-ops, so this safely guarantees the quota is not left
+  # exhausted if the scenario aborted part-way.
   - type: action
-    id: ensure_space_released
+    id: ensure_quota_released
     action: chaos.clear_etcd_volume_fill
     params:
       node: node-1

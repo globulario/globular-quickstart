@@ -71,27 +71,41 @@ preconditions:
     expect:
       registered: true
 
+  # A settled cluster means liveness is current, not merely that cluster.health
+  # says "healthy". require_healthy_before_start passed at a moment when liveness
+  # was 927 seconds stale after the blackout scenario, so the next scenario began
+  # mutating a cluster that had not finished recovering — and left residue when
+  # its first steps failed. Asserting liveness here fails fast, with a reason.
+  - type: probe
+    id: liveness_settled_before
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+      nodes_gte: 5
+
 baseline:
   - type: probe
     id: nodes_before
     probe: cluster.nodes
 
 steps:
-  # Detach and remove the target cleanly first, so what follows tests identity
-  # collision rather than a stale-membership conflict — those are different
-  # faults and mixing them would make the result unattributable.
+  # Snapshot the victim first, so this scenario can undo itself.
+  #
+  # The earlier version removed node-5 from the cluster and wiped it, which left
+  # the node needing a full fresh join afterwards — and the next scenario in the
+  # suite inherited a four-node cluster. With a snapshot, cleanup puts node-5 back
+  # exactly as it was, so its local identity and its cluster record still agree.
   - type: action
-    id: detach_target_etcd_member
-    action: chaos.detach_node_etcd
+    id: snapshot_the_victim
+    action: chaos.snapshot_node_state
     params:
       node: node-5
 
   - type: action
-    id: remove_target_from_cluster
-    action: ops.remove_node
+    id: stop_the_victim
+    action: chaos.stop_node
     params:
       node: node-5
-      runner: node-1
 
   - type: action
     id: clone_the_identity
@@ -166,16 +180,39 @@ assertions:
       ambiguous: 0
 
 cleanup:
-  # Wipe the impostor so no cloned identity survives this scenario, then let it
-  # come back as itself on the next run that needs it.
+  # Put the victim back exactly as it was: stop it, restore the snapshot taken
+  # before the clone, start it. Its identity and its cluster record then still
+  # agree, so this is a fast re-join rather than a fresh one, and the cluster is
+  # left whole for whatever runs next.
   - type: action
-    id: wipe_the_impostor
-    action: chaos.wipe_node_state
+    id: stop_the_impostor
+    action: chaos.stop_node
     params:
       node: node-5
 
   - type: action
-    id: restart_as_itself
+    id: restore_the_victims_own_state
+    action: chaos.restore_node_state
+    params:
+      node: node-5
+
+  - type: action
+    id: start_as_itself
     action: chaos.start_node
     params:
       node: node-5
+
+  - type: action
+    id: let_it_rejoin_as_itself
+    action: wait
+    params:
+      seconds: 240
+      reason: "restored identity matches its cluster record, so this is a re-join, not a fresh join"
+
+  - type: probe
+    id: victim_restored_and_registered
+    probe: node.etcd_registered
+    params:
+      node: node-5
+    expect:
+      registered: true

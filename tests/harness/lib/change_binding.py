@@ -9,6 +9,13 @@ import sys
 from pathlib import Path
 
 TRUE_VALUES = {"1", "true", "yes", "on"}
+BINDING_ENV_FIELDS = (
+    "id",
+    "envelope_ref",
+    "candidate_repository",
+    "candidate_revision",
+    "plan_digest",
+)
 
 
 def _required() -> bool:
@@ -21,16 +28,23 @@ def _binding(proof: dict) -> dict:
         "envelope_ref": os.environ.get("GLOBULAR_CHANGE_ENVELOPE_REF", "").strip(),
         "candidate_repository": os.environ.get("GLOBULAR_CANDIDATE_REPOSITORY", "").strip(),
         "candidate_revision": os.environ.get("GLOBULAR_CANDIDATE_REVISION", "").strip(),
+        "plan_digest": os.environ.get("GLOBULAR_CHANGE_PLAN_DIGEST", "").strip(),
         "simulation_revision": str(proof.get("source_revision") or ""),
     }
 
 
 def _validate(binding: dict, required: bool) -> list[str]:
-    present = any(binding.get(k) for k in ("id", "envelope_ref", "candidate_repository", "candidate_revision"))
+    present = any(binding.get(k) for k in BINDING_ENV_FIELDS)
     if not present and not required:
         return []
     errors = []
-    for field in ("id", "candidate_repository", "candidate_revision", "simulation_revision"):
+    for field in (
+        "id",
+        "candidate_repository",
+        "candidate_revision",
+        "plan_digest",
+        "simulation_revision",
+    ):
         if not binding.get(field):
             errors.append(f"change binding requires {field}")
     return errors
@@ -56,7 +70,7 @@ def apply(output_dir: Path) -> int:
     proof = _load(proof_path)
     binding = _binding(proof)
     required = _required()
-    present = any(binding.get(k) for k in ("id", "envelope_ref", "candidate_repository", "candidate_revision"))
+    present = any(binding.get(k) for k in BINDING_ENV_FIELDS)
     if not present and not required:
         return 0
 
@@ -86,7 +100,8 @@ def apply(output_dir: Path) -> int:
         return 2
     print(
         "  [change] BOUND: "
-        f"{binding['id']} -> {binding['candidate_repository']}@{binding['candidate_revision']}"
+        f"{binding['id']} -> {binding['candidate_repository']}@{binding['candidate_revision']} "
+        f"plan={binding['plan_digest']}"
     )
     return 0
 

@@ -234,9 +234,18 @@ cmd_scenario() {
         echo "ERROR: scenario not found: $scenario_file" >&2; exit 1
     fi
 
-    local run_id
-    run_id="$(date -u '+%Y%m%dT%H%M%S')-$(basename "$scenario_file" .yaml)"
-    local run_dir="$REPORTS_DIR/$run_id"
+    # A governed caller owns the location of its own proof. When it names one,
+    # write there and leave the shared `latest` pointer out of the proof path
+    # entirely: `latest` names whichever run rotated it last, so a caller that
+    # read it could be handed an earlier or concurrent run's result.
+    local run_id run_dir
+    if [ -n "${GLOBULAR_PROOF_RUN_DIR:-}" ]; then
+        run_dir="$GLOBULAR_PROOF_RUN_DIR"
+        run_id="$(basename "$run_dir")"
+    else
+        run_id="$(date -u '+%Y%m%dT%H%M%S')-$(basename "$scenario_file" .yaml)"
+        run_dir="$REPORTS_DIR/$run_id"
+    fi
     mkdir -p "$run_dir"
 
     echo ""
@@ -250,7 +259,10 @@ cmd_scenario() {
     local result
     result="$(scenario_result "$run_dir")"
 
-    ln -sfn "$run_id" "$REPORTS_DIR/latest"
+    # `latest` stays a human convenience pointer, never a proof source.
+    if [ -z "${GLOBULAR_PROOF_RUN_DIR:-}" ]; then
+        ln -sfn "$run_id" "$REPORTS_DIR/latest"
+    fi
 
     echo ""
     echo "RESULT: $result"

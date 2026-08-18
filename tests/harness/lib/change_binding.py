@@ -22,6 +22,20 @@ def _required() -> bool:
     return os.environ.get("GLOBULAR_REQUIRE_CHANGE_BINDING", "").strip().lower() in TRUE_VALUES
 
 
+def _invocation() -> dict:
+    """Identity of the single execution that produced this artifact.
+
+    A governed caller mints this before launching the harness and refuses any
+    proof that does not carry it back. Without it, an artifact only says *a*
+    run produced it, never *which* run — which is what lets a stale or
+    concurrent report be mistaken for the current one.
+    """
+    return {
+        "id": os.environ.get("GLOBULAR_PROOF_INVOCATION_ID", "").strip(),
+        "run_dir": os.environ.get("GLOBULAR_PROOF_RUN_DIR", "").strip(),
+    }
+
+
 def _binding(proof: dict) -> dict:
     return {
         "id": os.environ.get("GLOBULAR_CHANGE_ID", "").strip(),
@@ -33,7 +47,7 @@ def _binding(proof: dict) -> dict:
     }
 
 
-def _validate(binding: dict, required: bool) -> list[str]:
+def _validate(binding: dict, invocation: dict, required: bool) -> list[str]:
     present = any(binding.get(k) for k in BINDING_ENV_FIELDS)
     if not present and not required:
         return []
@@ -47,6 +61,8 @@ def _validate(binding: dict, required: bool) -> list[str]:
     ):
         if not binding.get(field):
             errors.append(f"change binding requires {field}")
+    if not invocation.get("id"):
+        errors.append("change binding requires an invocation id")
     return errors
 
 
@@ -69,13 +85,15 @@ def apply(output_dir: Path) -> int:
 
     proof = _load(proof_path)
     binding = _binding(proof)
+    invocation = _invocation()
     required = _required()
     present = any(binding.get(k) for k in BINDING_ENV_FIELDS)
     if not present and not required:
         return 0
 
-    errors = _validate(binding, required)
+    errors = _validate(binding, invocation, required)
     proof["change"] = binding
+    proof["invocation"] = invocation
     proof["change_binding_status"] = "INVALID" if errors else "BOUND"
     if errors:
         proof.setdefault("errors", [])
@@ -91,6 +109,7 @@ def apply(output_dir: Path) -> int:
     if learning_path.exists():
         learning = _load(learning_path)
         learning["change"] = binding
+        learning["invocation"] = invocation
         learning["change_binding_status"] = proof["change_binding_status"]
         _write(learning_path, learning)
 
@@ -101,7 +120,7 @@ def apply(output_dir: Path) -> int:
     print(
         "  [change] BOUND: "
         f"{binding['id']} -> {binding['candidate_repository']}@{binding['candidate_revision']} "
-        f"plan={binding['plan_digest']}"
+        f"plan={binding['plan_digest']} invocation={invocation['id']}"
     )
     return 0
 

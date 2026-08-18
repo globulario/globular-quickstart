@@ -48,6 +48,8 @@ class ChangeBindingTest(unittest.TestCase):
                 "GLOBULAR_CANDIDATE_REPOSITORY": "globulario/services",
                 "GLOBULAR_CANDIDATE_REVISION": "candidate-sha",
                 "GLOBULAR_CHANGE_PLAN_DIGEST": "sha256:plan",
+                "GLOBULAR_PROOF_INVOCATION_ID": "inv-1",
+                "GLOBULAR_PROOF_RUN_DIR": str(self.dir),
             }
         )
         self.assertEqual(change_binding.apply(self.dir), 0)
@@ -58,6 +60,9 @@ class ChangeBindingTest(unittest.TestCase):
         self.assertEqual(learning["change"]["candidate_revision"], "candidate-sha")
         self.assertEqual(learning["change"]["plan_digest"], "sha256:plan")
         self.assertEqual(proof["change_binding_status"], "BOUND")
+        self.assertEqual(proof["invocation"]["id"], "inv-1")
+        self.assertEqual(proof["invocation"]["run_dir"], str(self.dir))
+        self.assertEqual(learning["invocation"]["id"], "inv-1")
 
     def test_missing_plan_digest_is_not_proof(self):
         os.environ.update(
@@ -70,6 +75,44 @@ class ChangeBindingTest(unittest.TestCase):
         self.assertEqual(change_binding.apply(self.dir), 2)
         proof = json.loads((self.dir / "scenario-proof.json").read_text())
         self.assertFalse(proof["proof_eligible"])
+
+    def _complete_env(self):
+        return {
+            "GLOBULAR_CHANGE_ID": "chg-1",
+            "GLOBULAR_CHANGE_ENVELOPE_REF": "services:change/chg-1",
+            "GLOBULAR_CANDIDATE_REPOSITORY": "globulario/services",
+            "GLOBULAR_CANDIDATE_REVISION": "candidate-sha",
+            "GLOBULAR_CHANGE_PLAN_DIGEST": "sha256:plan",
+            "GLOBULAR_PROOF_INVOCATION_ID": "inv-1",
+            "GLOBULAR_PROOF_RUN_DIR": "/tmp/inv-1",
+        }
+
+    def test_missing_invocation_id_is_not_proof(self):
+        """A proof that cannot say which run produced it is not a proof.
+
+        Without the invocation stamp an artifact is indistinguishable from an
+        earlier or concurrent run's output, which is exactly the substitution
+        the governed caller has to be able to reject.
+        """
+        env = self._complete_env()
+        del env["GLOBULAR_PROOF_INVOCATION_ID"]
+        os.environ.update(env)
+        self.assertEqual(change_binding.apply(self.dir), 2)
+        proof = json.loads((self.dir / "scenario-proof.json").read_text())
+        self.assertFalse(proof["proof_eligible"])
+        self.assertEqual(proof["change_binding_status"], "INVALID")
+        self.assertIn(
+            "change binding requires an invocation id", proof.get("errors", [])
+        )
+
+    def test_invocation_stamp_is_recorded_verbatim(self):
+        """The stamp is carried through unaltered so the caller can match it."""
+        env = self._complete_env()
+        env["GLOBULAR_PROOF_INVOCATION_ID"] = "inv-20260817T000000Z-abcdef"
+        os.environ.update(env)
+        self.assertEqual(change_binding.apply(self.dir), 0)
+        proof = json.loads((self.dir / "scenario-proof.json").read_text())
+        self.assertEqual(proof["invocation"]["id"], "inv-20260817T000000Z-abcdef")
 
     def test_required_binding_fails_when_absent(self):
         os.environ["GLOBULAR_REQUIRE_CHANGE_BINDING"] = "1"

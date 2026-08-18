@@ -162,3 +162,39 @@ assertions:
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LearningScenarioIdentityTest(unittest.TestCase):
+    """The proof and the learning artifact must name the same scenario.
+
+    They were computed independently with different fallbacks: the proof used
+    the scenario file's stem, the learning artifact used the literal "unknown".
+    A scenario with no `name` therefore produced two artifacts that disagreed
+    about which scenario they described, and a consumer binding one to the
+    other would reject a legitimate run.
+    """
+
+    def test_unnamed_scenario_agrees_between_proof_and_learning(self):
+        proof = {
+            "scenario": "cluster-cold-boot",
+            "source_revision": "sim-sha",
+            "proof_eligible": True,
+        }
+        learning = sc.learning_payload(
+            scenario={},  # no "name" key — the divergent case
+            result="PASS",
+            evidence=None,
+            proof=proof,
+        )
+        self.assertEqual(learning["scenario"], proof["scenario"])
+        self.assertNotEqual(learning["scenario"], "unknown")
+
+    def test_named_scenario_still_uses_its_name(self):
+        proof = {"scenario": "named-scenario", "source_revision": "sim-sha"}
+        learning = sc.learning_payload(
+            scenario={"name": "named-scenario"},
+            result="PASS",
+            evidence=None,
+            proof=proof,
+        )
+        self.assertEqual(learning["scenario"], "named-scenario")

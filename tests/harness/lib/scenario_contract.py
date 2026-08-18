@@ -493,7 +493,14 @@ def learning_payload(
         "learning_schema_version": LEARNING_SCHEMA_VERSION,
         "created_at": utc_now(),
         "source": "globular-quickstart-simulation",
-        "scenario": scenario.get("name", "unknown"),
+        # Taken from the proof this learning accompanies, not recomputed from
+        # the scenario. The two used different fallbacks for a scenario with no
+        # name — the proof used the file stem, this used "unknown" — so an
+        # unnamed scenario produced a proof and a learning artifact that
+        # disagreed about which scenario they described. A consumer binding one
+        # to the other would reject a legitimate run. One occurrence, one name,
+        # one place it is computed.
+        "scenario": proof.get("scenario", scenario.get("name", "unknown")),
         "suite": scenario.get("suite", "unknown"),
         "result": result,
         "source_revision": proof.get("source_revision", ""),

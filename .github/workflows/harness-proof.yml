@@ -1,0 +1,41 @@
+name: Harness Proof Boundary
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - "agent/**"
+
+permissions:
+  contents: read
+
+jobs:
+  proof-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install harness dependencies
+        run: python -m pip install --disable-pip-version-check pyyaml
+      - name: Compile proof harness Python
+        run: |
+          python -m py_compile \
+            tests/harness/lib/scenario_contract.py \
+            tests/harness/lib/scenario_contract_semantic.py \
+            tests/harness/lib/change_binding.py \
+            tests/harness/lib/semantic_chaos.py \
+            tests/harness/bin/globular-scenario-proof \
+            tests/harness/bin/globular-scenario-semantic
+      - name: Run proof-boundary unit tests
+        run: |
+          python -m unittest -v \
+            tests.harness.tests.test_scenario_contract \
+            tests.harness.tests.test_change_binding \
+            tests.harness.tests.test_semantic_contract \
+            tests.harness.tests.test_semantic_chaos
+      - name: Audit scenario proof vocabulary
+        run: |
+          python tests/harness/lib/scenario_contract_semantic.py audit tests/scenarios

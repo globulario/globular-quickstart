@@ -47,14 +47,29 @@ class ChangeBindingTest(unittest.TestCase):
                 "GLOBULAR_CHANGE_ENVELOPE_REF": "services:change/chg-1",
                 "GLOBULAR_CANDIDATE_REPOSITORY": "globulario/services",
                 "GLOBULAR_CANDIDATE_REVISION": "candidate-sha",
+                "GLOBULAR_CHANGE_PLAN_DIGEST": "sha256:plan",
             }
         )
         self.assertEqual(change_binding.apply(self.dir), 0)
         proof = json.loads((self.dir / "scenario-proof.json").read_text())
         learning = json.loads((self.dir / "learning.json").read_text())
         self.assertEqual(proof["change"]["simulation_revision"], "sim-sha")
+        self.assertEqual(proof["change"]["plan_digest"], "sha256:plan")
         self.assertEqual(learning["change"]["candidate_revision"], "candidate-sha")
+        self.assertEqual(learning["change"]["plan_digest"], "sha256:plan")
         self.assertEqual(proof["change_binding_status"], "BOUND")
+
+    def test_missing_plan_digest_is_not_proof(self):
+        os.environ.update(
+            {
+                "GLOBULAR_CHANGE_ID": "chg-1",
+                "GLOBULAR_CANDIDATE_REPOSITORY": "globulario/services",
+                "GLOBULAR_CANDIDATE_REVISION": "candidate-sha",
+            }
+        )
+        self.assertEqual(change_binding.apply(self.dir), 2)
+        proof = json.loads((self.dir / "scenario-proof.json").read_text())
+        self.assertFalse(proof["proof_eligible"])
 
     def test_required_binding_fails_when_absent(self):
         os.environ["GLOBULAR_REQUIRE_CHANGE_BINDING"] = "1"

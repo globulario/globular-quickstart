@@ -24,6 +24,7 @@ def main() -> None:
     script_dir = Path(__file__).resolve().parent
     harness_dir = script_dir.parent
     contract = harness_dir / "lib" / "scenario_contract.py"
+    change_binding = harness_dir / "lib" / "change_binding.py"
     executor = script_dir / "globular-scenario"
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -33,6 +34,19 @@ def main() -> None:
     )
     if pre.returncode != 0:
         # UNSUPPORTED/invalid proof is intentionally a failing certification result.
+        # Still attach a change binding when one was supplied so the failed proof
+        # remains attributable to the governed change that requested it.
+        subprocess.run(
+            [sys.executable, str(change_binding), str(output_dir)], check=False
+        )
+        sys.exit(1)
+
+    bound_pre = subprocess.run(
+        [sys.executable, str(change_binding), str(output_dir)], check=False
+    )
+    if bound_pre.returncode != 0:
+        # A partial or required-but-absent change binding is a proof error. Do not
+        # mutate the cluster when we cannot prove which candidate is under test.
         sys.exit(1)
 
     run = subprocess.run(
@@ -52,6 +66,12 @@ def main() -> None:
         ],
         check=False,
     )
+    bound_final = subprocess.run(
+        [sys.executable, str(change_binding), str(output_dir)], check=False
+    )
+    if run.returncode == 0 and bound_final.returncode != 0:
+        # A green executor result cannot erase a broken proof identity.
+        sys.exit(1)
     sys.exit(run.returncode)
 
 

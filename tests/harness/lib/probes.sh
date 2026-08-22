@@ -1662,15 +1662,33 @@ except Exception:
     #      announces itself once at startup with etcd.maintenance_started.
     #   2. a systemd timer, for operators who schedule it externally.
     #   3. a cron entry, same.
+    # Asked of EVERY node, not just the primary — for the same reason
+    # probe_etcd_defrag_evidence does it: this is a cluster-wide fact and the
+    # evidence for it is per-node.
+    #
+    # etcd.maintenance_started is announced ONCE at node-agent startup, so it
+    # ages out of the journal. Sampling a single node therefore turns a durable
+    # property ("is defrag scheduled?") into a question about how recently that
+    # one node happened to boot. Observed 2026-08-18: nodes 3/4/5 carried the
+    # line and nodes 1/2 did not, purely because node-1's agent started at
+    # 06:32 while its journal only reached back to 06:54 — 22 minutes gone. The
+    # loop was running on three nodes and the probe still said defrag_scheduled
+    # =false, failing etcd-backend-does-not-ratchet on a cluster that
+    # defragments correctly. A false alarm trains people to ignore the check,
+    # which the comment above already warns is as bad as no check at all.
     local defrag=false
-    if docker exec "$ETCD_CONTAINER" bash -c \
-            'journalctl -u globular-node-agent --no-pager 2>/dev/null |
-                 grep -q "etcd.maintenance_started" ||
-             systemctl list-timers --all 2>/dev/null | grep -qi defrag ||
-             ls /etc/cron.d/ 2>/dev/null | grep -qi defrag ||
-             systemctl list-unit-files 2>/dev/null | grep -qi "etcd-defrag"' 2>/dev/null; then
-        defrag=true
-    fi
+    local _dc
+    for _dc in $(_all_node_containers); do
+        if docker exec "$_dc" bash -c \
+                'journalctl -u globular-node-agent --no-pager 2>/dev/null |
+                     grep -q "etcd.maintenance_started" ||
+                 systemctl list-timers --all 2>/dev/null | grep -qi defrag ||
+                 ls /etc/cron.d/ 2>/dev/null | grep -qi defrag ||
+                 systemctl list-unit-files 2>/dev/null | grep -qi "etcd-defrag"' 2>/dev/null; then
+            defrag=true
+            break
+        fi
+    done
 
     # grep -c exits 1 on zero matches while still printing 0, so the usual
     # `|| echo 0` fallback emits "0\n0" and corrupts the JSON. See the
@@ -2052,4 +2070,127 @@ print(len(names), len(set(names)), ",".join(dupes))
     [ "$host_coll" -gt "$collisions" ] && collisions=$host_coll
 
     echo "{\"registered_ids\":${total},\"distinct_ids\":${distinct},\"collisions\":${collisions},\"hostnames\":${hostcount},\"distinct_hostnames\":${hostdistinct},\"colliding\":\"${colliding}\"}"
+}
+
+# ── doctor.node_vs_cluster_agreement ─────────────────────────────────────────
+# probe: doctor.node_vs_cluster_agreement
+# Params: --node <name>
+# Returns: {"reachable":true|false,"node":"...","uuid":"...",
+#           "node_cluster_scoped":N,"cluster_cluster_scoped":N,
+#           "only_in_node":N,"only_in_node_ids":"...","worst_only_in_node":"NONE|..."}
+#
+# Asks BOTH doctor surfaces the same question and compares their answers about
+# CLUSTER-SCOPED findings (entity_ref == "cluster").
+#
+# WHY THIS EXISTS. GetNodeReport builds a snapshot whose Nodes list is filtered
+# to the one node being reported on, then evaluates cluster-scoped rules against
+# that view. Any rule that resolves cluster membership then sees every OTHER
+# node as absent — no NodeRecord, no inventory — and counts it down. On
+# 2026-08-19 objectstore.write_quorum_lost fired CRITICAL
+# ("active_drives=1 < write_quorum=3") on a fully healthy 4-drive MinIO pool,
+# and named a DIFFERENT sole survivor on every node's page: viewing ryzen said
+# only .63 was up, viewing nuc said only .8, viewing lenovo said only .102. All
+# four cannot each be the last one standing. known_down_nodes was empty
+# throughout — nothing had ever been observed down; the verdict was built
+# entirely from nodes missing from a deliberately narrowed snapshot.
+#
+# The cluster report was clean the whole time, because it is the only surface
+# that receives the full node set. That divergence IS the bug, so the probe
+# asserts on the divergence rather than on either report alone: a scenario
+# checking only the cluster report would have passed while every node page in
+# globular-admin showed CRITICAL.
+#
+# Only findings present in the NODE report and absent from the CLUSTER report
+# are counted. The reverse direction is legitimate — the cluster report may
+# hold cluster-scoped findings that a node page does not surface — so it is
+# reported but never failed on.
+#
+# Both reports are fetched with --fresh and IN PARALLEL: the scenario runner
+# caps every probe at 45s, and two sequential fresh harvests do not reliably
+# fit inside that.
+probe_doctor_node_vs_cluster_agreement() {
+    local node=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --node) node="$2"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+
+    if [[ -z "$node" ]]; then
+        echo '{"reachable":false,"error":"--node required"}'
+        return
+    fi
+
+    local container="globular-${node}"
+    local uuid
+    uuid=$(_node_agent_node_id "$container")
+    if [ -z "$uuid" ]; then
+        echo "{\"reachable\":false,\"node\":\"$node\",\"uuid\":\"\",\"error\":\"cannot_resolve_uuid\"}"
+        return
+    fi
+
+    local tmpc tmpn
+    tmpc=$(mktemp) || return
+    tmpn=$(mktemp) || return
+
+    docker exec "$ETCD_CONTAINER" \
+        globular doctor report cluster --fresh --json --timeout 35s >"$tmpc" 2>/dev/null &
+    local pid_c=$!
+    docker exec "$ETCD_CONTAINER" \
+        globular doctor report node "$uuid" --fresh --json --timeout 35s >"$tmpn" 2>/dev/null &
+    local pid_n=$!
+    wait "$pid_c" 2>/dev/null
+    wait "$pid_n" 2>/dev/null
+
+    if [ ! -s "$tmpc" ] || [ ! -s "$tmpn" ]; then
+        rm -f "$tmpc" "$tmpn"
+        echo "{\"reachable\":false,\"node\":\"$node\",\"uuid\":\"$uuid\",\"error\":\"doctor_unreachable\"}"
+        return
+    fi
+
+    NODE_NAME="$node" NODE_UUID="$uuid" python3 -c '
+import sys, json, os
+
+def cluster_scoped(path):
+    try:
+        with open(path) as fh:
+            d = json.load(fh)
+    except Exception:
+        return None
+    out = {}
+    for f in (d.get("findings") or []):
+        if str(f.get("entity_ref", "")).strip().lower() != "cluster":
+            continue
+        out[str(f.get("invariant_id", ""))] = f.get("severity", 0)
+    return out
+
+cl = cluster_scoped(sys.argv[1])
+nd = cluster_scoped(sys.argv[2])
+if cl is None or nd is None:
+    print(json.dumps({"reachable": False, "node": os.environ["NODE_NAME"],
+                      "uuid": os.environ["NODE_UUID"], "error": "unparseable"}))
+    sys.exit(0)
+
+only = sorted(k for k in nd if k not in cl)
+names = {1: "INFO", 2: "WARN", 3: "ERROR", 4: "CRITICAL"}
+worst = "NONE"
+for sev in (4, 3, 2, 1):
+    if any(nd[k] == sev for k in only):
+        worst = names[sev]
+        break
+
+print(json.dumps({
+    "reachable": True,
+    "node": os.environ["NODE_NAME"],
+    "uuid": os.environ["NODE_UUID"],
+    "node_cluster_scoped": len(nd),
+    "cluster_cluster_scoped": len(cl),
+    "only_in_node": len(only),
+    "only_in_node_ids": ",".join(only)[:300],
+    "worst_only_in_node": worst,
+}))
+' "$tmpc" "$tmpn"
+
+    rm -f "$tmpc" "$tmpn"
 }

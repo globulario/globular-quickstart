@@ -560,15 +560,52 @@ class ScenarioExecutor:
         self.evidence.record(section, item_id, probe, params, expect, result, passed)
         return passed
 
+    # Params a wait step may carry. Anything else is a typo, and a typo in a
+    # wait param is invisible: the step still "succeeds", just for the wrong
+    # duration.
+    _WAIT_PARAMS = {"timeout", "seconds", "poll_interval", "until", "reason"}
+
     def _exec_wait(self, item: dict, section: str) -> bool:
         params = item.get("params", {}) or {}
-        timeout = int(params.get("timeout", 60))
-        poll_interval = int(params.get("poll_interval", 5))
-        until = params.get("until") or {}
         item_id = item.get("id", "wait")
 
+        # FAIL CLOSED ON UNKNOWN WAIT PARAMS.
+        #
+        # This mirrors what the expect-evaluator already does for probe fields,
+        # and for the same reason. Eighteen wait steps across twelve scenarios
+        # were written with `seconds:`, which nothing read — every one of them
+        # silently slept the 60s default instead. The damage was invisible
+        # because a plain sleep cannot fail: the step printed OK and the
+        # assertions after it measured a cluster that had been given a minute to
+        # do fifteen minutes of work.
+        #
+        # It hid real bugs and manufactured fake ones. full-blackout-thundering-herd
+        # was raised to 900s on 2026-08-17 precisely because "a five-node cold
+        # start needs more than seven minutes before liveness resumes" — and that
+        # 900 was never honoured, so the scenario kept failing and the raise
+        # looked ineffective. first-join-from-clean-node allowed 900s for a full
+        # first join that installs every service, and got 60.
+        unknown = sorted(set(params) - self._WAIT_PARAMS)
+        if unknown:
+            print(f"    FAIL: {item_id} (unknown wait param(s): {unknown}; "
+                  f"allowed: {sorted(self._WAIT_PARAMS)})", file=sys.stderr)
+            return False
+
+        # `seconds` and `timeout` are the same knob under two names that both
+        # read naturally — `seconds: 900` for a plain sleep, `timeout: 300` for a
+        # bounded poll. Accept either, and refuse a step that sets both to
+        # different values rather than silently picking one.
+        if "seconds" in params and "timeout" in params and \
+                int(params["seconds"]) != int(params["timeout"]):
+            print(f"    FAIL: {item_id} (params set both seconds="
+                  f"{params['seconds']} and timeout={params['timeout']})", file=sys.stderr)
+            return False
+        timeout = int(params.get("timeout", params.get("seconds", 60)))
+        poll_interval = int(params.get("poll_interval", 5))
+        until = params.get("until") or {}
+
         if not until:
-            # Plain sleep — honour the configured timeout
+            # Plain sleep — honour the configured duration
             print(f"    WAIT: {item_id} (sleeping {timeout}s)")
             time.sleep(timeout)
             return True
@@ -841,7 +878,14 @@ class ScenarioExecutor:
                 # disk is already below it the fill becomes a no-op and the
                 # scenario reports what it could not do rather than pushing the
                 # host over the edge.
-                floor_mb = int(params.get("min_free_mb", 12288))  # 12 GiB
+                # 16 GiB, deliberately ABOVE scripts/host-guard.sh's 15 GiB disk
+                # floor. The guard stops the cluster when the host drops below
+                # its floor, so a fill that is allowed to go lower would trip it
+                # and abort the run — the suite would kill itself doing exactly
+                # what the scenario asked for. Keeping this the larger of the two
+                # means intentional disk pressure can never be mistaken for the
+                # runaway the guard exists to catch.
+                floor_mb = int(params.get("min_free_mb", 16384))  # 16 GiB
                 fill_cmd = (
                     f"set -e; "
                     f"read -r AVAIL TARGET < <(df -m {path} | awk 'NR==2{{print $4, int($2*{target_pct}/100)-$3}}'); "
@@ -1215,6 +1259,101 @@ class ScenarioExecutor:
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
+            elif action == "ops.publish":
+                # Drive the PUBLISH half of the deploy pipeline through the CLI.
+                #
+                # WHY THIS EXISTS. Every scenario before this one observed the
+                # repository after a publish had already happened — the bundle
+                # arrives pre-published, so the suite could assert on the
+                # RESULT of publishing without ever executing it. The path that
+                # failed roughly one run in two on 2026-08-16 therefore had no
+                # coverage of its execution, only of its aftermath.
+                #
+                # Re-publishing an already-staged archive is deliberate, not a
+                # shortcut. It is the exact shape that broke: the same version
+                # published a second time minted a second build_id, the
+                # resolver requires exactly one, and the rollout stalled
+                # ambiguous. Building a genuinely new binary would need a Go
+                # toolchain in the node image and would test the compiler, not
+                # the pipeline.
+                #
+                # The archive comes from /var/lib/globular/packages/ — the
+                # staged CAS, which is the only sanctioned package source
+                # (repository.minio_is_not_valid_package_source). Resolving it
+                # by glob rather than by constructing a filename keeps the
+                # manifest as authority and the file as evidence; filenames
+                # never decide identity.
+                name = params.get("name", "")
+                channel = params.get("channel", "candidate")
+                publisher = params.get("publisher", "")
+                expect = params.get("expect", "accepted")
+                node_c = f"globular-{params.get('node', 'node-1')}"
+                if not name:
+                    return self._chaos_fail(section, item_id, action, params,
+                                            "name param required")
+                # --repository is mandatory for `pkg publish` and is NOT
+                # auto-discovered the way it is for other verbs, so it is
+                # resolved here to the node's own address. Publishing through
+                # the node under test is the point: the 2026-08-16 defect was
+                # that bytes landed only in the CAS of whichever instance
+                # received them, so which instance received them must be a
+                # known quantity, not whatever discovery happened to pick.
+                pub_flag = f' --publisher "{publisher}"' if publisher else ""
+                cmd = (GLOBULAR_CLI_RESOLVER +
+                       f'F=$(ls /var/lib/globular/packages/{name}_*_linux_amd64.tgz '
+                       f'2>/dev/null | head -1); '
+                       f'[ -n "$F" ] || {{ echo "no staged archive for {name}" >&2; exit 3; }}; '
+                       f'R=$(hostname -i | awk \'{{print $1}}\'):443; '
+                       f'"$G" pkg publish --file "$F" --channel {channel}'
+                       f'{pub_flag} --repository "$R"')
+                proc = subprocess.run(
+                    ["docker", "exec", node_c, "bash", "-c", cmd + " 2>&1"],
+                    capture_output=True, text=True, timeout=600)
+                out = (proc.stdout or "").strip()
+                # The CLI prints a PUBLISH RESULT block and exits non-zero on
+                # failure. Both are checked: an exit code alone would accept a
+                # run that printed "Status : FAILED" and still returned 0, which
+                # is the class of "reported success it had not achieved" that
+                # started the incident this scenario family exists for.
+                status_line = ""
+                published_version, published_build = "", ""
+                for line in out.splitlines():
+                    st = line.strip()
+                    if st.startswith("Status"):
+                        status_line = st.split(":", 1)[-1].strip()
+                    elif st.startswith("Version"):
+                        published_version = st.split(":", 1)[-1].strip()
+                    elif st.startswith("Build"):
+                        published_build = st.split(":", 1)[-1].strip()
+                accepted = proc.returncode == 0 and status_line.upper() == "SUCCESS"
+                if expect == "any":
+                    ok = True
+                elif expect == "accepted":
+                    ok = accepted
+                elif expect == "refused":
+                    ok = not accepted
+                else:
+                    return self._chaos_fail(
+                        section, item_id, action, params,
+                        f"unknown expect value {expect!r} (want accepted|refused|any)")
+                signal = [l for l in out.splitlines()
+                          if l.strip() and " INFO " not in l
+                          and not l.startswith("2026") and "Auto-discovered" not in l]
+                result = {"action": action, "service": name, "channel": channel,
+                          "publisher": publisher or "(from manifest)",
+                          "expect": expect, "accepted": accepted,
+                          "status": status_line,
+                          "published_version": published_version,
+                          "published_build": published_build,
+                          "exit_code": proc.returncode,
+                          "error": " | ".join(signal[:3])[:400],
+                          "output": out[-200:]}
+                if not ok:
+                    print(f"    {item_id}: expected {expect}, got "
+                          f"{'accepted' if accepted else 'refused'} — {out[-200:]}")
+                self.evidence.record(section, item_id, action, params, {}, result, ok)
+                return ok
+
             elif action == "chaos.resume_all_controllers":
                 # SIGCONT every controller, whichever one was frozen.
                 #
@@ -1328,6 +1467,14 @@ class ScenarioExecutor:
                         self._mutation_open("node_snapshotted", node=node)
                     else:
                         self._mutation_close("node_snapshotted", node=node)
+                        # Putting the victim's own state back IS the inverse of
+                        # cloning another node's identity onto it — the cloned
+                        # bytes are gone the moment /state is overwritten. Close
+                        # that obligation here too, or the scenario reports
+                        # RESIDUE (node_cloned, UNKNOWN_MUTATION_KIND) on a run
+                        # where it demonstrably undid itself and every property
+                        # assertion held.
+                        self._mutation_close("node_cloned", node=node)
                 result = {"action": action, "node": node, "volume": vol, "snapshot": snap,
                           "exit_code": proc.returncode,
                           "size_mb": (proc.stdout or "").strip()[-20:],
@@ -1785,6 +1932,20 @@ class ScenarioExecutor:
         # recovery that silently did not occur is how a dead service rides into
         # the next scenario.
         "service_killed":  EXACT_RESTORATION,
+        # Removing a node from the controller and wiping its state is the
+        # DECOMMISSION half of a deliberate first-join test. Like service_killed
+        # these are self-healing obligations, not ones with a harness inverse:
+        # the product rejoins the node, and the obligation is discharged by
+        # PROVING it came back rather than by reconstructing it by hand.
+        #
+        # Before these were declared, both fell through to UNKNOWN_MUTATION_KIND
+        # and first-join-from-clean-node reported RESIDUE even on runs where
+        # node-5 rejoined perfectly — and, worse, the suite carried on into the
+        # next scenarios while the node was still installing, which is what took
+        # liveness-survives-state-writes, platform-upgrade-release-boundary and
+        # rollback-guard-refuses-silent-regression down with it on 2026-08-17.
+        "node_removed":    EXACT_RESTORATION,
+        "node_wiped":      EXACT_RESTORATION,
     }
 
     def _mutation_open(self, kind: str, **key) -> None:
@@ -1899,16 +2060,108 @@ class ScenarioExecutor:
                         st = self._sh(["docker", "exec", container, "systemctl",
                                        "is-active", unit], timeout=30).stdout.strip()
                         ok = (st == "active")
+                elif kind in ("node_removed", "node_wiped"):
+                    # SELF-HEALING obligation, same contract as service_killed:
+                    # prove the node came back, do not reconstruct it by hand.
+                    #
+                    # A wiped node performs a genuine FIRST JOIN — it downloads
+                    # and installs the full service set for its profiles — so the
+                    # window is minutes, not seconds. Leaving before that finishes
+                    # is not merely a slow pass; it hands the next scenario a
+                    # cluster that is one node short and still installing, which
+                    # reads as unrelated failures in whatever runs next.
+                    #
+                    # Evidence is deliberately stronger than "the container is
+                    # up": a container that is running with no Globular services
+                    # is exactly what a failed join looks like, so this also
+                    # requires the node-agent to be active and the node to be
+                    # registered in etcd (its heartbeat key present).
+                    ok = False
+                    for _ in range(60):  # ~15 min, matched to a full first join
+                        running = self._sh(
+                            ["docker", "inspect", "-f", "{{.State.Running}}", container],
+                            timeout=30).stdout.strip() == "true"
+                        if running:
+                            agent = self._sh(
+                                ["docker", "exec", container, "systemctl",
+                                 "is-active", "globular-node-agent"],
+                                timeout=30).stdout.strip()
+                            registered = self._sh(
+                                ["docker", "exec", "globular-node-1", "bash", "-c",
+                                 "P=/var/lib/globular/pki; "
+                                 "/usr/lib/globular/bin/etcdctl "
+                                 "--endpoints=https://10.10.0.11:2379 "
+                                 "--cacert=$P/ca.crt "
+                                 "--cert=$P/issued/services/service.crt "
+                                 "--key=$P/issued/services/service.key "
+                                 "get /globular/nodes/ --prefix --keys-only "
+                                 "| grep -c node_agent_metrics_port"],
+                                timeout=45).stdout.strip()
+                            try:
+                                n_registered = int(registered or "0")
+                            except ValueError:
+                                n_registered = 0
+                            if agent == "active" and n_registered >= 5:
+                                ok = True
+                                self_healed = True
+                                break
+                        time.sleep(15)
+                    if not ok:
+                        print(f"    {node} did not rejoin after remove/wipe — the "
+                              f"join path failed to restore it. The cluster is left "
+                              f"short a node ON PURPOSE and this scenario is failed, "
+                              f"rather than leaking a degraded cluster into the next "
+                              f"scenario.")
                 elif kind == "cert_injected":
                     # Reuse the verified restore path (ownership + readability).
                     ok = self._exec_chaos(
                         {"id": "auto-restore-cert", "action": "chaos.restore_cert",
                          "params": {"node": node}}, "restoration")
                 elif kind == "etcd_detached":
-                    # DELIBERATELY NOT auto-reconstructed. chaos.reconstruct_
-                    # node_etcd_membership exists and is wired, but it is NOT
-                    # proven and must not run unattended, because a PARTIAL
-                    # failure leaves the cluster worse than it found it:
+                    # FIRST: has the member already come back on its own?
+                    #
+                    # A detach followed by a genuine rejoin — which is exactly
+                    # what first-join-from-clean-node does — has the PRODUCT
+                    # re-add the member through the join path. There is then
+                    # nothing to reconstruct, and reporting UNRESTORABLE would
+                    # fail a scenario whose cluster is provably whole again.
+                    #
+                    # This only ever OBSERVES. It never adds a member, so it
+                    # cannot create the phantom described below; if the member is
+                    # absent we fall straight through to the original refusal.
+                    # Bounded retry, because obligations are drained in the order
+                    # they were opened: the detach is opened BEFORE the remove
+                    # and wipe, so this is evaluated first — while the rejoin it
+                    # is waiting on may still be in flight.
+                    self_ip = entry.get("self_ip", "")
+                    for _ in range(20 if self_ip else 0):  # ~5 min
+                        listing = self._sh(
+                            ["docker", "exec", "globular-node-1", "bash", "-c",
+                             "P=/var/lib/globular/pki; "
+                             "/usr/lib/globular/bin/etcdctl "
+                             "--endpoints=https://10.10.0.11:2379 "
+                             "--cacert=$P/ca.crt "
+                             "--cert=$P/issued/services/service.crt "
+                             "--key=$P/issued/services/service.key "
+                             "member list"],
+                            timeout=45).stdout
+                        # `started` matters as much as presence: an unstarted
+                        # member IS the phantom this branch exists to avoid, so
+                        # it must never count as self-healed.
+                        if any(self_ip in ln and "started" in ln
+                               for ln in (listing or "").splitlines()):
+                            print(f"    etcd member {self_ip} is back and started "
+                                  f"— the join path re-added it; obligation "
+                                  f"discharged without reconstruction.")
+                            ok = True
+                            self_healed = True
+                            break
+                        time.sleep(15)
+                    # If it did not come back on its own, this is DELIBERATELY
+                    # NOT auto-reconstructed. chaos.reconstruct_node_etcd_
+                    # membership exists and is wired, but it is NOT proven and
+                    # must not run unattended, because a PARTIAL failure leaves
+                    # the cluster worse than it found it:
                     #
                     #   member add succeeds -> node fails to start
                     #   -> phantom "unstarted" member persists
@@ -1925,15 +2178,16 @@ class ScenarioExecutor:
                     # add-and-verify-started atomically and roll the member add
                     # back when the node does not come up — that rollback is
                     # exactly what would have prevented the phantom.
-                    report["unrestorable"].append(
-                        {**entry, "mode": self.UNRESTORABLE,
-                         "reason": "reconstruction unproven; partial failure creates "
-                                   "quorum-inflating phantom members"})
-                    print(f"    UNRESTORABLE: {entry} — etcd membership reconstruction "
-                          f"is not suite-safe (partial failure leaves a phantom member "
-                          f"that inflates quorum and blocks the next rejoin). Repair "
-                          f"this node with the operator path before the next run.")
-                    continue
+                    if not self_healed:
+                        report["unrestorable"].append(
+                            {**entry, "mode": self.UNRESTORABLE,
+                             "reason": "reconstruction unproven; partial failure creates "
+                                       "quorum-inflating phantom members"})
+                        print(f"    UNRESTORABLE: {entry} — etcd membership reconstruction "
+                              f"is not suite-safe (partial failure leaves a phantom member "
+                              f"that inflates quorum and blocks the next rejoin). Repair "
+                              f"this node with the operator path before the next run.")
+                        continue
                 elif self.RESTORATION_MODE.get(kind) == self.UNRESTORABLE:
                     report["unrestorable"].append({**entry, "mode": self.UNRESTORABLE})
                     print(f"    UNRESTORABLE: {entry} — no harness inverse exists. "

@@ -30,17 +30,38 @@ x-node-defaults: &node-defaults
   dns:
     - 10.10.0.11
     - 8.8.8.8
+  # A docker tmpfs with no size= defaults to HALF THE HOST'S RAM, per mount.
+  # Five nodes x three mounts was 360 GB of RAM-backed headroom on a 46 GB
+  # machine, and nothing anywhere bounded it.
   tmpfs:
-    - /run
-    - /run/lock
-    # /tmp MUST be exec. Docker's default tmpfs options are noexec, but on a
-    # real Ubuntu node /tmp lives on the root filesystem and is executable.
-    # Package install scripts stage downloaded payloads under /tmp and then
-    # test them with `[[ -x ... ]]`, which calls access(X_OK) and honours the
-    # mount flag — so a noexec /tmp makes a correctly downloaded, mode-755
-    # binary look absent. That is how codex_0.142.3 failed Day-0 with the
-    # misleading "extracted payload missing bin/codex".
-    - /tmp:exec
+    - /run:size=1g
+    - /run/lock:size=16m
+  # /tmp is deliberately NOT a tmpfs — it lives on the container's overlay,
+  # which is disk.
+  #
+  # It used to be `- /tmp:exec`, and that is what froze the developer's machine
+  # three times on 2026-08-17. Every package install stages its extracted
+  # payload in /tmp/globular-package-<n> and the Day-0/Day-1 installer never
+  # removes it (globular-installer cmd/globular-installer/main.go — it sets
+  # opts.StagingDir from ExtractPackageToTemp with no matching RemoveAll; the
+  # two node_agent call sites do defer os.RemoveAll and are fine). One Day-0
+  # left 48 such directories and 1.6 GB behind ON ONE NODE. On a real Ubuntu
+  # node that is a disk leak; on a tmpfs it is a RAM leak, and tmpfs pages are
+  # unreclaimable — they can only go to a 2 GB swapfile. Five nodes, plus every
+  # rejoin/upgrade/install-loop scenario that re-installs, walked the host into
+  # reclaim thrash: "Under memory pressure, flushing caches" from 13:46, dead
+  # at 13:53.
+  #
+  # The `exec` flag was the reason it was a tmpfs at all: docker mounts tmpfs
+  # noexec, install scripts stage payloads under /tmp and then test them with
+  # `[[ -x ... ]]`, which calls access(X_OK) and honours the mount flag — so a
+  # noexec /tmp made a correctly downloaded, mode-755 binary look absent. That
+  # is how codex_0.142.3 failed Day-0 with the misleading "extracted payload
+  # missing bin/codex". The overlay needs no flag: it is exec by default, which
+  # is also what a real node does — /tmp on the root filesystem. There is no
+  # tmp.mount unit in the image (`systemctl is-enabled tmp.mount` = not-found),
+  # so dropping the mount leaves a plain directory rather than handing systemd
+  # an excuse to mount its own tmpfs.
   networks:
     - globular-net
   restart: unless-stopped
@@ -66,6 +87,19 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
       - cluster-handoff:/shared
       - node1-state:/var/lib/globular
+      # Dedicated MinIO drives. A distributed objectstore needs >= 4 drives
+      # total for EC:2+2; with 2 storage nodes that is 2 drives each. Without
+      # them `objectstore disk scan` finds no admissible disk (every other path
+      # is bind-mounted and already carries data), MinIO can only run
+      # standalone, and cluster-doctor correctly reports
+      # objectstore.standalone_in_cluster on a 5-node cluster.
+      #
+      # These are directories on one physical disk, so they provide no real
+      # fault tolerance — they exist so the simulation models a production
+      # topology and exercises erasure coding, pool membership and format.json
+      # handling, which a standalone store never reaches.
+      - node1-minio-d1:/var/lib/minio/d1
+      - node1-minio-d2:/var/lib/minio/d2
     networks:
       globular-net:
         ipv4_address: 10.10.0.11
@@ -94,6 +128,9 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
       - cluster-handoff:/shared
       - node2-state:/var/lib/globular
+      # MinIO drives — see node-1.
+      - node2-minio-d1:/var/lib/minio/d1
+      - node2-minio-d2:/var/lib/minio/d2
     networks:
       globular-net:
         ipv4_address: 10.10.0.12
@@ -109,11 +146,20 @@ services:
       GLOBULAR_NODE_IP: "10.10.0.13"
       GLOBULAR_ROLE: "joining"
       GLOBULAR_CONTROLLER_IP: "10.10.0.11"
-      GLOBULAR_PROFILES: "core,control-plane"
+      # storage added: distributed MinIO requires >= 3 pool nodes
+      # ("MinIO pool has N nodes, need >= 3 for distributed erasure coding"),
+      # not merely >= 4 drives. With only node-1 and node-2 carrying storage
+      # the objectstore can never leave standalone mode, which cluster-doctor
+      # correctly reports as objectstore.standalone_in_cluster on a 5-node
+      # cluster. This also brings a third ScyllaDB instance (1 shard / 1500M).
+      GLOBULAR_PROFILES: "core,control-plane,storage"
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
       - cluster-handoff:/shared
       - node3-state:/var/lib/globular
+      # MinIO drives — see node-1.
+      - node3-minio-d1:/var/lib/minio/d1
+      - node3-minio-d2:/var/lib/minio/d2
     networks:
       globular-net:
         ipv4_address: 10.10.0.13
@@ -167,6 +213,13 @@ volumes:
   node3-state:
   node4-state:
   node5-state:
+  # MinIO drives for the two storage-profile nodes (2 each = 4 total = EC:2+2).
+  node1-minio-d1:
+  node1-minio-d2:
+  node2-minio-d1:
+  node2-minio-d2:
+  node3-minio-d1:
+  node3-minio-d2:
 
 networks:
   globular-net:

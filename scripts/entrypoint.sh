@@ -72,12 +72,10 @@ if [ -n "$CLUSTER_PEERS" ]; then
 fi
 
 # ── ScyllaDB sizing for a shared host ───────────────────
-# install-day0.sh already renders developer_mode:true and falls back to
-# --developer-mode=1 when the I/O scheduler contract is absent, but it does
-# not cap memory: Scylla sizes itself from visible host RAM, so several
-# instances on one Docker host would each try to claim the whole machine.
-# This is ordinary small-node sizing an operator supplies via /etc/scylla.d,
-# the same knob a real deployment uses. It does not change the install path.
+# Scylla sizes itself from visible host RAM, so several instances on one
+# Docker host would each try to claim the whole machine. This is ordinary
+# small-node sizing an operator supplies via /etc/scylla.d, the same knob a
+# real deployment uses. It does not change the install path.
 mkdir -p /etc/scylla.d
 # NOTE: --overprovisioned is a BARE flag on the scylla binary. The
 # `--overprovisioned=1` spelling only works through the scylladb Docker
@@ -86,9 +84,26 @@ mkdir -p /etc/scylla.d
 # unit dies status=2/INVALIDARGUMENT.
 # This file sorts last in /etc/scylla.d (after memory.conf), so its
 # SCYLLA_ARGS wins.
+#
+# Deliberately does NOT set --developer-mode. That flag belongs to Scylla's
+# own dev-mode.conf, which the scylladb package's post-install owns: it runs
+# scylla_io_setup and, ONLY when calibration is unavailable or fails, writes
+# DEV_MODE=--developer-mode=1 there. The unit expands both
+# (ExecStart=/usr/bin/scylla $SCYLLA_ARGS ... $DEV_MODE ...), so setting it
+# here too made startup depend on whether I/O calibration happened to succeed:
+#
+#   calibrated   (io_properties.yaml + SEASTAR_IO) -> DEV_MODE empty  -> starts
+#   uncalibrated (post-install fallback)           -> DEV_MODE set    -> the
+#     flag appears twice and scylla exits 2/INVALIDARGUMENT with
+#     "option '--developer-mode' cannot be specified more than once"
+#
+# Observed 2026-08-10: node-1/node-2 calibrated and ran; node-3 did not, so
+# scylla-server crash-looped and the node never left bootstrap. Leaving the
+# flag to its owner is correct in both branches — a calibrated node does not
+# need developer mode, and an uncalibrated one gets it exactly once.
 cat > /etc/scylla.d/quickstart-sizing.conf <<'SCYLLASIZE'
 # Quickstart sizing: several nodes share one Docker host.
-SCYLLA_ARGS="--developer-mode=1 --overprovisioned --smp=1 --memory=1500M"
+SCYLLA_ARGS="--overprovisioned --smp=1 --memory=1500M"
 SCYLLASIZE
 echo "[scylla] Wrote /etc/scylla.d/quickstart-sizing.conf (1 shard, 1500M)"
 

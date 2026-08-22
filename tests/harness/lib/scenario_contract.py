@@ -52,6 +52,38 @@ SUPPORTED_ACTIONS = {
     "chaos.unblock_network",
     "chaos.inject_expired_cert",
     "chaos.restore_cert",
+    # ── synced with the dispatcher, 2026-08-22 ──────────────────────────────
+    # This set is the proof gate: an action missing here makes every scenario
+    # using it UNSUPPORTED, which correctly refuses to certify. It was written
+    # against a 54-scenario tree and fell behind — the 27 scenarios added since
+    # use primitives the dispatcher implements but this set never learned, so
+    # 13 scenarios audited UNSUPPORTED while their actions executed fine.
+    #
+    # Every entry was verified to reach a real branch in globular-scenario, not
+    # a _mark_unsupported stub. Deliberately NOT added:
+    #   - the seven aspirational names in KNOWN_BUT_UNIMPLEMENTED_ACTIONS; they
+    #     dispatch to _mark_unsupported, and promoting them is exactly the
+    #     skipped-behaviour-as-proof failure this contract prevents.
+    #   - chaos.pause_service / chaos.resume_service; those belong to the
+    #     semantic layer, which injects them at runtime via
+    #     SUPPORTED_ACTIONS.update(SUPPORTED_SEMANTIC_ACTIONS). Listing them
+    #     here would also break the base contract tests, which use
+    #     pause_service as their canonical unknown-action fixture.
+    "chaos.clear_etcd_volume_fill",
+    "chaos.clone_node_state",
+    "chaos.deflate_etcd",
+    "chaos.detach_node_etcd",
+    "chaos.fill_etcd_volume",
+    "chaos.inflate_etcd",
+    "chaos.restore_node_state",
+    "chaos.resume_all_controllers",
+    "chaos.snapshot_node_state",
+    "chaos.start_all_nodes",
+    "chaos.stop_all_nodes",
+    "chaos.wipe_node_state",
+    "ops.publish",
+    "ops.remove_node",
+    "ops.set_desired",
 }
 
 KNOWN_BUT_UNIMPLEMENTED_ACTIONS = {

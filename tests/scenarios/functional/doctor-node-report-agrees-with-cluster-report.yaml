@@ -1,0 +1,148 @@
+version: 1
+name: doctor-node-report-agrees-with-cluster-report
+description: |
+  The two doctor surfaces must not contradict each other. A cluster-scoped
+  finding shown on a node's page must be one the cluster report actually holds.
+
+  WHY THIS EXISTS. On 2026-08-19 globular-admin showed "Worst Severity:
+  CRITICAL" on all five nodes of a completely healthy cluster. The finding was
+  objectstore.write_quorum_lost — "active_drives=1 < write_quorum=3" — against
+  a MinIO pool that was, at that moment, 4 drives online / 0 offline / EC:2,
+  with an object written on one node and read back byte-identical from all
+  four.
+
+  The tell was that the finding named a DIFFERENT sole survivor on every page:
+
+    viewing globule-ryzen   -> active_nodes=10.0.0.63,  down=[.102 .9 .8]
+    viewing globule-nuc     -> active_nodes=10.0.0.8,   down=[.63 .102 .9]
+    viewing globule-hp-01   -> active_nodes=10.0.0.9,   down=[.63 .102 .8]
+    viewing globule-lenovo  -> active_nodes=10.0.0.102, down=[.63 .9 .8]
+
+  All four cannot each be the last one standing. known_down_nodes was empty in
+  every case: nothing had ever been observed down.
+
+  THE CAUSE. EvaluateForNode builds a snapshot whose Nodes list is filtered to
+  the single node being reported on, then evaluates CLUSTER-scoped rules
+  against that view. Rules that resolve membership see every other node as
+  absent — no NodeRecord, no inventory — and count them down. The verdict was
+  assembled entirely from nodes missing from a deliberately narrowed snapshot,
+  which is the shape ops.always.doctor.reduced-harvest-honesty exists to
+  forbid: a reduced harvest is an UNKNOWN, never a FAIL.
+
+  WHY THE CLUSTER REPORT ALONE CANNOT CATCH IT. `globular doctor report
+  cluster` was clean throughout — it is the only surface that receives the full
+  node set. doctor-report-clean asks exactly that surface and would have passed
+  on every one of those days while every node page showed CRITICAL. The
+  divergence between the surfaces is the defect, so the divergence is what this
+  asserts.
+
+  DIRECTIONALITY. Only findings present in the NODE report and absent from the
+  CLUSTER report fail this scenario. The reverse is legitimate — the cluster
+  report may hold cluster-scoped findings a node page does not surface — and is
+  recorded but never failed on.
+
+  WHY ALL FIVE NODES. The defect was per-node by construction: each page
+  indicted the other four. Checking one node would catch it here, but checking
+  every node is what distinguishes "this surface is broken" from "this one node
+  is odd", and it costs one probe each.
+
+  NOT COVERED HERE: whether either report is CORRECT about the cluster. This
+  pins agreement, not truth. A doctor that is wrong in the same way on both
+  surfaces passes this scenario and is caught by doctor-report-clean and by the
+  objectstore scenarios.
+
+suite: functional
+tags:
+  - cluster-doctor
+  - verdict-integrity
+  - reduced-harvest
+  - false-positive
+  - incident-2026-08-19
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # The doctor must be answering at all. An unreachable doctor returns no
+  # findings on both surfaces, which agree perfectly and prove nothing.
+  - type: probe
+    id: doctor_is_reachable
+    probe: doctor.report_severity
+    expect:
+      reachable: true
+
+baseline:
+  - type: probe
+    id: cluster_report_at_start
+    probe: doctor.report_severity
+
+assertions:
+  # ── Every node's page agrees with the cluster report ──────────────────────
+  # only_in_node counts cluster-scoped findings the node report invented. On
+  # 2026-08-19 this would have been 1 on all five nodes, each naming
+  # objectstore.write_quorum_lost, while the cluster report held none.
+  - type: probe
+    id: node1_agrees_with_cluster
+    probe: doctor.node_vs_cluster_agreement
+    params:
+      node: node-1
+    expect:
+      reachable: true
+      only_in_node: 0
+
+  - type: probe
+    id: node2_agrees_with_cluster
+    probe: doctor.node_vs_cluster_agreement
+    params:
+      node: node-2
+    expect:
+      reachable: true
+      only_in_node: 0
+
+  - type: probe
+    id: node3_agrees_with_cluster
+    probe: doctor.node_vs_cluster_agreement
+    params:
+      node: node-3
+    expect:
+      reachable: true
+      only_in_node: 0
+
+  - type: probe
+    id: node4_agrees_with_cluster
+    probe: doctor.node_vs_cluster_agreement
+    params:
+      node: node-4
+    expect:
+      reachable: true
+      only_in_node: 0
+
+  - type: probe
+    id: node5_agrees_with_cluster
+    probe: doctor.node_vs_cluster_agreement
+    params:
+      node: node-5
+    expect:
+      reachable: true
+      only_in_node: 0
+
+  # ── The cluster surface is still the one that owns the verdict ────────────
+  # Guards the degenerate pass where both surfaces went silent together: if the
+  # doctor stopped producing findings entirely, every node would "agree" while
+  # the platform had lost its diagnostic surface altogether.
+  - type: probe
+    id: doctor_still_producing_verdicts
+    probe: doctor.report_severity
+    expect:
+      reachable: true
+
+cleanup: []

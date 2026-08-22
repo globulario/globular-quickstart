@@ -62,7 +62,13 @@ assertions:
     expect:
       valid: true
       days_remaining_gte: 30
-      has_vip: true   # VIP MUST be in SANs — see session_vip_cert_fix.md
+      # WHEN a VIP is configured it MUST be in the SANs — a missing VIP SAN
+      # rejected all VIP traffic for 16 hours (session_vip_cert_fix.md).
+      # vip_san_ok carries that rule; it is false only when the ingress spec
+      # defines a VIP and the cert omits it. Asserting has_vip directly made
+      # this scenario fail on every quickstart cluster, where Day-0 leaves
+      # ingress explicit_disabled and no VIP address exists to be covered.
+      vip_san_ok: true
 
   - type: probe
     id: service_cert_node2

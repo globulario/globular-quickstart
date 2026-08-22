@@ -1,26 +1,30 @@
 version: 1
 name: release-failure-audit
 description: |
-  Surface the current release pipeline state as known, documented cluster state.
+  Surface the release pipeline state as known, documented cluster state.
 
-  This scenario does NOT assert that releases succeed — the cluster's MinIO
-  authentication is broken (all ServiceRelease records are in FAILED phase),
-  which is a known pre-condition for V1 that will be fixed in a subsequent
-  operational step.
-
-  What this scenario DOES assert:
+  What this scenario asserts:
     - The release audit probe works and returns a parseable result
     - Total ServiceRelease count is above a minimum (proves records exist)
-    - The failed count matches the total (proves the known failure mode)
-    - No phantom "succeeded" releases exist that could mask a real problem
+    - Releases actually converge — at least one reaches a terminal success
+      phase, proving the pipeline is not permanently stuck
 
-  This converts a cluster anomaly into documented, measurable state rather
-  than letting it be an invisible unknown. Once MinIO auth is repaired, this
-  scenario can be updated to assert succeeded_gte instead.
+  History (2026-08-11): this scenario previously asserted the OPPOSITE —
+  failed_gte matching the total, and succeeded == 0 — on the stated premise
+  that "all ServiceRelease records are in FAILED phase" because of stale MinIO
+  credentials. That premise was largely an artifact of the audit probe itself:
+  it counted phase == "SUCCEEDED", a phase that does not exist in the release
+  vocabulary (see ReleasePhase* in cluster_controllerpb/resources_types.go —
+  the terminal success phase is AVAILABLE). Every converged release was
+  therefore invisible to the probe and filed under "pending", making a working
+  pipeline look permanently broken. With the probe reading the real phases, the
+  cluster shows converged releases alongside a small number of genuine
+  failures.
 
-  Known root cause: MinIO access key on worker nodes is stale — does not match
-  the key stored in MinIO's internal database. All artifact publish operations
-  fail with "The Access Key Id you provided does not exist in this server".
+  Deliberately NOT asserted: an exact failure count. This scenario runs after
+  the chaos suites, which legitimately leave some releases FAILED; pinning a
+  number is what made the previous version break the moment the system
+  improved.
 
 suite: recovery
 tags:
@@ -50,22 +54,15 @@ assertions:
     expect:
       total_gte: 15   # 22 observed; floor guards against silent key deletion
 
-  # ── known failure state ────────────────────────────────────────────────────
-  # All releases are in FAILED state due to MinIO auth breakage.
-  # This assertion documents the known state. Update to succeeded_gte once fixed.
+  # ── the pipeline converges ─────────────────────────────────────────────────
+  # At least one release reaches the terminal success phase (AVAILABLE). This
+  # is the assertion the previous version said to add "once MinIO auth is
+  # repaired"; a floor of 1 proves the pipeline is not permanently stuck
+  # without pinning a count that chaos residue would make flaky.
   - type: probe
-    id: release_failure_state_known
+    id: releases_converge
     probe: release.audit
     expect:
-      failed_gte: 15   # matches total — MinIO auth broken across all releases
-
-  # ── no phantom successes ───────────────────────────────────────────────────
-  # If any succeeded, it would be surprising and worth investigating.
-  # Remove this assertion once the pipeline is repaired.
-  - type: probe
-    id: no_phantom_successes
-    probe: release.audit
-    expect:
-      succeeded: 0
+      succeeded_gte: 1
 
 cleanup: []

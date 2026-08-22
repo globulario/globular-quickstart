@@ -17,8 +17,8 @@ description: |
   Test coverage:
   - Cross-node: node-1 → node-2 (controller port 12000)
   - Cross-node: node-1 → node-2 (cluster doctor port 12100)
-  - Cross-node: node-2 → node-1 (rbac port 10004)
-  - Cross-node: node-3 → node-1 (authentication port 10005)
+  - Cross-node: node-2 → node-1 (rbac, port resolved at runtime)
+  - Cross-node: node-3 → node-1 (authentication, port resolved at runtime)
   - Same-node: node-1 → node-1 (etcd port 2379) — tests loopback mTLS
   - Compute-to-control: node-4 → node-1 (etcd port 2379)
 
@@ -32,7 +32,7 @@ description: |
   Ports used are from confirmed service registrations:
   - cluster_controller: 12000 on node-2 (10.10.0.12)
   - cluster_doctor: 12100 on node-2 (10.10.0.12)
-  - rbac: 10004 on node-1 (10.10.0.11)
+  - rbac: on node-1 (10.10.0.11), port resolved from the running process
   - authentication: 10005 on node-1 (10.10.0.11)
   - etcd client: 2379 on node-1 (10.10.0.11)
 suite: security
@@ -91,7 +91,13 @@ assertions:
     params:
       node: node-1
       target_ip: "10.10.0.12"
-      target_port: "12100"
+      # Resolved from node-2's runtime service config, not pinned. This was
+      # target_port: "12100" and had drifted — cluster-doctor listens on 12005,
+      # nothing was on 12100, and the probe reported connected=false, which read
+      # as an mTLS failure when it was a stale port. Globular allocates gRPC
+      # ports at runtime from etcd, so a literal port here cannot stay true.
+      target_service: cluster-doctor
+      target_node: node-2
     expect:
       connected: true
 
@@ -102,7 +108,12 @@ assertions:
     params:
       node: node-2
       target_ip: "10.10.0.11"
-      target_port: "10004"
+      # Resolved, not pinned — same reason as cluster-doctor above. This said
+      # target_port: "10004" and drifted: on 2026-08-18, in a cluster rebuilt
+      # from scratch, rbac came up on 10001 and NOTHING was on 10004, so the
+      # probe reported connected=false and read as an mTLS failure.
+      target_service: rbac
+      target_node: node-1
     expect:
       connected: true
 
@@ -123,7 +134,15 @@ assertions:
     params:
       node: node-3
       target_ip: "10.10.0.11"
-      target_port: "10005"
+      # This one was worse than a drifted port: it was PASSING for the wrong
+      # reason. target_port: "10005" is where the MONITORING service listens on
+      # this cluster; authentication serves on 10002. The handshake succeeded,
+      # the check went green, and it proved nothing about authentication.
+      #
+      # A pinned port does not just rot into a false failure — it can rot into a
+      # false pass against whatever else happens to hold the number.
+      target_service: authentication
+      target_node: node-1
     expect:
       connected: true
 

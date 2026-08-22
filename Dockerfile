@@ -1,17 +1,65 @@
 # globular-node — a full Globular node in a container
-# Uses systemd as PID 1 so the node agent works identically to bare metal.
-FROM ubuntu:22.04
+#
+# The image is a BARE MACHINE plus the release tarball. It deliberately
+# contains no Globular binaries, unit files, users, or state directories:
+# those are produced by running the real installer at first boot, exactly
+# the way an operator installs on bare metal.
+#
+#   node-1  → /opt/globular/release/<ver>/install.sh   (Day-0 founding node)
+#   node-N  → curl https://<gateway>:8443/join | bash  (real join path)
+#
+# Anything copied in here that the release would otherwise install is a
+# divergence, and divergence is what makes the simulation test the wrong
+# thing. Add packages to the release, not to this file.
+# Base MUST satisfy the glibc floor of every binary in the release.
+#
+# Release 1.2.288 is inconsistent: 54 of 55 binaries need at most GLIBC_2.34,
+# but file_server needs GLIBC_2.38 (it references a libm symbol the others
+# don't). Ubuntu 22.04 ships glibc 2.35, so file_server dies at exec with
+#   file_server: /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.38' not found
+# and Day-0 aborts at "Workload Services".
+#
+# That is a REAL release defect — docs/operators/building-from-source.md:30
+# advertises "Ubuntu 22.04+" support, and the release is built on a glibc-2.39
+# workstation rather than in a container pinned to the minimum baseline. Most
+# binaries survive by luck. Fix belongs in the release build, not here.
+#
+# 24.04 (glibc 2.39) is inside the documented range and matches the machine the
+# release is actually built on, so the simulation runs what ships today.
+FROM ubuntu:24.04
+
+ARG RELEASE_VERSION
+ENV GLOBULAR_RELEASE_VERSION=${RELEASE_VERSION}
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV container=docker
 
 # ── system deps ──────────────────────────────────────────
+# Only what a stock server image would already provide, plus what
+# install-day0.sh shells out to: python3, jq, openssl, tar, curl, dig,
+# setfacl, uuidgen, ss/ip. Globular's own dependencies (etcd, minio,
+# scylladb, envoy, keepalived, …) ship as packages in the tarball and
+# MUST NOT be apt-installed here.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         systemd systemd-sysv dbus \
+        systemd-resolved \
         ca-certificates curl iproute2 iputils-ping \
-        iptables keepalived \
-        jq openssl \
+        iptables \
+        jq openssl tar python3 \
+        acl uuid-runtime dnsutils procps \
+        sudo less \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# systemd-resolved is NOT optional, despite being absent from a minimal image:
+#   1. The release ships a libnss-resolve .deb whose dependency is exact —
+#      `depends on systemd-resolved (= 255.4-1ubuntu8.16)`. Without it, dpkg
+#      leaves the package unconfigured, apt "corrects dependencies" by removing
+#      it, and the JOIN script fails its install-local-debs step:
+#        error=install local debs: packages not installed after dpkg: libnss-resolve
+#   2. configure-resolver.sh otherwise reports "No supported resolver system
+#      found (systemd-resolved, NetworkManager)" and skips DNS configuration,
+#      degrading *.globular.internal resolution to the /etc/hosts seed.
+# A real Ubuntu server has it; omitting it was a container-only divergence.
 
 # Remove unnecessary systemd units that interfere with containers
 RUN (cd /lib/systemd/system/sysinit.target.wants/ && \
@@ -24,53 +72,29 @@ RUN (cd /lib/systemd/system/sysinit.target.wants/ && \
     rm -f /lib/systemd/system/basic.target.wants/* ; \
     rm -f /lib/systemd/system/anaconda.target.wants/*
 
-# ── globular user ────────────────────────────────────────
-# Pin UID/GID to 10001 to avoid collisions with host system users.
-# Without this, `useradd -r` picks UID 999 which is `dnsmasq` on Ubuntu,
-# making all container processes appear as dnsmasq in host `ps` output.
-RUN groupadd -r -g 10001 globular && useradd -r -u 10001 -g globular -d /var/lib/globular -s /bin/false globular
+# ── release tarball ──────────────────────────────────────
+# Staged by `make collect` from $(SERVICES_DIR)/dist/. This is the single
+# source of every Globular bit in the image. It is left as a tarball (not
+# pre-extracted) so the founding node exercises the same unpack + checksum
+# path a real operator does, and so the gateway can serve the untouched
+# artifact to joining nodes from /var/lib/globular/releases/<ver>/.
+COPY release/ /opt/globular/release/
 
-# ── directory skeleton ───────────────────────────────────
-RUN mkdir -p \
-    /usr/lib/globular/bin \
-    /var/lib/globular/pki/issued/services \
-    /var/lib/globular/pki/ca \
-    /var/lib/globular/config \
-    /var/lib/globular/etcd \
-    /var/lib/globular/minio/data \
-    /var/lib/globular/prometheus/data \
-    /var/lib/globular/keys \
-    /var/lib/globular/services \
-    /var/lib/globular/domains \
-    /var/lib/globular/mcp \
-    /run/globular/envoy \
-    /etc/globular
-
-# ── binaries ─────────────────────────────────────────────
-# Copied from the build host (build-all-packages.sh output)
-COPY binaries/ /usr/lib/globular/bin/
-RUN chmod +x /usr/lib/globular/bin/*
-
-# ── systemd unit files ───────────────────────────────────
-# Template units — entrypoint renders {{.NodeIP}} etc. at boot
-COPY units/ /etc/systemd/system/
-
-# ── RBAC policy ──────────────────────────────────────────
-COPY policy/ /opt/globular/policy/
-
-# ── extra systemd units (quickstart-only) ────────────────
-COPY units-extra/ /opt/globular/units-extra/
-
-# ── bootstrap + entrypoint scripts ───────────────────────
+# ── quickstart orchestration scripts ─────────────────────
+# These do NOT install Globular. They only do what a human operator or the
+# surrounding datacenter would do: resolve peers, run install.sh on the
+# founder, carry the join token to the joiners, and cap ScyllaDB's memory
+# the way you would on a small node.
 COPY scripts/ /opt/globular/scripts/
 RUN chmod +x /opt/globular/scripts/*.sh
 
-# ── node metadata (overridden by compose environment) ────
+# ── node metadata (supplied by docker-compose) ───────────
 ENV GLOBULAR_NODE_NAME=""
 ENV GLOBULAR_NODE_IP=""
-ENV GLOBULAR_CLUSTER_PEERS=""
+ENV GLOBULAR_ROLE=""
 ENV GLOBULAR_PROFILES=""
-ENV GLOBULAR_CA_MODE="generate"
+ENV GLOBULAR_CONTROLLER_IP=""
+ENV GLOBULAR_CLUSTER_DOMAIN="globular.internal"
 
 # systemd as PID 1
 STOPSIGNAL SIGRTMIN+3

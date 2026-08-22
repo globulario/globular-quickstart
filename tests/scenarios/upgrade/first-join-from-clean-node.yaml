@@ -83,11 +83,18 @@ steps:
   # Detach this node's etcd member before wiping it, the way clean-node.sh does.
   # Wiping a live voter and letting the cluster rediscover it is how a member
   # ends up with a data directory the raft log no longer matches.
+  # self_ip is how the member is located in `member list` output, and peer_ip is
+  # the surviving endpoint the remove is committed against. Both were omitted,
+  # so the action refused with "self_ip param required" and never detached
+  # anything — the wipe below then ran against a LIVE voter, which is precisely
+  # the mistake this step exists to avoid.
   - type: action
     id: detach_etcd_member
     action: chaos.detach_node_etcd
     params:
       node: node-5
+      self_ip: "10.10.0.15"
+      peer_ip: "10.10.0.11"
 
   # Remove the node from the CONTROLLER as well.
   #

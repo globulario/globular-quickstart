@@ -144,12 +144,19 @@ assertions:
     expect:
       fenced: true
 
-  # Cluster is degraded but etcd quorum is intact (3 founding nodes still up)
+  # Cluster is degraded but etcd quorum is intact (3 founding nodes still up).
+  #
+  # The field is `healthy`, so the matcher key is `healthy_gte` — every other
+  # scenario asserting cluster.etcd_members uses that. This said
+  # `healthy_count_gte`, which resolves to a field named `healthy_count` that
+  # the probe never returns, so the comparison was None >= 3 and the assertion
+  # failed on a perfectly healthy quorum (observed: total=3 healthy=3
+  # unhealthy=0, reported as a failure).
   - type: probe
     id: etcd_quorum_intact
     probe: cluster.etcd_members
     expect:
-      healthy_count_gte: 3
+      healthy_gte: 3
 
   # etcd can still accept writes
   - type: probe

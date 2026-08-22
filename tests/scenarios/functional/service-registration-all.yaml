@@ -135,13 +135,15 @@ assertions:
     expect:
       registered: true
 
-  - type: probe
-    id: discovery_registered
-    probe: service.registered
-    params:
-      service: discovery
-    expect:
-      registered: true
+  # NOTE: there is deliberately no discovery_registered assertion here.
+  # The discovery service was retired in services@6d78986b
+  # ("chore(discovery): retire discovery service — absorbed by etcd + xDS")
+  # and removed from the build manifests in services@3810bc74. It has no
+  # binary, proto, package spec, or DesiredService record, and node-agent
+  # explicitly skips it as "a retired package from older node.join
+  # definitions" (workflow_runner.go). Asserting it here failed this scenario
+  # against the product's intended shape, not against a defect.
+  # Do not re-add: etcd (registration) and xDS (routing) own this now.
 
   - type: probe
     id: event_registered

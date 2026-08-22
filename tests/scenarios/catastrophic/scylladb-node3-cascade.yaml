@@ -74,13 +74,29 @@ preconditions:
     expect:
       success: true
 
+  # ScyllaDB does NOT have its own container. It runs as the upstream
+  # scylla-server.service INSIDE each storage-profile node container, so the
+  # unit is what must be probed and stopped.
+  #
+  # This scenario targeted node: "scylladb" -> container "globular-scylladb",
+  # which does not exist in this topology (docker-compose.yml declares no
+  # scylladb service at all). The precondition therefore failed before any
+  # chaos was injected, and the failure-domain isolation this scenario exists
+  # to prove was never once exercised. resilience/scylladb-restart.yaml was
+  # migrated off the sidecar for exactly this reason; this one was missed.
+  #
+  # node-1 is the ScyllaDB host used here because node-3 is the node this
+  # scenario stops — killing Scylla on the node that is about to go down would
+  # collapse the two halves of the cascade into one fault.
   - type: probe
-    id: scylladb_container_running
-    probe: node.container_running
+    id: scylladb_service_running
+    probe: service.status
     params:
-      node: scylladb
+      node: node-1
+      service: scylla
+      unit: scylla-server.service
     expect:
-      running: true
+      unit_state: active
 
   - type: probe
     id: node3_running_before
@@ -124,9 +140,11 @@ steps:
   # ScyllaDB goes down first. Services using ScyllaDB (AI memory, DNS zones,
   # audit log) will start failing their ScyllaDB connections.
   - id: stop_scylladb
-    action: chaos.stop_node
+    action: chaos.kill_service
     params:
-      node: scylladb
+      node: node-1
+      service: scylla
+      unit: scylla-server.service
 
   # ── Then stop node-3 (AI services + 1 etcd member) ─────────────────────────
   # Stopping node-3 removes: ai_memory, ai_executor, ai_router, ai_watcher,
@@ -175,11 +193,13 @@ assertions:
   # ── ScyllaDB is stopped ────────────────────────────────────────────────────
   - type: probe
     id: scylladb_stopped
-    probe: node.container_running
+    probe: service.status
     params:
-      node: scylladb
+      node: node-1
+      service: scylla
+      unit: scylla-server.service
     expect:
-      running: false
+      unit_state: inactive
 
   # ── node-3 is stopped ─────────────────────────────────────────────────────
   - type: probe
@@ -245,22 +265,26 @@ cleanup:
   # ScyllaDB must be online before node-3's AI services attempt to reconnect.
 
   - id: start_scylladb
-    action: chaos.start_node
+    action: chaos.restart_service
     params:
-      node: scylladb
+      node: node-1
+      service: scylla
+      unit: scylla-server.service
 
   # Wait for ScyllaDB to become ready (it needs ~30-60s to initialize)
   - id: wait_scylladb_ready
     action: wait
     params:
-      timeout: 90
+      timeout: 180
       poll_interval: 10
       until:
-        probe: node.container_running
+        probe: service.status
         params:
-          node: scylladb
+          node: node-1
+          service: scylla
+          unit: scylla-server.service
         expect:
-          running: true
+          unit_state: active
 
   # Now restart node-3
   - id: start_node3

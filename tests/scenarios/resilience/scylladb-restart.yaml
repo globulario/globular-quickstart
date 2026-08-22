@@ -27,8 +27,15 @@ description: |
   This test checks that DNS service is still registered in etcd but does not
   assert DNS resolution works (that's the dns-service-recovery scenario).
 
-  Note: ScyllaDB uses container name "globular-scylladb", so chaos.stop_node
-  with node: "scylladb" maps to container "globular-scylladb" correctly.
+  Topology note: ScyllaDB does NOT have its own container. It runs as the
+  upstream scylla-server.service INSIDE each storage-profile node container.
+  This scenario therefore stops that unit on a storage node rather than
+  stopping a container.
+
+  It previously targeted node: "scylladb" -> container "globular-scylladb",
+  which does not exist in this topology, so the precondition failed before any
+  chaos was injected and the failure-domain isolation this scenario exists to
+  prove was never actually exercised.
 suite: resilience
 tags:
   - chaos
@@ -57,12 +64,14 @@ preconditions:
       healthy_gte: 3
 
   - type: probe
-    id: scylladb_container_running
-    probe: node.container_running
+    id: scylladb_service_running
+    probe: service.status
     params:
-      node: scylladb
+      node: node-1
+      service: scylla
+      unit: scylla-server.service
     expect:
-      running: true
+      unit_state: active
 
   - type: probe
     id: write_quorum_before
@@ -86,22 +95,26 @@ baseline:
 steps:
   # ── Step 1: Stop ScyllaDB ─────────────────────────────────────────────────
   - id: stop_scylladb
-    action: chaos.stop_node
+    action: chaos.kill_service
     params:
-      node: scylladb
+      node: node-1
+      service: scylla
+      unit: scylla-server.service
 
   # ── Step 2: Wait for container to stop ───────────────────────────────────
   - id: wait_for_scylladb_stopped
     action: wait
     params:
-      timeout: 30
+      timeout: 60
       poll_interval: 5
       until:
-        probe: node.container_running
+        probe: service.status
         params:
-          node: scylladb
+          node: node-1
+          service: scylla
+          unit: scylla-server.service
         expect:
-          running: false
+          unit_state: inactive
 
   # ── Step 3: Assert etcd is unaffected ────────────────────────────────────
   # These must succeed even with ScyllaDB stopped.
@@ -137,9 +150,11 @@ steps:
 
   # ── Step 4: Restart ScyllaDB ─────────────────────────────────────────────
   - id: start_scylladb
-    action: chaos.start_node
+    action: chaos.restart_service
     params:
-      node: scylladb
+      node: node-1
+      service: scylla
+      unit: scylla-server.service
 
   # ── Step 5: Wait for ScyllaDB to become healthy ───────────────────────────
   # ScyllaDB has a 60s startup period + 10s health check interval.
@@ -147,14 +162,16 @@ steps:
   - id: wait_for_scylladb_healthy
     action: wait
     params:
-      timeout: 180
+      timeout: 300
       poll_interval: 15
       until:
-        probe: node.container_running
+        probe: service.status
         params:
-          node: scylladb
+          node: node-1
+          service: scylla
+          unit: scylla-server.service
         expect:
-          running: true
+          unit_state: active
 
 assertions:
   # ── Final state assertions ────────────────────────────────────────────────
@@ -178,11 +195,13 @@ assertions:
 
   - type: probe
     id: scylladb_running_after
-    probe: node.container_running
+    probe: service.status
     params:
-      node: scylladb
+      node: node-1
+      service: scylla
+      unit: scylla-server.service
     expect:
-      running: true
+      unit_state: active
 
   # Core services must still be registered
   - type: probe

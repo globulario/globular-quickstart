@@ -201,17 +201,29 @@ assertions:
 
   # If deny-on-unknown-scope were wedging the cluster, it would surface here as
   # unconverged state after RBAC returned.
+  #
+  # Scoped to a 2-minute window on purpose. cluster.reconcile_clean defaults to
+  # `since: 30 min ago`, and this scenario has just killed RBAC — the reconcile
+  # failures that provoked are inside the default window and never age out of
+  # it, so the assertion could only ever report the fault it induced itself.
+  # "Did the cluster reconverge after RBAC returned" is a question about NOW.
   - type: probe
     id: reconcile_clean_after
     probe: cluster.reconcile_clean
+    params:
+      node: node-1
+      since: 2 min ago
     expect:
       clean: true
 
+  # `error_count` is not a field doctor.report_severity emits — it reports
+  # `error` — so this failed as a missing field regardless of the cluster's
+  # actual severity counts.
   - type: probe
     id: no_error_findings_after
     probe: doctor.report_severity
     expect:
-      error_count: 0
+      error_lte: 0
 
 artifacts:
   collect:

@@ -6,6 +6,38 @@ description: |
   Validates that installed/runtime mismatch does not cause unbounded reconcile loops.
   Observes convergence behavior and collects awareness evidence against pattern invariants.
 
+contract:
+  version: 1
+  kind: certification
+  proves: >
+    Installed/runtime mismatch does not create an unbounded reconciliation loop,
+    and inability to converge remains observable rather than being reported as success.
+  origin:
+    type: architecture
+    ref: pattern.desired_state_reconciliation
+  governing_contracts:
+    - pattern.desired_state_reconciliation
+  invariants:
+    - convergence.no_infinite_retry
+    - install.result.atomic_commit
+    - infra.desired_hash_consistency
+    - runtime.installed_state_not_liveness
+  known_failure_modes:
+    - pattern.stale_authority
+    - pattern.partial_truth
+  forbidden_outcomes:
+    - unbounded reconciliation dispatch
+    - runtime liveness accepted as installed-state proof
+    - convergence failure reported as success
+  determinism:
+    replayable: false
+  learning:
+    enabled: true
+    candidate_types:
+      - failure_mode
+      - invariant
+      - scenario
+
 awareness:
   enabled: true
   task: "desired installed runtime state mismatch unbounded reconciliation loop"

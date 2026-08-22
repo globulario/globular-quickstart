@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+"""Legacy scenario executor plus additive semantic-chaos actions."""
+from __future__ import annotations
+
+import importlib.machinery
+import importlib.util
+import sys
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+HARNESS_DIR = SCRIPT_DIR.parent
+LIB_DIR = HARNESS_DIR / "lib"
+if str(LIB_DIR) not in sys.path:
+    sys.path.insert(0, str(LIB_DIR))
+
+from semantic_chaos import handle as handle_semantic_chaos  # noqa: E402
+
+
+def load_legacy():
+    path = SCRIPT_DIR / "globular-scenario"
+    loader = importlib.machinery.SourceFileLoader("globular_scenario_legacy", str(path))
+    spec = importlib.util.spec_from_loader(loader.name, loader)
+    if spec is None:
+        raise RuntimeError(f"cannot load legacy executor: {path}")
+    module = importlib.util.module_from_spec(spec)
+    loader.exec_module(module)
+    return module
+
+
+def main() -> None:
+    legacy = load_legacy()
+    original = legacy.ScenarioExecutor._exec_chaos
+
+    def layered(self, item, section):
+        handled = handle_semantic_chaos(self, item, section)
+        if handled is not None:
+            return handled
+        return original(self, item, section)
+
+    legacy.ScenarioExecutor._exec_chaos = layered
+    legacy.main()
+
+
+if __name__ == "__main__":
+    main()

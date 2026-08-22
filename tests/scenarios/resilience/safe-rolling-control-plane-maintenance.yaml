@@ -1,0 +1,241 @@
+version: 1
+name: safe-rolling-control-plane-maintenance
+description: |
+  Verify the safe rolling-maintenance discipline for a three-member control
+  plane: remove exactly one member, prove majority writes still work, restore
+  full quorum, and only then remove the next member.
+
+  This is the safety-dual of catastrophic/rolling-quorum-collapse.yaml. That
+  scenario proves that taking a second member down before the first member has
+  recovered destroys quorum. This scenario proves the intended operator rule:
+  never advance a control-plane maintenance window until the previous member is
+  healthy and caught up.
+
+  node-1 remains running because the harness uses node-1 as its etcd probe
+  anchor. The scenario rolls node-2 and node-3 and requires full 3/3 health
+  between disruptions.
+
+  What this validates:
+    - 2/3 Raft quorum remains writable during each single-member outage
+    - a restarted member catches up before the next maintenance step begins
+    - repeated membership turnover does not leave stale health or registration
+      state behind
+    - the cluster finishes with full quorum and write availability
+
+suite: resilience
+tags:
+  - chaos
+  - control-plane
+  - rolling-maintenance
+  - etcd-quorum
+  - raft
+  - operator-safety
+  - sequential-recovery
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy_before
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: full_quorum_before
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  - type: probe
+    id: writes_work_before
+    probe: etcd.write_test
+    expect:
+      success: true
+
+baseline:
+  - type: probe
+    id: baseline_members
+    probe: cluster.etcd_members
+
+  - type: probe
+    id: baseline_health
+    probe: cluster.health
+
+steps:
+  # Phase 1: maintain node-2.
+  - id: stop_node2
+    action: chaos.stop_node
+    params:
+      node: node-2
+
+  - id: wait_node2_stopped
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: node-2
+        expect:
+          running: false
+
+  - id: prove_node2_outage_keeps_writes
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: etcd.write_test
+        params: {}
+        expect:
+          success: true
+
+  - id: node2_outage_member_state
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 2
+      unhealthy_gte: 1
+
+  - id: start_node2
+    action: chaos.start_node
+    params:
+      node: node-2
+
+  - id: wait_node2_full_quorum_recovery
+    action: wait
+    params:
+      timeout: 180
+      poll_interval: 10
+      until:
+        probe: cluster.etcd_members
+        params: {}
+        expect:
+          healthy_gte: 3
+
+  - id: prove_full_quorum_before_advancing
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  # Phase 2: only after node-2 has recovered, maintain node-3.
+  - id: stop_node3
+    action: chaos.stop_node
+    params:
+      node: node-3
+
+  - id: wait_node3_stopped
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: node-3
+        expect:
+          running: false
+
+  - id: prove_node3_outage_keeps_writes
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: etcd.write_test
+        params: {}
+        expect:
+          success: true
+
+  - id: node3_outage_member_state
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 2
+      unhealthy_gte: 1
+
+  - id: start_node3
+    action: chaos.start_node
+    params:
+      node: node-3
+
+  - id: wait_node3_full_quorum_recovery
+    action: wait
+    params:
+      timeout: 180
+      poll_interval: 10
+      until:
+        probe: cluster.etcd_members
+        params: {}
+        expect:
+          healthy_gte: 3
+
+assertions:
+  - type: probe
+    id: full_quorum_after
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  - type: probe
+    id: writes_work_after
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: node2_running_after
+    probe: node.container_running
+    params:
+      node: node-2
+    expect:
+      running: true
+
+  - type: probe
+    id: node3_running_after
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: true
+
+cleanup:
+  - id: ensure_node2_running
+    action: chaos.start_node
+    params:
+      node: node-2
+
+  - id: ensure_node3_running
+    action: chaos.start_node
+    params:
+      node: node-3
+
+  - id: wait_for_full_quorum
+    action: wait
+    params:
+      timeout: 180
+      poll_interval: 10
+      until:
+        probe: cluster.etcd_members
+        params: {}
+        expect:
+          healthy_gte: 3
+
+  - id: final_write_test
+    probe: etcd.write_test
+    expect:
+      success: true

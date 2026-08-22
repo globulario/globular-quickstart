@@ -1,0 +1,169 @@
+version: 1
+name: control-plane-transient-asymmetric-partition
+description: |
+  Verify that a short one-way network failure on a control-plane member does not
+  create split-brain, does not destroy write availability on the majority side,
+  and does not trigger partition fencing before the configured stale-heartbeat
+  thresholds are reached.
+
+  This exercises a failure shape that a clean bidirectional partition does not:
+  node-3 can still receive traffic, but its outbound traffic is dropped. TCP and
+  Raft exchanges become asymmetric and node-3 cannot successfully participate
+  in quorum, while nodes 1 and 2 must retain majority authority.
+
+  The disruption is deliberately shorter than Globular's partition fencing
+  thresholds. The safety property is therefore two-sided:
+    1. Majority writes continue while node-3 is unreachable as a Raft peer.
+    2. A transient fault does not cause premature fencing of node-3.
+
+  This complements network-partition-fencing.yaml, which exercises a long,
+  bidirectional worker partition that is expected to become fenced.
+
+suite: resilience
+tags:
+  - chaos
+  - network
+  - asymmetric-partition
+  - control-plane
+  - etcd-quorum
+  - raft
+  - fencing-hysteresis
+  - transient-failure
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy_before
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: full_etcd_quorum_before
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  - type: probe
+    id: writes_work_before
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: node3_running_before
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: true
+
+  - type: probe
+    id: node3_not_fenced_before
+    probe: node.partition_fenced
+    params:
+      node: node-3
+    expect:
+      fenced: false
+
+baseline:
+  - type: probe
+    id: baseline_etcd_members
+    probe: cluster.etcd_members
+
+  - type: probe
+    id: baseline_cluster_health
+    probe: cluster.health
+
+steps:
+  - id: block_node3_outbound
+    action: chaos.block_network
+    params:
+      node: node-3
+      direction: out
+
+  - id: wait_until_node3_is_unhealthy_peer
+    action: wait
+    params:
+      timeout: 45
+      poll_interval: 5
+      until:
+        probe: cluster.etcd_members
+        params: {}
+        expect:
+          healthy_gte: 2
+          unhealthy_gte: 1
+
+  - id: prove_majority_still_accepts_writes
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - id: hold_transient_partition_briefly
+    action: wait
+    params:
+      timeout: 30
+
+assertions:
+  - type: probe
+    id: majority_quorum_remains_available
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 2
+      unhealthy_gte: 1
+
+  - type: probe
+    id: writes_still_succeed
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: node3_container_never_stopped
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: true
+
+  - type: probe
+    id: transient_partition_not_fenced
+    probe: node.partition_fenced
+    params:
+      node: node-3
+    expect:
+      fenced: false
+
+cleanup:
+  - id: unblock_node3_network
+    action: chaos.unblock_network
+    params:
+      node: node-3
+
+  - id: wait_for_full_etcd_recovery
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 10
+      until:
+        probe: cluster.etcd_members
+        params: {}
+        expect:
+          healthy_gte: 3
+
+  - id: final_write_test
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - id: final_cluster_health
+    probe: cluster.health
+    expect:
+      status: healthy

@@ -182,7 +182,12 @@ steps:
     params:
       node: node-1
       name: dns
-      version: 1.2.312
+      # @staged resolves to the version this release actually shipped, read from
+      # the node's staged CAS. Hardcoding 1.2.312 pinned this scenario to the
+      # cluster it was written against; on 1.2.328 (dns 1.2.317) it failed as
+      # "artifact not found", which reads like a repository defect rather than a
+      # stale literal in the test.
+      version: "@staged"
       expect: accepted
 
   - type: action
@@ -199,7 +204,6 @@ steps:
         probe: cluster.installed_version_convergence
         params:
           package: dns
-          expect_version: 1.2.312
         expect:
           lagging: 0
           unique: 1
@@ -245,18 +249,24 @@ assertions:
     probe: cluster.installed_version_convergence
     params:
       package: dns
-      expect_version: 1.2.312
     expect:
       lagging: 0
       unique: 1
       nodes_gte: 5
 
   # ── The pipeline did not damage what it touched ───────────────────────────
+  # No explicit `since`: the runner scopes this to THIS scenario's execution.
+  #
+  # A fixed "15 min ago" was wrong in both directions. This assertion fires ~30s
+  # into the scenario, so the window reached ~14 minutes BEFORE the scenario
+  # started and read the cluster's own bring-up as this pipeline's damage — on
+  # 2026-08-23 it failed on "no workflow service instance is reachable" logged
+  # while the workflow service was still starting, minutes before the suite ran.
+  # A fixed window is also too SHORT for a long scenario, silently dropping the
+  # early half of its own effects.
   - type: probe
     id: reconcile_clean
     probe: cluster.reconcile_clean
-    params:
-      since: "15 min ago"
     expect:
       clean: true
 

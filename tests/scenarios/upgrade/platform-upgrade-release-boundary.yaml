@@ -56,6 +56,31 @@ baseline:
     id: release_audit_at_start
     probe: release.audit
 
+steps:
+  # Let in-flight releases reach a terminal state before judging the boundary.
+  #
+  # The assertion below asks whether the release boundary is UNAMBIGUOUS. A
+  # release still in flight is not an ambiguous boundary, it is an unfinished
+  # one — and sampling once cannot tell them apart. On 2026-08-23 this scenario
+  # failed with pending=2 of 24 on a cluster where the same probe returned
+  # 24 succeeded / 0 pending a few minutes later: it had run right behind
+  # package-upgrade-converges-on-all-nodes and caught that rollout mid-flight.
+  #
+  # Polled, not slept: a boundary that never resolves still fails, and the
+  # assertion below is unchanged, so a genuinely ambiguous boundary is still
+  # caught.
+  - type: action
+    id: let_in_flight_releases_settle
+    action: wait
+    params:
+      timeout: 600
+      poll_interval: 20
+      reason: "allow releases dispatched by a preceding scenario to reach a terminal state"
+      until:
+        probe: release.audit
+        expect:
+          pending: 0
+
 assertions:
   # ── One active release, cluster-wide ──────────────────────────────────────
   # Two "active" releases is not a slow rollout, it is an undecidable one:

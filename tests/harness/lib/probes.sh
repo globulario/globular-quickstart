@@ -479,9 +479,30 @@ probe_doctor_finding() {
 # 4=CRITICAL. If the RPC is unreachable this reports reachable:false rather
 # than zero counts — an unreachable doctor is not a clean cluster.
 probe_doctor_report_severity() {
-    local raw
-    raw=$(docker exec "$ETCD_CONTAINER" \
-        globular doctor report cluster --fresh --json --timeout 120s 2>/dev/null)
+    local raw="" attempts=0
+    # Retry for a COMPLETE harvest before reporting counts.
+    #
+    # A reduced harvest is an UNKNOWN dressed as a count
+    # (ops.always.doctor.reduced-harvest-honesty): when collector sub-fetches
+    # fail, findings are tagged [reduced-harvest] and the verdict is bounded by
+    # partial data. Callers were told to gate on the flag, and none did — so on
+    # 2026-08-22 five scenarios failed asserting error==0 against a sweep that
+    # reported error=1 / reduced_harvest=true while the cluster's steady state
+    # held zero errors. The error was an artifact of the partial sweep, not the
+    # cluster.
+    #
+    # Retrying here fixes every caller at once and hides nothing: the flag is
+    # still reported, and `attempts` records how many sweeps it took, so a
+    # cluster that can never produce a complete harvest stays visible instead of
+    # being smoothed into a pass.
+    while [ "$attempts" -lt 3 ]; do
+        attempts=$((attempts + 1))
+        raw=$(docker exec "$ETCD_CONTAINER" \
+            globular doctor report cluster --fresh --json --timeout 120s 2>/dev/null)
+        [ -n "$raw" ] || continue
+        printf '%s' "$raw" | grep -q '\[reduced-harvest\]' || break
+        [ "$attempts" -lt 3 ] && sleep 15
+    done
 
     if [ -z "$raw" ]; then
         echo '{"reachable":false,"error":0,"warn":0,"info":0,"total":0,"worst":"UNREACHABLE","reduced_harvest":false}'
@@ -1149,14 +1170,29 @@ probe_node_etcd_registered() {
         return
     fi
 
-    local val
-    val=$(_etcd_get "/globular/nodes/$uuid/node_agent_metrics_port" 2>/dev/null || echo "")
+    # Registration is the presence of the node's OWN record under its canonical
+    # id — not the presence of node_agent_metrics_port.
+    #
+    # That key was the original proxy and it is a side effect, not the fact:
+    # node-agent persists the metrics port under whatever node id it holds when
+    # it binds the listener, and after a wipe+rejoin that is a PRE-JOIN id, not
+    # the canonical one. Observed 2026-08-23: node-5's state.json said
+    # 35ac3821-..., every other node had its key under its canonical id, and
+    # node-5's key sat under 2da500c8-... — node-5's id from an earlier
+    # incarnation. The node was registered, healthy, and an etcd member; the
+    # proxy said "not registered".
+    #
+    # The mis-keyed metrics port is a real defect and is reported separately in
+    # metrics_port_key_under_canonical_id, so fixing the proxy does not hide it.
+    local record metrics
+    record=$(_etcd_keys "/globular/nodes/$uuid/" 2>/dev/null | head -1)
+    metrics=$(_etcd_get "/globular/nodes/$uuid/node_agent_metrics_port" 2>/dev/null || echo "")
 
-    if [ -n "$val" ]; then
-        echo "{\"registered\":true,\"node\":\"$node\",\"uuid\":\"$uuid\"}"
-    else
-        echo "{\"registered\":false,\"node\":\"$node\",\"uuid\":\"$uuid\"}"
-    fi
+    local reg=false mp=false
+    [ -n "$record" ] && reg=true
+    [ -n "$metrics" ] && mp=true
+
+    echo "{\"registered\":${reg},\"node\":\"$node\",\"uuid\":\"$uuid\",\"metrics_port_key_under_canonical_id\":${mp}}"
 }
 
 # probe: cluster.installed_packages
@@ -2105,9 +2141,24 @@ print(len(names), len(set(names)), ",".join(dupes))
 # hold cluster-scoped findings that a node page does not surface — so it is
 # reported but never failed on.
 #
-# Both reports are fetched with --fresh and IN PARALLEL: the scenario runner
-# caps every probe at 45s, and two sequential fresh harvests do not reliably
-# fit inside that.
+# Both reports are fetched with --fresh, SEQUENTIALLY.
+#
+# They were parallel at first, to fit the runner's 45s probe cap. That was
+# counterproductive: two concurrent --fresh harvests contend on the same doctor,
+# and one of them blows its own timeout. Measured 2026-08-22 on the 5-node sim —
+# concurrent, a node report hit the full 35s and returned nothing; the same
+# report run alone completed in 12.8s with 29 findings. The failure the
+# parallelism was meant to avoid was caused by the parallelism.
+#
+# Sequential costs ~13s + ~13s and fits the cap with room to spare.
+#
+# A single disagreeing sample is also not reported as disagreement. The two
+# reports are separate harvests taken seconds apart, so a finding that
+# legitimately appears or clears between them reads as divergence — observed
+# with etcd.stale_member on a freshly converged cluster, present in the node
+# report and absent from the cluster report, gone on the next sample. Only a
+# divergence that reproduces is real; the attempt count is recorded so a
+# flapping cluster stays visible instead of being smoothed away.
 probe_doctor_node_vs_cluster_agreement() {
     local node=""
     while [[ $# -gt 0 ]]; do
@@ -2134,22 +2185,39 @@ probe_doctor_node_vs_cluster_agreement() {
     tmpc=$(mktemp) || return
     tmpn=$(mktemp) || return
 
-    docker exec "$ETCD_CONTAINER" \
-        globular doctor report cluster --fresh --json --timeout 35s >"$tmpc" 2>/dev/null &
-    local pid_c=$!
-    docker exec "$ETCD_CONTAINER" \
-        globular doctor report node "$uuid" --fresh --json --timeout 35s >"$tmpn" 2>/dev/null &
-    local pid_n=$!
-    wait "$pid_c" 2>/dev/null
-    wait "$pid_n" 2>/dev/null
+    local attempts=0 disagree=1
+    local out=""
+    while [ "$attempts" -lt 3 ]; do
+        attempts=$((attempts + 1))
+        : >"$tmpc"; : >"$tmpn"
+        docker exec "$ETCD_CONTAINER" \
+            globular doctor report cluster --fresh --json --timeout 20s >"$tmpc" 2>/dev/null
+        docker exec "$ETCD_CONTAINER" \
+            globular doctor report node "$uuid" --fresh --json --timeout 20s >"$tmpn" 2>/dev/null
+        if [ ! -s "$tmpc" ] || [ ! -s "$tmpn" ]; then
+            continue
+        fi
+        out="$(_dnvc_compare "$tmpc" "$tmpn" "$node" "$uuid" "$attempts")"
+        disagree="$(printf '%s' "$out" | python3 -c 'import json,sys
+try: print(json.load(sys.stdin).get("only_in_node", 0))
+except Exception: print(0)' 2>/dev/null || echo 0)"
+        [ "$disagree" = "0" ] && break
+    done
 
-    if [ ! -s "$tmpc" ] || [ ! -s "$tmpn" ]; then
+    if [ -z "$out" ]; then
         rm -f "$tmpc" "$tmpn"
-        echo "{\"reachable\":false,\"node\":\"$node\",\"uuid\":\"$uuid\",\"error\":\"doctor_unreachable\"}"
+        echo "{\"reachable\":false,\"node\":\"$node\",\"uuid\":\"$uuid\",\"attempts\":$attempts,\"error\":\"doctor_unreachable\"}"
         return
     fi
+    rm -f "$tmpc" "$tmpn"
+    printf '%s\n' "$out"
+    return
+}
 
-    NODE_NAME="$node" NODE_UUID="$uuid" python3 -c '
+# _dnvc_compare <cluster.json> <node.json> <node> <uuid> <attempts>
+# Emits the comparison verdict for one sample.
+_dnvc_compare() {
+    NODE_NAME="$3" NODE_UUID="$4" ATTEMPTS="$5" python3 -c '
 import sys, json, os
 
 def cluster_scoped(path):
@@ -2184,13 +2252,13 @@ print(json.dumps({
     "reachable": True,
     "node": os.environ["NODE_NAME"],
     "uuid": os.environ["NODE_UUID"],
+    "attempts": int(os.environ["ATTEMPTS"]),
     "node_cluster_scoped": len(nd),
     "cluster_cluster_scoped": len(cl),
     "only_in_node": len(only),
     "only_in_node_ids": ",".join(only)[:300],
     "worst_only_in_node": worst,
 }))
-' "$tmpc" "$tmpn"
+' "$1" "$2"
 
-    rm -f "$tmpc" "$tmpn"
 }

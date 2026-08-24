@@ -1,0 +1,214 @@
+#!/usr/bin/env python3
+"""Aggregate harness evidence bundles into one verifiable proof record.
+
+WHY THIS EXISTS
+
+A suite run prints PASS/FAIL to a terminal and writes one evidence bundle per
+scenario under tests/reports/<run>/<scenario>/. That is enough to debug a single
+scenario and not enough to answer the question anyone actually asks later:
+"which scenarios were proven to pass, on which release, and can I check that
+claim without re-running anything?"
+
+This walks every scenario in tests/scenarios/, finds the NEWEST evidence bundle
+for it across all runs, and emits tests/PROOF.md (readable) plus tests/PROOF.json
+(checkable). Every row names the bundle it was read from, so a reader can open
+the raw evidence rather than trusting this summary.
+
+Rules it will not bend:
+
+  - A scenario with no evidence bundle is NO_EVIDENCE, never a pass. Absence of
+    a report is not a result.
+  - A scenario whose CORRECT outcome is not PASS must be listed in
+    EXPECTED_NOT_PASS with a reason quoted from the scenario itself. If such a
+    scenario ever starts passing it is reported CONTROL_BROKEN, because a
+    negative control that passes has stopped being a control.
+  - Item-level counts come from evidence.json, not from the summary line, so a
+    scenario that "passed" with zero checks is visible as such.
+
+Usage:  globular-proof [repo-root]        # default: cwd
+        PROOF_RUNS=run1,run2 globular-proof   # restrict to specific runs
+Exit 0 only when every scenario is OK or EXPECTED_FAIL.
+"""
+import json, os, re, sys, datetime, subprocess
+
+ROOT = sys.argv[1] if len(sys.argv) > 1 else "."
+REPORTS = os.path.join(ROOT, "tests", "reports")
+SCENARIOS = os.path.join(ROOT, "tests", "scenarios")
+
+# Scenarios whose CORRECT outcome is not PASS. Each needs a reason quoted from
+# the scenario itself, so this cannot become a quiet allowlist for whatever is
+# failing today.
+EXPECTED_NOT_PASS = {
+    "residue-negative-control": (
+        "RESIDUE",
+        "Negative control for the restoration law. Its own description: 'This is "
+        "intentionally the only scenario in the tree that is SUPPOSED to fail. Do "
+        "not fix it by adding cleanup — that would delete the control.' It stops a "
+        "node and never restores it; the runner must detect the outstanding "
+        "mutation, reverse it, and fail the scenario. A PASS here would mean the "
+        "restoration law is NOT enforced."
+    ),
+}
+
+
+def all_scenarios():
+    out = {}
+    for suite in sorted(os.listdir(SCENARIOS)):
+        d = os.path.join(SCENARIOS, suite)
+        if not os.path.isdir(d):
+            continue
+        for f in sorted(os.listdir(d)):
+            if f.endswith((".yaml", ".yml")):
+                out[f.rsplit(".", 1)[0]] = suite
+    return out
+
+
+def latest_results(runs):
+    """Newest result per scenario across the given run dirs.
+
+    Run directories are timestamp-prefixed, so lexical order is chronological
+    and the last writer wins.
+    """
+    res = {}
+    for run in sorted(runs):
+        rd = os.path.join(REPORTS, run)
+        if not os.path.isdir(rd):
+            continue
+
+        # Two layouts, both real evidence:
+        #   suite run:            reports/<ts>-<suite>/<scenario>/RESULT.md
+        #   single-scenario run:  reports/<ts>-<scenario>/RESULT.md
+        # Walking only the nested form silently dropped every single-scenario
+        # result: on 2026-08-24 seven scenarios were re-run individually to
+        # confirm fixes, four passed, and the proof record reported the older
+        # suite failures for all of them because it never looked. Evidence the
+        # tool cannot see is evidence the tool reports as absent.
+        entries = []
+        if os.path.isfile(os.path.join(rd, "RESULT.md")):
+            # Directory name is "<timestamp>-<scenario>"; the scenario name is
+            # everything after the first hyphen.
+            entries.append((run.split("-", 1)[1] if "-" in run else run, rd))
+        else:
+            for name in sorted(os.listdir(rd)):
+                entries.append((name, os.path.join(rd, name)))
+
+        for name, sd in entries:
+            rf = os.path.join(sd, "RESULT.md")
+            if not os.path.isfile(rf):
+                continue
+            txt = open(rf, encoding="utf-8", errors="replace").read()
+            m = re.search(r"^\*\*Result\*\*:\s*(\S+)", txt, re.M)
+            t = re.search(r"^\*\*Time\*\*:\s*(\S+)", txt, re.M)
+            checks = {"passed": None, "failed": None, "items": None}
+            ev = os.path.join(sd, "evidence.json")
+            if os.path.isfile(ev):
+                try:
+                    j = json.load(open(ev))
+                    items = j.get("items") or []
+                    checks = {
+                        "passed": sum(1 for i in items if i.get("passed")),
+                        "failed": sum(1 for i in items if not i.get("passed")),
+                        "items": len(items),
+                    }
+                except Exception:
+                    pass
+            res[name] = {"result": m.group(1) if m else "UNKNOWN",
+                         "time": t.group(1) if t else "",
+                         "run": run,
+                         "checks": checks,
+                         "evidence": os.path.relpath(sd, ROOT)}
+    return res
+
+
+def release_under_test():
+    """Ask a running sim node what release it is, so the proof names its subject."""
+    try:
+        p = subprocess.run(
+            ["docker", "exec", "globular-node-1", "sh", "-c",
+             "sed -n 's/^GLOBULAR_RELEASE_VERSION=//p' /etc/globular/quickstart.env"],
+            capture_output=True, text=True, timeout=60)
+        v = (p.stdout or "").strip()
+        return v.splitlines()[0] if v else "unknown"
+    except Exception:
+        return "unknown"
+
+
+def main():
+    runs = ([r for r in os.listdir(REPORTS)
+             if os.path.isdir(os.path.join(REPORTS, r)) and r != "latest"]
+            if os.path.isdir(REPORTS) else [])
+    only = os.environ.get("PROOF_RUNS")
+    if only:
+        runs = [r for r in runs if r in set(only.split(","))]
+    res = latest_results(runs)
+    scen = all_scenarios()
+
+    rows, counts = [], {}
+    for name, suite in sorted(scen.items(), key=lambda kv: (kv[1], kv[0])):
+        r = res.get(name)
+        status = r["result"] if r else "NO_EVIDENCE"
+        exp = EXPECTED_NOT_PASS.get(name)
+        if exp and status == exp[0]:
+            verdict = "EXPECTED_FAIL"
+        elif exp:
+            verdict = "CONTROL_BROKEN"   # the control itself stopped behaving
+        else:
+            verdict = "OK" if status == "PASS" else "NEEDS_WORK"
+        counts[status] = counts.get(status, 0) + 1
+        rows.append({"suite": suite, "scenario": name, "result": status,
+                     "verdict": verdict,
+                     "note": exp[1] if exp else "",
+                     "time": r["time"] if r else "",
+                     "run": r["run"] if r else "",
+                     "checks": r["checks"] if r else {"passed": None, "failed": None, "items": None},
+                     "evidence": r["evidence"] if r else ""})
+
+    total = len(rows)
+    passed = counts.get("PASS", 0)
+    clean = all(x["verdict"] in ("OK", "EXPECTED_FAIL") for x in rows)
+    checks_run = sum(x["checks"]["items"] or 0 for x in rows)
+    payload = {"generated_at": datetime.datetime.now(datetime.timezone.utc)
+                                 .strftime("%Y-%m-%dT%H:%M:%SZ"),
+               "release_under_test": release_under_test(),
+               "total_scenarios": total, "counts": counts,
+               "total_checks": checks_run,
+               "all_pass": clean, "rows": rows}
+    js = json.dumps(payload, indent=2, sort_keys=True)
+    open(os.path.join(ROOT, "tests", "PROOF.json"), "w").write(js + "\n")
+
+    md = ["# Scenario proof record", "",
+          f"- Generated: `{payload['generated_at']}`",
+          f"- Release under test: `{payload['release_under_test']}`",
+          f"- Scenarios: **{passed}/{total} PASS**, {checks_run} individual checks recorded",
+          "",
+          "Every row names the evidence bundle it was read from — open that",
+          "directory to re-check the claim without re-running anything. A scenario",
+          "with no bundle is `NO_EVIDENCE`, never a pass: absence of a report is",
+          "not a result.",
+          "",
+          "Regenerate with `tests/harness/bin/globular-proof`.",
+          "", "| Suite | Scenario | Result | Checks | Verdict | Evidence |",
+          "|---|---|---|---|---|---|"]
+    for x in rows:
+        ev = f"`{x['evidence']}`" if x["evidence"] else "—"
+        c = x["checks"]
+        cs = f"{c['passed']}/{c['items']}" if c["items"] else "—"
+        mark = {"OK": "✅", "EXPECTED_FAIL": "🟦 expected-fail",
+                "CONTROL_BROKEN": "🚨 control broken", "NEEDS_WORK": "❌"}[x["verdict"]]
+        md.append(f"| {x['suite']} | {x['scenario']} | **{x['result']}** | {cs} | {mark} | {ev} |")
+    md += ["", "## Totals", ""]
+    for k in sorted(counts):
+        md.append(f"- `{k}`: {counts[k]}")
+    notes = [x for x in rows if x["note"]]
+    if notes:
+        md += ["", "## Scenarios that are supposed to fail", ""]
+        for x in notes:
+            md += [f"### {x['scenario']} (expects `{EXPECTED_NOT_PASS[x['scenario']][0]}`)",
+                   "", x["note"], ""]
+    open(os.path.join(ROOT, "tests", "PROOF.md"), "w").write("\n".join(md) + "\n")
+    print(f"wrote tests/PROOF.md and tests/PROOF.json "
+          f"({passed}/{total} scenarios PASS, {checks_run} checks)", file=sys.stderr)
+    return 0 if clean and total else 1
+
+
+sys.exit(main())

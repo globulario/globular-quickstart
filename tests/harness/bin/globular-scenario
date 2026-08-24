@@ -21,6 +21,7 @@ import subprocess
 import datetime
 import time
 import shlex
+import re
 import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -40,9 +41,41 @@ GLOBULAR_CLI_RESOLVER = (
     '[ -n "$G" ] || { echo "globular CLI not found on this node" >&2; exit 127; }; '
 )
 
+# Mint a short-lived sa token inside the node, for verbs that require an
+# authenticated principal. `pkg publish` is one: it refuses with
+# "authentication required: run 'globular auth login' or provide --token".
+#
+# The founding node writes the bootstrap sa password to
+# /var/lib/globular/.bootstrap-sa-password. Reading it here keeps the credential
+# inside the container — it is never carried in a scenario, a log line, or the
+# evidence bundle. `auth login` prints "Token: <jwt>", so the prefix is stripped;
+# passing the whole line yields a malformed JWT the server rejects with a base64
+# decode error that reads like an auth failure rather than a formatting one.
+GLOBULAR_TOKEN_RESOLVER = (
+    'P=$(cat /var/lib/globular/.bootstrap-sa-password 2>/dev/null); '
+    'TOK=$("$G" auth login --user sa --password "$P" 2>/dev/null '
+    '| grep -oP "^Token:\\s*\\K\\S+" | tail -1); '
+)
+
 HARNESS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIB_DIR = os.path.join(HARNESS_DIR, "lib")
 PROBES_SH = os.path.join(LIB_DIR, "probes.sh")
+
+# Per-probe call budgets. A probe that reads etcd once is done in well under a
+# second; a cluster-wide doctor sweep is not, and one that retries for a
+# complete harvest is emphatically not. A budget smaller than the probe's own
+# work turns a slow answer into a wrong one.
+# Probes that read a rolling journal window. Their verdict depends on WHEN they
+# run unless the window is bounded to the scenario that called them.
+JOURNAL_WINDOW_PROBES = {"cluster.reconcile_clean"}
+
+DEFAULT_PROBE_TIMEOUT = 45
+PROBE_TIMEOUTS = {
+    # --fresh sweep ~120s, up to 3 attempts plus 15s backoff between them.
+    "doctor.report_severity": 450,
+    # Two sequential per-node/cluster harvests, retried up to 3 times.
+    "doctor.node_vs_cluster_agreement": 600,
+}
 AWARENESS_SH = os.path.join(LIB_DIR, "awareness.sh")
 EVIDENCE_SH = os.path.join(LIB_DIR, "evidence.sh")
 TRAINING_SH = os.path.join(LIB_DIR, "training.sh")
@@ -177,6 +210,25 @@ class EvidenceCollector:
             print("  [evidence] WARNING: collection timed out after 180s")
         except Exception as e:
             print(f"  [evidence] WARNING: collection error: {e}")
+
+
+def _cli_failure_summary(out: str, limit: int = 400) -> str:
+    """Return the part of a CLI failure that says WHY it failed.
+
+    cobra prints the error line and then the full flag help, so keeping the
+    LAST n characters of the output keeps the help and throws away the error.
+    On 2026-08-24 an ops.remove_node failure was recorded in the evidence
+    bundle as "--insecure  Skip TLS verification / --node string ..." — the
+    scenario failed, the bundle was written, and it contained no trace of the
+    cause. Prefer the Error:/FAIL: lines; fall back to the HEAD of the output,
+    never the tail.
+    """
+    lines = [ln for ln in (out or "").splitlines() if ln.strip()]
+    flagged = [ln for ln in lines
+               if ln.lstrip().startswith(("Error:", "error:", "FAIL:", "FATAL:"))]
+    if flagged:
+        return " | ".join(flagged)[:limit]
+    return "\n".join(lines)[:limit]
 
 
 class Evidence:
@@ -415,6 +467,15 @@ class ScenarioExecutor:
         compose_dir = os.path.dirname(os.path.dirname(HARNESS_DIR))
         print("    RESET: rebuilding cluster (scenario declared reset_after)")
         self._sh(["docker", "compose", "down", "-v"], timeout=300, cwd=compose_dir)
+        # Snapshot volumes are created outside compose, so `down -v` leaves them
+        # behind. Every one of them belongs to the cluster that just died — a
+        # later restore would put a foreign CA on a node of the new cluster. Drop
+        # them with the cluster they describe.
+        vols = self._sh(["docker", "volume", "ls", "-q",
+                         "--filter", "name=globular-quickstart_node"], timeout=60)
+        for v in (vols.stdout or "").split():
+            if v.endswith("-snapshot"):
+                self._sh(["docker", "volume", "rm", v], timeout=60)
         up = self._sh(["docker", "compose", "up", "-d"], timeout=600, cwd=compose_dir)
         if up.returncode != 0:
             print(f"    RESET FAILED: compose up returned {up.returncode}")
@@ -426,7 +487,20 @@ class ScenarioExecutor:
                              "globular", "cluster", "nodes", "list",
                              "--controller", "10.10.0.11:12000",
                              "--insecure", "--timeout", "30s"], timeout=90)
-            ready = proc.stdout.count('status: "ready"')
+            # Whitespace-tolerant, deliberately.
+            #
+            # This counted the literal 'status: "ready"' with one space, while
+            # the CLI prints two ('  status:  "ready"'). The count was therefore
+            # always 0 on a perfectly healthy cluster, so every scenario with
+            # reset_after burned the full ready_timeout — one hour — and then
+            # reported "RESET: timed out waiting for cluster ready". Measured
+            # 2026-08-22: five nodes reporting ready, one-space match 0/5,
+            # two-space match 5/5, harness asleep 50 minutes in the poll loop.
+            #
+            # Matching on a formatted CLI string is the underlying fragility; a
+            # regex that tolerates spacing keeps this working if the renderer
+            # adjusts its alignment again.
+            ready = len(re.findall(r'status:\s*"ready"', proc.stdout))
             if ready >= 5:
                 print(f"    RESET: cluster ready ({ready}/5)")
                 # `compose down -v` destroyed the MinIO drive volumes, so the
@@ -796,11 +870,37 @@ class ScenarioExecutor:
                 # See chaos.restart_service: `unit:` names a non-Globular unit
                 # such as ScyllaDB's upstream scylla-server.service.
                 unit = params.get("unit") or f"globular-{service}.service"
-                proc = subprocess.run(
-                    ["docker", "exec", container, "systemctl", "stop", unit],
-                    capture_output=True, text=True, timeout=30)
+                # Retry while systemd cancels the stop because a START job is
+                # still in flight.
+                #
+                # `systemctl stop` on a unit whose start job has not finished
+                # returns "Job for <unit> canceled" and exit 1 — the unit stays
+                # active and the scenario's own "it is stopped" assertion then
+                # fails. ScyllaDB takes minutes to come up, so any scenario that
+                # stops it shortly after a node restart hits this: on 2026-08-23
+                # catastrophic/scylladb-node3-cascade failed exactly this way,
+                # twice, having run right behind a scenario that restarted
+                # node-1.
+                #
+                # Bounded, and it does not paper over a unit that refuses to
+                # stop: after the attempts are exhausted the failure is recorded
+                # with the systemd text intact.
+                attempts, proc = 0, None
+                while attempts < 5:
+                    attempts += 1
+                    proc = subprocess.run(
+                        ["docker", "exec", container, "systemctl", "stop", unit],
+                        capture_output=True, text=True, timeout=120)
+                    if proc.returncode == 0:
+                        break
+                    if "canceled" not in (proc.stderr or "").lower():
+                        break
+                    print(f"    {item_id}: stop {unit} canceled by an in-flight job "
+                          f"(attempt {attempts}/5) — retrying")
+                    time.sleep(30)
                 ok = proc.returncode == 0
                 result = {"action": action, "container": container, "unit": unit,
+                          "attempts": attempts,
                           "exit_code": proc.returncode,
                           "stderr": proc.stderr.strip()[:200]}
                 if ok:
@@ -1181,6 +1281,28 @@ class ScenarioExecutor:
                 node_c = f"globular-{params.get('node', 'node-1')}"
                 if not name or not version:
                     return self._chaos_fail(section, item_id, action, params, "name and version params required")
+                # version: "@staged" resolves to whatever the release actually
+                # shipped for this package, read from the node's staged CAS.
+                #
+                # A scenario that hardcodes a version is pinned to one release
+                # and silently rots: deploy-publish-then-converge asserted
+                # dns@1.2.312 (correct for the cluster it was written against)
+                # and failed on 1.2.328, which ships dns 1.2.317 — reported as
+                # "artifact not found", which reads like a repository defect
+                # rather than a stale literal in the test. The same glob backs
+                # ops.publish, so publish and desired-set agree by construction.
+                if version == "@staged":
+                    probe = subprocess.run(
+                        ["docker", "exec", node_c, "bash", "-c",
+                         f'ls /var/lib/globular/packages/{name}_*_linux_amd64.tgz 2>/dev/null | head -1'],
+                        capture_output=True, text=True, timeout=60)
+                    staged = (probe.stdout or "").strip()
+                    m = re.search(rf'/{re.escape(name)}_(.+?)_linux_amd64\.tgz$', staged)
+                    if not m:
+                        return self._chaos_fail(section, item_id, action, params,
+                                                f"@staged: no staged archive for {name} on {node_c}")
+                    version = m.group(1)
+                    print(f"    {item_id}: @staged resolved {name} -> {version}")
                 # The CLI is installed on every node but only on PATH on the
                 # founding one (/usr/local/bin there, /usr/lib/globular/bin
                 # elsewhere). Assuming PATH made this action fail with exit 127
@@ -1252,7 +1374,7 @@ class ScenarioExecutor:
                           "exit_code": proc.returncode,
                           "attempts": attempts,
                           "error": " | ".join(signal[:3])[:400],
-                          "output": out[-200:]}
+                          "output": _cli_failure_summary(out, 200)}
                 if not ok:
                     print(f"    {item_id}: expected {expect}, got "
                           f"{'accepted' if accepted else 'refused'} — {out[-200:]}")
@@ -1299,13 +1421,13 @@ class ScenarioExecutor:
                 # received them, so which instance received them must be a
                 # known quantity, not whatever discovery happened to pick.
                 pub_flag = f' --publisher "{publisher}"' if publisher else ""
-                cmd = (GLOBULAR_CLI_RESOLVER +
+                cmd = (GLOBULAR_CLI_RESOLVER + GLOBULAR_TOKEN_RESOLVER +
                        f'F=$(ls /var/lib/globular/packages/{name}_*_linux_amd64.tgz '
                        f'2>/dev/null | head -1); '
                        f'[ -n "$F" ] || {{ echo "no staged archive for {name}" >&2; exit 3; }}; '
                        f'R=$(hostname -i | awk \'{{print $1}}\'):443; '
                        f'"$G" pkg publish --file "$F" --channel {channel}'
-                       f'{pub_flag} --repository "$R"')
+                       f'{pub_flag} --repository "$R" --token "$TOK"')
                 proc = subprocess.run(
                     ["docker", "exec", node_c, "bash", "-c", cmd + " 2>&1"],
                     capture_output=True, text=True, timeout=600)
@@ -1347,7 +1469,7 @@ class ScenarioExecutor:
                           "published_build": published_build,
                           "exit_code": proc.returncode,
                           "error": " | ".join(signal[:3])[:400],
-                          "output": out[-200:]}
+                          "output": _cli_failure_summary(out, 200)}
                 if not ok:
                     print(f"    {item_id}: expected {expect}, got "
                           f"{'accepted' if accepted else 'refused'} — {out[-200:]}")
@@ -1453,6 +1575,51 @@ class ScenarioExecutor:
                            "cp -a /state/. /snap/ && du -sm /snap | cut -f1")
                     src, dst = vol, snap
                 else:
+                    # Only a snapshot THIS run took may be restored.
+                    #
+                    # The snapshot volume is created outside compose's lifecycle,
+                    # so `docker compose down -v` does not remove it: a snapshot
+                    # taken against an older cluster survives a full rebuild. A
+                    # restore then copies that cluster's PKI onto a node of the
+                    # NEW cluster — the node comes back holding a foreign CA,
+                    # every mTLS peer rejects it ("tls: bad certificate"), and its
+                    # heartbeat never lands again. That is not a scenario failing;
+                    # that is a scenario silently breaking the cluster for every
+                    # scenario that runs after it.
+                    #
+                    # The mutation ledger already records which snapshots belong
+                    # to this run. Restoring anything else is a cross-cluster
+                    # restore and must fail closed.
+                    took_snapshot = any(e.get("kind") == "node_snapshotted"
+                                        and e.get("node") == node
+                                        for e in self.outstanding)
+                    cloned = any(e.get("kind") == "node_cloned" and e.get("node") == node
+                                 for e in self.outstanding)
+                    if not took_snapshot:
+                        # Nothing this run did needs undoing, so undo nothing.
+                        # A scenario that fails its preconditions skips `steps`
+                        # (where the snapshot is taken) but still runs `cleanup`
+                        # — that is exactly how the stale volume got restored.
+                        if not cloned:
+                            result = {"action": action, "node": node, "volume": vol,
+                                      "snapshot": snap, "skipped": True,
+                                      "reason": "no snapshot taken in this run and "
+                                                "nothing cloned onto this node — "
+                                                "nothing to restore"}
+                            self.evidence.record(section, item_id, action, params,
+                                                 {}, result, True)
+                            print(f"    {item_id}: nothing to restore (no snapshot this run)")
+                            return True
+                        # Something WAS cloned onto this node and the only way
+                        # back is a snapshot this run never took. Restoring a
+                        # foreign one would be worse than failing: it puts an
+                        # older cluster's CA on the node, every mTLS peer then
+                        # rejects it, and its heartbeat never lands again.
+                        return self._chaos_fail(
+                            section, item_id, action, params,
+                            f"cannot restore {node}: its identity was overwritten but no "
+                            f"snapshot was taken in this run; {snap} belongs to an earlier "
+                            f"cluster and restoring it would install a foreign CA")
                     cmd = ("rm -rf /state/* /state/.[!.]* 2>/dev/null; "
                            "cp -a /snap/. /state/ && du -sm /state | cut -f1")
                     src, dst = vol, snap
@@ -1682,18 +1849,43 @@ class ScenarioExecutor:
                 target = params.get("node", "")
                 if not target:
                     return self._chaos_fail(section, item_id, action, params, "node param required")
-                # Resolve the node UUID from the target container, since the
+                # Resolve the node UUID from the CONTROLLER, since the
                 # controller keys nodes by id and not by container name.
-                idp = subprocess.run(
-                    ["docker", "exec", f"globular-{target}", "bash", "-c",
-                     "cat /var/lib/globular/node-agent/state.json 2>/dev/null || "
-                     "cat /var/lib/globular/nodeagent/state.json 2>/dev/null"],
-                    capture_output=True, text=True, timeout=60)
+                #
+                # Asking the controller rather than the target container matters:
+                # a node must be stopped before its record is removed (a live
+                # node-agent re-registers within a heartbeat), and `docker exec`
+                # cannot read state.json out of a stopped container. Reading the
+                # id from the authority we are about to mutate works whether the
+                # target is up, down, or already wiped.
                 node_id = ""
+                lst = subprocess.run(
+                    ["docker", "exec", node_c, "bash", "-c",
+                     GLOBULAR_CLI_RESOLVER +
+                     f'"$G" cluster nodes list --output json --timeout 60s 2>/dev/null'],
+                    capture_output=True, text=True, timeout=120)
                 try:
-                    node_id = (json.loads(idp.stdout or "{}") or {}).get("node_id", "")
+                    doc = json.loads(lst.stdout or "{}")
+                    rows = doc.get("nodes", doc) if isinstance(doc, dict) else doc
+                    for r in rows or []:
+                        ident = r.get("identity") or {}
+                        if ident.get("hostname") == target:
+                            node_id = r.get("node_id") or r.get("nodeId") or ""
+                            break
                 except Exception:
                     node_id = ""
+                if not node_id:
+                    # Fall back to the node's own state file, for a target that
+                    # the controller no longer lists but that still holds a record.
+                    idp = subprocess.run(
+                        ["docker", "exec", f"globular-{target}", "bash", "-c",
+                         "cat /var/lib/globular/node-agent/state.json 2>/dev/null || "
+                         "cat /var/lib/globular/nodeagent/state.json 2>/dev/null"],
+                        capture_output=True, text=True, timeout=60)
+                    try:
+                        node_id = (json.loads(idp.stdout or "{}") or {}).get("node_id", "")
+                    except Exception:
+                        node_id = ""
                 if not node_id:
                     node_id = params.get("node_id", "")
                 if not node_id:
@@ -1709,7 +1901,7 @@ class ScenarioExecutor:
                 if ok:
                     self._mutation_open("node_removed", node=target)
                 result = {"action": action, "node": target, "node_id": node_id,
-                          "exit_code": proc.returncode, "output": out[-400:]}
+                          "exit_code": proc.returncode, "output": _cli_failure_summary(out)}
                 self.evidence.record(section, item_id, action, params, {}, result, ok)
                 return ok
 
@@ -1724,6 +1916,33 @@ class ScenarioExecutor:
                 # appeared to "join" while running no services.
                 if not container:
                     return self._chaos_fail(section, item_id, action, params, "node param required")
+                # Disable the Globular units BEFORE stopping, the way
+                # clean-node.sh does. Wiping only the state volume does not make
+                # a clean node: the unit files live in the container filesystem,
+                # so on the next start systemd relaunches globular-node-agent
+                # against an empty /var/lib/globular and it restart-loops.
+                #
+                # That loop is not merely noisy — it corrupts the join. The
+                # node-agent runs CanonicalizeRuntimeDirsOnce on every startup,
+                # which retires the legacy `nodeagent` alias dir, while the
+                # Day-1 join script still writes ${STATE_DIR}/nodeagent/state.json
+                # at phase 3.6. On 2026-08-23 a restart landed between the two
+                # and the join died on:
+                #
+                #     bash: line 725: /var/lib/globular/nodeagent/state.json:
+                #     No such file or directory
+                #     WARN: join aborted during phase '3 — Connectivity'
+                #
+                # reported as a join failure of the platform, on a node the
+                # harness had left half-alive. (The join script writing to the
+                # retired alias is a separate product defect, recorded in the
+                # awareness graph.)
+                disabled = subprocess.run(
+                    ["docker", "exec", container, "bash", "-c",
+                     "systemctl list-unit-files --no-pager --type=service 2>/dev/null "
+                     "| awk '/^globular-/{print $1}' "
+                     "| xargs -r systemctl disable --now 2>&1 | tail -1; exit 0"],
+                    capture_output=True, text=True, timeout=180)
                 stop = subprocess.run(["docker", "stop", "-t", "15", container],
                                       capture_output=True, text=True, timeout=40)
                 wipe = subprocess.run(
@@ -1736,6 +1955,7 @@ class ScenarioExecutor:
                 if ok:
                     self._mutation_open("node_wiped", node=node)
                 result = {"action": action, "container": container,
+                          "units_disabled_exit": disabled.returncode,
                           "stop_exit": stop.returncode, "wipe_exit": wipe.returncode,
                           "entries_left_in_state": remaining[0],
                           "stderr": (wipe.stderr or "").strip()[-200:]}
@@ -2316,13 +2536,52 @@ class ScenarioExecutor:
         args_str = " ".join(shlex.quote(a) for a in args)
         cmd = f'source "{PROBES_SH}" && {func_name} {args_str}'
 
+        # Journal-reading probes default to THIS SCENARIO's window, not a fixed
+        # wall-clock lookback.
+        #
+        # probe_cluster_reconcile_clean greps the controller journal since
+        # "30 min ago". A suite that runs after a destructive one therefore reads
+        # the previous suite's DELIBERATE failures as its own: on 2026-08-23 the
+        # resilience suite finished its chaos at 17:32 and the upgrade suite's
+        # reconcile_clean assertions failed at 17:35 on a cluster that was clean
+        # — same probe over a 5-minute window returned clean, cluster-doctor
+        # reported zero errors, and every node was healthy.
+        #
+        # The property a scenario means to assert is "MY actions did not leave
+        # reconcile broken", not "nothing anywhere failed in the last half hour".
+        # Bounding the window to the scenario's own start measures the former.
+        # An explicit --since in the scenario still wins.
+        if probe in JOURNAL_WINDOW_PROBES and "since" not in params:
+            elapsed = (datetime.datetime.utcnow() - self.evidence.start_time).total_seconds()
+            # Floor of 60s: a scenario that asserts in its first seconds still
+            # needs a window wide enough to contain its own effects.
+            params = dict(params, since=f"{max(60, int(elapsed) + 30)} seconds ago")
+            args = []
+            for k, v in params.items():
+                args.extend([f"--{k}", str(v)])
+            args_str = " ".join(shlex.quote(a) for a in args)
+            cmd = f'source "{PROBES_SH}" && {func_name} {args_str}'
+
+        # The caller's budget must cover the probe's own budget.
+        #
+        # 45s suits a probe that reads etcd once. It does not suit the doctor
+        # probes: a --fresh cluster sweep alone takes ~120s, and
+        # probe_doctor_report_severity retries up to three times to obtain a
+        # COMPLETE harvest (a reduced harvest is an UNKNOWN dressed as a count).
+        # Capping those at 45s does not make them fast, it makes them return
+        # {"error": "probe timed out after 45s"} — which fails the assertion for
+        # a reason that has nothing to do with the cluster. Two soak scenarios
+        # failed exactly that way on 2026-08-23, on a cluster whose doctor was
+        # reporting zero errors when asked directly.
+        timeout_s = PROBE_TIMEOUTS.get(probe, DEFAULT_PROBE_TIMEOUT)
+
         if self.verbose:
             print(f"    [probe] bash -c '{func_name} {args_str}'")
 
         try:
             proc = subprocess.run(
                 ["bash", "-c", cmd],
-                capture_output=True, text=True, timeout=45
+                capture_output=True, text=True, timeout=timeout_s
             )
             stdout = proc.stdout.strip()
             stderr = proc.stderr.strip()
@@ -2340,7 +2599,7 @@ class ScenarioExecutor:
                 return {"raw": stdout, "exit_code": proc.returncode}
 
         except subprocess.TimeoutExpired:
-            return {"error": "probe timed out after 45s"}
+            return {"error": f"probe timed out after {timeout_s}s"}
         except Exception as e:
             return {"error": str(e)}
 

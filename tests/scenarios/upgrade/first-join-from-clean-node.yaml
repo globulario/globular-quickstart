@@ -96,6 +96,26 @@ steps:
       self_ip: "10.10.0.15"
       peer_ip: "10.10.0.11"
 
+  # Stop the node BEFORE removing its record.
+  #
+  # A running node-agent re-registers itself within a heartbeat. Removing the
+  # record from under a live agent therefore removes nothing that stays removed:
+  # on 2026-08-22 `ops.remove_node` returned exit 0, the agent re-registered
+  # seconds later, the wipe then destroyed the node's identity, and its fresh
+  # join was refused —
+  #
+  #     join blocked: controller denied — node identity conflict:
+  #     hostname already present
+  #
+  # — against a record its own pre-wipe agent had put back. The scenario ran for
+  # 46 minutes and reported a join failure that the harness had caused. This is
+  # the order clean-node.sh uses: stop the services first, then deregister.
+  - type: action
+    id: stop_the_node_before_deregistering
+    action: chaos.stop_node
+    params:
+      node: node-5
+
   # Remove the node from the CONTROLLER as well.
   #
   # Wiping /var/lib/globular makes the node forget the cluster; it does not make

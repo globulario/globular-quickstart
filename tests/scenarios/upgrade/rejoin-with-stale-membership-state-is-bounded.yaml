@@ -106,16 +106,28 @@ steps:
     action: chaos.detach_node_etcd
     params:
       node: node-5
+      # self_ip locates the member in `member list`; peer_ip is the surviving
+      # endpoint the removal is committed against. Omitting them made the
+      # action refuse with "self_ip param required" and detach NOTHING, so the
+      # steps below ran against a live voter — the exact mistake this scenario
+      # exists to avoid, made by the scenario itself.
+      self_ip: "10.10.0.15"
+      peer_ip: "10.10.0.11"
 
+  # Stop the node BEFORE deregistering it.
+  #
+  # A running node-agent re-registers within a heartbeat, so removing the
+  # record from under a live agent removes nothing that stays removed. This is
+  # the order clean-node.sh uses.
   - type: action
-    id: remove_node5_from_cluster
-    action: ops.remove_node
+    id: stop_node5
+    action: chaos.stop_node
     params:
       node: node-5
 
   - type: action
-    id: stop_node5
-    action: chaos.stop_node
+    id: remove_node5_from_cluster
+    action: ops.remove_node
     params:
       node: node-5
 

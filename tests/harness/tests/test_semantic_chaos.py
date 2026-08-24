@@ -1,9 +1,16 @@
+"""The semantic layer declares pause/resume; the legacy dispatcher executes them.
+
+These tests used to assert the semantic layer's own SIGSTOP/SIGCONT
+implementation. That implementation was removed because it shadowed a stronger
+one in globular-scenario: it took `node` literally (so `node: leader` became the
+container `globular-leader` and froze nothing), never verified the signal took,
+and never opened a `service_paused` obligation in the mutation ledger. What is
+tested now is the contract that replaced it — the action stays declared, and
+execution delegates.
+"""
 import importlib.util
-import subprocess
-import tempfile
 import unittest
 from pathlib import Path
-from unittest import mock
 
 LIB = Path(__file__).parents[1] / "lib"
 SPEC = importlib.util.spec_from_file_location("semantic_chaos", LIB / "semantic_chaos.py")
@@ -30,49 +37,46 @@ class Executor:
 
 
 class SemanticChaosTest(unittest.TestCase):
-    @mock.patch.object(subprocess, "run")
-    def test_pause_service_sends_sigstop(self, run):
-        run.return_value = subprocess.CompletedProcess([], 0, "", "")
-        executor = Executor()
-        ok = semantic_chaos.handle(
-            executor,
-            {
-                "id": "pause-controller",
-                "action": "chaos.pause_service",
-                "params": {"node": "node-1", "service": "cluster-controller"},
-            },
-            "steps",
-        )
-        self.assertTrue(ok)
-        command = run.call_args.args[0]
-        self.assertEqual(command[-3:], ["-s", "STOP", "globular-cluster-controller.service"])
-        self.assertEqual(len(executor.evidence.rows), 1)
+    def test_pause_and_resume_are_declared_supported(self):
+        # The proof contract reads this set. Dropping an action from it would
+        # make every scenario using it report UNSUPPORTED.
+        self.assertIn("chaos.pause_service", semantic_chaos.SUPPORTED_SEMANTIC_ACTIONS)
+        self.assertIn("chaos.resume_service", semantic_chaos.SUPPORTED_SEMANTIC_ACTIONS)
 
-    @mock.patch.object(subprocess, "run")
-    def test_resume_service_sends_sigcont(self, run):
-        run.return_value = subprocess.CompletedProcess([], 0, "", "")
+    def test_pause_delegates_to_the_legacy_dispatcher(self):
+        # None means "not handled here" — the legacy dispatcher runs it, and
+        # with it the leader-alias resolution, the /proc state check, and the
+        # mutation ledger entry.
         executor = Executor()
-        ok = semantic_chaos.handle(
-            executor,
-            {
-                "id": "resume-controller",
-                "action": "chaos.resume_service",
-                "params": {"node": "node-1", "service": "cluster-controller"},
-            },
-            "cleanup",
+        self.assertIsNone(
+            semantic_chaos.handle(
+                executor,
+                {
+                    "id": "pause-controller",
+                    "action": "chaos.pause_service",
+                    "params": {"node": "leader", "service": "cluster-controller"},
+                },
+                "steps",
+            )
         )
-        self.assertTrue(ok)
-        self.assertIn("CONT", run.call_args.args[0])
+        # Delegating must not record evidence or a failure of its own, or the
+        # action would be reported twice.
+        self.assertEqual(executor.evidence.rows, [])
+        self.assertEqual(executor.failures, [])
 
-    def test_missing_subject_fails_closed(self):
+    def test_resume_delegates_to_the_legacy_dispatcher(self):
         executor = Executor()
-        ok = semantic_chaos.handle(
-            executor,
-            {"action": "chaos.pause_service", "params": {"node": "node-1"}},
-            "steps",
+        self.assertIsNone(
+            semantic_chaos.handle(
+                executor,
+                {
+                    "id": "resume-controller",
+                    "action": "chaos.resume_service",
+                    "params": {"node": "node-1", "service": "cluster-controller"},
+                },
+                "cleanup",
+            )
         )
-        self.assertFalse(ok)
-        self.assertEqual(len(executor.failures), 1)
 
     def test_unknown_action_delegates(self):
         self.assertIsNone(

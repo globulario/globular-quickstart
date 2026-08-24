@@ -137,7 +137,12 @@ steps:
       # would fail this step for a reason unrelated to fencing.
       node: node-2
       name: dns
-      version: 1.2.312
+      # @staged resolves to the version this release actually shipped.
+      # The literal 1.2.312 was correct for the cluster this scenario was
+      # written against; on 1.2.328 it is not a published version, so the
+      # control plane refused a request the scenario expected it to accept
+      # and the refusal was read as a control-plane defect.
+      version: "@staged"
       expect: accepted
 
   # Resumes whichever node was frozen: by now the lease has moved, so "leader"

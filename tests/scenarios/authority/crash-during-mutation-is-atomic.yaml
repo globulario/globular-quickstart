@@ -103,7 +103,11 @@ steps:
     params:
       node: node-1
       name: dns
-      version: 1.2.312
+      # Must be a version the control plane would genuinely accept. A literal
+      # this release never published (1.2.312 on 1.2.328) is refused outright,
+      # and a refused write is trivially atomic — the scenario would pass while
+      # never exercising the mid-flight commit it exists to test.
+      version: "@staged"
       expect: any
 
   # No grace period. SIGKILL is the point: a graceful stop would let the

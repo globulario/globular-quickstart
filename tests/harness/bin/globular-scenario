@@ -313,6 +313,26 @@ class ScenarioExecutor:
         if not cluster_ok:
             print("  [WARNING] Cluster nodes not reachable — running in degraded mode")
 
+        # Honour the scenario's own require_healthy_before_start declaration.
+        #
+        # Every scenario declares this in its cluster: block. Nothing read it.
+        # A declared contract that nothing enforces is not a contract, and the
+        # consequence was concrete: suites settle between each OTHER, but a
+        # destructive scenario hands the next scenario in the SAME suite a
+        # cluster that is still converging. On 2026-08-24 the upgrade suite
+        # started from a verified-settled cluster (5 nodes, stale 0, reconcile
+        # clean) and still failed six scenarios — each inheriting the previous
+        # scenario's aftermath, not its own defect.
+        #
+        # Bounded, and it never hides a cluster that cannot recover: on timeout
+        # it says so and the scenario runs anyway, so the failure is recorded
+        # rather than skipped. Scenarios that deliberately start from a damaged
+        # cluster set require_healthy_before_start: false and are unaffected.
+        if cluster_ok and self._cluster_cfg().get("require_healthy_before_start"):
+            if not self._await_cluster_settled():
+                print("  [WARNING] cluster did not settle within the gate — "
+                      "running anyway; a failure below may be inherited")
+
         # Capture the structural baseline BEFORE anything runs. This is the
         # state the postcondition gate will require the cluster to return to.
         # Captured even for non-destructive scenarios: a scenario that claims to
@@ -450,6 +470,28 @@ class ScenarioExecutor:
         # Only PASS certifies. UNSUPPORTED is returned as a non-pass so a suite
         # cannot be green on scenarios that never exercised their property.
         return result == "PASS"
+
+    def _await_cluster_settled(self, timeout: int = 600) -> bool:
+        """Wait until the cluster is quiet enough for this scenario to judge it.
+
+        Quiet means: every node registered ready, no stale heartbeats, and the
+        controller's reconcile lane free of errors. That is the state a
+        scenario declaring require_healthy_before_start is entitled to assume.
+        """
+        deadline = time.time() + timeout
+        last = ""
+        while time.time() < deadline:
+            live = self._call_probe("state.liveness_freshness", {})
+            rec = self._call_probe("cluster.reconcile_clean", {"since": "3 min ago"})
+            stale = live.get("stale_nodes")
+            nodes = live.get("nodes")
+            clean = rec.get("clean")
+            last = f"nodes={nodes} stale={stale} reconcile_clean={clean}"
+            if stale == 0 and (nodes or 0) >= 5 and clean:
+                return True
+            time.sleep(20)
+        print(f"    [settle] cluster not settled after {timeout}s: {last}")
+        return False
 
     def _cluster_cfg(self) -> dict:
         """The scenario's `cluster:` block, or an empty dict."""

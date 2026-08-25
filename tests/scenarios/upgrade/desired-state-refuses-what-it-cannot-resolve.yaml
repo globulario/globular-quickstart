@@ -157,11 +157,20 @@ assertions:
     expect:
       status: healthy
 
+  # No explicit `since`: the runner scopes this to THIS scenario's execution.
+  #
+  # "10 min ago" judged nine minutes that happened before the suite even
+  # started. On 2026-08-24 this scenario began at 23:41:40 and asserted 64s
+  # later, but the ten-minute window reached back to 23:32 and caught a
+  # reconcile failure logged at 23:36:16 — five minutes before the upgrade
+  # suite was launched. The scenario reported damage it could not have caused.
+  #
+  # A fixed lookback is wrong in both directions: too long for a short
+  # scenario (it inherits the previous suite's chaos) and too short for a long
+  # one (it silently drops that scenario's own early effects).
   - type: probe
     id: reconcile_clean
     probe: cluster.reconcile_clean
-    params:
-      since: "10 min ago"
     expect:
       clean: true
 

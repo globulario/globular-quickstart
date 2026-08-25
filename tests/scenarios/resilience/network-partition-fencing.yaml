@@ -201,12 +201,28 @@ cleanup:
     params:
       node: node-5
 
-  # Wait for heartbeat to resume and fence to be auto-cleared
+  # Wait for heartbeat to resume and fence to be auto-cleared.
+  #
+  # 120s could not cover the unfence path. Clearing a fence is not a reaction
+  # to the network coming back — it requires the node to leave the controller's
+  # critical set, which is heartbeat-resume, THEN the staleness threshold
+  # expiring, THEN an invariant-enforcement tick observing it
+  # (workflow_invariant.go: unfence happens on `!criticalSet[id] &&
+  # alreadyFenced`). Three sequential intervals, none of them 120s long
+  # together. On 2026-08-24 this cleanup failed with the fence still set, and
+  # the same probe reported fenced:false when asked again later — the fence
+  # cleared exactly as designed, just after the scenario had stopped looking.
+  #
+  # The assertion is unchanged and still fails a fence that never clears —
+  # which matters, because latching forever is a known failure mode of this
+  # path (quorum-loss alert and partition fences latching because the release
+  # is gated on the raise condition). Only the window now matches the product's
+  # actual convergence chain.
   - id: wait_fence_cleared
     action: wait
     params:
-      timeout: 120
-      poll_interval: 15
+      timeout: 600
+      poll_interval: 20
       until:
         probe: node.partition_fenced
         params:

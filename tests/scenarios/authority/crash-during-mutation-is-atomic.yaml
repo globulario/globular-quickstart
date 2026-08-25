@@ -126,6 +126,31 @@ steps:
       seconds: 240
       reason: "systemd restarts the controller; it must then resolve the interrupted mutation without operator help"
 
+  # Let the interrupted release reach a terminal state before auditing it.
+  #
+  # A fixed 240s cannot bound "the restarted controller finished resolving what
+  # the SIGKILL interrupted" — that is exactly the work this scenario is
+  # waiting on, and its duration is not a constant. On 2026-08-25 the audit
+  # read failed=0, pending=1: nothing had gone wrong, one release simply had
+  # not finished yet, and the scenario called that a violation.
+  #
+  # Polled, and it hides nothing: the assertion below is unchanged, so a
+  # release that ends FAILED still fails the scenario, and one that never
+  # leaves pending exhausts this wait and fails it too. Atomicity is still
+  # judged — only the moment of judging moves to when the system has actually
+  # finished.
+  - type: action
+    id: let_interrupted_release_reach_terminal_state
+    action: wait
+    params:
+      timeout: 600
+      poll_interval: 20
+      reason: "the restarted controller must finish resolving the interrupted mutation before its ledger is audited"
+      until:
+        probe: release.audit
+        expect:
+          pending: 0
+
 assertions:
   # ── Exactly once, or not at all ───────────────────────────────────────────
   # A mutation applied twice, or applied half-way, surfaces here: one version

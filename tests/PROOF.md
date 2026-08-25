@@ -1,8 +1,8 @@
 # Scenario proof record
 
-- Generated: `2026-08-25T02:28:43Z`
+- Generated: `2026-08-25T03:04:53Z`
 - Release under test: `1.2.332`
-- Scenarios: **75/81 PASS**, 1168 individual checks recorded
+- Scenarios: **77/81 PASS**, 1169 individual checks recorded
 
 Every row names the evidence bundle it was read from — open that
 directory to re-check the claim without re-running anything. A scenario
@@ -14,7 +14,7 @@ Regenerate with `tests/harness/bin/globular-proof`.
 | Suite | Scenario | Result | Checks | Verdict | Evidence |
 |---|---|---|---|---|---|
 | authority | controller-zombie-after-lease-loss | **PASS** | 19/19 | ✅ | `tests/reports/20260825T010706-authority/controller-zombie-after-lease-loss` |
-| authority | crash-during-mutation-is-atomic | **FAIL** | 17/18 | ❌ | `tests/reports/20260825T010706-authority/crash-during-mutation-is-atomic` |
+| authority | crash-during-mutation-is-atomic | **PASS** | 19/19 | ✅ | `tests/reports/20260825T025955-crash-during-mutation-is-atomic` |
 | authority | etcd-enospc-during-state-commit | **PASS** | 18/18 | ✅ | `tests/reports/20260825T010706-authority/etcd-enospc-during-state-commit` |
 | authority | full-blackout-thundering-herd | **PASS** | 18/18 | ✅ | `tests/reports/20260825T010706-authority/full-blackout-thundering-herd` |
 | authority | node-clone-identity-collision | **POSTCONDITION** | 19/20 | ❌ | `tests/reports/20260825T010706-authority/node-clone-identity-collision` |
@@ -83,7 +83,7 @@ Regenerate with `tests/harness/bin/globular-proof`.
 | training | missing-state-awareness | **PASS** | 9/9 | ✅ | `tests/reports/20260824T220800-training/missing-state-awareness` |
 | training | restart-storm-awareness | **FAIL** | 12/13 | ❌ | `tests/reports/20260824T220800-training/restart-storm-awareness` |
 | upgrade | deploy-publish-then-converge | **PASS** | 18/18 | ✅ | `tests/reports/20260824T234128-upgrade/deploy-publish-then-converge` |
-| upgrade | desired-state-refuses-what-it-cannot-resolve | **FAIL** | 12/13 | ❌ | `tests/reports/20260824T234128-upgrade/desired-state-refuses-what-it-cannot-resolve` |
+| upgrade | desired-state-refuses-what-it-cannot-resolve | **PASS** | 13/13 | ✅ | `tests/reports/20260825T025829-desired-state-refuses-what-it-cannot-resolve` |
 | upgrade | etcd-backend-does-not-ratchet | **PASS** | 9/9 | ✅ | `tests/reports/20260824T234128-upgrade/etcd-backend-does-not-ratchet` |
 | upgrade | etcd-defrag-actually-reclaims | **PASS** | 15/15 | ✅ | `tests/reports/20260824T234128-upgrade/etcd-defrag-actually-reclaims` |
 | upgrade | first-join-from-clean-node | **PASS** | 19/19 | ✅ | `tests/reports/20260824T234128-upgrade/first-join-from-clean-node` |
@@ -97,9 +97,9 @@ Regenerate with `tests/harness/bin/globular-proof`.
 
 ## Totals
 
-- `FAIL`: 3
+- `FAIL`: 1
 - `PARTIAL`: 1
-- `PASS`: 75
+- `PASS`: 77
 - `POSTCONDITION`: 1
 - `RESIDUE`: 1
 

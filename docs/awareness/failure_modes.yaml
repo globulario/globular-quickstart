@@ -141,3 +141,61 @@ failure_modes:
           - awareness.proposals.draft.only
       forbidden_fixes:
           - no.auto.promote.lab.proposals
+
+    - id: fm.evidence.cannot.answer.why
+      title: Evidence bundle records that a unit is unhealthy but not why
+      severity: error
+      root_cause: |
+          evidence_collect_systemd captures `systemctl status`, which retains roughly the
+          last ten journal lines per unit. That is enough to see a unit is failed and never
+          enough to see the decision that failed it. When the cluster is rebuilt before the
+          bundle is read — which is normal, because the next run rebuilds it — the
+          explaining line is gone for good and the failure becomes unrootcauseable.
+      symptoms:
+          - A scenario failure names a condition (a tripped breaker, a phase transition)
+            that appears nowhere in the bundle
+          - Root-causing requires re-running the scenario live to catch the log
+          - Two investigations of the same failure reach different conclusions
+      evidence: |
+          Twice in the 2026-08 campaign a failure dead-ended for exactly this reason:
+          authority/controller-zombie-after-lease-loss failed on "circuit OPEN" after a
+          controller thaw, and whether the breaker LATCHED or opened-and-recovered decides
+          whether it is a defect — the bundle could not say. Separately,
+          upgrade/platform-upgrade-release-boundary failed on a non-terminal release, and
+          which skip reason produced the DEFERRED decides which fix is right — the bundle
+          could not say. Fixed by evidence_collect_journals (137790c), which captures
+          cluster-controller, node-agent and workflow journals per node, bounded by
+          EVIDENCE_JOURNAL_SINCE and EVIDENCE_JOURNAL_LINES. The ghost-node control-plane
+          bug was found in that directory within minutes of it existing.
+      forbidden_fixes:
+          - no.rerun.live.instead.of.capturing
+      related_invariants:
+          - testharness.evidence_must_explain
+
+    - id: fm.assertion.global.instantaneous.state
+      title: Scenario asserts a cluster-wide instantaneous property and is therefore flaky
+      severity: error
+      root_cause: |
+          An assertion over a whole-cluster aggregate sampled at one instant — every release
+          clean, every node ready — is not a property of the code under test. Normal
+          operation produces transient failures that decay on their own schedule, so whether
+          the assertion holds depends on where its single sample lands in that decay. The
+          scenario then passes and fails on identical code, and the noise is easily mistaken
+          for either a regression or "just flakiness".
+      symptoms:
+          - The same scenario gives PASS and FAIL across runs with no code change
+          - The failure is never in the scenario's own subject matter
+          - Running the suite in isolation does not make it deterministic
+      evidence: |
+          upgrade/rollback-guard-refuses-silent-regression produced PASS, FAIL, FAIL, FAIL,
+          PASS over identical code, always at its `releases_are_clean` precondition and never
+          on rollback behaviour. It was nearly written off as test-design noise. The real
+          cause was a control-plane defect — a ghost node in a release's node list made that
+          release permanently unconvergeable, so a cluster-wide audit could never be clean.
+          Widening the settle budget would have buried the bug as noise. Note also that a
+          settle step must wait for the SAME predicate the assertion checks: this scenario
+          waited on pending:0 while asserting failed:0 AND pending:0.
+      forbidden_fixes:
+          - no.widen.budget.to.hide.flake
+      related_invariants:
+          - testharness.assertion_scoped_to_subject

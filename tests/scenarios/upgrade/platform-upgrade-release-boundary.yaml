@@ -75,10 +75,29 @@ steps:
     params:
       timeout: 600
       poll_interval: 20
-      reason: "allow releases dispatched by a preceding scenario to reach a terminal state"
+      reason: "wait for the boundary to be unambiguous — the same condition the assertion checks"
+      # Wait for the predicate this scenario ASSERTS, not a weaker one.
+      #
+      # This waited on pending:0 alone while the assertion below requires
+      # failed:0 AND pending:0. FAILED is itself a terminal state, so the wait
+      # was satisfied the moment nothing was in flight — with failed releases
+      # still on the books — and the assertion then failed on a condition the
+      # settle step had never actually waited for.
+      #
+      # That is not a hypothetical: on a pristine 5-node cluster whose baseline
+      # was 24/24 succeeded / 0 failed / 0 pending, running ONLY this suite,
+      # the settle passed and the assertion failed with failed=3. The releases
+      # were not stuck — the controller self-heals them
+      # (FAILED -> PENDING "all nodes converged, clearing failure" -> AVAILABLE)
+      # on a releaseRetryBackoff of 5 minutes. The settle simply stopped waiting
+      # before that had happened.
+      #
+      # The assertion is UNCHANGED. If the cluster genuinely cannot reach
+      # failed:0, this wait times out and the scenario still fails.
       until:
         probe: release.audit
         expect:
+          failed: 0
           pending: 0
 
 assertions:

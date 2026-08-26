@@ -10,6 +10,7 @@
 #   evidence_collect_docker     — container status, events, logs
 #   evidence_collect_etcd       — etcd key dumps
 #   evidence_collect_systemd    — systemd unit states per node
+#   evidence_collect_journals   — bounded control-plane journals per node
 #   evidence_collect_globular_state  — desired/installed state, workflows, doctor
 #
 # Environment:
@@ -104,6 +105,7 @@ evidence_collect_all() {
     evidence_collect_docker    "$out_dir"
     evidence_collect_etcd      "$out_dir"
     evidence_collect_systemd   "$out_dir"
+    evidence_collect_journals  "$out_dir"
     evidence_collect_globular_state "$out_dir"
 
     echo "  [evidence] collection complete"
@@ -233,6 +235,46 @@ evidence_collect_systemd() {
             _ev_run_to_file "$sd_dir" "systemctl-status($node/$svc)" \
                 "$node_dir/${svc}.status.txt" \
                 docker exec "globular-${node}" systemctl status "$unit" --no-pager
+        done
+    done
+}
+
+# ── journal evidence ──────────────────────────────────────────────────────────
+
+# _JOURNAL_UNITS: units whose full journal is worth keeping. Deliberately short.
+# systemctl status retains only the last ~10 journal lines, which is why a
+# control-plane failure could not be root-caused from a bundle after the fact:
+# twice in one session the line that explained a failure (a 'circuit OPEN' after
+# a controller thaw, and the release-workflow skip reason behind a DEFERRED
+# release) existed only in the live journal and was gone by the time the bundle
+# was read. Evidence that cannot answer "why" is not evidence.
+_JOURNAL_UNITS=(cluster-controller node-agent workflow)
+
+# evidence_collect_journals <out_dir>
+# Writes per-node unit journals under evidence/journal/<node>/<unit>.log
+#
+# Bounded on purpose: a fixed time window and a line cap, so a long soak run
+# cannot turn one scenario's bundle into gigabytes.
+evidence_collect_journals() {
+    local out_dir="$1"
+    local j_dir; j_dir="$(_ev_dir "$out_dir" "journal")"
+    local since="${EVIDENCE_JOURNAL_SINCE:--30 min}"
+    local lines="${EVIDENCE_JOURNAL_LINES:-4000}"
+
+    IFS=' ' read -ra _nodes <<< "$EVIDENCE_NODES"
+    for node in "${_nodes[@]}"; do
+        if ! _ev_node_running "$node"; then
+            mkdir -p "$j_dir/$node"
+            printf 'node not running\n' > "$j_dir/$node/UNAVAILABLE.txt"
+            continue
+        fi
+        local node_dir="$j_dir/$node"
+        mkdir -p "$node_dir"
+        for unit in "${_JOURNAL_UNITS[@]}"; do
+            _ev_run_to_file "$j_dir" "journal($node/$unit)" \
+                "$node_dir/${unit}.log" \
+                docker exec "globular-${node}" journalctl -u "globular-${unit}" \
+                --since "$since" --no-pager --lines "$lines"
         done
     done
 }

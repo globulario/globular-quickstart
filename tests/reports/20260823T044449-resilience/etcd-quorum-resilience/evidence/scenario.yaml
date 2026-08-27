@@ -1,0 +1,125 @@
+version: 1
+name: etcd-quorum-resilience
+description: |
+  Verify that etcd quorum is maintained when non-etcd nodes fail.
+
+  This test stops node-5 (a worker node with no etcd member), then verifies:
+    - etcd still reports 3 healthy members
+    - The cluster stays in "healthy" status
+    - All services remain registered in etcd
+    - The cluster can process reads (service matrix still reachable)
+
+  etcd requires (N/2)+1 members for quorum. With 3 members, 2 must be
+  available. Stopping a non-etcd node should have zero impact on quorum.
+
+  This proves that the quickstart cluster correctly separates etcd membership
+  from worker node presence — etcd quorum is determined by the founding 3 nodes
+  (node-1, node-2, node-3), not by worker nodes (node-4, node-5).
+
+suite: resilience
+tags:
+  - chaos
+  - etcd
+  - quorum
+  - founding-nodes
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+baseline:
+  - type: probe
+    id: baseline_service_count
+    probe: cluster.service_matrix
+    # Capture service count before disruption
+
+steps:
+  # ── stop node-5 (non-etcd worker) ────────────────────────────────────────
+  - id: stop_node5
+    action: chaos.stop_node
+    params:
+      node: node-5
+
+  # Brief pause for the stop to propagate
+  - id: wait_after_stop
+    action: wait
+    params:
+      timeout: 10
+
+  # ── assert quorum unaffected ──────────────────────────────────────────────
+  - id: check_quorum_intact
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3   # all 3 etcd members still up
+
+  - id: check_services_reachable
+    probe: cluster.service_matrix
+    expect:
+      count_gte: 15   # services still registered (etcd read still works)
+
+  # ── restart node-5 ────────────────────────────────────────────────────────
+  - id: start_node5
+    action: chaos.start_node
+    params:
+      node: node-5
+
+  # Wait for node-5 to be running (container up + node-agent active)
+  - id: wait_node5_rejoined
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 10
+      until:
+        probe: service.status
+        params:
+          node: node-5
+          service: node-agent
+        expect:
+          unit_state: active
+
+assertions:
+  - type: probe
+    id: etcd_quorum_maintained
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - type: probe
+    id: node5_agent_active
+    probe: service.status
+    params:
+      node: node-5
+      service: node-agent
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: services_still_registered
+    probe: cluster.service_matrix
+    expect:
+      count_gte: 15
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-5
+      service: node-agent
+
+cleanup:
+  - type: probe
+    id: final_cluster_health
+    probe: cluster.health
+    expect:
+      status: healthy

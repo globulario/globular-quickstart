@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:09:27 UTC; 50min ago
+    Process: 141 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 175 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 193 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 287 (rbac_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 164.8M (peak: 213.6M)
+        CPU: 7.126s
+     CGroup: /system.slice/docker-46d3e9bf00c9e04118c1a14b2224ddcb115e85cb764bf2551f39a6475b534673.scope/system.slice/globular-rbac.service
+             └─287 /usr/lib/globular/bin/rbac_server
+
+Aug 24 17:56:51 node-4 rbac_server[287]: {"level":"info","ts":"2026-08-24T17:56:51.666185Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 17:56:53 node-4 rbac_server[287]: {"level":"warn","ts":"2026-08-24T17:56:53.754582Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001ad0e0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:56:53 node-4 rbac_server[287]: {"level":"info","ts":"2026-08-24T17:56:53.754644Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 17:57:04 node-4 rbac_server[287]: {"level":"warn","ts":"2026-08-24T17:57:04.257019Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000580b40/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:57:04 node-4 rbac_server[287]: {"level":"info","ts":"2026-08-24T17:57:04.257093Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 17:57:56 node-4 rbac_server[287]: {"level":"warn","ts":"2026-08-24T17:57:56.775094Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0280825a0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:57:56 node-4 rbac_server[287]: {"level":"info","ts":"2026-08-24T17:57:56.775175Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 17:58:28 node-4 rbac_server[287]: {"level":"warn","ts":"2026-08-24T17:58:28.759783Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001ad0e0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:58:28 node-4 rbac_server[287]: {"level":"info","ts":"2026-08-24T17:58:28.75985Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 17:59:42 node-4 rbac_server[287]: 2026/08/24 17:59:42 INFO acc: AIMD decrease method=/rbac.RbacService/GetRoleBinding rtt_ms=42 baseline_ms=20 window=316 new_window=284

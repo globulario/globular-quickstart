@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-22T22:55:59.828628Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "authz-scope-unavailable",
+  "suite": "security",
+  "result": "PASS",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "Verify the cluster's behaviour when the RBAC service \u2014 and therefore the\nresource-info lookup that scopes authorization \u2014 is unavailable.\n\nWHY THIS EXISTS\n\nUntil 2026-08-14 the gRPC interceptor handled a failed resource-info lookup by\nlogging a warning, substituting an empty resource-info slice, and CONTINUING\ninto authorization:\n\n    resource lookup fails -> warning -> resources = [] -> action check runs\n                          -> request may proceed WITHOUT resource scope\n\nThe action-level permission check still ran, so this was never a total bypass.\nWhat was silently dropped was the per-resource binding: a caller was evaluated\nas though the method touched no resources at all, precisely when authorization\ndata was least trustworthy (RBAC restarting, slow, or partitioned).\n\nCommit 01bc3e9c changed it to deny:\n\n    resource lookup fails -> authorization scope unknown -> DENY\n\nThat is the correct security direction, and it creates a specific operational\nrisk worth testing rather than assuming: a latent RBAC reliability problem that\nused to be invisible now becomes visible as denied RPCs. The interceptor is\nreached through the shared globular_service lifecycle by most services, so this\nis a platform-wide semantic change, not a single-service one.\n\nWHAT THIS SCENARIO CAN AND CANNOT ASSERT \u2014 read before trusting a green run\n\nCAN:\n  - the cluster survives RBAC being unavailable without cascading failure\n  - RBAC re-registers and the cluster returns to healthy afterwards\n  - no ERROR-severity doctor findings persist once RBAC is back\n  - service logs are collected so the denial signature can be inspected\n\nCANNOT (harness limitation, not a design choice):\n  - assert an allow/deny VERDICT. The authz.check probe currently proves only\n    that the authz layer is reachable \u2014 smoke/authz-basic states this plainly:\n    \"proves the authz infrastructure is present, not that it makes the right\n    decisions\". Asserting a verdict needs the gRPC-level ValidateAccess check\n    the security suite has declared as future work.\n\nUntil that exists, the canary predicate below must be checked BY A HUMAN in\nthe collected logs. Write it down here so the check is not reinvented:\n\n    expected during normal operation:   no occurrences\n    expected while RBAC is down:        resource-info lookup failed for <method>\n                                        (authorization scope unknown)\n\nZero unexpected occurrences of that signature during NORMAL operation is the\nstrong evidence. General cluster health staying green is the weak evidence \u2014\nhealth can stay green while scoped authorization quietly denies a minority of\ncalls.\n\nTHE ASSERTION THAT MATTERS MOST IS THE NEGATIVE ONE\n\nAn unmapped method must still pass through. getActionResourceInfos converts a\n\"not found\" into an empty result with a NIL error, so only genuine failures\nreach the deny path. If that classification is ever removed, denying on error\nwould start rejecting every unmapped method and take the platform down. The\nunit-level guard for this lives in\nservices/golang/interceptors/resource_scope_failclosed_test.go; this scenario\nis the cluster-level companion, and it is the reason the fix is safe to ship\nat all.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

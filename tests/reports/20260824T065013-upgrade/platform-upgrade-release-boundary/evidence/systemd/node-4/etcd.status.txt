@@ -1,0 +1,24 @@
+● globular-etcd.service - Globular etcd
+     Loaded: loaded (/etc/systemd/system/globular-etcd.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 06:45:57 UTC; 52min ago
+    Process: 51 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 62 ExecStartPre=/usr/bin/chown globular:globular /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 89 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 100 ExecStartPre=/bin/sh -c chown globular:globular /var/lib/globular/pki/issued/services/service.key /var/lib/globular/pki/issued/services/service.crt 2>/dev/null || true (code=exited, status=0/SUCCESS)
+   Main PID: 122 (etcd)
+      Tasks: 25 (limit: 8641)
+     Memory: 452.4M (peak: 1.7G)
+        CPU: 5min 41.846s
+     CGroup: /system.slice/docker-bbd73c7cd5d6273fdf874c94a93598a6a83fd29e3fce4589467ee16f0e239c7e.scope/system.slice/globular-etcd.service
+             └─122 /usr/lib/globular/bin/etcd --config-file /var/lib/globular/config/etcd.yaml
+
+Aug 24 07:29:39 node-4 etcd[122]: {"level":"warn","ts":"2026-08-24T07:29:39.254294Z","caller":"etcdserver/util.go:170","msg":"apply request took too long","took":"124.535242ms","expected-duration":"100ms","prefix":"read-only range ","request":"key:\"/globular/services/\" range_end:\"/globular/services0\" ","response":"range_response_count:169 size:183375"}
+Aug 24 07:29:39 node-4 etcd[122]: {"level":"info","ts":"2026-08-24T07:29:39.254506Z","caller":"traceutil/trace.go:171","msg":"trace[786370399] range","detail":"{range_begin:/globular/services/; range_end:/globular/services0; response_count:169; response_revision:40638; }","duration":"124.758577ms","start":"2026-08-24T07:29:39.129728Z","end":"2026-08-24T07:29:39.254486Z","steps":["trace[786370399] 'agreement among raft nodes before linearized reading'  (duration: 123.805034ms)"],"step_count":1}
+Aug 24 07:31:57 node-4 etcd[122]: {"level":"info","ts":"2026-08-24T07:31:57.098579Z","caller":"traceutil/trace.go:171","msg":"trace[363727789] linearizableReadLoop","detail":"{readStateIndex:346567; appliedIndex:346567; }","duration":"107.494249ms","start":"2026-08-24T07:31:56.991063Z","end":"2026-08-24T07:31:57.098557Z","steps":["trace[363727789] 'read index received'  (duration: 107.488849ms)","trace[363727789] 'applied index is now lower than readState.Index'  (duration: 4.248µs)"],"step_count":2}
+Aug 24 07:31:57 node-4 etcd[122]: {"level":"warn","ts":"2026-08-24T07:31:57.098687Z","caller":"etcdserver/util.go:170","msg":"apply request took too long","took":"107.603601ms","expected-duration":"100ms","prefix":"read-only range ","request":"key:\"/globular/resources/ApplicationRelease/\" range_end:\"/globular/resources/ApplicationRelease0\" ","response":"range_response_count:0 size:6"}
+Aug 24 07:31:57 node-4 etcd[122]: {"level":"info","ts":"2026-08-24T07:31:57.098728Z","caller":"traceutil/trace.go:171","msg":"trace[276530135] range","detail":"{range_begin:/globular/resources/ApplicationRelease/; range_end:/globular/resources/ApplicationRelease0; response_count:0; response_revision:41013; }","duration":"107.659866ms","start":"2026-08-24T07:31:56.991057Z","end":"2026-08-24T07:31:57.098717Z","steps":["trace[276530135] 'agreement among raft nodes before linearized reading'  (duration: 107.572224ms)"],"step_count":1}
+Aug 24 07:32:30 node-4 etcd[122]: {"level":"info","ts":"2026-08-24T07:32:30.473392Z","caller":"traceutil/trace.go:171","msg":"trace[2115603857] put","detail":"{key:/globular/ingress/v1/status/c8a09d9e-3813-5357-ab58-93aa410f27fb; req_size:212; response_revision:41094; }","duration":"131.682083ms","start":"2026-08-24T07:32:30.341694Z","end":"2026-08-24T07:32:30.473376Z","steps":["trace[2115603857] 'process raft request'  (duration: 131.037223ms)"],"step_count":1}
+Aug 24 07:32:39 node-4 etcd[122]: {"level":"info","ts":"2026-08-24T07:32:39.171996Z","caller":"etcdserver/server.go:1451","msg":"triggering snapshot","local-member-id":"c3a6bb7925b1e778","local-member-applied-index":348357,"local-member-snapshot-index":248356,"local-member-snapshot-count":100000}
+Aug 24 07:32:39 node-4 etcd[122]: {"level":"info","ts":"2026-08-24T07:32:39.218797Z","caller":"etcdserver/server.go:2470","msg":"saved snapshot","snapshot-index":348357}
+Aug 24 07:32:39 node-4 etcd[122]: {"level":"info","ts":"2026-08-24T07:32:39.218971Z","caller":"etcdserver/server.go:2500","msg":"compacted Raft logs","compact-index":343357}
+Aug 24 07:38:41 node-4 etcd[122]: {"level":"warn","ts":"2026-08-24T07:38:41.748844Z","caller":"embed/config_logging.go:169","msg":"rejected connection","remote-addr":"10.10.0.11:44284","server-name":"","error":"EOF"}

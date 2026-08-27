@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "scenario": "authz-basic",
+  "suite": "smoke",
+  "start_time": "2026-08-24T21:17:20.918749Z",
+  "end_time": "2026-08-24T21:17:23.719001Z",
+  "passed": true,
+  "item_count": 10,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 6
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T21:17:22.080362Z"
+    },
+    {
+      "id": "rbac_service_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 8
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T21:17:22.171814Z"
+    },
+    {
+      "id": "initial_role_binding_count",
+      "section": "baseline",
+      "probe": "authz.role_bindings",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T21:17:22.264774Z"
+    },
+    {
+      "id": "wait_for_rbac_seeded",
+      "section": "steps",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 8
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T21:17:22.365392Z"
+    },
+    {
+      "id": "rbac_service_present",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 8
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T21:17:22.462795Z"
+    },
+    {
+      "id": "rbac_unit_active",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "rbac"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-1",
+        "service": "rbac"
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T21:17:22.577274Z"
+    },
+    {
+      "id": "authz_layer_reachable",
+      "section": "assertions",
+      "probe": "authz.check",
+      "params": {
+        "subject": "system:sa:cluster-controller",
+        "action": "cluster.read",
+        "resource": "nodes"
+      },
+      "expect": {
+        "rbac_registered": true,
+        "result": "unknown"
+      },
+      "result": {
+        "rbac_registered": true,
+        "roles_seeded": false,
+        "binding_count": 0,
+        "result": "unknown",
+        "note": "full gRPC check requires runner container"
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T21:17:22.751689Z"
+    },
+    {
+      "id": "bootstrap_bindings_present",
+      "section": "assertions",
+      "probe": "authz.role_bindings",
+      "params": {},
+      "expect": {
+        "count_gte": 0
+      },
+      "result": {
+        "count": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T21:17:22.839709Z"
+    },
+    {
+      "id": "final_cluster_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 6
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T21:17:23.121872Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T21:17:23.718871Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

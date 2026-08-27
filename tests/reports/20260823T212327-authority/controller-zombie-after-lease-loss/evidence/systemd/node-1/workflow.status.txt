@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 21:14:12 UTC; 15min ago
+    Process: 423 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 437 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 449 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 571 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 29.6M (peak: 33.4M)
+        CPU: 5.446s
+     CGroup: /system.slice/docker-dae82d356e76e6016996f999716cccadf9a25ac7e9d047300b9f7e21e912cd83.scope/system.slice/globular-workflow.service
+             └─571 /usr/lib/globular/bin/workflow_server
+
+Aug 23 21:26:43 node-1 workflow_server[571]: 2026/08/23 21:26:43 workflow: step finalize_release SUCCEEDED (attempt 1)
+Aug 23 21:26:43 node-1 workflow_server[571]: 2026/08/23 21:26:43 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 23 21:26:43 node-1 workflow_server[571]: time=2026-08-23T21:26:43.713Z level=INFO msg="executor: engine.Execute completed" run_id=ServiceRelease/core@globular.io/cluster-doctor
+Aug 23 21:26:43 node-1 workflow_server[571]: time=2026-08-23T21:26:43.739Z level=INFO msg="executor: workflow finished" workflow=release.apply.package run_id=ServiceRelease/core@globular.io/cluster-doctor status=RUN_STATUS_SUCCEEDED
+Aug 23 21:27:15 node-1 workflow_server[571]: 2026/08/23 21:27:15 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListWorkflowSummaries
+Aug 23 21:27:15 node-1 workflow_server[571]: 2026/08/23 21:27:15 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListCorrelationDeferState
+Aug 23 21:27:28 node-1 workflow_server[571]: 2026/08/23 21:27:28 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListDriftUnresolved
+Aug 23 21:27:29 node-1 workflow_server[571]: 2026/08/23 21:27:29 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=149 baseline_ms=20 window=99 new_window=89
+Aug 23 21:28:15 node-1 workflow_server[571]: 2026/08/23 21:28:15 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=111 baseline_ms=20 window=91 new_window=81
+Aug 23 21:28:29 node-1 workflow_server[571]: 2026/08/23 21:28:29 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=154 baseline_ms=20 window=83 new_window=74

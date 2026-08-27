@@ -1,0 +1,21 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:40:52 UTC; 803ms ago
+    Process: 640 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 663 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 675 (ai_executor_ser)
+      Tasks: 9 (limit: 8641)
+     Memory: 18.9M (peak: 19.1M)
+        CPU: 157ms
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-ai-executor.service
+             └─675 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 21:40:52 node-4 systemd[1]: Starting globular-ai-executor.service - Globular ai_executor...
+Jul 31 21:40:52 node-4 systemd[1]: Started globular-ai-executor.service - Globular ai_executor.
+Jul 31 21:40:52 node-4 ai_executor_server[675]: 2026/07/31 21:40:52 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Jul 31 21:40:52 node-4 ai_executor_server[675]: 2026/07/31 21:40:52 INFO security: loaded cluster roles from external policy file roles=22
+Jul 31 21:40:52 node-4 ai_executor_server[675]: PortAllocator range: 10000 - 20000
+Jul 31 21:40:52 node-4 ai_executor_server[675]: time=2026-07-31T21:40:52.735Z level=INFO msg="starting ai_executor service" service=ai_executor.AiExecutorService version=1.2.288
+Jul 31 21:40:52 node-4 ai_executor_server[675]: 2026/07/31 21:40:52 INFO InitGrpcServer: gRPC server initialized service=ai_executor.AiExecutorService tls=true port=10010
+Jul 31 21:40:52 node-4 ai_executor_server[675]: time=2026-07-31T21:40:52.975Z level=INFO msg="claude: CLI not found, using deterministic fallback"
+Jul 31 21:40:53 node-4 ai_executor_server[675]: time=2026-07-31T21:40:53.106Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404

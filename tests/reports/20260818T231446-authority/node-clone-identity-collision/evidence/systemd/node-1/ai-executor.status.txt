@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 23:47:49 UTC; 28min ago
+    Process: 739 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 755 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 763 (ai_executor_ser)
+      Tasks: 22 (limit: 8641)
+     Memory: 30.8M (peak: 38.8M)
+        CPU: 4.405s
+     CGroup: /system.slice/docker-6be2f05afa9da902e341dec6b196b4f1b50b2f94ee26c239477f629ab570e05b.scope/system.slice/globular-ai-executor.service
+             └─763 /usr/lib/globular/bin/ai_executor_server
+
+Aug 19 00:14:06 node-1 ai_executor_server[763]: 2026/08/19 00:14:06 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=122 baseline_ms=20 window=40 new_window=36
+Aug 19 00:14:20 node-1 ai_executor_server[763]: time=2026-08-19T00:14:20.372Z level=INFO msg="processing incident" incident_id=ec97304c-9b62-11f1-8720-02420a0a000b rule_id=reconcile-item-failed tier=0 trigger=cluster.reconcile.item_failed batch_size=2
+Aug 19 00:14:20 node-1 ai_executor_server[763]: time=2026-08-19T00:14:20.465Z level=INFO msg="diagnosis complete" incident_id=ec97304c-9b62-11f1-8720-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 19 00:14:20 node-1 ai_executor_server[763]: time=2026-08-19T00:14:20.465Z level=INFO msg="INCIDENT RESOLVED" incident_id=ec97304c-9b62-11f1-8720-02420a0a000b summary="reconcile-item-failed triggered by cluster.reconcile.item_failed (2 events in batch)" root_cause=unknown_anomaly
+Aug 19 00:14:20 node-1 ai_executor_server[763]: 2026/08/19 00:14:20 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=104 baseline_ms=20 window=36 new_window=32
+Aug 19 00:14:33 node-1 ai_executor_server[763]: time=2026-08-19T00:14:33.375Z level=INFO msg="processing incident" incident_id=f456fefb-9b62-11f1-8723-02420a0a000b rule_id=drift-detected tier=0 trigger=cluster.drift_detected batch_size=2
+Aug 19 00:14:33 node-1 ai_executor_server[763]: time=2026-08-19T00:14:33.459Z level=INFO msg="diagnosis complete" incident_id=f456fefb-9b62-11f1-8723-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 19 00:14:33 node-1 ai_executor_server[763]: time=2026-08-19T00:14:33.459Z level=INFO msg="INCIDENT RESOLVED" incident_id=f456fefb-9b62-11f1-8723-02420a0a000b summary="drift-detected triggered by cluster.drift_detected (2 events in batch)" root_cause=unknown_anomaly
+Aug 19 00:14:33 node-1 ai_executor_server[763]: 2026/08/19 00:14:33 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=93 baseline_ms=20 window=32 new_window=28
+Aug 19 00:16:01 node-1 ai_executor_server[763]: 2026/08/19 00:16:01 WARN port/proxy change detected in desired; restart required to take effect service=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd old_port=10010 new_port=10018 old_proxy=10231 new_proxy=10231

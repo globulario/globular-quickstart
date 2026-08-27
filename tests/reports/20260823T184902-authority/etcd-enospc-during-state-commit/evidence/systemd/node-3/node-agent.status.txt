@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:48:44 UTC; 1min 6s ago
+    Process: 169 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 203 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 212 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 220.3M (peak: 220.8M)
+        CPU: 41.366s
+     CGroup: /system.slice/docker-a613a18ab3a37109baeffa2b2373429836cf63f2fe449e1d1aad8a082e282255.scope/system.slice/globular-node-agent.service
+             └─212 /usr/lib/globular/bin/node_agent_server
+
+Aug 23 18:49:46 node-3 node_agent_server[212]: 2026/08/23 18:49:46 behavioral observation: infra_probe skipped component=minio node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36: record signal: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
+Aug 23 18:49:46 node-3 node_agent_server[212]: 2026/08/23 18:49:46 behavioral observation: infra_probe skipped component=envoy node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36: record signal: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
+Aug 23 18:49:50 node-3 node_agent_server[212]: 2026/08/23 18:49:50 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 23 18:49:50 node-3 node_agent_server[212]: 2026/08/23 18:49:50 ingress: keepalived disabled on node a166b992-b66d-53cb-b7c7-61dfa4dd5a36
+Aug 23 18:49:50 node-3 node_agent_server[212]: 2026/08/23 18:49:50 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 23 18:49:50 node-3 node_agent_server[212]: 2026/08/23 18:49:50 grpc-workflow: install-package xds: build_id  != desired 01a02fda-85ea-7f17-b43c-a24c1a5d6db1
+Aug 23 18:49:50 node-3 node_agent_server[212]: 2026/08/23 18:49:50 grpc-workflow: install-package xds (INFRASTRUCTURE) build_id=01a02fda-85ea-7f17-b43c-a24c1a5d6db1
+Aug 23 18:49:50 node-3 node_agent_server[212]: 2026/08/23 18:49:50 grpc-workflow: install-package xds dispatching apply (build_id=01a02fda-85ea-7f17-b43c-a24c1a5d6db1 expected_sha256_present=true)
+Aug 23 18:49:50 node-3 node_agent_server[212]: 2026/08/23 18:49:50 apply-package: starting INFRASTRUCTURE/xds@1.2.272 (build 0, repo=, op=)
+Aug 23 18:49:50 node-3 node_agent_server[212]: 2026/08/23 18:49:50 installer-api: installing xds from local package /var/lib/globular/packages/xds_1.2.272_linux_amd64.tgz

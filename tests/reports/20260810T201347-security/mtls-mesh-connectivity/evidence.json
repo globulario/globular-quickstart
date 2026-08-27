@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "scenario": "mtls-mesh-connectivity",
+  "suite": "security",
+  "start_time": "2026-08-10T20:16:46.709277Z",
+  "end_time": "2026-08-10T20:17:01.663916Z",
+  "passed": false,
+  "item_count": 4,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "degraded",
+        "members": 1,
+        "nodes": 0
+      },
+      "passed": false,
+      "timestamp": "2026-08-10T20:16:47.515345Z"
+    },
+    {
+      "id": "pki_ca_valid",
+      "section": "preconditions",
+      "probe": "pki.ca_valid",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {
+        "valid": true
+      },
+      "result": {
+        "valid": true,
+        "days_remaining": 3649,
+        "not_after": "Aug  7 20:14:33 2036 GMT",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T20:16:47.770042Z"
+    },
+    {
+      "id": "final_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "degraded",
+        "members": 1,
+        "nodes": 0
+      },
+      "passed": false,
+      "timestamp": "2026-08-10T20:16:47.995023Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 0,
+          "etcd_member_count": "0",
+          "pki": {
+            "node-1": "root:root/400 UNREADABLE backups=0",
+            "node-2": "missing UNREADABLE backups=0",
+            "node-3": "missing UNREADABLE backups=0",
+            "node-4": "missing UNREADABLE backups=0",
+            "node-5": "missing UNREADABLE backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 0,
+          "etcd_member_count": "0",
+          "pki": {
+            "node-1": "root:root/400 UNREADABLE backups=0",
+            "node-2": "missing UNREADABLE backups=0",
+            "node-3": "missing UNREADABLE backups=0",
+            "node-4": "missing UNREADABLE backups=0",
+            "node-5": "missing UNREADABLE backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T20:16:48.517321Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

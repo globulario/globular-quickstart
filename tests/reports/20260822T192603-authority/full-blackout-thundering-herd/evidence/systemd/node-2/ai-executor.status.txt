@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:24:57 UTC; 2min 1s ago
+    Process: 599 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 618 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 641 (ai_executor_ser)
+      Tasks: 17 (limit: 8641)
+     Memory: 27.9M (peak: 29.1M)
+        CPU: 717ms
+     CGroup: /system.slice/docker-8a2300a0f18747bba3241876cd92062f2571f5a82547685010954d3da55c4b12.scope/system.slice/globular-ai-executor.service
+             └─641 /usr/lib/globular/bin/ai_executor_server
+
+Aug 22 19:25:29 node-2 ai_executor_server[641]: time=2026-08-22T19:25:29.224Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 22 19:25:34 node-2 ai_executor_server[641]: time=2026-08-22T19:25:34.225Z level=WARN msg="peer: ping failed" endpoint=10.10.0.13:10010 err="rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"
+Aug 22 19:25:34 node-2 ai_executor_server[641]: time=2026-08-22T19:25:34.225Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010
+Aug 22 19:26:33 node-2 ai_executor_server[641]: time=2026-08-22T19:26:33.327Z level=INFO msg="processing incident" incident_id=62483fad-9e5f-11f1-bbbc-02420a0a000b rule_id=service-stopped tier=0 trigger=service.stopped batch_size=1
+Aug 22 19:26:33 node-2 ai_executor_server[641]: time=2026-08-22T19:26:33.374Z level=INFO msg="diagnosis complete" incident_id=62483fad-9e5f-11f1-bbbc-02420a0a000b root_cause="unknown_anomaly (log.LogService)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 22 19:26:33 node-2 ai_executor_server[641]: time=2026-08-22T19:26:33.374Z level=INFO msg="INCIDENT RESOLVED" incident_id=62483fad-9e5f-11f1-bbbc-02420a0a000b summary="service-stopped triggered by service.stopped on log.LogService (1 events in batch)" root_cause="unknown_anomaly (log.LogService)"
+Aug 22 19:26:33 node-2 ai_executor_server[641]: time=2026-08-22T19:26:33.376Z level=WARN msg="behavioral feed signal record failed" incident=62483fad-9e5f-11f1-bbbc-02420a0a000b err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused\""
+Aug 22 19:26:33 node-2 ai_executor_server[641]: time=2026-08-22T19:26:33.511Z level=INFO msg="processing incident" incident_id=62627b27-9e5f-11f1-8bce-02420a0a000d rule_id=service-stopped tier=0 trigger=service.stopped batch_size=1
+Aug 22 19:26:33 node-2 ai_executor_server[641]: time=2026-08-22T19:26:33.542Z level=INFO msg="diagnosis complete" incident_id=62627b27-9e5f-11f1-8bce-02420a0a000d root_cause="unknown_anomaly (log.LogService)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 22 19:26:33 node-2 ai_executor_server[641]: time=2026-08-22T19:26:33.542Z level=INFO msg="INCIDENT RESOLVED" incident_id=62627b27-9e5f-11f1-8bce-02420a0a000d summary="service-stopped triggered by service.stopped on log.LogService (1 events in batch)" root_cause="unknown_anomaly (log.LogService)"

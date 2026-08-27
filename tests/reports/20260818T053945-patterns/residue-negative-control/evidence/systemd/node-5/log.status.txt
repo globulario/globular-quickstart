@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 05:40:07 UTC; 10s ago
+    Process: 126 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 158 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 197 (log_server)
+      Tasks: 12 (limit: 8641)
+     Memory: 24.2M (peak: 25.6M)
+        CPU: 248ms
+     CGroup: /system.slice/docker-e78c0a83b4338c9b877248d9746b7899f2416901c79a6edd5643d30705c4cb35.scope/system.slice/globular-log.service
+             └─197 /usr/lib/globular/bin/log_server
+
+Aug 18 05:40:07 node-5 log_server[197]: time=2026-08-18T05:40:07.719Z level=INFO msg="starting log service" service=log.LogService version=1.2.312 domain=globular.internal address=10.10.0.15:8443 retention_hours=168 cache_type=SCYLLADB cache_address=10.10.0.15 monitoring_port=9092
+Aug 18 05:40:07 node-5 log_server[197]: 2026/08/18 05:40:07 INFO InitGrpcServer: gRPC server initialized service=log.LogService tls=true port=10100
+Aug 18 05:40:07 node-5 log_server[197]: time=2026-08-18T05:40:07.918Z level=INFO msg="service initialized" duration_ms=199
+Aug 18 05:40:07 node-5 log_server[197]: time=2026-08-18T05:40:07.919Z level=INFO msg="service ready" service=log.LogService version=1.2.312 port=10100 proxy=10101 protocol=grpc domain=globular.internal startup_ms=200
+Aug 18 05:40:07 node-5 log_server[197]: time=2026-08-18T05:40:07.919Z level=INFO msg="starting service" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 18 05:40:07 node-5 log_server[197]: time=2026-08-18T05:40:07.919Z level=INFO msg="starting metrics server" address=0.0.0.0:9092
+Aug 18 05:40:07 node-5 log_server[197]: 2026/08/18 05:40:07 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 18 05:40:07 node-5 log_server[197]: time=2026-08-18T05:40:07.920Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 18 05:40:07 node-5 log_server[197]: time=2026-08-18T05:40:07.920Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 18 05:40:08 node-5 log_server[197]: 2026/08/18 05:40:08 INFO metrics listening service=log.LogService addr=[::]:10101

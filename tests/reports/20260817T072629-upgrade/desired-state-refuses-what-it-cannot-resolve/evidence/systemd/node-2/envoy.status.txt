@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 07:26:02 UTC; 1min 35s ago
+    Process: 149 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 351 (envoy)
+      Tasks: 40 (limit: 8641)
+     Memory: 33.1M (peak: 36.3M)
+        CPU: 2.368s
+     CGroup: /system.slice/docker-b984d7a1d8b9cce6ae32410395547b52d24763e7f6151f83e88c57e12ee42ffa.scope/system.slice/globular-envoy.service
+             └─351 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Aug 17 07:27:02 node-2 envoy[351]: [2026-08-17 07:27:02.995][351][info][upstream] [source/common/upstream/cluster_manager_impl.cc:248] cm init: all clusters initialized
+Aug 17 07:27:02 node-2 envoy[351]: [2026-08-17 07:27:02.995][351][info][main] [source/server/server.cc:1023] all clusters initialized. initializing init manager
+Aug 17 07:27:03 node-2 envoy[351]: [2026-08-17 07:27:03.000][351][info][upstream] [source/common/listener_manager/lds_api.cc:109] lds: add/update listener 'ingress_listener_443'
+Aug 17 07:27:03 node-2 envoy[351]: [2026-08-17 07:27:03.001][351][info][upstream] [source/common/listener_manager/lds_api.cc:109] lds: add/update listener 'ingress_listener_443_http_80'
+Aug 17 07:27:03 node-2 envoy[351]: [2026-08-17 07:27:03.006][351][info][config] [source/common/listener_manager/listener_manager_impl.cc:1003] all dependencies initialized. starting workers
+Aug 17 07:27:12 node-2 envoy[351]: [2026-08-17T07:27:05.365Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 630718 14 - "10.10.0.12" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 17 07:27:22 node-2 envoy[351]: [2026-08-17T07:27:20.365Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 641940 23 - "10.10.0.12" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 17 07:27:32 node-2 envoy[351]: [2026-08-17T07:27:32.750Z] "GET /ready HTTP/1.1" 200 - 0 5 0 - "10.10.0.12" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 17 07:27:32 node-2 envoy[351]: [2026-08-17T07:27:32.751Z] "GET /server_info HTTP/1.1" 200 - 0 98002 2 - "10.10.0.12" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 17 07:27:32 node-2 envoy[351]: [2026-08-17T07:27:32.755Z] "GET /stats?format=json HTTP/1.1" 200 - 0 429158 8 - "10.10.0.12" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"

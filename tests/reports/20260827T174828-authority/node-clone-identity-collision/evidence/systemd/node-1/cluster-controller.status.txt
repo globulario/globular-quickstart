@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 18:24:17 UTC; 27min ago
+    Process: 1106 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 1113 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1116 (cluster_control)
+      Tasks: 23 (limit: 8641)
+     Memory: 47.3M (peak: 58.1M)
+        CPU: 1min 19.371s
+     CGroup: /system.slice/docker-4c675f6508b9a86c7b995eb51d86a0499df1ded44d81b29ffb1411f52fc36f32.scope/system.slice/globular-cluster-controller.service
+             └─1116 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 27 18:51:58 node-1 cluster_controller_server[1116]: 2026/08/27 18:51:58 drift-reconciler: node=node-3 pkg=torrent — orphaned install; node profiles [control-plane core gateway storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 27 18:51:58 node-1 cluster_controller_server[1116]: 2026/08/27 18:51:58 drift-reconciler: node=node-3 pkg=media — orphaned install; node profiles [control-plane core gateway storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 27 18:51:59 node-1 cluster_controller_server[1116]: {"level":"warn","ts":"2026-08-27T18:51:59.188224Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00079e5a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 18:51:59 node-1 cluster_controller_server[1116]: 2026/08/27 18:51:59 convergence-committer: delete committed result 35ac3821-6b90-52eb-a800-41130471770b/COMMAND/globular-cli/1.2.317: convergence_result: delete action "35ac3821-6b90-52eb-a800-41130471770b/COMMAND/globular-cli/1.2.317": context deadline exceeded
+Aug 27 18:51:59 node-1 cluster_controller_server[1116]: 2026/08/27 18:51:59 convergence-committer: node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 27 18:51:59 node-1 cluster_controller_server[1116]: 2026/08/27 18:51:59 convergence-committer: node=c777633e-6d07-5713-9c4c-deb3317eee25 COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 27 18:52:00 node-1 cluster_controller_server[1116]: 2026/08/27 18:52:00 convergence-committer: node=c8a09d9e-3813-5357-ab58-93aa410f27fb COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 27 18:52:00 node-1 cluster_controller_server[1116]: 2026/08/27 18:52:00 remediation-consumer: globular-etcd.service restart SUCCEEDED (verified=true: unit globular-etcd.service is active)
+Aug 27 18:52:01 node-1 cluster_controller_server[1116]: 2026/08/27 18:52:01 buildPlanActions: unknown profile "media-server" — skipping (no managed units)
+Aug 27 18:52:02 node-1 cluster_controller_server[1116]: 2026/08/27 18:52:02 renderEtcdConfig: node 35ac3821-6b90-52eb-a800-41130471770b (10.10.0.15) is not an etcd member yet — skipping etcd.yaml render until MemberAdd puts it in the ring

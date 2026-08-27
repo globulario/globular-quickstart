@@ -1,0 +1,21 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:38:42 UTC; 2s ago
+    Process: 18183 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 18187 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 18189 (cluster_control)
+      Tasks: 12 (limit: 8641)
+     Memory: 7.9M (peak: 8.4M)
+        CPU: 70ms
+     CGroup: /system.slice/docker-9cbf484db170ae0c2e7abe0b6ccaf6884f6851db1bc95966564d78bfe2964b8d.scope/system.slice/globular-cluster-controller.service
+             └─18189 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 18 19:38:42 node-5 systemd[1]: globular-cluster-controller.service: Scheduled restart job, restart counter is at 21.
+Aug 18 19:38:42 node-5 systemd[1]: Starting globular-cluster-controller.service - Globular cluster_controller...
+Aug 18 19:38:42 node-5 systemd[1]: Started globular-cluster-controller.service - Globular cluster_controller.
+Aug 18 19:38:42 node-5 cluster_controller_server[18189]: 2026/08/18 19:38:42 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 18 19:38:42 node-5 cluster_controller_server[18189]: 2026/08/18 19:38:42 INFO security: loaded cluster roles from external policy file roles=22
+Aug 18 19:38:42 node-5 cluster_controller_server[18189]: time=2026-08-18T19:38:42.174Z level=INFO msg="loading configuration" config_path=/var/lib/globular/cluster-controller/config.json
+Aug 18 19:38:42 node-5 cluster_controller_server[18189]: time=2026-08-18T19:38:42.174Z level=INFO msg="loading controller state" state_path=/var/lib/globular/cluster-controller/state.json
+Aug 18 19:38:42 node-5 cluster_controller_server[18189]: 2026/08/18 19:38:42 minio-creds: read from /var/lib/globular/minio/credentials (user=globular)
+Aug 18 19:38:44 node-5 cluster_controller_server[18189]: {"level":"warn","ts":"2026-08-18T19:38:44.177579Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000157680/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \\\"crypto/rsa: verification error\\\" while trying to verify candidate authority certificate \\\"Globular Root CA\\\")\""}

@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "scenario": "cert-expiry-detection",
+  "suite": "security",
+  "start_time": "2026-07-31T16:33:45.082866Z",
+  "end_time": "2026-07-31T16:33:57.108949Z",
+  "passed": false,
+  "item_count": 3,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:33:45.418167Z"
+    },
+    {
+      "id": "node3_cert_valid_before",
+      "section": "preconditions",
+      "probe": "pki.cert_expiry_days",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "expired": false,
+        "days_remaining_gte": 1
+      },
+      "result": {
+        "days_remaining": -1,
+        "expired": true,
+        "node": "node-3",
+        "cert_path": "/var/lib/globular/pki/issued/services/service.crt"
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T16:33:45.550497Z"
+    },
+    {
+      "id": "restore_cert_backup",
+      "section": "cleanup",
+      "probe": "chaos.restore_cert",
+      "params": {
+        "node": "node-3",
+        "cert_path": "/var/lib/globular/pki/issued/services/service.crt",
+        "key_path": "/var/lib/globular/pki/issued/services/service.key"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.restore_cert",
+        "container": "globular-node-3",
+        "exit_code": 0
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:33:45.619444Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

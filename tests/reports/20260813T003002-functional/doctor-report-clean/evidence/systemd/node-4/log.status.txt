@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-13 00:03:45 UTC; 27min ago
+    Process: 148491 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 148495 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 148499 (log_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 23.1M (peak: 30.5M)
+        CPU: 1.699s
+     CGroup: /system.slice/docker-0f50c13d1fb0242397079086be4585272c876e8bf0b0ab01429aa85981bdf3c8.scope/system.slice/globular-log.service
+             └─148499 /usr/lib/globular/bin/log_server
+
+Aug 13 00:18:28 node-4 log_server[148499]: 2026/08/13 00:18:28 INFO acc: AIMD decrease method=/log.LogService/Log rtt_ms=63024 baseline_ms=20 window=72 new_window=64
+Aug 13 00:21:24 node-4 log_server[148499]: 2026/08/13 00:21:24 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 13 00:22:27 node-4 log_server[148499]: time=2026-08-13T00:22:27.621Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.14:9042: connect: connection refused"
+Aug 13 00:22:27 node-4 log_server[148499]: 2026/08/13 00:22:27 INFO acc: AIMD decrease method=/log.LogService/Log rtt_ms=63020 baseline_ms=20 window=64 new_window=57
+Aug 13 00:26:24 node-4 log_server[148499]: 2026/08/13 00:26:24 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 13 00:27:27 node-4 log_server[148499]: time=2026-08-13T00:27:27.903Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.14:9042: connect: connection refused"
+Aug 13 00:27:27 node-4 log_server[148499]: 2026/08/13 00:27:27 INFO acc: AIMD decrease method=/log.LogService/Log rtt_ms=63022 baseline_ms=20 window=57 new_window=51
+Aug 13 00:28:25 node-4 log_server[148499]: 2026/08/13 00:28:25 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (permissions store reconnect failed: scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: failed to resolve any of the provided hostnames)"
+Aug 13 00:29:28 node-4 log_server[148499]: time=2026-08-13T00:29:28.099Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.14:9042: connect: connection refused"
+Aug 13 00:29:28 node-4 log_server[148499]: 2026/08/13 00:29:28 INFO acc: AIMD decrease method=/log.LogService/Log rtt_ms=63024 baseline_ms=20 window=51 new_window=45

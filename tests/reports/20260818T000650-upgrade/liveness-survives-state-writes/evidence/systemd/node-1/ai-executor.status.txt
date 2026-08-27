@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:57:38 UTC; 47min ago
+    Process: 771 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 790 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 805 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 37.6M (peak: 40.1M)
+        CPU: 6.704s
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-ai-executor.service
+             └─805 /usr/lib/globular/bin/ai_executor_server
+
+Aug 18 00:29:00 node-1 ai_executor_server[805]: time=2026-08-18T00:29:00.035Z level=INFO msg="processing incident" incident_id=ce7b6edb-9a9b-11f1-8bf6-02420a0a000b rule_id=service-stopped tier=0 trigger=service.stopped batch_size=2
+Aug 18 00:29:00 node-1 ai_executor_server[805]: time=2026-08-18T00:29:00.155Z level=INFO msg="diagnosis complete" incident_id=ce7b6edb-9a9b-11f1-8bf6-02420a0a000b root_cause="unknown_anomaly (dns.DnsService)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 18 00:29:00 node-1 ai_executor_server[805]: time=2026-08-18T00:29:00.155Z level=INFO msg="INCIDENT RESOLVED" incident_id=ce7b6edb-9a9b-11f1-8bf6-02420a0a000b summary="service-stopped triggered by service.stopped on dns.DnsService (2 events in batch)" root_cause="unknown_anomaly (dns.DnsService)"
+Aug 18 00:29:00 node-1 ai_executor_server[805]: 2026/08/18 00:29:00 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=138 baseline_ms=20 window=64 new_window=57
+Aug 18 00:32:41 node-1 ai_executor_server[805]: time=2026-08-18T00:32:41.398Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 18 00:32:41 node-1 ai_executor_server[805]: time=2026-08-18T00:32:41.425Z level=INFO msg="codex: no credentials found"
+Aug 18 00:37:41 node-1 ai_executor_server[805]: time=2026-08-18T00:37:41.446Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 18 00:37:41 node-1 ai_executor_server[805]: time=2026-08-18T00:37:41.609Z level=INFO msg="codex: no credentials found"
+Aug 18 00:42:41 node-1 ai_executor_server[805]: time=2026-08-18T00:42:41.400Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 18 00:42:41 node-1 ai_executor_server[805]: time=2026-08-18T00:42:41.425Z level=INFO msg="codex: no credentials found"

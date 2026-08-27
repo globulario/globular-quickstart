@@ -1,0 +1,23 @@
+● globular-scylla-manager.service - Globular Scylla Manager
+     Loaded: loaded (/etc/systemd/system/globular-scylla-manager.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:50:32 UTC; 15s ago
+    Process: 824 ExecStartPre=/bin/sh -c for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "scylla 9042 not ready"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 829 ExecStartPre=/usr/lib/globular/bin/scylla-manager-configure (code=exited, status=0/SUCCESS)
+    Process: 833 ExecStartPost=/usr/lib/globular/bin/scylla-manager-register-cluster (code=exited, status=7)
+   Main PID: 832 (scylla-manager)
+      Tasks: 16 (limit: 8641)
+     Memory: 11.4M (peak: 13.0M)
+        CPU: 205ms
+     CGroup: /system.slice/docker-154ff78b33e38f88687df750b0fb75a8af915753f6ba66cfa182b12163553394.scope/system.slice/globular-scylla-manager.service
+             └─832 /usr/bin/scylla-manager --config-file /var/lib/globular/scylla-manager/scylla-manager.yaml
+
+Aug 05 16:50:34 node-3 scylla_manager[832]: {"L":"INFO","T":"2026-08-05T16:50:34.067Z","M":"Loading TLS certificate from disk","cert_file":"/var/lib/globular/pki/issued/services/service.crt","key_file":"/var/lib/globular/pki/issued/services/service.key","_trace_id":"pUlS7vwZQBGaTAymduvGog"}
+Aug 05 16:50:34 node-3 scylla_manager[832]: {"L":"INFO","T":"2026-08-05T16:50:34.074Z","N":"scheduler","M":"Loading tasks from database","_trace_id":"pUlS7vwZQBGaTAymduvGog"}
+Aug 05 16:50:34 node-3 scylla_manager[832]: {"L":"INFO","T":"2026-08-05T16:50:34.085Z","N":"scheduler.16d97377","M":"Schedule","task":"repair/3be29d99-dbb7-4893-ac83-8b4c6940f12c","in":"78h9m25s","begin":"2026-08-08T23:00:00.000Z","retry":0,"_trace_id":"pUlS7vwZQBGaTAymduvGog"}
+Aug 05 16:50:34 node-3 scylla_manager[832]: {"L":"INFO","T":"2026-08-05T16:50:34.085Z","N":"scheduler","M":"All tasks scheduled","_trace_id":"pUlS7vwZQBGaTAymduvGog"}
+Aug 05 16:50:34 node-3 scylla_manager[832]: {"L":"INFO","T":"2026-08-05T16:50:34.085Z","M":"Starting HTTP server","address":"10.10.0.13:5080","_trace_id":"pUlS7vwZQBGaTAymduvGog"}
+Aug 05 16:50:34 node-3 scylla_manager[832]: {"L":"INFO","T":"2026-08-05T16:50:34.085Z","M":"Starting HTTPS server","address":"10.10.0.13:5443","client_ca":"","_trace_id":"pUlS7vwZQBGaTAymduvGog"}
+Aug 05 16:50:34 node-3 scylla_manager[832]: {"L":"INFO","T":"2026-08-05T16:50:34.085Z","M":"Starting Prometheus server","address":":5090","_trace_id":"pUlS7vwZQBGaTAymduvGog"}
+Aug 05 16:50:34 node-3 scylla_manager[832]: {"L":"INFO","T":"2026-08-05T16:50:34.085Z","M":"Starting debug server","address":"127.0.0.1:5112","_trace_id":"pUlS7vwZQBGaTAymduvGog"}
+Aug 05 16:50:34 node-3 scylla_manager[832]: {"L":"INFO","T":"2026-08-05T16:50:34.085Z","M":"Service started","_trace_id":"pUlS7vwZQBGaTAymduvGog"}
+Aug 05 16:50:44 node-3 scylla_manager[832]: {"L":"INFO","T":"2026-08-05T16:50:44.940Z","M":"http: TLS handshake error from 10.10.0.13:50312: EOF"}

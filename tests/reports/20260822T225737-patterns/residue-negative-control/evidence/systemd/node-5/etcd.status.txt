@@ -1,0 +1,24 @@
+● globular-etcd.service - Globular etcd
+     Loaded: loaded (/etc/systemd/system/globular-etcd.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 22:58:07 UTC; 12s ago
+    Process: 45 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 56 ExecStartPre=/usr/bin/chown globular:globular /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 79 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 96 ExecStartPre=/bin/sh -c chown globular:globular /var/lib/globular/pki/issued/services/service.key /var/lib/globular/pki/issued/services/service.crt 2>/dev/null || true (code=exited, status=0/SUCCESS)
+   Main PID: 152 (etcd)
+      Tasks: 23 (limit: 8641)
+     Memory: 66.6M (peak: 68.1M)
+        CPU: 3.628s
+     CGroup: /system.slice/docker-587997bc4cec8912c1a517cfab42d0f6362e2f7c96c75612bb104122d3d1035c.scope/system.slice/globular-etcd.service
+             └─152 /usr/lib/globular/bin/etcd --config-file /var/lib/globular/config/etcd.yaml
+
+Aug 22 22:58:08 node-5 etcd[152]: {"level":"info","ts":"2026-08-22T22:58:08.429632Z","caller":"etcdserver/server.go:790","msg":"initialized peer connections; fast-forwarding election ticks","local-member-id":"7e7a1563eb61045c","forward-ticks":8,"forward-duration":"800ms","election-ticks":10,"election-timeout":"1s","active-remote-members":4}
+Aug 22 22:58:08 node-5 etcd[152]: {"level":"info","ts":"2026-08-22T22:58:08.527054Z","caller":"etcdserver/server.go:2118","msg":"published local member to cluster through raft","local-member-id":"7e7a1563eb61045c","local-member-attributes":"{Name:node-5 ClientURLs:[https://10.10.0.15:2379]}","request-path":"/0/members/7e7a1563eb61045c/attributes","cluster-id":"494c0d2663880d1","publish-timeout":"7s"}
+Aug 22 22:58:08 node-5 etcd[152]: {"level":"info","ts":"2026-08-22T22:58:08.527056Z","caller":"embed/serve.go:103","msg":"ready to serve client requests"}
+Aug 22 22:58:08 node-5 etcd[152]: {"level":"info","ts":"2026-08-22T22:58:08.527262Z","caller":"etcdmain/main.go:44","msg":"notifying init daemon"}
+Aug 22 22:58:08 node-5 etcd[152]: {"level":"info","ts":"2026-08-22T22:58:08.527341Z","caller":"etcdmain/main.go:50","msg":"successfully notified init daemon"}
+Aug 22 22:58:08 node-5 etcd[152]: {"level":"info","ts":"2026-08-22T22:58:08.52818Z","caller":"v3rpc/health.go:61","msg":"grpc service status changed","service":"","status":"SERVING"}
+Aug 22 22:58:08 node-5 etcd[152]: {"level":"info","ts":"2026-08-22T22:58:08.528897Z","caller":"embed/serve.go:250","msg":"serving client traffic securely","traffic":"grpc+http","address":"[::]:2379"}
+Aug 22 22:58:09 node-5 etcd[152]: {"level":"info","ts":"2026-08-22T22:58:09.003919Z","caller":"traceutil/trace.go:171","msg":"trace[1727130137] linearizableReadLoop","detail":"{readStateIndex:125970; appliedIndex:125970; }","duration":"146.442059ms","start":"2026-08-22T22:58:08.85745Z","end":"2026-08-22T22:58:09.003892Z","steps":["trace[1727130137] 'read index received'  (duration: 146.411944ms)","trace[1727130137] 'applied index is now lower than readState.Index'  (duration: 10.039µs)"],"step_count":2}
+Aug 22 22:58:09 node-5 etcd[152]: {"level":"warn","ts":"2026-08-22T22:58:09.014739Z","caller":"etcdserver/util.go:170","msg":"apply request took too long","took":"165.329185ms","expected-duration":"100ms","prefix":"read-only range ","request":"key:\"/globular/services/8b384839-8473-3b00-9ccc-7cb36fe97836/runtime\" ","response":"range_response_count:1 size:142"}
+Aug 22 22:58:09 node-5 etcd[152]: {"level":"info","ts":"2026-08-22T22:58:09.014831Z","caller":"traceutil/trace.go:171","msg":"trace[559891934] range","detail":"{range_begin:/globular/services/8b384839-8473-3b00-9ccc-7cb36fe97836/runtime; range_end:; response_count:1; response_revision:18343; }","duration":"165.454001ms","start":"2026-08-22T22:58:08.849361Z","end":"2026-08-22T22:58:09.014815Z","steps":["trace[559891934] 'agreement among raft nodes before linearized reading'  (duration: 154.670943ms)"],"step_count":1}

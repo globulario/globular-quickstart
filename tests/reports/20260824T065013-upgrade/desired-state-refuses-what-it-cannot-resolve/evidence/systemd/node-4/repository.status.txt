@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 06:45:57 UTC; 6min ago
+    Process: 157 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 198 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 228 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 38.0M (peak: 40.5M)
+        CPU: 5.204s
+     CGroup: /system.slice/docker-bbd73c7cd5d6273fdf874c94a93598a6a83fd29e3fce4589467ee16f0e239c7e.scope/system.slice/globular-repository.service
+             └─228 /usr/lib/globular/bin/repository_server
+
+Aug 24 06:46:32 node-4 repository_server[228]: 2026/08/24 06:46:32 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 24 06:47:05 node-4 repository_server[228]: 2026/08/24 06:47:05 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 24 06:47:05 node-4 repository_server[228]: 2026/08/24 06:47:05 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 24 06:50:34 node-4 repository_server[228]: 2026/08/24 06:50:34 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 06:50:35 node-4 repository_server[228]: 2026/08/24 06:50:35 WARN authz_decision audit="{\"timestamp\":\"2026-08-24T06:50:35.323771065Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 24 06:50:35 node-4 repository_server[228]: 2026/08/24 06:50:35 WARN authz_decision audit="{\"timestamp\":\"2026-08-24T06:50:35.54117046Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 24 06:50:58 node-4 repository_server[228]: time=2026-08-24T06:50:58.565Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 24 06:51:01 node-4 repository_server[228]: 2026/08/24 06:51:01 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 24 06:51:06 node-4 repository_server[228]: 2026/08/24 06:51:06 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 24 06:51:08 node-4 repository_server[228]: 2026/08/24 06:51:08 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=165 baseline_ms=20 window=196 new_window=176

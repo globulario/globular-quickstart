@@ -1,0 +1,21 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:25:39 UTC; 1min 44s ago
+    Process: 647 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 807 (workflow_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 25.9M (peak: 27.4M)
+        CPU: 636ms
+     CGroup: /system.slice/docker-9180d30e9d1ba804a7b09169efb4bbc01eb91329f628cb2e20c93a2f4151a900.scope/system.slice/globular-workflow.service
+             └─807 /usr/lib/globular/bin/workflow_server
+
+Aug 01 01:26:16 node-4 workflow_server[807]: time=2026-08-01T01:26:16.652Z level=INFO msg="retention: pruning complete" deleted=5 remaining=1000
+Aug 01 01:26:25 node-4 workflow_server[807]: 2026/08/01 01:26:25 WARN executor lease: orphan scan iteration error err="Cannot achieve consistency level for cl LOCAL_ONE. Requires 1, alive 0"
+Aug 01 01:26:25 node-4 workflow_server[807]: 2026/08/01 01:26:25 WARN executor lease: orphan scanner backing off consecutive_failures=3 backoff=4s next_scan_after=2026-08-01T01:26:29Z
+Aug 01 01:26:40 node-4 workflow_server[807]: 2026/08/01 01:26:40 WARN executor lease: orphan scan iteration error err="Cannot achieve consistency level for cl LOCAL_ONE. Requires 1, alive 0"
+Aug 01 01:26:40 node-4 workflow_server[807]: 2026/08/01 01:26:40 WARN executor lease: orphan scanner backing off consecutive_failures=4 backoff=8s next_scan_after=2026-08-01T01:26:48Z
+Aug 01 01:26:55 node-4 workflow_server[807]: 2026/08/01 01:26:55 WARN executor lease: orphan scan iteration error err="gocql: no hosts available in the pool"
+Aug 01 01:26:55 node-4 workflow_server[807]: 2026/08/01 01:26:55 WARN executor lease: orphan scanner backing off consecutive_failures=5 backoff=16s next_scan_after=2026-08-01T01:27:11Z
+Aug 01 01:26:55 node-4 workflow_server[807]: time=2026-08-01T01:26:55.512Z level=WARN msg="dependency health check failed" dep=scylladb err="gocql: no hosts available in the pool"
+Aug 01 01:26:55 node-4 workflow_server[807]: time=2026-08-01T01:26:55.512Z level=ERROR msg="dependencies UNHEALTHY — service is NOT_SERVING"
+Aug 01 01:27:10 node-4 workflow_server[807]: time=2026-08-01T01:27:10.511Z level=WARN msg="dependency health check failed" dep=scylladb err="gocql: no hosts available in the pool"

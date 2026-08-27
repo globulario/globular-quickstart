@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 23:36:20 UTC; 6min ago
+    Process: 618 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 635 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 655 (ai_executor_ser)
+      Tasks: 18 (limit: 8641)
+     Memory: 34.1M (peak: 34.6M)
+        CPU: 1.536s
+     CGroup: /system.slice/docker-51a3f59fdce7167f6650e68f30741c3ebb9f8db00df0a2a6826c1e17a59cb81d.scope/system.slice/globular-ai-executor.service
+             └─655 /usr/lib/globular/bin/ai_executor_server
+
+Aug 24 23:40:07 node-2 ai_executor_server[655]: time=2026-08-24T23:40:07.910Z level=INFO msg="diagnosis complete" incident_id=23a98f46-a015-11f1-a3c2-02420a0a000d root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 24 23:40:07 node-2 ai_executor_server[655]: time=2026-08-24T23:40:07.910Z level=INFO msg="INCIDENT RESOLVED" incident_id=23a98f46-a015-11f1-a3c2-02420a0a000d summary="doctor-finding triggered by cluster.finding.created (6 events in batch)" root_cause=unknown_anomaly
+Aug 24 23:40:12 node-2 ai_executor_server[655]: time=2026-08-24T23:40:12.650Z level=INFO msg="processing incident" incident_id=2685e49b-a015-11f1-a3c3-02420a0a000d rule_id=service-stopped tier=0 trigger=service.stopped batch_size=11
+Aug 24 23:40:12 node-2 ai_executor_server[655]: time=2026-08-24T23:40:12.729Z level=INFO msg="diagnosis complete" incident_id=2685e49b-a015-11f1-a3c3-02420a0a000d root_cause="unknown_anomaly (authentication.AuthenticationService)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 24 23:40:12 node-2 ai_executor_server[655]: time=2026-08-24T23:40:12.729Z level=INFO msg="INCIDENT RESOLVED" incident_id=2685e49b-a015-11f1-a3c3-02420a0a000d summary="service-stopped triggered by service.stopped on authentication.AuthenticationService (11 events in batch)" root_cause="unknown_anomaly (authentication.AuthenticationService)"
+Aug 24 23:41:21 node-2 ai_executor_server[655]: time=2026-08-24T23:41:21.826Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 24 23:41:21 node-2 ai_executor_server[655]: time=2026-08-24T23:41:21.877Z level=INFO msg="codex: CLI not found"
+Aug 24 23:42:38 node-2 ai_executor_server[655]: time=2026-08-24T23:42:38.219Z level=INFO msg="processing incident" incident_id=7d45f463-a015-11f1-b457-02420a0a000c rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=11
+Aug 24 23:42:38 node-2 ai_executor_server[655]: time=2026-08-24T23:42:38.284Z level=INFO msg="diagnosis complete" incident_id=7d45f463-a015-11f1-b457-02420a0a000c root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 24 23:42:38 node-2 ai_executor_server[655]: time=2026-08-24T23:42:38.284Z level=INFO msg="INCIDENT RESOLVED" incident_id=7d45f463-a015-11f1-b457-02420a0a000c summary="doctor-finding triggered by cluster.finding.created (11 events in batch)" root_cause=unknown_anomaly

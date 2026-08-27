@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:40:39 UTC; 11min ago
+    Process: 153 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 173 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 194 (cluster_control)
+      Tasks: 18 (limit: 8641)
+     Memory: 37.8M (peak: 39.3M)
+        CPU: 23.760s
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-cluster-controller.service
+             └─194 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 21:52:15 node-4 cluster_controller_server[194]: 2026/07/31 21:52:15 watch-service-release: event MODIFIED name=core@globular.io/workflow phase=FAILED
+Jul 31 21:52:15 node-4 cluster_controller_server[194]: 2026/07/31 21:52:15 watch-service-release: event MODIFIED name=core@globular.io/workflow phase=FAILED
+Jul 31 21:52:15 node-4 cluster_controller_server[194]: 2026/07/31 21:52:15 watch-service-release: event MODIFIED name=core@globular.io/workflow phase=FAILED
+Jul 31 21:52:15 node-4 cluster_controller_server[194]: {"level":"warn","ts":"2026-07-31T21:52:15.893112Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004d6780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:15 node-4 cluster_controller_server[194]: 2026/07/31 21:52:15 leader: failed to load state from etcd: context deadline exceeded — keeping local state
+Jul 31 21:52:25 node-4 cluster_controller_server[194]: {"level":"warn","ts":"2026-07-31T21:52:25.733597Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004d6780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Canceled desc = context canceled"}
+Jul 31 21:52:36 node-4 cluster_controller_server[194]: 2026/07/31 21:52:36 remediation-consumer: received restart request for globular-scylla-manager.service (incident=242ec0da-8d2a-11f1-bbad-02420a0a000b, cause=service_crash: globular-scylla-manager.service)
+Jul 31 21:52:36 node-4 cluster_controller_server[194]: 2026/07/31 21:52:36 workflow recorder: StartRun failed: rpc error: code = PermissionDenied desc = permission denied: workflow.admin — assign a role with 'globular rbac bind'
+Jul 31 21:52:36 node-4 cluster_controller_server[194]: 2026/07/31 21:52:36 remediation-consumer: workflow run started (run=, node=node-5, unit=globular-scylla-manager.service)
+Jul 31 21:52:37 node-4 cluster_controller_server[194]: 2026/07/31 21:52:37 remediation-consumer: restart command sent for globular-scylla-manager.service on node-5

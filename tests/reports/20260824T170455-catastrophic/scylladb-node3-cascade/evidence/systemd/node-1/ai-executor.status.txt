@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:07:44 UTC; 2min 53s ago
+    Process: 744 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 770 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 806 (ai_executor_ser)
+      Tasks: 18 (limit: 8641)
+     Memory: 28.9M (peak: 30.9M)
+        CPU: 694ms
+     CGroup: /system.slice/docker-132f316b761e19b341cb3599f86ce40d781792bff8b801029cd06da093b8fd9e.scope/system.slice/globular-ai-executor.service
+             └─806 /usr/lib/globular/bin/ai_executor_server
+
+Aug 24 17:09:26 node-1 ai_executor_server[806]: {"level":"warn","ts":"2026-08-24T17:09:26.090011Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00079c3c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:09:26 node-1 ai_executor_server[806]: {"level":"info","ts":"2026-08-24T17:09:26.090096Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 17:09:35 node-1 ai_executor_server[806]: 2026/08/24 17:09:35 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:09:41 node-1 ai_executor_server[806]: 2026/08/24 17:09:41 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 24 17:10:21 node-1 ai_executor_server[806]: 2026/08/24 17:10:21 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:10:22 node-1 ai_executor_server[806]: 2026/08/24 17:10:22 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: no route to host
+Aug 24 17:10:24 node-1 ai_executor_server[806]: time=2026-08-24T17:10:24.744Z level=INFO msg="processing incident" incident_id=b23a596b-9fde-11f1-af14-02420a0a000b rule_id=health-check-fail tier=0 trigger=cluster.health.degraded batch_size=3
+Aug 24 17:10:27 node-1 ai_executor_server[806]: time=2026-08-24T17:10:27.238Z level=INFO msg="diagnosis complete" incident_id=b23a596b-9fde-11f1-af14-02420a0a000b root_cause="node_health_degraded: no contact for 5m32s" confidence=0.6000000238418579 proposed_action=notify_admin job_state=JOB_DIAGNOSED
+Aug 24 17:10:27 node-1 ai_executor_server[806]: time=2026-08-24T17:10:27.238Z level=INFO msg="INCIDENT RESOLVED" incident_id=b23a596b-9fde-11f1-af14-02420a0a000b summary="health-check-fail triggered by cluster.health.degraded (3 events in batch)" root_cause="node_health_degraded: no contact for 5m32s"
+Aug 24 17:10:27 node-1 ai_executor_server[806]: time=2026-08-24T17:10:27.273Z level=WARN msg="behavioral feed action check failed" incident=b23a596b-9fde-11f1-af14-02420a0a000b action=notify_admin err="rpc error: code = Internal desc = BehavioralMemoryService.CheckAction: check action: persist: record action check: index by theme: Cannot achieve consistency level for cl ONE. Requires 1, alive 0"

@@ -1,0 +1,17 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:35:00 UTC; 3s ago
+    Process: 12453 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 12469 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 12485 (monitoring_serv)
+      Tasks: 9 (limit: 8641)
+     Memory: 8.1M (peak: 8.4M)
+        CPU: 87ms
+     CGroup: /system.slice/docker-8f2c20fa44c525c5f9d44495f4696ab93e352f205e623d4a83e994a0a58a6e0d.scope/system.slice/globular-monitoring.service
+             └─12485 /usr/lib/globular/bin/monitoring_server
+
+Aug 22 19:35:00 node-5 systemd[1]: globular-monitoring.service: Scheduled restart job, restart counter is at 58.
+Aug 22 19:35:00 node-5 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 22 19:35:00 node-5 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 22 19:35:00 node-5 monitoring_server[12485]: PortAllocator range: 10000 - 20000
+Aug 22 19:35:02 node-5 monitoring_server[12485]: {"level":"warn","ts":"2026-08-22T19:35:02.862032Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000409c20/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}

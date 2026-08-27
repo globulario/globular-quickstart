@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 15:10:46 UTC; 47min ago
+    Process: 8092 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 8096 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 8099 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 8105 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 30.2M (peak: 35.1M)
+        CPU: 6.765s
+     CGroup: /system.slice/docker-f8aab85675a209b14dde86f8d35afd5ff5b9a0f99553505e73c479e4f2b63db5.scope/system.slice/globular-workflow.service
+             └─8105 /usr/lib/globular/bin/workflow_server
+
+Aug 22 15:57:39 node-2 workflow_server[8105]: 2026/08/22 15:57:39 workflow: step mark_resolved SUCCEEDED (attempt 1)
+Aug 22 15:57:39 node-2 workflow_server[8105]: 2026/08/22 15:57:39 workflow: step select_targets starting (actor=cluster-controller action=controller.release.select_package_targets)
+Aug 22 15:57:39 node-2 workflow_server[8105]: 2026/08/22 15:57:39 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 22 15:57:39 node-2 workflow_server[8105]: 2026/08/22 15:57:39 workflow: step select_targets FAILED after 1 attempts: actor cluster-controller action controller.release.select_package_targets: rpc error: code = Canceled desc = context canceled
+Aug 22 15:57:39 node-2 workflow_server[8105]: 2026/08/22 15:57:39 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 22 15:57:39 node-2 workflow_server[8105]: 2026/08/22 15:57:39 workflow: hook cluster-controller::controller.release.mark_failed failed: actor cluster-controller action controller.release.mark_failed: rpc error: code = Canceled desc = context canceled
+Aug 22 15:57:39 node-2 workflow_server[8105]: time=2026-08-22T15:57:39.395Z level=WARN msg="executor: engine.Execute returned error" run_id=InfrastructureRelease/core@globular.io/etcd error="step select_targets failed: actor cluster-controller action controller.release.select_package_targets: rpc error: code = Canceled desc = context canceled"
+Aug 22 15:57:39 node-2 workflow_server[8105]: time=2026-08-22T15:57:39.420Z level=INFO msg="executor: workflow finished" workflow=release.apply.package run_id=InfrastructureRelease/core@globular.io/etcd status=RUN_STATUS_FAILED
+Aug 22 15:57:39 node-2 workflow_server[8105]: 2026/08/22 15:57:39 WARN incident projection: store failed title="release.apply.package FAILED: step select_targets failed: actor cluster-controller action controller.release.s..." err="rpc error: code = Unauthenticated desc = authentication required: provide --token or configure client certificates"
+Aug 22 15:57:44 node-2 workflow_server[8105]: 2026/08/22 15:57:44 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=94 baseline_ms=20 window=58 new_window=52

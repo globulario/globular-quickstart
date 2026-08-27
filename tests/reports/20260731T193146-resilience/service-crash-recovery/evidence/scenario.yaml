@@ -1,0 +1,154 @@
+version: 1
+name: service-crash-recovery
+description: |
+  Verify that a crashed service is automatically restarted by systemd and
+  re-registers in etcd within 60 seconds.
+
+  Test sequence:
+    1. Confirm DNS service is active on node-3 (baseline)
+    2. Kill the DNS systemd unit (simulates process crash / OOM kill)
+    3. Wait up to 60s for systemd to restart it (Restart=on-failure in unit file)
+    4. Assert: DNS unit is active again
+    5. Assert: DNS service is still registered in etcd
+
+  DNS is chosen because:
+    - It runs on node-3 (not a control-plane node) — safe to interrupt
+    - It has no quorum requirements — a brief outage won't cascade
+    - Its re-registration in etcd proves the full restart path works end-to-end
+
+  This test proves the Restart=on-failure systemd policy is correctly configured
+  and that the service reconnects to etcd after restart without operator intervention.
+
+suite: resilience
+tags:
+  - chaos
+  - crash-recovery
+  - systemd
+  - dns
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: dns_registered_before
+    probe: service.registered
+    params:
+      service: dns
+    expect:
+      registered: true
+
+  - type: probe
+    id: dns_active_before
+    probe: service.status
+    params:
+      node: node-3
+      service: dns
+    expect:
+      unit_state: active
+
+baseline:
+  - type: probe
+    id: baseline_node_count
+    probe: cluster.health
+    # Capture node count before chaos
+
+steps:
+  # ── inject fault ──────────────────────────────────────────────────────────
+  # SIGKILL (not SIGTERM) — forces systemd to see a crash and trigger Restart=on-failure.
+  # systemctl stop sends SIGTERM → clean exit 0 → on-failure policy does NOT trigger.
+  - id: kill_dns_service
+    action: chaos.sigkill_service
+    params:
+      node: node-3
+      service: dns
+
+  # Brief pause so systemd registers the unit as stopped
+  - id: wait_after_kill
+    action: wait
+    params:
+      timeout: 5
+      # plain sleep — no until condition
+
+  # ── wait for auto-recovery ─────────────────────────────────────────────────
+  - id: wait_dns_restarted
+    action: wait
+    params:
+      timeout: 60
+      poll_interval: 5
+      until:
+        probe: service.status
+        params:
+          node: node-3
+          service: dns
+        expect:
+          unit_state: active
+
+  # ── wait for etcd re-registration ─────────────────────────────────────────
+  - id: wait_dns_reregistered
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: service.registered
+        params:
+          service: dns
+        expect:
+          registered: true
+
+assertions:
+  - type: probe
+    id: dns_unit_active_after
+    probe: service.status
+    params:
+      node: node-3
+      service: dns
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: dns_registered_after
+    probe: service.registered
+    params:
+      service: dns
+    expect:
+      registered: true
+
+  - type: probe
+    id: cluster_still_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-3
+      service: dns
+
+cleanup:
+  # Ensure DNS is running after test regardless of outcome.
+  # If SIGKILL didn't trigger auto-restart (e.g. throttled), this ensures
+  # the cluster is left in a known-good state for subsequent scenarios.
+  - id: ensure_dns_started
+    action: chaos.restart_service
+    params:
+      node: node-3
+      service: dns
+
+  - type: probe
+    id: final_dns_status
+    probe: service.status
+    params:
+      node: node-3
+      service: dns

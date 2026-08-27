@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:26:15 UTC; 9min ago
+    Process: 1054 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 1067 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1076 (log_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 27.5M (peak: 28.8M)
+        CPU: 1.018s
+     CGroup: /system.slice/docker-8e2076f4c40178dcdd9bcfeee512d2325132b3b746cdcd1fa2bc1708e47cfdb0.scope/system.slice/globular-log.service
+             └─1076 /usr/lib/globular/bin/log_server
+
+Aug 22 19:26:16 node-3 log_server[1076]: 2026/08/22 19:26:16 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 22 19:27:10 node-3 log_server[1076]: 2026/08/22 19:27:10 WARN acc: config watcher stopped, will retry err="etcdserver: mvcc: required revision has been compacted" backoff=5s
+Aug 22 19:28:54 node-3 log_server[1076]: 2026/08/22 19:28:54 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 22 19:28:54 node-3 log_server[1076]: 2026/08/22 19:28:54 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 22 19:28:54 node-3 log_server[1076]: 2026/08/22 19:28:54 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 22 19:28:54 node-3 log_server[1076]: time=2026-08-22T19:28:54.311Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 22 19:28:54 node-3 log_server[1076]: time=2026-08-22T19:28:54.330Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 22 19:31:19 node-3 log_server[1076]: 2026/08/22 19:31:19 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 22 19:35:20 node-3 log_server[1076]: 2026/08/22 19:35:20 INFO acc: warmup complete baseline_rtt_ms=20 samples=227 elapsed=9m3s
+Aug 22 19:35:20 node-3 log_server[1076]: 2026/08/22 19:35:20 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

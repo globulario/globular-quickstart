@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:33:32 UTC; 5min ago
+    Process: 706 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 720 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 737 (ai_executor_ser)
+      Tasks: 23 (limit: 8641)
+     Memory: 42.2M (peak: 44.6M)
+        CPU: 17.561s
+     CGroup: /system.slice/docker-9a67632422a5502a1d64625e1932bb8e76fae6f90cdee0187c70d84ee68d0231.scope/system.slice/globular-ai-executor.service
+             └─737 /usr/lib/globular/bin/ai_executor_server
+
+Aug 18 19:36:52 node-1 ai_executor_server[737]: {"level":"info","ts":"2026-08-18T19:36:51.608558Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 18 19:36:52 node-1 ai_executor_server[737]: {"level":"info","ts":"2026-08-18T19:36:51.608535Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 18 19:36:53 node-1 ai_executor_server[737]: {"level":"warn","ts":"2026-08-18T19:36:52.80731Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00042f0e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:36:59 node-1 ai_executor_server[737]: {"level":"warn","ts":"2026-08-18T19:36:59.448442Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00042f0e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:37:02 node-1 ai_executor_server[737]: 2026/08/18 19:37:02 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: i/o timeout
+Aug 18 19:37:04 node-1 ai_executor_server[737]: 2026/08/18 19:37:03 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 18 19:37:04 node-1 ai_executor_server[737]: 2026/08/18 19:37:04 gocql: unable to connect to any ring node: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 18 19:37:04 node-1 ai_executor_server[737]: 2026/08/18 19:37:04 gocql: control falling back to initial contact points.
+Aug 18 19:38:35 node-1 ai_executor_server[737]: time=2026-08-18T19:38:35.447Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 18 19:38:35 node-1 ai_executor_server[737]: time=2026-08-18T19:38:35.515Z level=INFO msg="codex: no credentials found"

@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 17:31:06 UTC; 2min 17s ago
+    Process: 505 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 537 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 566 (repository_serv)
+      Tasks: 18 (limit: 8641)
+     Memory: 33.1M (peak: 34.3M)
+        CPU: 1.623s
+     CGroup: /system.slice/docker-69025280349b196b081d33f2dd6f3c546bf2bf86ec60e97ca9d44389bf4681a5.scope/system.slice/globular-repository.service
+             └─566 /usr/lib/globular/bin/repository_server
+
+Aug 23 17:31:31 node-2 repository_server[566]: 2026/08/23 17:31:31 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%ai-executor%v1.2.317%linux_amd64 err="Operation failed for repository.manifests - received 0 responses and 1 failures from 1 CL=QUORUM." finding=service.silent_fallback_active
+Aug 23 17:31:31 node-2 repository_server[566]: 2026/08/23 17:31:31 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%scylladb%2025.3.8%linux_amd64 err="Operation failed for repository.manifests - received 0 responses and 1 failures from 1 CL=QUORUM." finding=service.silent_fallback_active
+Aug 23 17:31:31 node-2 repository_server[566]: 2026/08/23 17:31:31 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Operation failed for repository.manifests - received 0 responses and 1 failures from 1 CL=QUORUM."
+Aug 23 17:31:31 node-2 repository_server[566]: 2026/08/23 17:31:31 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%scylladb%v2025.3.8%linux_amd64 err="Operation failed for repository.manifests - received 0 responses and 1 failures from 1 CL=QUORUM." finding=service.silent_fallback_active
+Aug 23 17:31:31 node-2 repository_server[566]: 2026/08/23 17:31:31 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Operation failed for repository.manifests - received 0 responses and 1 failures from 1 CL=QUORUM."
+Aug 23 17:31:31 node-2 repository_server[566]: 2026/08/23 17:31:31 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Operation failed for repository.manifests - received 0 responses and 1 failures from 1 CL=QUORUM."
+Aug 23 17:31:31 node-2 repository_server[566]: 2026/08/23 17:31:31 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%ai-executor%1.2.317%linux_amd64 err="Operation failed for repository.manifests - received 0 responses and 1 failures from 1 CL=QUORUM." finding=service.silent_fallback_active
+Aug 23 17:31:31 node-2 repository_server[566]: 2026/08/23 17:31:31 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Operation failed for repository.manifests - received 0 responses and 1 failures from 1 CL=QUORUM."
+Aug 23 17:31:31 node-2 repository_server[566]: 2026/08/23 17:31:31 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%ai-executor%v1.2.317%linux_amd64 err="Operation failed for repository.manifests - received 0 responses and 1 failures from 1 CL=QUORUM." finding=service.silent_fallback_active
+Aug 23 17:33:11 node-2 repository_server[566]: 2026/08/23 17:33:11 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"

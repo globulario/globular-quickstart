@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-26T11:26:27.645984Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "etcd-backend-does-not-ratchet",
+  "suite": "upgrade",
+  "result": "PASS",
+  "source_revision": "e9db6e24e9c489e9173c12829940a94adf206939",
+  "proof": {
+    "claim": "etcd's backend file must be able to give space back, not only take it.\n\nTHE INCIDENT (2026-08-16). etcd reached its 2 GiB backend quota and raised\nNOSPACE on 4 of 5 members. The control plane went read-only: no desired state\ncould be written, no workflow dispatched, no service registered. Recovery was\na manual compact + defrag + alarm disarm, which took the backend from 2.1 GB\nto 4.2 MB.\n\nTHE WRONG DIAGNOSIS. The obvious suspect was write volume, and the controller\nrewriting its whole state blob on every heartbeat looked like the culprit. An\noptimization was written and shipped on that theory. It caused a second, worse\noutage (see liveness-survives-state-writes) and did not stop the growth: the\nbackend was back to 236 MB within hours, WITH the optimization live.\n\nTHE ACTUAL CAUSE. auto-compaction was already configured \u2014 periodic, 1h\nretention \u2014 so MVCC history was bounded the whole time. What was missing was\ndefragmentation. Compaction frees pages logically but the backend file only\nratchets upward; without a defrag the high-water mark is never returned. The\nfile therefore grows to whatever the busiest hour demanded and stays there\nforever, and any burst that pushes one hour past the quota is permanent.\n\nTwo configuration facts made that fatal rather than merely untidy:\nquota-backend-bytes was 0, meaning etcd's 2 GiB default, on a cluster whose\nsteady state is a few hundred MB; and nothing anywhere \u2014 no systemd timer, no\ncron entry \u2014 ever ran a defrag.\n\nTHE LESSON. The measurement that settles \"is this writer the problem?\" is\nwrites-per-prefix over a window, and it was never taken. The optimization was\nbuilt on a read of the code instead. This scenario asserts the structural\nproperty that makes write volume survivable in the first place, so the\ncluster does not depend on anyone diagnosing correctly under pressure.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

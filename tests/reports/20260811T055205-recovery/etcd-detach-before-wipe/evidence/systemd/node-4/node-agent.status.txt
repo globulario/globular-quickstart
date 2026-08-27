@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:49:53 UTC; 5min ago
+    Process: 101 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 139 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 182 (node_agent_serv)
+      Tasks: 27 (limit: 8641)
+     Memory: 28.0M (peak: 39.1M)
+        CPU: 3min 2.107s
+     CGroup: /system.slice/docker-92f873056dfd35351056eba01528e64262dad1719adc1fcfb8785aad8dbc994c.scope/system.slice/globular-node-agent.service
+             └─182 /usr/lib/globular/bin/node_agent_server
+
+Aug 11 05:53:56 node-4 node_agent_server[182]: 2026/08/11 05:53:56 behavioral observation: infra_probe skipped component=envoy node=6400b443-cf38-52da-a683-de2fc5103c0b: record evidence signal.probe.5a16bbd8f3d58c4a.evidence.0: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
+Aug 11 05:54:20 node-4 node_agent_server[182]: 2026/08/11 05:54:20 nodeagent: reporting 36 installed services (hash=b4e78bdee7db4866aad1a22887f169dd762d48e11420348625812ffa86d9d1de, sample=[restic claude ldap search node-agent])
+Aug 11 05:54:20 node-4 node_agent_server[182]: 2026/08/11 05:54:20 nodeagent: refreshed etcd endpoint list from /globular/system/etcd_endpoints (5 endpoint(s))
+Aug 11 05:54:20 node-4 node_agent_server[182]: 2026/08/11 05:54:20 node heartbeat failed (state=unreachable): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: connection refused
+Aug 11 05:54:23 node-4 node_agent_server[182]: 2026/08/11 05:54:23 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 11 05:54:25 node-4 node_agent_server[182]: 2026/08/11 05:54:25 behavioral observation: infra_probe skipped component=scylladb node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 11 05:54:52 node-4 node_agent_server[182]: 2026/08/11 05:54:52 nodeagent: reporting 36 installed services (hash=b4e78bdee7db4866aad1a22887f169dd762d48e11420348625812ffa86d9d1de, sample=[prometheus etcd rbac monitoring etcdctl])
+Aug 11 05:54:53 node-4 node_agent_server[182]: 2026/08/11 05:54:53 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 11 05:55:23 node-4 node_agent_server[182]: 2026/08/11 05:55:23 nodeagent: reporting 36 installed services (hash=b4e78bdee7db4866aad1a22887f169dd762d48e11420348625812ffa86d9d1de, sample=[envoy etcd xds log catalog])
+Aug 11 05:55:23 node-4 node_agent_server[182]: 2026/08/11 05:55:23 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b

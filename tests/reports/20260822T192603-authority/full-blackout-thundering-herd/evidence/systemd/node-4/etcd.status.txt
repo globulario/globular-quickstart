@@ -1,0 +1,24 @@
+● globular-etcd.service - Globular etcd
+     Loaded: loaded (/etc/systemd/system/globular-etcd.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:24:54 UTC; 2min 9s ago
+    Process: 45 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 56 ExecStartPre=/usr/bin/chown globular:globular /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 81 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 98 ExecStartPre=/bin/sh -c chown globular:globular /var/lib/globular/pki/issued/services/service.key /var/lib/globular/pki/issued/services/service.crt 2>/dev/null || true (code=exited, status=0/SUCCESS)
+   Main PID: 158 (etcd)
+      Tasks: 24 (limit: 8641)
+     Memory: 133.0M (peak: 144.4M)
+        CPU: 16.777s
+     CGroup: /system.slice/docker-b0ee96061132b593cfc49cfbc92e965d02de7fb7e6500a4382ff6f29bffc0497.scope/system.slice/globular-etcd.service
+             └─158 /usr/lib/globular/bin/etcd --config-file /var/lib/globular/config/etcd.yaml
+
+Aug 22 19:26:39 node-4 etcd[158]: {"level":"info","ts":"2026-08-22T19:26:39.158416Z","caller":"traceutil/trace.go:171","msg":"trace[2044465730] range","detail":"{range_begin:/globular/services/5cb3840f-089b-3e7c-98bd-4cfbed1c445f/config; range_end:; response_count:1; response_revision:33806; }","duration":"103.778944ms","start":"2026-08-22T19:26:39.054619Z","end":"2026-08-22T19:26:39.158398Z","steps":["trace[2044465730] 'agreement among raft nodes before linearized reading'  (duration: 103.549086ms)"],"step_count":1}
+Aug 22 19:26:39 node-4 etcd[158]: {"level":"info","ts":"2026-08-22T19:26:39.728613Z","caller":"v3rpc/maintenance.go:92","msg":"starting defragment"}
+Aug 22 19:26:39 node-4 etcd[158]: {"level":"info","ts":"2026-08-22T19:26:39.735309Z","caller":"backend/backend.go:509","msg":"defragmenting","path":"/var/lib/globular/etcd/member/snap/db","current-db-size-bytes":97939456,"current-db-size":"98 MB","current-db-size-in-use-bytes":1806336,"current-db-size-in-use":"1.8 MB"}
+Aug 22 19:26:39 node-4 etcd[158]: {"level":"info","ts":"2026-08-22T19:26:39.807465Z","caller":"backend/backend.go:561","msg":"finished defragmenting directory","path":"/var/lib/globular/etcd/member/snap/db","current-db-size-bytes-diff":-96473088,"current-db-size-bytes":1466368,"current-db-size":"1.5 MB","current-db-size-in-use-bytes-diff":-348160,"current-db-size-in-use-bytes":1458176,"current-db-size-in-use":"1.5 MB","took":"78.781918ms"}
+Aug 22 19:26:39 node-4 etcd[158]: {"level":"info","ts":"2026-08-22T19:26:39.80752Z","caller":"v3rpc/maintenance.go:100","msg":"finished defragment"}
+Aug 22 19:26:39 node-4 etcd[158]: {"level":"info","ts":"2026-08-22T19:26:39.807538Z","caller":"v3rpc/health.go:61","msg":"grpc service status changed","service":"","status":"SERVING"}
+Aug 22 19:26:40 node-4 etcd[158]: {"level":"info","ts":"2026-08-22T19:26:40.931484Z","caller":"traceutil/trace.go:171","msg":"trace[248148024] linearizableReadLoop","detail":"{readStateIndex:278352; appliedIndex:278352; }","duration":"128.957198ms","start":"2026-08-22T19:26:40.802506Z","end":"2026-08-22T19:26:40.931463Z","steps":["trace[248148024] 'read index received'  (duration: 128.951077ms)","trace[248148024] 'applied index is now lower than readState.Index'  (duration: 5.029µs)"],"step_count":2}
+Aug 22 19:26:40 node-4 etcd[158]: {"level":"warn","ts":"2026-08-22T19:26:40.936756Z","caller":"etcdserver/util.go:170","msg":"apply request took too long","took":"134.231446ms","expected-duration":"100ms","prefix":"read-only range ","request":"key:\"/globular/nodes/35ac3821-6b90-52eb-a800-41130471770b/packages/INFRASTRUCTURE/etcd\" ","response":"range_response_count:1 size:855"}
+Aug 22 19:26:40 node-4 etcd[158]: {"level":"info","ts":"2026-08-22T19:26:40.936835Z","caller":"traceutil/trace.go:171","msg":"trace[568902018] range","detail":"{range_begin:/globular/nodes/35ac3821-6b90-52eb-a800-41130471770b/packages/INFRASTRUCTURE/etcd; range_end:; response_count:1; response_revision:33823; }","duration":"134.317623ms","start":"2026-08-22T19:26:40.802496Z","end":"2026-08-22T19:26:40.936814Z","steps":["trace[568902018] 'agreement among raft nodes before linearized reading'  (duration: 129.066636ms)"],"step_count":1}
+Aug 22 19:26:54 node-4 etcd[158]: {"level":"warn","ts":"2026-08-22T19:26:54.35784Z","caller":"embed/config_logging.go:169","msg":"rejected connection","remote-addr":"10.10.0.11:50290","server-name":"","error":"EOF"}

@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 19:40:20 UTC; 26min ago
+    Process: 213 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 233 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 247 (node_agent_serv)
+      Tasks: 23 (limit: 8641)
+     Memory: 57.8M (peak: 103.7M)
+        CPU: 44.329s
+     CGroup: /system.slice/docker-ac702e6376ce15191244fb9c8e5b39e6ea04c7946de9a760ec53b393b742ec1e.scope/system.slice/globular-node-agent.service
+             └─247 /usr/lib/globular/bin/node_agent_server
+
+Aug 27 20:06:07 node-5 node_agent_server[247]: {"level":"warn","ts":"2026-08-27T20:06:07.287379Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00037c960/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 20:06:07 node-5 node_agent_server[247]: {"level":"warn","ts":"2026-08-27T20:06:07.377722Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00037c960/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 20:06:07 node-5 node_agent_server[247]: 2026/08/27 20:06:07 nodeagent: list installed packages kind=SERVICE: installed_state: list "/globular/nodes/35ac3821-6b90-52eb-a800-41130471770b/packages/SERVICE/": context deadline exceeded — marking InventoryComplete=false
+Aug 27 20:06:07 node-5 node_agent_server[247]: 2026/08/27 20:06:07 behavioral observation: infra_probe skipped component=envoy node=35ac3821-6b90-52eb-a800-41130471770b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused"
+Aug 27 20:06:07 node-5 node_agent_server[247]: {"level":"warn","ts":"2026-08-27T20:06:07.510146Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00037c960/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 20:06:07 node-5 node_agent_server[247]: 2026/08/27 20:06:07 nodeagent: list installed packages kind=COMMAND: installed_state: list "/globular/nodes/35ac3821-6b90-52eb-a800-41130471770b/packages/COMMAND/": context deadline exceeded — marking InventoryComplete=false
+Aug 27 20:06:07 node-5 node_agent_server[247]: 2026/08/27 20:06:07 nodeagent: no installed services found
+Aug 27 20:06:07 node-5 node_agent_server[247]: 2026/08/27 20:06:07 node heartbeat failed (state=degraded): rpc error: code = DeadlineExceeded desc = context deadline exceeded
+Aug 27 20:06:07 node-5 node_agent_server[247]: 2026/08/27 20:06:07 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 27 20:06:20 node-5 node_agent_server[247]: 2026/08/27 20:06:20 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b

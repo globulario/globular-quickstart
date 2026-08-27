@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-23T18:44:09.738247Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/catastrophic/full-cluster-blackout.yaml",
+  "scenario": "full-cluster-blackout",
+  "suite": "catastrophic",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Simulate complete control-plane brain death: stop ALL three etcd nodes\n(node-1, node-2, node-3) simultaneously, leaving the cluster with zero\netcd members alive.\n\nThis is the most severe infrastructure failure short of data corruption.\nWith all three etcd members stopped:\n  - No reads or writes are possible to the cluster's source of truth\n  - All services that rely on etcd for config, discovery, or state will\n    fail to start or will be stuck on their last known cached values\n  - No heartbeats can be written \u2192 node agent health tracking stops\n  - No workflows can be dispatched or completed\n  - Compute nodes (4, 5) are isolated \u2014 their agent has nowhere to register\n\nWhat Globular CANNOT do:\n  - Recover from zero-member quorum without operator intervention\n  - Write the quorum_loss alert (etcd is completely offline)\n  - Elect a controller leader (etcd lease required)\n  - Accept any new desired-state changes\n\nWhat Globular CAN guarantee:\n  - DATA DURABILITY: Raft log is fsync'd to disk on each member before\n    acknowledging writes. On restart, the log is replayed in full. No\n    committed entry is lost, even after a total cluster stop.\n  - CLEAN RESTART: etcd members use their persisted WAL to restore state.\n    The cluster re-forms via Raft leader election once \u22652 members are online.\n  - STAGGERED OR SIMULTANEOUS RESTART: Both work. The first node to come\n    online waits for a quorum peer before accepting writes.\n\nRecovery path (operator action required):\n  1. Investigate root cause (hardware failure, power loss, misconfiguration)\n  2. Restart at least 2 of 3 nodes to restore quorum\n  3. Third node resyncs automatically via Raft log replication\n\nIntegrity verdict: PROTECTED \u2014 Raft durability prevents data loss.\nRecovery: automatic after operator restarts at least 2 nodes.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-23T18:45:28.957031Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

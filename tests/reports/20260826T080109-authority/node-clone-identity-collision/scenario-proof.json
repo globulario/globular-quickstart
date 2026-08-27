@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-26T08:51:01.887333Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/authority/node-clone-identity-collision.yaml",
+  "scenario": "node-clone-identity-collision",
+  "suite": "authority",
+  "source_revision": "137790c229051d74705e12c19b3e2426c74a5183",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Two machines must never both hold the same node identity.\n\nTHE FAULT. Copy one node's entire persisted state onto another node's volume,\nthen start it. Two containers now present the same node_id, the same keys and\nthe same certificates, each with a complete and internally consistent claim.\n\n    node-4 state  \u2500\u2500copy\u2500\u2500\u25b6  node-5 volume\n          \u2193\n    node-5 starts, presenting node-4's identity\n\nWHY THIS IS REACHABLE IN PRACTICE. This is not an exotic attack; it is what\nrestoring a backup onto replacement hardware does, and what cloning a VM does.\nIt is also what happens when a node is rebuilt from a snapshot taken before it\nwas decommissioned. No packet is dropped and no process crashes \u2014 the fault is\npurely that two actors hold identical evidence of being the same node.\n\nWHY EXISTING SCENARIOS CANNOT REACH IT. Every node-level scenario in the suite\nmoves one node between up and down. None creates a second claimant. Identity\ncollision is invisible to availability testing because nothing is unavailable.\n\nWHAT MUST HOLD. The cluster must not end up with two members sharing one\nidentity: either the impostor is refused before it can register, or it is\nadmitted only as a distinct identity. What is forbidden is a cluster that\naccepts both and then quietly interleaves their heartbeats, installed-state\nwrites and runtime proofs under one node_id \u2014 because from then on every\nper-node record has two writers and no way to tell them apart.\n\nThis scenario is destructive and its cleanup is deliberately thorough: it wipes\nthe impostor's state and removes any duplicate record so the cluster is left\nwith exactly the identities it started with.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-26T09:04:23.882439Z",
+    "result": "FAIL",
+    "executor_exit": 1,
+    "proof_eligible": false
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-25T04:36:17.018726Z",
+  "scenario_file": "tests/scenarios/authority/rejoin-after-missed-generations.yaml",
+  "scenario": "rejoin-after-missed-generations",
+  "suite": "authority",
+  "source_revision": "07afa9e72caf0ffc533a3233aa20064d6425e91e",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "A node that missed several generations must converge FORWARD, and must never\nbe treated as evidence that its old generation should be restored.\n\nTHE FAULT. Stop a node. While it is down, advance the cluster through several\ndesired-state changes. Restart it.\n\n    node-5 down, holding a complete and internally consistent view of\n    generation N\n          \u2193\n    cluster advances: N \u2192 N+1 \u2192 N+2 \u2192 N+3\n          \u2193\n    node-5 returns, still coherent, still wrong\n\nWHY THIS IS NOT ORDINARY REJOIN. etcd-member-resync already covers a member\ncatching up on writes it missed, and compute-node-rejoin covers a node coming\nback. Both return a node to a cluster whose desired state it merely lags.\nThis returns a node holding an ALTERNATE HISTORY: locally complete, internally\nconsistent, and contradicted by the cluster.\n\nThe law under test is the one that makes local state safe to keep at all:\n\n    local persisted state is evidence of what happened,\n    never authority over what should happen.\n\nA node that returns with generation N must be read as an observer of the\ncurrent generation, not as a witness that N should be reconstructed. The\nfailure mode this hunts is a returning node whose stale local records win a\nmerge, or whose reappearance makes the controller re-derive an older desired\nstate from installed evidence.\n\nWHAT MUST HOLD. The returning node ends on the cluster's current generation,\nthe desired state written while it was away is unchanged, no drift storm\nfollows, and the cluster is healthy with every node accounted for.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-25T04:49:13.347510Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

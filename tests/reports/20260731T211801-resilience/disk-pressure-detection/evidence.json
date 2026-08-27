@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "scenario": "disk-pressure-detection",
+  "suite": "resilience",
+  "start_time": "2026-07-31T21:21:29.855089Z",
+  "end_time": "2026-07-31T21:22:09.147959Z",
+  "passed": true,
+  "item_count": 9,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 6
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:21:30.275932Z"
+    },
+    {
+      "id": "node3_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:21:30.306587Z"
+    },
+    {
+      "id": "disk_usage_before",
+      "section": "baseline",
+      "probe": "node.disk_usage",
+      "params": {
+        "node": "node-3",
+        "path": "/var/lib/globular"
+      },
+      "expect": {},
+      "result": {
+        "used_pct": 89.6,
+        "free_pct": 5.3,
+        "used_gb": 409.4,
+        "total_gb": 456.9,
+        "path": "/var/lib/globular",
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:21:30.386163Z"
+    },
+    {
+      "id": "fill_disk_node3",
+      "section": "steps",
+      "probe": "chaos.fill_disk",
+      "params": {
+        "node": "node-3",
+        "path": "/var/lib/globular",
+        "target_pct": 90
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.fill_disk",
+        "container": "globular-node-3",
+        "path": "/var/lib/globular",
+        "target_pct": 90,
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:21:32.966832Z"
+    },
+    {
+      "id": "wait_for_detection",
+      "section": "steps",
+      "probe": "node.disk_usage",
+      "params": {
+        "node": "node-3",
+        "path": "/var/lib/globular"
+      },
+      "expect": {
+        "used_pct_gte": 85
+      },
+      "result": {
+        "used_pct": 90.0,
+        "free_pct": 4.9,
+        "used_gb": 411.2,
+        "total_gb": 456.9,
+        "path": "/var/lib/globular",
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:21:33.047522Z"
+    },
+    {
+      "id": "disk_still_pressured",
+      "section": "assertions",
+      "probe": "node.disk_usage",
+      "params": {
+        "node": "node-3",
+        "path": "/var/lib/globular"
+      },
+      "expect": {
+        "used_pct_gte": 85
+      },
+      "result": {
+        "used_pct": 90.0,
+        "free_pct": 4.9,
+        "used_gb": 411.2,
+        "total_gb": 456.9,
+        "path": "/var/lib/globular",
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:22:08.122396Z"
+    },
+    {
+      "id": "cluster_still_healthy",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 6
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:22:08.437709Z"
+    },
+    {
+      "id": "clear_fill",
+      "section": "cleanup",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {},
+      "result": {
+        "running": true,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:22:08.469863Z"
+    },
+    {
+      "id": "remove_fill_file",
+      "section": "cleanup",
+      "probe": "chaos.clear_disk_fill",
+      "params": {
+        "node": "node-3",
+        "path": "/var/lib/globular"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.clear_disk_fill",
+        "container": "globular-node-3",
+        "exit_code": 0
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:22:09.147802Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

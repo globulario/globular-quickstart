@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 15:58:15 UTC; 11min ago
+    Process: 52 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 69 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 90 (event_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 28.7M (peak: 30.5M)
+        CPU: 4.892s
+     CGroup: /system.slice/docker-ece11a49be9718b76dfed82fbd4875cd4d94d066b24af0601dfafcf5a10fd300.scope/system.slice/globular-event.service
+             └─90 /usr/lib/globular/bin/event_server
+
+Aug 22 15:58:58 node-4 event_server[90]: 2026/08/22 15:58:58 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 22 15:59:05 node-4 event_server[90]: 2026/08/22 15:59:05 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 22 15:59:56 node-4 event_server[90]: 2026/08/22 15:59:56 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 22 15:59:56 node-4 event_server[90]: 2026/08/22 15:59:56 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 22 16:03:17 node-4 event_server[90]: 2026/08/22 16:03:17 INFO acc: warmup complete baseline_rtt_ms=20 samples=278 elapsed=5m0s
+Aug 22 16:03:43 node-4 event_server[90]: time=2026-08-22T16:03:43.199Z level=INFO msg="OnEvent: registered" uuid=c7c5e386-fab4-446b-a4a8-a2a50709cbf5
+Aug 22 16:03:43 node-4 event_server[90]: time=2026-08-22T16:03:43.199Z level=INFO msg="stream registered" uuid=c7c5e386-fab4-446b-a4a8-a2a50709cbf5
+Aug 22 16:08:46 node-4 event_server[90]: time=2026-08-22T16:08:46.290Z level=WARN msg="keepalive send failed; will drop stream" uuid=c7c5e386-fab4-446b-a4a8-a2a50709cbf5 err="rpc error: code = Canceled desc = context canceled"
+Aug 22 16:08:46 node-4 event_server[90]: time=2026-08-22T16:08:46.290Z level=INFO msg="subscriber cleanup" uuid=c7c5e386-fab4-446b-a4a8-a2a50709cbf5
+Aug 22 16:08:46 node-4 event_server[90]: time=2026-08-22T16:08:46.290Z level=INFO msg="OnEvent: stream ended" uuid=c7c5e386-fab4-446b-a4a8-a2a50709cbf5

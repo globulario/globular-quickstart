@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:49:54 UTC; 55s ago
+    Process: 1886 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 1890 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1893 (log_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 24.8M (peak: 26.8M)
+        CPU: 340ms
+     CGroup: /system.slice/docker-5d41c244d63fdf110484c187a88324bad4f368046e8c066d557e163129a4efee.scope/system.slice/globular-log.service
+             └─1893 /usr/lib/globular/bin/log_server
+
+Aug 05 16:49:54 node-5 log_server[1893]: 2026/08/05 16:49:54 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 05 16:50:03 node-5 log_server[1893]: 2026/08/05 16:50:03 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 05 16:50:03 node-5 log_server[1893]: 2026/08/05 16:50:03 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 05 16:50:06 node-5 log_server[1893]: 2026/08/05 16:50:06 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+Aug 05 16:50:15 node-5 log_server[1893]: 2026/08/05 16:50:15 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+Aug 05 16:50:23 node-5 log_server[1893]: 2026/08/05 16:50:23 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused"
+Aug 05 16:50:24 node-5 log_server[1893]: 2026/08/05 16:50:24 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 05 16:50:24 node-5 log_server[1893]: 2026/08/05 16:50:24 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 05 16:50:26 node-5 log_server[1893]: 2026/08/05 16:50:26 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused"
+Aug 05 16:50:39 node-5 log_server[1893]: 2026/08/05 16:50:39 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

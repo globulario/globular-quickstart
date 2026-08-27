@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 18:19:26 UTC; 29min ago
+    Process: 29598 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 29602 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 29605 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 29611 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 29.6M (peak: 32.2M)
+        CPU: 5.581s
+     CGroup: /system.slice/docker-b0762ab2a8bcd3a21dd0b30b300b2eb739623548a6218b32fd63454fbfbb2f99.scope/system.slice/globular-workflow.service
+             └─29611 /usr/lib/globular/bin/workflow_server
+
+Aug 18 18:48:59 node-2 workflow_server[29611]: 2026/08/18 18:48:59 workflow: step repair_disk_space skipped (condition not met)
+Aug 18 18:48:59 node-2 workflow_server[29611]: 2026/08/18 18:48:59 workflow: step fence_unreachable_nodes SUCCEEDED (attempt 1)
+Aug 18 18:48:59 node-2 workflow_server[29611]: 2026/08/18 18:48:59 workflow: step emit_report starting (actor=cluster-controller action=controller.invariant.emit_report)
+Aug 18 18:48:59 node-2 workflow_server[29611]: 2026/08/18 18:48:59 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 18 18:48:59 node-2 workflow_server[29611]: 2026/08/18 18:48:59 workflow: step emit_report SUCCEEDED (attempt 1)
+Aug 18 18:48:59 node-2 workflow_server[29611]: 2026/08/18 18:48:59 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 18 18:48:59 node-2 workflow_server[29611]: time=2026-08-18T18:48:59.399Z level=INFO msg="executor: engine.Execute completed" run_id=invariant:1787078939
+Aug 18 18:48:59 node-2 workflow_server[29611]: time=2026-08-18T18:48:59.427Z level=INFO msg="executor: workflow finished" workflow=cluster.invariant.enforcement run_id=invariant:1787078939 status=RUN_STATUS_SUCCEEDED
+Aug 18 18:49:04 node-2 workflow_server[29611]: 2026/08/18 18:49:04 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListWorkflowSummaries
+Aug 18 18:49:05 node-2 workflow_server[29611]: 2026/08/18 18:49:05 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListCorrelationDeferState

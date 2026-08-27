@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 08:11:14 UTC; 1min 46s ago
+    Process: 120 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 140 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 161 (node_agent_serv)
+      Tasks: 27 (limit: 8641)
+     Memory: 27.5M (peak: 35.6M)
+        CPU: 38.146s
+     CGroup: /system.slice/docker-3b7a2d146aaf6c064bd61ba2fa998a6bcedeb6739a900979311ca567bc40dc0b.scope/system.slice/globular-node-agent.service
+             └─161 /usr/lib/globular/bin/node_agent_server
+
+Aug 24 08:12:30 node-4 node_agent_server[161]: 2026/08/24 08:12:30 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 24 08:12:33 node-4 node_agent_server[161]: 2026/08/24 08:12:33 nodeagent: reporting 35 installed services (hash=af04d7876ce45f22a664cf8b721e68a67490c048087209e7cc175336de4ef868, sample=[node-exporter sql event rclone conversation])
+Aug 24 08:12:36 node-4 node_agent_server[161]: 2026/08/24 08:12:36 node heartbeat failed (state=degraded): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: no route to host
+Aug 24 08:12:44 node-4 node_agent_server[161]: 2026/08/24 08:12:44 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 24 08:12:45 node-4 node_agent_server[161]: 2026/08/24 08:12:45 behavioral observation: infra_probe skipped component=scylladb node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
+Aug 24 08:12:45 node-4 node_agent_server[161]: 2026/08/24 08:12:45 behavioral observation: infra_probe skipped component=etcd node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
+Aug 24 08:12:45 node-4 node_agent_server[161]: 2026/08/24 08:12:45 behavioral observation: infra_probe skipped component=envoy node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: no route to host"
+Aug 24 08:12:47 node-4 node_agent_server[161]: 2026/08/24 08:12:47 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: No route to host
+Aug 24 08:12:59 node-4 node_agent_server[161]: 2026/08/24 08:12:59 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 24 08:13:00 node-4 node_agent_server[161]: 2026/08/24 08:13:00 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b

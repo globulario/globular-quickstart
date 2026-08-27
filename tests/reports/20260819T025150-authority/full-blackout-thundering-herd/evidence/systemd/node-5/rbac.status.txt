@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:22:19 UTC; 1min 9s ago
+    Process: 137 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 162 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 199 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 288 (rbac_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 36.3M (peak: 50.7M swap: 25.8M swap peak: 25.9M)
+        CPU: 245ms
+     CGroup: /system.slice/docker-d1f5b8be4d5e8a538660e463859f4b15e96ad466285c4e0d1073a4ae4c36e0a3.scope/system.slice/globular-rbac.service
+             └─288 /usr/lib/globular/bin/rbac_server
+
+Aug 19 03:23:03 node-5 rbac_server[288]: {"level":"warn","ts":"2026-08-19T03:23:03.482197Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc020f54d20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:07 node-5 rbac_server[288]: {"level":"warn","ts":"2026-08-19T03:23:07.485573Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc020f552c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:09 node-5 rbac_server[288]: {"level":"warn","ts":"2026-08-19T03:23:09.486268Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc020f552c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:13 node-5 rbac_server[288]: {"level":"warn","ts":"2026-08-19T03:23:13.489216Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000269a40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:15 node-5 rbac_server[288]: {"level":"warn","ts":"2026-08-19T03:23:15.490189Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000269a40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:19 node-5 rbac_server[288]: {"level":"warn","ts":"2026-08-19T03:23:19.494812Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc020f55c20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:21 node-5 rbac_server[288]: {"level":"warn","ts":"2026-08-19T03:23:21.495204Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc020f55c20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:25 node-5 rbac_server[288]: time=2026-08-19T03:23:25.743Z level=INFO msg="initializing scylla permissions store" host=10.10.0.11 keyspace=rbac_permissions
+Aug 19 03:23:25 node-5 rbac_server[288]: time=2026-08-19T03:23:25.874Z level=INFO msg="permissions store opened successfully" backend=scylla
+Aug 19 03:23:25 node-5 rbac_server[288]: time=2026-08-19T03:23:25.874Z level=INFO msg="initializing rbac service" id=8b384839-8473-3b00-9ccc-7cb36fe97836 domain=globular.internal

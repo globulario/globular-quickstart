@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-26T05:30:21.273266Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/resilience/disk-pressure-detection.yaml",
+  "scenario": "disk-pressure-detection",
+  "suite": "resilience",
+  "source_revision": "18e2d1202d390302d87b5d293fa69bb9239f8459",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that Globular's invariant enforcement detects and reports disk pressure.\n\nThis test fills the /var/lib/globular directory on node-3 to >90% capacity using\na chaos fill file, then verifies that:\n  1. The cluster controller's reconcile loop logs disk pressure (WARN or CRITICAL)\n  2. Prometheus metrics reflect the disk pressure via the invariant enforcement workflow\n  3. After cleanup, the pressure is cleared\n\nWhat Globular does automatically:\n  - The reconcile loop (fast path) checks DiskFreeBytes from heartbeat every ~30s\n  - At <20% free: logs WARN per node\n  - At <5% free: logs CRITICAL per node + emits cluster event controller.invariant.disk_pressure_critical\n  - The invariant enforcement workflow (auditable path) emits structured events\n  - Best effort: journal vacuum can be requested but cannot add disk\n\nWhat requires operator action:\n  - Actual disk cleanup (rm large files, journal purge)\n  - Adding storage capacity",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-26T05:34:24.980808Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

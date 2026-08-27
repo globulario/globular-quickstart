@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-24T05:57:42.185087Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "compute-node-stop-restart",
+  "suite": "resilience",
+  "result": "PASS",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "Verify that stopping a compute-only node does not affect cluster health.\n\nCompute nodes (node-4, node-5) run only the node agent \u2014 they do NOT\nparticipate in etcd quorum, controller leadership, or any core services.\nStopping one must be completely transparent to the control plane.\n\nThis is the simplest resilience test: it validates the architectural\nisolation between the execution plane (compute) and the control plane.\n\nWhat this test verifies:\n- etcd quorum is maintained when a compute node is removed\n- The cluster reports healthy with one fewer node\n- Stopping node-4 does not affect services running on node-1, 2, 3\n- etcd writes continue to work during and after the removal\n- The node re-registers its heartbeat after restart\n\nClassical distributed systems pattern: graceful node removal.\nIndustry known issue: compute node stoppage can trigger thundering-herd\nif the controller tries to reschedule all its workloads simultaneously.\nThe workflow semaphore (3 concurrent max) prevents this.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

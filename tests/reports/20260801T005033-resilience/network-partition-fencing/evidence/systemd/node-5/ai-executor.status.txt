@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:24:01 UTC; 15s ago
+    Process: 7642 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 7656 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 7659 (ai_executor_ser)
+      Tasks: 13 (limit: 8641)
+     Memory: 24.6M (peak: 26.2M)
+        CPU: 252ms
+     CGroup: /system.slice/docker-90c13a2e49466a72ab3c3683d19907de7e768a425d5abd8d672f5b03af3de399.scope/system.slice/globular-ai-executor.service
+             └─7659 /usr/lib/globular/bin/ai_executor_server
+
+Aug 01 01:24:08 node-5 ai_executor_server[7659]: time=2026-08-01T01:24:08.100Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Aug 01 01:24:08 node-5 ai_executor_server[7659]: time=2026-08-01T01:24:08.100Z level=INFO msg="codex: CLI not found"
+Aug 01 01:24:08 node-5 ai_executor_server[7659]: time=2026-08-01T01:24:08.100Z level=INFO msg="service ready" service=ai_executor.AiExecutorService port=10010 startup_ms=2518
+Aug 01 01:24:08 node-5 ai_executor_server[7659]: time=2026-08-01T01:24:08.100Z level=INFO msg="starting service" name=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd port=10010
+Aug 01 01:24:08 node-5 ai_executor_server[7659]: time=2026-08-01T01:24:08.100Z level=WARN msg="authz: no permission mappings registered — RBAC will resolve raw method paths and deny role-based calls" service=ai_executor expected_path=/var/lib/globular/policy/services/ai_executor/permissions.generated.json
+Aug 01 01:24:08 node-5 ai_executor_server[7659]: time=2026-08-01T01:24:08.101Z level=INFO msg="service started successfully" name=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd port=10010
+Aug 01 01:24:08 node-5 ai_executor_server[7659]: time=2026-08-01T01:24:08.100Z level=INFO msg="ai-executor backend readiness" context=startup mode=deterministic_fallback backend="" claude_binary_present=false codex_binary_present=false credentials_present=false backend_ready=false analysis_available=false
+Aug 01 01:24:08 node-5 ai_executor_server[7659]: time=2026-08-01T01:24:08.138Z level=INFO msg="job_store: connected to etcd"
+Aug 01 01:24:08 node-5 ai_executor_server[7659]: time=2026-08-01T01:24:08.182Z level=INFO msg="job_store: loaded jobs from etcd" count=39
+Aug 01 01:24:08 node-5 ai_executor_server[7659]: 2026/08/01 01:24:08 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231

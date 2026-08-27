@@ -1,0 +1,25 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 17:57:12 UTC; 52min ago
+    Process: 135 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 182 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 204 (node_agent_serv)
+      Tasks: 32 (limit: 8641)
+     Memory: 32.9M (peak: 44.1M)
+        CPU: 9min 42.375s
+     CGroup: /system.slice/docker-c69956e40d44afec6c24aae66a0eb98093a9df7e8d446a0705e3a4916478dce3.scope/system.slice/globular-node-agent.service
+             ├─  204 /usr/lib/globular/bin/node_agent_server
+             ├─19922 systemctl show --property=ActiveState,SubState,LoadState globular-xds.service
+             ├─19923 systemctl show --property=ActiveState,SubState,LoadState keepalived.service
+             └─19924 systemctl show --property=ActiveState,SubState,LoadState scylla-server.service
+
+Aug 18 18:48:24 node-4 node_agent_server[204]: 2026/08/18 18:48:24 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 18 18:48:24 node-4 node_agent_server[204]: 2026/08/18 18:48:24 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 18 18:48:25 node-4 node_agent_server[204]: 2026/08/18 18:48:25 nodeagent: reporting 28 installed services (hash=c20113d306d1440ffaad388c618116c8e765924162887d79d80c7122227533de, sample=[node-agent gateway minio mc globular-cli])
+Aug 18 18:48:42 node-4 node_agent_server[204]: 2026/08/18 18:48:42 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 18 18:48:54 node-4 node_agent_server[204]: 2026/08/18 18:48:54 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 18 18:48:54 node-4 node_agent_server[204]: 2026/08/18 18:48:54 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 18 18:48:56 node-4 node_agent_server[204]: 2026/08/18 18:48:56 nodeagent: reporting 28 installed services (hash=c20113d306d1440ffaad388c618116c8e765924162887d79d80c7122227533de, sample=[mc rclone minio node-agent persistence])
+Aug 18 18:49:12 node-4 node_agent_server[204]: 2026/08/18 18:49:12 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 18 18:49:24 node-4 node_agent_server[204]: 2026/08/18 18:49:24 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 18 18:49:24 node-4 node_agent_server[204]: 2026/08/18 18:49:24 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b

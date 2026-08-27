@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:12:54 UTC; 11min ago
+    Process: 160 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 303 (envoy)
+      Tasks: 40 (limit: 8641)
+     Memory: 24.3M (peak: 24.9M)
+        CPU: 4.630s
+     CGroup: /system.slice/docker-90c13a2e49466a72ab3c3683d19907de7e768a425d5abd8d672f5b03af3de399.scope/system.slice/globular-envoy.service
+             └─303 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Aug 01 01:12:55 node-5 envoy[303]: [2026-08-01 01:12:55.943][303][info][upstream] [source/common/upstream/cds_api_helper.cc:87] cds: added/updated 25 cluster(s) (skipped 0 unmodified cluster(s)); removed 0 cluster(s)
+Aug 01 01:13:04 node-5 envoy[303]: [2026-08-01T01:12:54.875Z] "GET /server_info HTTP/1.1" 200 - 0 98012 5 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 01 01:13:04 node-5 envoy[303]: [2026-08-01T01:12:54.887Z] "GET /stats?format=json HTTP/1.1" 200 - 0 24903 0 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 01 01:13:58 node-5 envoy[303]: [2026-08-01 01:13:58.957][303][info][upstream] [source/common/upstream/cluster_manager_impl.cc:248] cm init: all clusters initialized
+Aug 01 01:13:58 node-5 envoy[303]: [2026-08-01 01:13:58.957][303][info][main] [source/server/server.cc:1023] all clusters initialized. initializing init manager
+Aug 01 01:14:13 node-5 envoy[303]: [2026-08-01 01:14:13.956][303][warning][config] [source/extensions/config_subscription/grpc/grpc_subscription_impl.cc:130] gRPC config: initial fetch timed out for type.googleapis.com/envoy.config.listener.v3.Listener
+Aug 01 01:14:13 node-5 envoy[303]: [2026-08-01 01:14:13.956][303][info][config] [source/common/listener_manager/listener_manager_impl.cc:1003] all dependencies initialized. starting workers
+Aug 01 01:24:14 node-5 envoy[303]: [2026-08-01T01:24:07.521Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 545758 15 - "10.10.0.15" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 01 01:24:24 node-5 envoy[303]: [2026-08-01T01:24:22.521Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 545758 22 - "10.10.0.15" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 01 01:24:44 node-5 envoy[303]: [2026-08-01T01:24:37.521Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 556971 12 - "10.10.0.15" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"

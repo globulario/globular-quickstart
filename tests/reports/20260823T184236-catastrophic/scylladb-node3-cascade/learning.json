@@ -1,0 +1,66 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-23T18:49:02.056823Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "scylladb-node3-cascade",
+  "suite": "catastrophic",
+  "result": "PARTIAL",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "Simultaneous failure of ScyllaDB (the storage infrastructure) and node-3\n(the AI services host + one etcd member). This is a cascading infrastructure\nfailure that crosses two failure domains.\n\nFailure domain map:\n  ScyllaDB:  stores AI Memory data, DNS zone records, audit log\n  node-3:    runs ai_memory, ai_executor, ai_router, ai_watcher services,\n             one instance of etcd, one controller standby, one workflow standby\n\nWhat this tests:\n  1. Failure domain isolation: can the control plane (nodes 1+2) survive when\n     both the storage layer AND one etcd member go down simultaneously?\n  2. etcd quorum maintenance: with node-3 down, 2/3 members remain (nodes 1+2).\n     Quorum is maintained and writes must continue uninterrupted.\n  3. Service degradation reporting: services that depend on ScyllaDB should\n     become unavailable, while etcd-only services should survive.\n  4. Recovery ordering: ScyllaDB must come back before node-3's AI services\n     attempt to reconnect. Node-3 rejoins Raft automatically.\n\nExpected during failure:\n  - etcd: 2/3 members, writes succeed (quorum maintained) \u2713\n  - cluster_controller: still registered on node-1 or node-2 \u2713\n  - workflow: still registered on node-1 or node-2 \u2713\n  - AI services (memory, executor, watcher, router): UNAVAILABLE \u2014 node-3 is down\n  - DNS zone records: unavailable (ScyllaDB is down)\n  - ScyllaDB: container stopped\n\nExpected after recovery:\n  - All 3 etcd members rejoined via Raft resync\n  - AI services re-register once node-3 restarts\n  - ScyllaDB data is intact (persistent volume)\n  - Full cluster health restored\n\nIntegrity verdict: PROTECTED within the etcd failure domain.\nScyllaDB data: protected by ScyllaDB's own durability (persistence volume).\nAI in-flight operations: may be lost if not durably queued.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "steps",
+        "id": "stop_scylladb",
+        "probe_or_action": "chaos.kill_service",
+        "result": {
+          "action": "chaos.kill_service",
+          "container": "globular-node-1",
+          "unit": "scylla-server.service",
+          "exit_code": 1,
+          "stderr": "Job for scylla-server.service canceled."
+        }
+      },
+      {
+        "section": "assertions",
+        "id": "scylladb_stopped",
+        "probe_or_action": "service.status",
+        "result": {
+          "unit_state": "active",
+          "node": "node-1",
+          "service": "scylla"
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

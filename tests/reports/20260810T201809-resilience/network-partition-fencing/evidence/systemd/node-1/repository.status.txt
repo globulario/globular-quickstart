@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 20:25:20 UTC; 1min 32s ago
+    Process: 28983 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 28987 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 28990 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 259.4M (peak: 485.6M)
+        CPU: 6.276s
+     CGroup: /system.slice/docker-ee3334bee62c5a7cf2cf1308b1f2bf99dfc8dacd5999c1dfb26cbefc556eead6.scope/system.slice/globular-repository.service
+             └─28990 /usr/lib/globular/bin/repository_server
+
+Aug 10 20:26:19 node-1 repository_server[28990]: 2026/08/10 20:26:19 WARN repository.publish: manifest profile hygiene drift (missing) for scylladb@2025.3.8 — manifest profiles [] vs catalog placement authority [control-plane database scylla storage]. Manifest profiles are informational only (catalog is authoritative for placement); remediation: align the package spec's metadata.profiles with the catalog [control-plane database scylla storage], or intentionally omit them until a derive-from-catalog policy exists. [detection-mode: WARN-first; not blocking; invariant publish.manifest_profiles_must_not_contradict_catalog]
+Aug 10 20:26:21 node-1 repository_server[28990]: 2026/08/10 20:26:21 INFO artifact uploaded key=core@globular.io%scylladb%2025.3.8%linux_amd64%1 build_id=019fed5a-ce49-74b5-a323-7a75ffdc86a0 kind=INFRASTRUCTURE build=1 size=85869105 publish_state=VERIFIED subject="" publish_mode=internal
+Aug 10 20:26:22 node-1 repository_server[28990]: 2026/08/10 20:26:22 workflow recorder: StartRun failed: rpc error: code = Unauthenticated desc = authentication required: provide --token or configure client certificates
+Aug 10 20:26:24 node-1 repository_server[28990]: 2026/08/10 20:26:24 INFO repository.artifact.state_transition artifact_key=core@globular.io%scylladb%2025.3.8%linux_amd64%1 from="" to=PUBLISHED reason=upload_publish_pipeline workflow_run_id="" blob_key=artifacts/core@globular.io%scylladb%2025.3.8%linux_amd64%1.bin checksum=sha256:4cfc15e19 size_bytes=85869105 build_id=019fed5a-ce49-74b5-a323-7a75ffdc86a0 build_number=1 publisher=core@globular.io name=scylladb version=2025.3.8 platform=linux_amd64
+Aug 10 20:26:27 node-1 repository_server[28990]: 2026/08/10 20:26:27 INFO publish workflow complete key=core@globular.io%scylladb%2025.3.8%linux_amd64%1 publisher=core@globular.io name=scylladb version=2025.3.8 workflow_run=""
+Aug 10 20:26:27 node-1 repository_server[28990]: 2026/08/10 20:26:27 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/GetArtifactManifest action=repository.artifact.read hint="globular rbac bind sa --role globular-controller-sa"
+Aug 10 20:26:29 node-1 repository_server[28990]: 2026/08/10 20:26:29 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListArtifacts action=repository.artifact.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 10 20:26:29 node-1 repository_server[28990]: 2026/08/10 20:26:29 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/GetArtifactManifest action=repository.artifact.read hint="globular rbac bind sa --role globular-controller-sa"
+Aug 10 20:26:45 node-1 repository_server[28990]: 2026/08/10 20:26:45 WARN scylladb manifest sync failed (non-fatal) key=core@globular.io%persistence%1.2.289%linux_amd64%1 err="Operation timed out for repository.manifests - received only 0 responses from 1 CL=ONE."
+Aug 10 20:26:48 node-1 repository_server[28990]: 2026/08/10 20:26:48 INFO artifact uploaded key=core@globular.io%persistence%1.2.289%linux_amd64%1 build_id=019fed5b-229f-7373-ae01-da727d2bd80e kind=SERVICE build=1 size=10815572 publish_state=VERIFIED subject="" publish_mode=internal

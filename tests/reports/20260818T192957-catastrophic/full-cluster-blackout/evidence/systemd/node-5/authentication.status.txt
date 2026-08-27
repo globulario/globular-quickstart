@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:38:40 UTC; 4s ago
+    Process: 18120 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 18144 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 18153 (authentication_)
+      Tasks: 10 (limit: 8641)
+     Memory: 7.4M (peak: 8.1M)
+        CPU: 72ms
+     CGroup: /system.slice/docker-9cbf484db170ae0c2e7abe0b6ccaf6884f6851db1bc95966564d78bfe2964b8d.scope/system.slice/globular-authentication.service
+             └─18153 /usr/lib/globular/bin/authentication_server
+
+Aug 18 19:38:40 node-5 systemd[1]: globular-authentication.service: Scheduled restart job, restart counter is at 42.
+Aug 18 19:38:40 node-5 systemd[1]: Starting globular-authentication.service - Globular authentication...
+Aug 18 19:38:40 node-5 systemd[1]: Started globular-authentication.service - Globular authentication.
+Aug 18 19:38:40 node-5 authentication_server[18153]: 2026/08/18 19:38:40 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 18 19:38:40 node-5 authentication_server[18153]: 2026/08/18 19:38:40 INFO security: loaded cluster roles from external policy file roles=22
+Aug 18 19:38:40 node-5 authentication_server[18153]: PortAllocator range: 10000 - 20000
+Aug 18 19:38:42 node-5 authentication_server[18153]: {"level":"warn","ts":"2026-08-18T19:38:42.291676Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000395860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \\\"crypto/rsa: verification error\\\" while trying to verify candidate authority certificate \\\"Globular Root CA\\\")\""}
+Aug 18 19:38:44 node-5 authentication_server[18153]: {"level":"warn","ts":"2026-08-18T19:38:44.292537Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000395860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \\\"crypto/rsa: verification error\\\" while trying to verify candidate authority certificate \\\"Globular Root CA\\\")\""}
+Aug 18 19:38:44 node-5 authentication_server[18153]: time=2026-08-18T19:38:44.292Z level=WARN msg="NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide)" err="context deadline exceeded"
+Aug 18 19:38:44 node-5 authentication_server[18153]: time=2026-08-18T19:38:44.292Z level=INFO msg="starting authentication service" service=authentication.AuthenticationService version=1.2.312 domain=globular.internal address=10.10.0.15:8443 port=10000 session_timeout=15

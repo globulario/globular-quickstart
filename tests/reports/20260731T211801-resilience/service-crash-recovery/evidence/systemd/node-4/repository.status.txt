@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:40:52 UTC; 13min ago
+    Process: 506 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 536 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 589 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 34.0M (peak: 37.2M)
+        CPU: 4.800s
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-repository.service
+             └─589 /usr/lib/globular/bin/repository_server
+
+Jul 31 21:52:20 node-4 repository_server[589]: 2026/07/31 21:52:20 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%mcp%1.2.288%linux_amd64%0 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1" finding=service.silent_fallback_active
+Jul 31 21:52:20 node-4 repository_server[589]: 2026/07/31 21:52:20 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%mcp%1.2.288%linux_amd64 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1" finding=service.silent_fallback_active
+Jul 31 21:52:20 node-4 repository_server[589]: 2026/07/31 21:52:20 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Jul 31 21:52:32 node-4 repository_server[589]: {"level":"warn","ts":"2026-07-31T21:52:32.183557Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000369c20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:32 node-4 repository_server[589]: {"level":"info","ts":"2026-07-31T21:52:32.183785Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 21:53:20 node-4 repository_server[589]: 2026/07/31 21:53:20 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=46 baseline_ms=20 window=56 new_window=50
+Jul 31 21:53:40 node-4 repository_server[589]: 2026/07/31 21:53:40 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=207 baseline_ms=20 window=121 new_window=108
+Jul 31 21:54:27 node-4 repository_server[589]: 2026/07/31 21:54:27 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=49 baseline_ms=20 window=246 new_window=221
+Jul 31 21:54:27 node-4 repository_server[589]: 2026/07/31 21:54:27 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=46 baseline_ms=20 window=222 new_window=199
+Jul 31 21:54:29 node-4 repository_server[589]: 2026/07/31 21:54:29 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=209 baseline_ms=20 window=242 new_window=217

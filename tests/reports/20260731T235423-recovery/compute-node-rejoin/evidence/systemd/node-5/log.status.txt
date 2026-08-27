@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:52:32 UTC; 2min 5s ago
+    Process: 9203 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 9228 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 9246 (log_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 21.7M (peak: 28.1M)
+        CPU: 870ms
+     CGroup: /system.slice/docker-b8fa6aca9bb82e631ce89b654ed458dabe59ec9fe67bf982b77e3cf43dab10a6.scope/system.slice/globular-log.service
+             └─9246 /usr/lib/globular/bin/log_server
+
+Jul 31 23:52:44 node-5 log_server[9246]: time=2026-07-31T23:52:44.441Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Jul 31 23:52:44 node-5 log_server[9246]: time=2026-07-31T23:52:44.446Z level=WARN msg="store write failed (suppressing repeats for 30s)" err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Jul 31 23:52:44 node-5 log_server[9246]: time=2026-07-31T23:52:44.460Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Jul 31 23:52:50 node-5 log_server[9246]: 2026/07/31 23:52:50 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Jul 31 23:53:08 node-5 log_server[9246]: 2026/07/31 23:53:08 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Jul 31 23:54:20 node-5 log_server[9246]: 2026/07/31 23:54:20 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Jul 31 23:54:20 node-5 log_server[9246]: 2026/07/31 23:54:20 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Jul 31 23:54:20 node-5 log_server[9246]: 2026/07/31 23:54:20 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Jul 31 23:54:21 node-5 log_server[9246]: 2026/07/31 23:54:21 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Jul 31 23:54:29 node-5 log_server[9246]: 2026/07/31 23:54:29 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

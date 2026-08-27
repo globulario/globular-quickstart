@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 17:11:47 UTC; 19s ago
+    Process: 362 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 368 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 372 (event_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 15.3M
+        CPU: 240ms
+     CGroup: /system.slice/docker-09f6e3fd0105ea36b64cc1d5223e57d727633cf4b1bc00f5bfd34f72d0eec23a.scope/system.slice/globular-event.service
+             └─372 /usr/lib/globular/bin/event_server
+
+Jul 31 17:11:57 node-4 event_server[372]: 2026/07/31 17:11:57 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.15:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-4.globular.internal:8443: Get \"http://node-4.globular.internal:8443/get_ca_certificate\": dial tcp: lookup node-4.globular.internal on 127.0.0.11:53: no such host"
+Jul 31 17:12:02 node-4 event_server[372]: 2026/07/31 17:12:02 ERROR GetClient: constructor returned error function=NewRbacService_Client address=node-4.globular.internal: service=rbac.RbacService err="InitClient: invalid control address \"node-4.globular.internal:\" (missing port)"
+Jul 31 17:12:02 node-4 event_server[372]: 2026/07/31 17:12:02 WARN rbac fallback: RBAC client unavailable, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=client_construct_failed error="InitClient: invalid control address \"node-4.globular.internal:\" (missing port)"
+Jul 31 17:12:02 node-4 event_server[372]: time=2026-07-31T17:12:02.257Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=69f3f0f8-15ff-45de-ba63-957c099c2fea
+Jul 31 17:12:02 node-4 event_server[372]: 2026/07/31 17:12:02 ERROR GetClient: constructor returned error function=NewRbacService_Client address=node-4.globular.internal: service=rbac.RbacService err="InitClient: invalid control address \"node-4.globular.internal:\" (missing port)"
+Jul 31 17:12:02 node-4 event_server[372]: time=2026-07-31T17:12:02.257Z level=INFO msg="OnEvent: registered" uuid=69f3f0f8-15ff-45de-ba63-957c099c2fea
+Jul 31 17:12:02 node-4 event_server[372]: time=2026-07-31T17:12:02.257Z level=INFO msg=subscribed channel=operation.* uuid=69f3f0f8-15ff-45de-ba63-957c099c2fea subscribers=1
+Jul 31 17:12:02 node-4 event_server[372]: time=2026-07-31T17:12:02.257Z level=INFO msg="stream registered" uuid=69f3f0f8-15ff-45de-ba63-957c099c2fea
+Jul 31 17:12:04 node-4 event_server[372]: 2026/07/31 17:12:04 ERROR GetClient: constructor returned error function=NewRbacService_Client address=node-4.globular.internal: service=rbac.RbacService err="InitClient: invalid control address \"node-4.globular.internal:\" (missing port)"
+Jul 31 17:12:04 node-4 event_server[372]: 2026/07/31 17:12:04 WARN rbac fallback: RBAC client unavailable, using local-roles fallback (permissive) subject=sa method=event.publish reason=client_construct_failed error="InitClient: invalid control address \"node-4.globular.internal:\" (missing port)"

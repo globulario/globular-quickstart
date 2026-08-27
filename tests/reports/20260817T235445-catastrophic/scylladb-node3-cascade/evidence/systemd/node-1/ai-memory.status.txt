@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:57:38 UTC; 3min 10s ago
+    Process: 609 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 636 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 668 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 767 (ai_memory_serve)
+      Tasks: 20 (limit: 8641)
+     Memory: 23.3M (peak: 27.8M)
+        CPU: 1.014s
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-ai-memory.service
+             └─767 /usr/lib/globular/bin/ai_memory_server
+
+Aug 17 23:57:45 node-1 ai_memory_server[767]: 2026/08/17 23:57:45 gocql: unable to dial control conn 10.10.0.12:9042: dial tcp 10.10.0.12:9042: connect: connection refused
+Aug 17 23:58:05 node-1 ai_memory_server[767]: 2026/08/17 23:58:05 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 17 23:58:15 node-1 ai_memory_server[767]: 2026/08/17 23:58:15 gocql: unable to dial control conn 10.10.0.12:9042: dial tcp 10.10.0.12:9042: i/o timeout
+Aug 17 23:59:40 node-1 ai_memory_server[767]: 2026/08/17 23:59:40 ERROR rpc error: code = Internal desc = BehavioralMemoryService.GeneratePromotionCandidate: generate promotion candidate: theme "remediation.cluster.desired_state.absent" has 0 outcomes, need at least 2 domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/GeneratePromotionCandidate function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632
+Aug 17 23:59:40 node-1 ai_memory_server[767]: 2026/08/17 23:59:40 INFO mesh: Envoy available, routing through mesh target=node-1.globular.internal:443
+Aug 17 23:59:40 node-1 ai_memory_server[767]: 2026/08/17 23:59:40 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 17 23:59:40 node-1 ai_memory_server[767]: 2026/08/17 23:59:40 INFO log forwarding enabled address=10.10.0.11:10100
+Aug 18 00:00:32 node-1 ai_memory_server[767]: 2026/08/18 00:00:32 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/ai_memory.AiMemoryService/Query
+Aug 18 00:00:34 node-1 ai_memory_server[767]: time=2026-08-18T00:00:34.984Z level=INFO msg="memory stored" id=d635b06a-9a97-11f1-891d-02420a0a000b project=globular-services type=debug title="incident-signature: unknown_anomaly (globular-ai-executor.service)"
+Aug 18 00:00:40 node-1 ai_memory_server[767]: 2026/08/18 00:00:40 ERROR rpc error: code = Internal desc = BehavioralMemoryService.GeneratePromotionCandidate: generate promotion candidate: theme "remediation.cluster.desired_state.absent" has 0 outcomes, need at least 2 domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/GeneratePromotionCandidate function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632

@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:59:00 UTC; 1min 50s ago
+    Process: 504 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 535 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 554 (repository_serv)
+      Tasks: 18 (limit: 8641)
+     Memory: 29.1M (peak: 30.9M)
+        CPU: 565ms
+     CGroup: /system.slice/docker-9222800d3a47ca13f196913e2ca4b66dc75c10e92e0db6dc29b6567ac0cd909e.scope/system.slice/globular-repository.service
+             └─554 /usr/lib/globular/bin/repository_server
+
+Aug 17 23:59:01 node-2 repository_server[554]: 2026/08/17 23:59:01 INFO publish-reconciler: started interval=1m0s
+Aug 17 23:59:01 node-2 repository_server[554]: time=2026-08-17T23:59:01.945Z level=INFO msg="service ready" service=repository.PackageRepository port=10004 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=1667
+Aug 17 23:59:01 node-2 repository_server[554]: time=2026-08-17T23:59:01.945Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 17 23:59:01 node-2 repository_server[554]: 2026/08/17 23:59:01 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 17 23:59:01 node-2 repository_server[554]: time=2026-08-17T23:59:01.946Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 17 23:59:01 node-2 repository_server[554]: time=2026-08-17T23:59:01.946Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 17 23:59:01 node-2 repository_server[554]: time=2026-08-17T23:59:01.950Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 17 23:59:02 node-2 repository_server[554]: 2026/08/17 23:59:02 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=35731
+Aug 17 23:59:02 node-2 repository_server[554]: 2026/08/17 23:59:02 INFO metrics listening service=repository.PackageRepository addr=[::]:35731
+Aug 17 23:59:02 node-2 repository_server[554]: 2026/08/17 23:59:02 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10004 new_port=10004 old_proxy=35731 new_proxy=10001

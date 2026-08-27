@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "scenario": "node-clone-identity-collision",
+  "suite": "authority",
+  "start_time": "2026-08-19T05:37:05.455477Z",
+  "end_time": "2026-08-19T05:41:29.112400Z",
+  "passed": false,
+  "item_count": 9,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "nodes_gte": 5
+      },
+      "result": {
+        "status": "unknown",
+        "error": "primary container not running",
+        "members": 0,
+        "nodes": 0
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:05.522101Z"
+    },
+    {
+      "id": "source_node_registered",
+      "section": "preconditions",
+      "probe": "node.etcd_registered",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": false,
+        "node": "node-4",
+        "uuid": "",
+        "error": "cannot_resolve_uuid"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:05.589352Z"
+    },
+    {
+      "id": "target_node_registered",
+      "section": "preconditions",
+      "probe": "node.etcd_registered",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": false,
+        "node": "node-5",
+        "uuid": "",
+        "error": "cannot_resolve_uuid"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:05.655184Z"
+    },
+    {
+      "id": "liveness_settled_before",
+      "section": "preconditions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 0,
+        "max_age_s": -1,
+        "stale_nodes": 0,
+        "error": "etcd container not running"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:05.690178Z"
+    },
+    {
+      "id": "stop_the_impostor",
+      "section": "cleanup",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-5",
+        "exit_code": 1,
+        "stdout": ""
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:05.708728Z"
+    },
+    {
+      "id": "restore_the_victims_own_state",
+      "section": "cleanup",
+      "probe": "chaos.restore_node_state",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.restore_node_state",
+        "node": "node-5",
+        "volume": "globular-quickstart_node5-state",
+        "snapshot": "globular-quickstart_node5-snapshot",
+        "exit_code": 0,
+        "size_mb": "4059",
+        "stderr": "ownload complete\n55afa1ecc21d: Download complete\n55afa1ecc21d: Pull complete\nDigest: sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b\nStatus: Downloaded newer image for alpine:3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-19T05:37:18.584353Z"
+    },
+    {
+      "id": "start_as_itself",
+      "section": "cleanup",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-5",
+        "exit_code": 1,
+        "stdout": ""
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:18.603144Z"
+    },
+    {
+      "id": "victim_restored_and_registered",
+      "section": "cleanup",
+      "probe": "node.etcd_registered",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "node": "node-5",
+        "uuid": "35ac3821-6b90-52eb-a800-41130471770b"
+      },
+      "passed": true,
+      "timestamp": "2026-08-19T05:41:18.726560Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {},
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "unproven": "no baseline captured"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:41:18.726595Z"
+    }
+  ],
+  "result": "INFRA_ERROR",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

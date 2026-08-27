@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "scenario": "install-loop-awareness",
+  "suite": "training",
+  "start_time": "2026-05-07T16:43:34.245745Z",
+  "end_time": "2026-05-07T16:43:55.847692Z",
+  "passed": true,
+  "item_count": 8,
+  "items": [
+    {
+      "id": "cluster-healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:34.689677Z"
+    },
+    {
+      "id": "controller-registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:34.782712Z"
+    },
+    {
+      "id": "kill-controller-node1",
+      "section": "steps",
+      "probe": "chaos.sigkill_service",
+      "params": {
+        "node": "node-1",
+        "service": "cluster-controller"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.sigkill_service",
+        "container": "globular-node-1",
+        "unit": "globular-cluster-controller.service",
+        "signal": "SIGKILL",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:34.847362Z"
+    },
+    {
+      "id": "wait-for-recovery",
+      "section": "steps",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:44.953102Z"
+    },
+    {
+      "id": "controller-recovered",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:45.046197Z"
+    },
+    {
+      "id": "node-agent-still-active-node1",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "node-agent"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-1",
+        "service": "node-agent"
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:45.147888Z"
+    },
+    {
+      "id": "cluster-healthy-after",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:45.440004Z"
+    },
+    {
+      "id": "write-quorum-intact",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 253
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:45.733071Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_PASS"
+}

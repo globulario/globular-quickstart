@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:07:36 UTC; 3min 0s ago
+    Process: 213 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 237 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 255 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 25.9M (peak: 35.6M)
+        CPU: 47.385s
+     CGroup: /system.slice/docker-132f316b761e19b341cb3599f86ce40d781792bff8b801029cd06da093b8fd9e.scope/system.slice/globular-node-agent.service
+             └─255 /usr/lib/globular/bin/node_agent_server
+
+Aug 24 17:10:08 node-1 node_agent_server[255]: 2026/08/24 17:10:08 event-publisher: service.exited unit=globular-scylla-manager.service (activating/auto-restart → activating/auto-restart)
+Aug 24 17:10:09 node-1 node_agent_server[255]: 2026/08/24 17:10:09 behavioral observation: infra_probe skipped component=minio node=c777633e-6d07-5713-9c4c-deb3317eee25: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 24 17:10:09 node-1 node_agent_server[255]: 2026/08/24 17:10:09 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 24 17:10:09 node-1 node_agent_server[255]: 2026/08/24 17:10:09 ingress: keepalived disabled on node c777633e-6d07-5713-9c4c-deb3317eee25
+Aug 24 17:10:12 node-1 node_agent_server[255]: 2026/08/24 17:10:12 behavioral observation: infra_probe skipped component=etcd node=c777633e-6d07-5713-9c4c-deb3317eee25: record signal: rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready
+Aug 24 17:10:13 node-1 node_agent_server[255]: 2026/08/24 17:10:13 event-publisher: service.started unit=globular-scylla-manager.service (activating/auto-restart → active/running)
+Aug 24 17:10:18 node-1 node_agent_server[255]: 2026/08/24 17:10:18 event-publisher: service.exited unit=globular-scylla-manager.service (active/running → activating/auto-restart)
+Aug 24 17:10:19 node-1 node_agent_server[255]: 2026/08/24 17:10:19 join: v1 legacy path: controller unreachable: TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: no route to host — retry in 1m20s
+Aug 24 17:10:23 node-1 node_agent_server[255]: 2026/08/24 17:10:23 event-publisher: service.started unit=globular-scylla-manager.service (activating/auto-restart → active/running)
+Aug 24 17:10:33 node-1 node_agent_server[255]: 2026/08/24 17:10:33 event-publisher: service.exited unit=globular-scylla-manager.service (active/running → activating/auto-restart)

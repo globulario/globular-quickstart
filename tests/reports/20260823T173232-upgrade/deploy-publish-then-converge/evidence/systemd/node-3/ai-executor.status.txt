@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 17:31:24 UTC; 2min 2s ago
+    Process: 614 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 629 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 655 (ai_executor_ser)
+      Tasks: 19 (limit: 8641)
+     Memory: 28.9M (peak: 30.6M)
+        CPU: 845ms
+     CGroup: /system.slice/docker-2933a85b7b1593c7729244973043c5e50a4611956f0941363dbbbe66b1c2a0e2.scope/system.slice/globular-ai-executor.service
+             └─655 /usr/lib/globular/bin/ai_executor_server
+
+Aug 23 17:32:18 node-3 ai_executor_server[655]: time=2026-08-23T17:32:18.018Z level=INFO msg="processing incident" incident_id=969b09ce-9f18-11f1-a042-02420a0a000b rule_id=service-stopped tier=0 trigger=service.stopped batch_size=10
+Aug 23 17:32:18 node-3 ai_executor_server[655]: time=2026-08-23T17:32:18.048Z level=INFO msg="diagnosis complete" incident_id=969b09ce-9f18-11f1-a042-02420a0a000b root_cause="unknown_anomaly (authentication.AuthenticationService)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 23 17:32:18 node-3 ai_executor_server[655]: time=2026-08-23T17:32:18.048Z level=INFO msg="INCIDENT RESOLVED" incident_id=969b09ce-9f18-11f1-a042-02420a0a000b summary="service-stopped triggered by service.stopped on authentication.AuthenticationService (10 events in batch)" root_cause="unknown_anomaly (authentication.AuthenticationService)"
+Aug 23 17:32:18 node-3 ai_executor_server[655]: time=2026-08-23T17:32:18.049Z level=WARN msg="behavioral feed signal record failed" incident=969b09ce-9f18-11f1-a042-02420a0a000b err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused\""
+Aug 23 17:32:37 node-3 ai_executor_server[655]: time=2026-08-23T17:32:37.419Z level=INFO msg="processing incident" incident_id=a21c130a-9f18-11f1-98e6-02420a0a000c rule_id=health-check-fail tier=0 trigger=cluster.health.degraded batch_size=1
+Aug 23 17:32:37 node-3 ai_executor_server[655]: time=2026-08-23T17:32:37.481Z level=INFO msg="diagnosis complete" incident_id=a21c130a-9f18-11f1-98e6-02420a0a000c root_cause="node_health_degraded: no contact for 2m16s" confidence=0.6000000238418579 proposed_action=notify_admin job_state=JOB_DIAGNOSED
+Aug 23 17:32:37 node-3 ai_executor_server[655]: time=2026-08-23T17:32:37.481Z level=INFO msg="INCIDENT RESOLVED" incident_id=a21c130a-9f18-11f1-98e6-02420a0a000c summary="health-check-fail triggered by cluster.health.degraded (1 events in batch)" root_cause="node_health_degraded: no contact for 2m16s"
+Aug 23 17:33:00 node-3 ai_executor_server[655]: time=2026-08-23T17:33:00.922Z level=INFO msg="processing incident" incident_id=b02d48d3-9f18-11f1-98e7-02420a0a000c rule_id=auth-denial tier=0 trigger=alert.auth.denied batch_size=7
+Aug 23 17:33:00 node-3 ai_executor_server[655]: time=2026-08-23T17:33:00.973Z level=INFO msg="diagnosis complete" incident_id=b02d48d3-9f18-11f1-98e7-02420a0a000c root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 23 17:33:00 node-3 ai_executor_server[655]: time=2026-08-23T17:33:00.973Z level=INFO msg="INCIDENT RESOLVED" incident_id=b02d48d3-9f18-11f1-98e7-02420a0a000c summary="auth-denial triggered by alert.auth.denied on workflow.WorkflowService (7 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)"

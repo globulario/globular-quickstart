@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-22T15:22:16.974247Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "cluster-health-stability",
+  "suite": "soak",
+  "result": "PASS",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "Sample cluster health 4 times over ~5 minutes to verify the cluster\ndoes not flap, lose quorum, or drop nodes during idle operation.\n\nThis is the core soak assertion: a healthy cluster must stay healthy\nwithout operator intervention. Each sample checks:\n  - cluster.health status == healthy\n  - etcd members >= 3 (quorum maintained)\n  - node count >= 5 (no nodes silently dropped)\n  - service count >= 19 (no services deregistered)\n\nFailure means the cluster is oscillating \u2014 systemd is restart-looping\na critical service, etcd is losing connectivity, or a node heartbeat\nis missing. Any instability here surfaces a real problem to investigate.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

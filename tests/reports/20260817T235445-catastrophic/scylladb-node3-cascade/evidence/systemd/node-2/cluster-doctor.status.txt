@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:58:55 UTC; 1min 54s ago
+    Process: 205 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 227 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 247 (cluster_doctor_)
+      Tasks: 18 (limit: 8641)
+     Memory: 24.5M (peak: 25.0M)
+        CPU: 506ms
+     CGroup: /system.slice/docker-9222800d3a47ca13f196913e2ca4b66dc75c10e92e0db6dc29b6567ac0cd909e.scope/system.slice/globular-cluster-doctor.service
+             └─247 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 17 23:58:56 node-2 cluster_doctor_server[247]: time=2026-08-17T23:58:56.196Z level=INFO msg="metrics/pprof listening" addr=[::]:45545
+Aug 17 23:58:56 node-2 cluster_doctor_server[247]: time=2026-08-17T23:58:56.207Z level=INFO msg="healer: background loop starting" mode=observe interval=1m0s max_actions=10
+Aug 17 23:58:56 node-2 cluster_doctor_server[247]: time=2026-08-17T23:58:56.216Z level=INFO msg="doctor leader election: campaigning" candidate=doctor:node-2:247:d2f1f9e0-b9f5-4706-adb5-81f9b5aa696f
+Aug 17 23:58:56 node-2 cluster_doctor_server[247]: time=2026-08-17T23:58:56.333Z level=INFO msg="cluster doctor ready" address=:12005 controller=10.10.0.11:443 version=1.2.320
+Aug 18 00:00:02 node-2 cluster_doctor_server[247]: 2026/08/18 00:00:02 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListNodes: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 18 00:00:02 node-2 cluster_doctor_server[247]: 2026/08/18 00:00:02 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=GetClusterHealthV1: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 18 00:00:02 node-2 cluster_doctor_server[247]: 2026/08/18 00:00:02 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListDesiredBuildIDs: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 18 00:00:02 node-2 cluster_doctor_server[247]: 2026/08/18 00:00:02 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=GetDesiredState: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 18 00:00:02 node-2 cluster_doctor_server[247]: 2026/08/18 00:00:02 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListServiceReleasesJson: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 18 00:00:02 node-2 cluster_doctor_server[247]: 2026/08/18 00:00:02 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListInfrastructureReleasesJson: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"

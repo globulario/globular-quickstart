@@ -1,0 +1,23 @@
+● globular-scylla-manager.service - Globular Scylla Manager
+     Loaded: loaded (/etc/systemd/system/globular-scylla-manager.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 10:21:01 UTC; 3min 4s ago
+    Process: 15523 ExecStartPre=/bin/sh -c for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "scylla 9042 not ready"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 15528 ExecStartPre=/usr/lib/globular/bin/scylla-manager-configure (code=exited, status=0/SUCCESS)
+    Process: 15532 ExecStartPost=/usr/lib/globular/bin/scylla-manager-register-cluster (code=exited, status=7)
+   Main PID: 15531 (scylla-manager)
+      Tasks: 16 (limit: 8641)
+     Memory: 11.4M (peak: 13.0M)
+        CPU: 944ms
+     CGroup: /system.slice/docker-63849f491cab6fc6f1fa3d862efc4c7b4ee5c43e09090c8569220635c7782722.scope/system.slice/globular-scylla-manager.service
+             └─15531 /usr/bin/scylla-manager --config-file /var/lib/globular/scylla-manager/scylla-manager.yaml
+
+Aug 11 10:21:01 node-3 systemd[1]: globular-scylla-manager.service: Scheduled restart job, restart counter is at 33.
+Aug 11 10:21:01 node-3 systemd[1]: Starting globular-scylla-manager.service - Globular Scylla Manager...
+Aug 11 10:21:01 node-3 scylla-manager-register-cluster[15532]: scylla-manager-register-cluster: HTTPS not enabled; falling back to http://10.10.0.13:5080/api/v1 for read probes
+Aug 11 10:21:01 node-3 scylla_manager[15531]: {"L":"INFO","T":"2026-08-11T10:21:01.618Z","M":"Scylla Manager Server","version":"3.11.1-0.20260615.df0a1454f","pid":15531,"_trace_id":"2iQfVRWERk6jlyYeWmmfew"}
+Aug 11 10:21:01 node-3 scylla-manager-register-cluster[15553]: curl: (7) Failed to connect to 10.10.0.13 port 5080 after 0 ms: Couldn't connect to server
+Aug 11 10:21:01 node-3 systemd[1]: Started globular-scylla-manager.service - Globular Scylla Manager.
+Aug 11 10:21:06 node-3 scylla_manager[15531]: {"L":"INFO","T":"2026-08-11T10:21:06.080Z","M":"New Scylla Manager version is available","installed":"3.11.1-0.20260615.df0a1454f","available":"2026.2.3","_trace_id":"2iQfVRWERk6jlyYeWmmfew"}
+Aug 11 10:21:06 node-3 scylla_manager[15531]: {"L":"INFO","T":"2026-08-11T10:21:06.080Z","M":"Using config","c":{"HTTP":"10.10.0.13:5080","HTTPS":"10.10.0.13:5443","TLSVersion":"TLSv1.2","TLSCertFile":"/var/lib/globular/pki/issued/services/service.crt","TLSKeyFile":"/var/lib/globular/pki/issued/services/service.key","TLSCAFile":"","Prometheus":":5090","Debug":"127.0.0.1:5112","ClientCacheTimeout":900000000000,"Logger":{"mode":"stderr","level":"info","sampling":null,"encoding":"json","Development":false},"Database":{"Hosts":["10.10.0.13"],"SSL":false,"User":"","Password":"","LocalDC":"","Keyspace":"scylla_manager","MigrateTimeout":30000000000,"MigrateMaxWaitSchemaAgreement":300000000000,"ReplicationFactor":1,"Timeout":1000000000,"TokenAware":true,"Port":9042,"InitAddr":""},"SSL":{"CertFile":"","Validate":true,"UserCertFile":"","UserKeyFile":""},"Healthcheck":{"NodeInfoTTL":300000000000,"MaxTimeout":1000000000,"CQLPingCron":"{\"spec\":\"* * * * *\",\"start_date\":\"0001-01-01T00:00:00Z\"}","RESTPingCron":"{\"spec\":\"* * * * *\",\"start_date\":\"0001-01-01T00:00:00Z\"}","AlternatorPingCron":"{\"spec\":\"* * * * *\",\"start_date\":\"0001-01-01T00:00:00Z\"}","Probes":0,"RelativeTimeout":0},"ConfigCache":{"UpdateFrequency":300000000000},"Backup":{"DiskSpaceFreeMinPercent":10,"LongPollingTimeoutSeconds":10,"AgeMax":86400000000000,"PermissionCheckFilesTTL":300000000000},"Restore":{"DiskSpaceFreeMinPercent":10,"LongPollingTimeoutSeconds":10},"Repair":{"StatusTimeout":0,"PollInterval":50000000,"LongPollingTimeoutSeconds":10,"AgeMax":0,"GracefulStopTimeout":30000000000,"ForceRepairType":"auto","Murmur3PartitionerIgnoreMSBBits":12},"TimeoutConfig":{"Timeout":30000000000,"MaxTimeout":3600000000000,"ListTimeout":300000000000,"Backoff":{"WaitMin":1000000000,"WaitMax":30000000000,"MaxRetries":9,"Multiplier":2,"Jitter":0.2},"InteractiveBackoff":{"WaitMin":1000000000,"WaitMax":0,"MaxRetries":1,"Multiplier":0,"Jitter":0},"PoolDecayDuration":1800000000000}},"config_files":["/var/lib/globular/scylla-manager/scylla-manager.yaml"],"_trace_id":"2iQfVRWERk6jlyYeWmmfew"}
+Aug 11 10:21:06 node-3 scylla_manager[15531]: {"L":"INFO","T":"2026-08-11T10:21:06.081Z","M":"Checking database connectivity...","_trace_id":"2iQfVRWERk6jlyYeWmmfew"}
+Aug 11 10:21:06 node-3 scylla_manager[15531]: {"L":"INFO","T":"2026-08-11T10:21:06.087Z","M":"Migrating schema","keyspace":"scylla_manager","_trace_id":"2iQfVRWERk6jlyYeWmmfew"}

@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 00:35:47 UTC; 36min ago
+    Process: 3904 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 3908 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3911 (cluster_doctor_)
+      Tasks: 22 (limit: 8641)
+     Memory: 34.7M (peak: 39.9M)
+        CPU: 28.895s
+     CGroup: /system.slice/docker-f437b32de615aef177a05c06ceac9570dbde691a19f53fe11e50924dad53bf5c.scope/system.slice/globular-cluster-doctor.service
+             └─3911 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 01 01:11:48 node-2 cluster_doctor_server[3911]: 2026/08/01 01:11:48 collector: data-source fetch failed (reduced harvest) service=node_agent@6400b443-cf38-52da-a683-de2fc5103c0b rpc=GetInfraProbe: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:11000: connect: no route to host"
+Aug 01 01:11:48 node-2 cluster_doctor_server[3911]: 2026/08/01 01:11:48 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb endpoint=10.10.0.12:11000 timeout=30s
+Aug 01 01:11:48 node-2 cluster_doctor_server[3911]: 2026/08/01 01:11:48 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 endpoint=10.10.0.11:11000 timeout=30s
+Aug 01 01:11:48 node-2 cluster_doctor_server[3911]: 2026/08/01 01:11:48 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 endpoint=10.10.0.13:11000 timeout=30s
+Aug 01 01:11:49 node-2 cluster_doctor_server[3911]: 2026/08/01 01:11:49 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb stored report (checked=14, findings=6) in 472.636322ms
+Aug 01 01:11:49 node-2 cluster_doctor_server[3911]: 2026/08/01 01:11:49 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 stored report (checked=40, findings=6) in 1.001706161s
+Aug 01 01:11:49 node-2 cluster_doctor_server[3911]: 2026/08/01 01:11:49 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 stored report (checked=47, findings=3) in 1.076867645s
+Aug 01 01:11:50 node-2 cluster_doctor_server[3911]: 2026/08/01 01:11:50 collector: data-source fetch failed (reduced harvest) service=repository rpc=ListArtifacts: rpc error: code = Unavailable desc = artifact ledger unavailable: scylla list manifests: Cannot achieve consistency level for cl ONE. Requires 1, alive 0
+Aug 01 01:11:50 node-2 cluster_doctor_server[3911]: 2026/08/01 01:11:50 verification: GetArtifactManifest(cluster-doctor) failed: rpc error: code = NotFound desc = artifact "core@globular.io%cluster-doctor%v1.2.288%linux_amd64%0" not found: artifact core@globular.io%cluster-doctor%1.2.288%linux_amd64%0 not found (tried latest, build-0, legacy)
+Aug 01 01:12:11 node-2 cluster_doctor_server[3911]: 2026/08/01 01:12:11 healer: cycle complete mode=observe findings=119 auto=0 executed=0 proposed=1 errors=0

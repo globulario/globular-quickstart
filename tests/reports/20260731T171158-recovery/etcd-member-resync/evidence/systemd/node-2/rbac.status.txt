@@ -1,0 +1,24 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 17:13:00 UTC; 25s ago
+    Process: 549 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 588 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 605 ExecStartPre=/bin/bash -c for i in $(seq 1 90); do echo > /dev/tcp/10.10.0.20/9042 2>/dev/null && exit 0; sleep 1; done; echo scylla not ready; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 630 ExecStartPre=/bin/bash -c for i in $(seq 1 90); do echo > /dev/tcp/10.10.0.20/9042 2>/dev/null && exit 0; sleep 1; done; echo scylla not ready; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 656 (rbac_server)
+      Tasks: 12 (limit: 8641)
+     Memory: 56.0M
+        CPU: 292ms
+     CGroup: /system.slice/docker-af2aadfb3c39485ee1072795441d42f00e2bc57a822f9ef3189ee70b8a240413.scope/system.slice/globular-rbac.service
+             └─656 /usr/lib/globular/bin/rbac_server
+
+Jul 31 17:13:01 node-2 rbac_server[656]: time=2026-07-31T17:13:01.012Z level=INFO msg="starting grpc server" port=10006
+Jul 31 17:13:01 node-2 rbac_server[656]: 2026/07/31 17:13:01 INFO metrics: proxy port conflict, using free port service=rbac.RbacService wanted=10001 actual=36141
+Jul 31 17:13:01 node-2 rbac_server[656]: 2026/07/31 17:13:01 INFO metrics listening service=rbac.RbacService addr=[::]:36141
+Jul 31 17:13:01 node-2 rbac_server[656]: 2026/07/31 17:13:01 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10006 new_port=10006 old_proxy=36141 new_proxy=10001
+Jul 31 17:13:11 node-2 rbac_server[656]: 2026/07/31 17:13:11 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-2.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:11 node-2 rbac_server[656]: 2026/07/31 17:13:11 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.13 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:11 node-2 rbac_server[656]: 2026/07/31 17:13:11 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.13:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:21 node-2 rbac_server[656]: 2026/07/31 17:13:21 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-2.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:21 node-2 rbac_server[656]: 2026/07/31 17:13:21 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.14 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:21 node-2 rbac_server[656]: 2026/07/31 17:13:21 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.14:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"

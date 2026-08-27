@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:41:25 UTC; 14min ago
+    Process: 651 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 666 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 675 (ai_executor_ser)
+      Tasks: 15 (limit: 8641)
+     Memory: 28.1M (peak: 28.9M)
+        CPU: 1.266s
+     CGroup: /system.slice/docker-4908e77bbf99ff3f7b177f626a29d247c8f9ef6a704b5c704dbea822ab1ca85b.scope/system.slice/globular-ai-executor.service
+             └─675 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 21:53:57 node-5 ai_executor_server[675]: time=2026-07-31T21:53:57.629Z level=INFO msg="executing remediation" incident=54b9bc1d-8d2a-11f1-bae7-02420a0a000f action_type=ACTION_RESTART_SERVICE target=restart_service:globular-dns.service
+Jul 31 21:53:57 node-5 ai_executor_server[675]: time=2026-07-31T21:53:57.648Z level=INFO msg="restart_service: request published" target=restart_service:globular-dns.service
+Jul 31 21:54:00 node-5 ai_executor_server[675]: time=2026-07-31T21:54:00.649Z level=ERROR msg="remediation failed" incident=54b9bc1d-8d2a-11f1-bae7-02420a0a000f action_type=ACTION_RESTART_SERVICE err="verification failed: inconclusive: restart of restart_service:globular-dns.service dispatched via event bus; confirm via node-agent or cluster doctor"
+Jul 31 21:54:00 node-5 ai_executor_server[675]: time=2026-07-31T21:54:00.649Z level=ERROR msg="REMEDIATION FAILED" incident_id=54b9bc1d-8d2a-11f1-bae7-02420a0a000f summary="service-crash triggered by service.exited on dns (2 events in batch)" proposed_action=restart_service:globular-dns.service
+Jul 31 21:54:00 node-5 ai_executor_server[675]: time=2026-07-31T21:54:00.651Z level=WARN msg="behavioral feed signal record failed" incident=54b9bc1d-8d2a-11f1-bae7-02420a0a000f err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused\""
+Jul 31 21:54:37 node-5 ai_executor_server[675]: time=2026-07-31T21:54:37.703Z level=INFO msg="processing incident" incident_id=6cad216d-8d2a-11f1-9e02-02420a0a000e rule_id=service-failed tier=1 trigger=service.failed batch_size=1
+Jul 31 21:54:37 node-5 ai_executor_server[675]: time=2026-07-31T21:54:37.808Z level=INFO msg="diagnosis complete" incident_id=6cad216d-8d2a-11f1-9e02-02420a0a000e root_cause="unknown_anomaly (dns)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Jul 31 21:54:37 node-5 ai_executor_server[675]: time=2026-07-31T21:54:37.809Z level=INFO msg="executing remediation" incident=6cad216d-8d2a-11f1-9e02-02420a0a000e action_type=ACTION_NONE target=observe_and_record
+Jul 31 21:54:37 node-5 ai_executor_server[675]: time=2026-07-31T21:54:37.809Z level=ERROR msg="remediation failed" incident=6cad216d-8d2a-11f1-9e02-02420a0a000e action_type=ACTION_NONE err="no backend supports action type ACTION_NONE"
+Jul 31 21:54:37 node-5 ai_executor_server[675]: time=2026-07-31T21:54:37.809Z level=ERROR msg="REMEDIATION FAILED" incident_id=6cad216d-8d2a-11f1-9e02-02420a0a000e summary="service-failed triggered by service.failed on dns (1 events in batch)" proposed_action=observe_and_record

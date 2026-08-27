@@ -1,0 +1,20 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:54:32 UTC; 1min 40s ago
+   Main PID: 555 (ai_executor_ser)
+      Tasks: 18 (limit: 8641)
+     Memory: 26.2M (peak: 29.0M)
+        CPU: 634ms
+     CGroup: /system.slice/docker-928b88015d720a8f11737bd2e4cef31a0f068e077aace4373fcff00bacea7705.scope/system.slice/globular-ai-executor.service
+             └─555 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 23:55:04 node-4 ai_executor_server[555]: time=2026-07-31T23:55:04.132Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10010
+Jul 31 23:55:04 node-4 ai_executor_server[555]: time=2026-07-31T23:55:04.146Z level=INFO msg="peer: connected" node=node-5 endpoint=10.10.0.15:10010
+Jul 31 23:55:50 node-4 ai_executor_server[555]: time=2026-07-31T23:55:50.416Z level=INFO msg="processing incident" incident_id=5b88565d-8d3b-11f1-971e-02420a0a000f rule_id=service-crash tier=1 trigger=service.exited batch_size=1
+Jul 31 23:55:50 node-4 ai_executor_server[555]: time=2026-07-31T23:55:50.520Z level=INFO msg="diagnosis complete" incident_id=5b88565d-8d3b-11f1-971e-02420a0a000f root_cause="service_crash: globular-scylla-manager.service" confidence=0.6000000238418579 proposed_action=restart_service:globular-scylla-manager.service job_state=JOB_DIAGNOSED
+Jul 31 23:55:50 node-4 ai_executor_server[555]: time=2026-07-31T23:55:50.520Z level=INFO msg="executing remediation" incident=5b88565d-8d3b-11f1-971e-02420a0a000f action_type=ACTION_RESTART_SERVICE target=restart_service:globular-scylla-manager.service
+Jul 31 23:55:50 node-4 ai_executor_server[555]: time=2026-07-31T23:55:50.688Z level=INFO msg="restart_service: request published" target=restart_service:globular-scylla-manager.service
+Jul 31 23:55:53 node-4 ai_executor_server[555]: time=2026-07-31T23:55:53.689Z level=ERROR msg="remediation failed" incident=5b88565d-8d3b-11f1-971e-02420a0a000f action_type=ACTION_RESTART_SERVICE err="verification failed: inconclusive: restart of restart_service:globular-scylla-manager.service dispatched via event bus; confirm via node-agent or cluster doctor"
+Jul 31 23:55:53 node-4 ai_executor_server[555]: time=2026-07-31T23:55:53.689Z level=ERROR msg="REMEDIATION FAILED" incident_id=5b88565d-8d3b-11f1-971e-02420a0a000f summary="service-crash triggered by service.exited on scylla-manager (1 events in batch)" proposed_action=restart_service:globular-scylla-manager.service
+Jul 31 23:55:53 node-4 ai_executor_server[555]: time=2026-07-31T23:55:53.691Z level=WARN msg="ai_memory outcome record failed" incident=5b88565d-8d3b-11f1-971e-02420a0a000f err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused\""
+Jul 31 23:55:53 node-4 ai_executor_server[555]: time=2026-07-31T23:55:53.699Z level=WARN msg="behavioral feed signal record failed" incident=5b88565d-8d3b-11f1-971e-02420a0a000f err="rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"

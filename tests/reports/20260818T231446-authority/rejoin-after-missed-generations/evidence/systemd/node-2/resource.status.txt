@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 23:47:47 UTC; 42min ago
+    Process: 382 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 388 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 398 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 465 (resource_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 25.1M (peak: 29.1M)
+        CPU: 4.751s
+     CGroup: /system.slice/docker-9a63d2117b8538ee4c4f80a487a8a41ef68a018cdf573386eb01dd30a5d6455b.scope/system.slice/globular-resource.service
+             └─465 /usr/lib/globular/bin/resource_server
+
+Aug 18 23:47:57 node-2 resource_server[465]: time=2026-08-18T23:47:57.651Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042
+Aug 18 23:47:58 node-2 resource_server[465]: 2026/08/18 23:47:58 WARN scylla: Count fallback to scan; consider raw CQL with PK WHERE table=local_resource.accounts
+Aug 18 23:47:58 node-2 resource_server[465]: time=2026-08-18T23:47:58.951Z level=ERROR msg="fail to create account dir" error="failed to seed sa account: account with name sa already exist!"
+Aug 18 23:47:59 node-2 resource_server[465]: 2026/08/18 23:47:59 INFO metrics listening service=resource.ResourceService addr=[::]:10011
+Aug 18 23:48:02 node-2 resource_server[465]: 2026/08/18 23:48:02 WARN port/proxy change detected in desired; restart required to take effect service=resource.ResourceService id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 old_port=10008 new_port=10011 old_proxy=10011 new_proxy=10011
+Aug 18 23:48:09 node-2 resource_server[465]: 2026/08/18 23:48:09 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 18 23:48:09 node-2 resource_server[465]: 2026/08/18 23:48:09 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 18 23:49:34 node-2 resource_server[465]: 2026/08/18 23:49:34 WARN port/proxy change detected in desired; restart required to take effect service=resource.ResourceService id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 old_port=10011 new_port=10008 old_proxy=10011 new_proxy=10011
+Aug 18 23:54:04 node-2 resource_server[465]: 2026/08/18 23:54:04 INFO acc: warmup complete baseline_rtt_ms=20 samples=223 elapsed=5m0s
+Aug 19 00:04:46 node-2 resource_server[465]: {"level":"warn","ts":"2026-08-19T00:04:46.620979Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006361e0/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}

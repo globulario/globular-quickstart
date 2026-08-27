@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 18:24:17 UTC; 51min ago
+    Process: 1106 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 1113 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1116 (cluster_control)
+      Tasks: 23 (limit: 8641)
+     Memory: 413.4M (peak: 1.6G)
+        CPU: 2min 58.008s
+     CGroup: /system.slice/docker-4c675f6508b9a86c7b995eb51d86a0499df1ded44d81b29ffb1411f52fc36f32.scope/system.slice/globular-cluster-controller.service
+             └─1116 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 27 19:15:52 node-1 cluster_controller_server[1116]: {"level":"warn","ts":"2026-08-27T19:15:52.251893Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000271c20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Canceled desc = context canceled"}
+Aug 27 19:15:54 node-1 cluster_controller_server[1116]: {"level":"warn","ts":"2026-08-27T19:15:54.941282Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000271c20/10.10.0.11:2379","attempt":4,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:15:56 node-1 cluster_controller_server[1116]: {"level":"warn","ts":"2026-08-27T19:15:56.116695Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000271c20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:15:56 node-1 cluster_controller_server[1116]: {"level":"info","ts":"2026-08-27T19:15:56.116762Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 19:15:56 node-1 cluster_controller_server[1116]: {"level":"warn","ts":"2026-08-27T19:15:56.121723Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00079e5a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:15:56 node-1 cluster_controller_server[1116]: {"level":"info","ts":"2026-08-27T19:15:56.121778Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 19:16:01 node-1 cluster_controller_server[1116]: {"level":"warn","ts":"2026-08-27T19:16:01.76242Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000271c20/10.10.0.11:2379","attempt":3,"error":"rpc error: code = Unavailable desc = etcdserver: request timed out"}
+Aug 27 19:16:01 node-1 cluster_controller_server[1116]: {"level":"warn","ts":"2026-08-27T19:16:01.942642Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000271c20/10.10.0.11:2379","attempt":5,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:16:08 node-1 cluster_controller_server[1116]: {"level":"warn","ts":"2026-08-27T19:16:08.969335Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000271c20/10.10.0.11:2379","attempt":6,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:16:11 node-1 cluster_controller_server[1116]: {"level":"warn","ts":"2026-08-27T19:16:11.082326Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000271c20/10.10.0.11:2379","attempt":4,"error":"rpc error: code = Unavailable desc = etcdserver: leader changed"}

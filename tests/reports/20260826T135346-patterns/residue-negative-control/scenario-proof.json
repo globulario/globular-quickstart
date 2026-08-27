@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-26T13:54:03.610389Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/patterns/residue-negative-control.yaml",
+  "scenario": "residue-negative-control",
+  "suite": "patterns",
+  "source_revision": "e9db6e24e9c489e9173c12829940a94adf206939",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "NEGATIVE CONTROL for the harness restoration law.\n\nThis scenario deliberately leaves residue: it stops a node and never restores\nit \u2014 there is no `start_node` in steps and no cleanup section at all. It is\nthe test that proves the detector can fire.\n\nExpected behaviour of the RUNNER (not of the product):\n  1. the mutation ledger records node_stopped(node-5);\n  2. teardown finds it outstanding after cleanup;\n  3. teardown reverses it (docker start) and verifies the container is running;\n  4. the scenario is marked FAILED with \"RESIDUE: scenario left unrestored\n     mutations\", even though every assertion in it passes.\n\nA scenario whose assertions all pass but which leaks state MUST fail. If this\nscenario ever reports PASS, the restoration law is not being enforced and\nevery other destructive scenario is free to contaminate its successors \u2014\nwhich is exactly what happened on 2026-08-05, when a detached etcd member and\na root-owned service key rode silently into three later suites.\n\nThis is intentionally the only scenario in the tree that is SUPPOSED to fail.\nDo not \"fix\" it by adding cleanup \u2014 that would delete the control.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-26T13:54:27.187843Z",
+    "result": "FAIL",
+    "executor_exit": 1,
+    "proof_eligible": false
+  }
+}

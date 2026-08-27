@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "scenario": "full-blackout-thundering-herd",
+  "suite": "authority",
+  "start_time": "2026-08-19T05:37:04.538004Z",
+  "end_time": "2026-08-19T05:37:05.259275Z",
+  "passed": false,
+  "item_count": 5,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "nodes_gte": 5
+      },
+      "result": {
+        "status": "unknown",
+        "error": "primary container not running",
+        "members": 0,
+        "nodes": 0
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:04.603999Z"
+    },
+    {
+      "id": "leadership_established_before",
+      "section": "preconditions",
+      "probe": "controller.leadership",
+      "params": {},
+      "expect": {
+        "has_leader": true,
+        "claimants_gte": 2
+      },
+      "result": {
+        "leader_addr": "",
+        "leader_node": "",
+        "claimants": 0,
+        "instances": "",
+        "leader_instance": "",
+        "distinct_leaders": 0,
+        "error": "etcd container not running"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:04.639591Z"
+    },
+    {
+      "id": "liveness_settled_before",
+      "section": "preconditions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 0,
+        "max_age_s": -1,
+        "stale_nodes": 0,
+        "error": "etcd container not running"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:04.675582Z"
+    },
+    {
+      "id": "ensure_all_nodes_running",
+      "section": "cleanup",
+      "probe": "chaos.start_all_nodes",
+      "params": {},
+      "expect": {},
+      "result": {
+        "action": "chaos.start_all_nodes",
+        "error": "no globular-node-* containers found"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:04.693836Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {},
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "unproven": "no baseline captured"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:04.693900Z"
+    }
+  ],
+  "result": "INFRA_ERROR",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

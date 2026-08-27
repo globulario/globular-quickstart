@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:21:43 UTC; 34min ago
+    Process: 41314 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 41318 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 41320 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 104.8M (peak: 1.4G)
+        CPU: 3min 53.102s
+     CGroup: /system.slice/docker-ddb7f5979908481032842d1e2d52648dae58a5329712936267ae999f06e3d67b.scope/system.slice/globular-cluster-controller.service
+             └─41320 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 23:55:47 node-1 cluster_controller_server[41320]: 2026/07/31 23:55:47 reconcile-workflow: completed
+Jul 31 23:55:47 node-1 cluster_controller_server[41320]: 2026/07/31 23:55:47 workflow cluster.reconcile (correlation=reconcile:1785542144806): SUCCEEDED
+Jul 31 23:55:47 node-1 cluster_controller_server[41320]: 2026/07/31 23:55:47 reconcile-workflow: cluster.reconcile completed
+Jul 31 23:55:47 node-1 cluster_controller_server[41320]: 2026/07/31 23:55:47 workflow recorder: RecordOutcome failed: rpc error: code = PermissionDenied desc = permission denied: workflow.admin — assign a role with 'globular rbac bind'
+Jul 31 23:55:48 node-1 cluster_controller_server[41320]: 2026/07/31 23:55:48 dns reconciler: generation changed 0 -> 2, reconciling...
+Jul 31 23:55:48 node-1 cluster_controller_server[41320]: 2026/07/31 23:55:48 external dns: DISABLED
+Jul 31 23:55:48 node-1 cluster_controller_server[41320]: 2026/07/31 23:55:48 dns reconciler: gated record=dns.globular.internal desired=5 installed=4 runtime=3 published=3 (filtered=[{node-4.globular.internal service installed but runtime unhealthy} {node-3.globular.internal service planned but not installed}])
+Jul 31 23:55:48 node-1 cluster_controller_server[41320]: 2026/07/31 23:55:48 dns reconciler: reconciliation error: apply dns state for domain globular.internal: no healthy DNS endpoints available (will retry in 30s)
+Jul 31 23:55:59 node-1 cluster_controller_server[41320]: 2026/07/31 23:55:59 convergence-committer: node=c777633e-6d07-5713-9c4c-deb3317eee25 SERVICE/dns outcome=FAILED_TRANSIENT reason=
+Jul 31 23:56:00 node-1 cluster_controller_server[41320]: 2026/07/31 23:56:00 node_identity: upsert 35ac3821-6b90-52eb-a800-41130471770b failed: node_identity upsert 35ac3821-6b90-52eb-a800-41130471770b: Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1

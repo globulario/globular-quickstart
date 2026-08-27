@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:40:44 UTC; 10s ago
+    Process: 191 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 219 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 233 (node_agent_serv)
+      Tasks: 17 (limit: 8641)
+     Memory: 24.2M (peak: 36.0M)
+        CPU: 3.950s
+     CGroup: /system.slice/docker-928b88015d720a8f11737bd2e4cef31a0f068e077aace4373fcff00bacea7705.scope/system.slice/globular-node-agent.service
+             └─233 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 23:40:45 node-4 node_agent_server[233]: 2026/07/31 23:40:45 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Jul 31 23:40:45 node-4 node_agent_server[233]: 2026/07/31 23:40:45 node agent listening on 0.0.0.0:11000
+Jul 31 23:40:45 node-4 node_agent_server[233]: 2026/07/31 23:40:45 metrics listening on 0.0.0.0:11001 (saved=11001, default=11001)
+Jul 31 23:40:45 node-4 node_agent_server[233]: 2026/07/31 23:40:45 behavioral observation: infra_probe skipped component=scylladb node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0
+Jul 31 23:40:46 node-4 node_agent_server[233]: {"level":"warn","ts":"2026-07-31T23:40:46.486491Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001410e0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Jul 31 23:40:47 node-4 node_agent_server[233]: {"level":"warn","ts":"2026-07-31T23:40:47.231075Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001410e0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Jul 31 23:40:47 node-4 node_agent_server[233]: {"level":"warn","ts":"2026-07-31T23:40:47.231218Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001410e0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:40:47 node-4 node_agent_server[233]: 2026/07/31 23:40:47 behavioral observation: infra_probe skipped component=etcd node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl ONE. Requires 1, alive 0
+Jul 31 23:40:47 node-4 node_agent_server[233]: 2026/07/31 23:40:47 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0
+Jul 31 23:40:47 node-4 node_agent_server[233]: 2026/07/31 23:40:47 behavioral observation: infra_probe skipped component=envoy node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0

@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "scenario": "controller-zombie-after-lease-loss",
+  "suite": "authority",
+  "start_time": "2026-08-23T05:14:36.117540Z",
+  "end_time": "2026-08-23T05:14:49.188372Z",
+  "passed": false,
+  "item_count": 6,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 1,
+        "nodes": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T05:14:36.940081Z"
+    },
+    {
+      "id": "leadership_is_established",
+      "section": "preconditions",
+      "probe": "controller.leadership",
+      "params": {},
+      "expect": {
+        "claimants_gte": 2,
+        "has_leader": true
+      },
+      "result": {
+        "leader_addr": "10.10.0.11:12000",
+        "leader_node": "node-1",
+        "has_leader": true,
+        "claimants": 1,
+        "instances": "node-1:20944:f4642c30-82cd-465f-944b-4623cb82cec9",
+        "leader_instance": "node-1:20944:f4642c30-82cd-465f-944b-4623cb82cec9",
+        "distinct_leaders": 1
+      },
+      "passed": false,
+      "timestamp": "2026-08-23T05:14:37.290581Z"
+    },
+    {
+      "id": "etcd_accepts_writes",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 242
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T05:14:37.564997Z"
+    },
+    {
+      "id": "liveness_settled_before",
+      "section": "preconditions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 1,
+        "max_age_s": 43,
+        "stale_nodes": 0,
+        "oldest": "c777633e-6d07-5713-9c4c-deb3317eee25"
+      },
+      "passed": false,
+      "timestamp": "2026-08-23T05:14:37.700802Z"
+    },
+    {
+      "id": "ensure_no_controller_left_frozen",
+      "section": "cleanup",
+      "probe": "chaos.resume_all_controllers",
+      "params": {},
+      "expect": {},
+      "result": {
+        "action": "chaos.resume_all_controllers",
+        "resumed": [
+          "globular-node-1"
+        ],
+        "not_applicable": [
+          "globular-node-2",
+          "globular-node-3",
+          "globular-node-4",
+          "globular-node-5"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T05:14:38.043542Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 1,
+          "etcd_member_count": "1",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "missing UNREADABLE backups=0",
+            "node-3": "missing UNREADABLE backups=0",
+            "node-4": "missing UNREADABLE backups=0",
+            "node-5": "missing UNREADABLE backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 1,
+          "etcd_member_count": "1",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "missing UNREADABLE backups=0",
+            "node-3": "missing UNREADABLE backups=0",
+            "node-4": "missing UNREADABLE backups=0",
+            "node-5": "missing UNREADABLE backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T05:14:38.602700Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

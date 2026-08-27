@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:07:09 UTC; 1min 46s ago
+    Process: 61 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 93 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 111 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 195 (workflow_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 24.6M (peak: 26.0M)
+        CPU: 564ms
+     CGroup: /system.slice/docker-c0adeb54c3e856286dee91181b663fe0332b2e8184e7e300172c1db2276e7b0b.scope/system.slice/globular-workflow.service
+             └─195 /usr/lib/globular/bin/workflow_server
+
+Jul 31 20:08:28 node-4 workflow_server[195]: 2026/07/31 20:08:28 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListDriftUnresolved
+Jul 31 20:08:28 node-4 workflow_server[195]: 2026/07/31 20:08:28 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Jul 31 20:08:28 node-4 workflow_server[195]: 2026/07/31 20:08:28 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Jul 31 20:08:29 node-4 workflow_server[195]: 2026/07/31 20:08:29 INFO executor: dispatching action actor=cluster-controller action=controller.objectstore.check_all_nodes_rendered run_id=run-1785528489735 step_id=check_all_rendered
+Jul 31 20:08:29 node-4 workflow_server[195]: 2026/07/31 20:08:29 workflow: step check_all_rendered attempt 3/60 failed: actor cluster-controller action controller.objectstore.check_all_nodes_rendered rejected: controller actor=cluster-controller action=controller.objectstore.check_all_nodes_rendered failed: check_all_nodes_rendered: target_generation is required — retrying in 10s
+Jul 31 20:08:39 node-4 workflow_server[195]: time=2026-07-31T20:08:39.733Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+Jul 31 20:08:39 node-4 workflow_server[195]: 2026/07/31 20:08:39 INFO executor: dispatching action actor=cluster-controller action=controller.objectstore.check_all_nodes_rendered run_id=run-1785528489735 step_id=check_all_rendered
+Jul 31 20:08:39 node-4 workflow_server[195]: 2026/07/31 20:08:39 workflow: step check_all_rendered attempt 4/60 failed: actor cluster-controller action controller.objectstore.check_all_nodes_rendered rejected: controller actor=cluster-controller action=controller.objectstore.check_all_nodes_rendered failed: check_all_nodes_rendered: target_generation is required — retrying in 10s
+Jul 31 20:08:49 node-4 workflow_server[195]: 2026/07/31 20:08:49 INFO executor: dispatching action actor=cluster-controller action=controller.objectstore.check_all_nodes_rendered run_id=run-1785528489735 step_id=check_all_rendered
+Jul 31 20:08:49 node-4 workflow_server[195]: 2026/07/31 20:08:49 workflow: step check_all_rendered attempt 5/60 failed: actor cluster-controller action controller.objectstore.check_all_nodes_rendered rejected: controller actor=cluster-controller action=controller.objectstore.check_all_nodes_rendered failed: check_all_nodes_rendered: target_generation is required — retrying in 10s

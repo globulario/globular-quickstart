@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-23T16:45:01.153826Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "etcd-detach-before-wipe",
+  "suite": "recovery",
+  "result": "PASS",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "A node removed from the cluster must take its etcd MEMBERSHIP with it.\n\nSCAR \u2014 2026-07-30, twice in one session, on the physical cluster.\n\nglobule-nuc was added to etcd during a Day-1 join and promoted to voter. Its\njoin then failed at a later phase (ScyllaDB), so the node was wiped. The wipe\ndid NOT remove its etcd member. The survivor was left with 2 registered voters\nand only 1 alive:\n\n    IS LEADER=false   ERRORS=\"etcdserver: no leader\"\n    raft index frozen; every etcd write hung\n\nThe whole control plane stalled behind it \u2014 13.7s page loads, cluster-doctor\ntiming out \u2014 because gateway, controller and doctor all resolve config from\netcd. MemberRemove could not repair it either: that call itself needs quorum.\nRecovery required restarting etcd with --force-new-cluster.\n\nTwo separate defects had to be fixed before the detach could work at all:\n\n  1. step 0.3 of clean-node.sh was gated on `systemctl is-active\n     globular-etcd`, and addressed only the LOCAL endpoint. A node is wiped\n     after a FAILED join, and the join's own preflight stops etcd \u2014 so the\n     guard was false in exactly the case the step exists for, and a dead local\n     etcd cannot serve its own removal anyway.   (services ba418f39)\n\n  2. it authenticated only with pki/issued/etcd/client.{crt,key}, which is\n     materialised LATER in the join than the phase-2 service cert. A node that\n     failed partway does not have it, so the step reported \"TLS certs missing\"\n     and skipped.                                 (services b82bcbf9)\n\nWHAT THIS ASSERTS \u2014 and why it is not the same as the existing\netcd-quorum-resilience scenario:\n\n  stopping a member  \u2192 quorum requirement UNCHANGED (it is expected back)\n  detaching a member \u2192 member list SHRINKS, so quorum requirement DROPS\n\nThat difference is the entire property. Here two of three etcd members are\ndecommissioned. Under correct behaviour the list shrinks 3 \u2192 1 and the single\nsurvivor still elects itself leader and accepts writes. With the pre-fix\nclean-node the list would stay at 3 with 1 alive \u2014 quorum 2 unreachable, no\nleader, writes hung.\n\nThe load-bearing assertion is etcd.write_test. Membership arithmetic can look\nplausible while the cluster is actually wedged; a completed write is the only\nproof that quorum is real.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

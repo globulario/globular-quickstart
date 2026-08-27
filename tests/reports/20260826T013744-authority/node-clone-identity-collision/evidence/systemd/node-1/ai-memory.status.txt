@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 02:22:06 UTC; 27min ago
+    Process: 520 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 551 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 577 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 657 (ai_memory_serve)
+      Tasks: 21 (limit: 8641)
+     Memory: 37.0M (peak: 39.3M)
+        CPU: 8.009s
+     CGroup: /system.slice/docker-06e641380ccebeaf0e4edbf72d9d5837f80d5b64b34cd13adac2cc24c8cb20df.scope/system.slice/globular-ai-memory.service
+             └─657 /usr/lib/globular/bin/ai_memory_server
+
+Aug 26 02:49:14 node-1 ai_memory_server[657]: time=2026-08-26T02:49:14.470Z level=INFO msg="memory updated" id=23ae1ca3-a0e9-11f1-9df9-02420a0a000b project=globular-services
+Aug 26 02:49:30 node-1 ai_memory_server[657]: time=2026-08-26T02:49:30.159Z level=INFO msg="memory updated" id=8a684266-a0ea-11f1-8dee-02420a0a000b project=globular-services
+Aug 26 02:49:34 node-1 ai_memory_server[657]: 2026/08/26 02:49:34 WARN authz_decision audit="{\"timestamp\":\"2026-08-26T02:49:34.71500754Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":true,\"remote_addr\":\"unknown\",\"grpc_method\":\"/ai_memory.AiMemoryService/Store\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"authentication_required\",\"decision_latency_ms\":0,\"call_source\":\"local\"}" subject="" method=/ai_memory.AiMemoryService/Store allowed=false reason=authentication_required latency_ms=0 policy_version=unknown
+Aug 26 02:49:36 node-1 ai_memory_server[657]: time=2026-08-26T02:49:36.605Z level=INFO msg="memory updated" id=be5b85d8-a0ed-11f1-9bfc-02420a0a000c project=globular-services
+Aug 26 02:49:36 node-1 ai_memory_server[657]: time=2026-08-26T02:49:36.681Z level=INFO msg="memory updated" id=be5b85d8-a0ed-11f1-9bfc-02420a0a000c project=globular-services
+Aug 26 02:49:36 node-1 ai_memory_server[657]: time=2026-08-26T02:49:36.694Z level=INFO msg="memory updated" id=be5b85d8-a0ed-11f1-9bfc-02420a0a000c project=globular-services
+Aug 26 02:49:36 node-1 ai_memory_server[657]: 2026/08/26 02:49:36 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=42 baseline_ms=19 window=127 new_window=114
+Aug 26 02:49:50 node-1 ai_memory_server[657]: 2026/08/26 02:49:50 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=43 baseline_ms=19 window=118 new_window=106
+Aug 26 02:49:58 node-1 ai_memory_server[657]: 2026/08/26 02:49:58 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=40 baseline_ms=19 window=109 new_window=98
+Aug 26 02:49:58 node-1 ai_memory_server[657]: 2026/08/26 02:49:58 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=43 baseline_ms=19 window=99 new_window=89

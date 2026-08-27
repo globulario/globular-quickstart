@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:41:25 UTC; 11min ago
+    Process: 161 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 298 (envoy)
+      Tasks: 40 (limit: 8641)
+     Memory: 24.0M (peak: 25.0M)
+        CPU: 5.410s
+     CGroup: /system.slice/docker-b8fa6aca9bb82e631ce89b654ed458dabe59ec9fe67bf982b77e3cf43dab10a6.scope/system.slice/globular-envoy.service
+             └─298 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Jul 31 23:41:32 node-5 envoy[298]: [2026-07-31 23:41:32.261][298][info][upstream] [source/common/upstream/cds_api_helper.cc:34] cds: response indicates 25 added/updated cluster(s), 1 removed cluster(s); applying changes
+Jul 31 23:41:32 node-5 envoy[298]: [2026-07-31 23:41:32.284][298][info][upstream] [source/common/upstream/cds_api_helper.cc:87] cds: added/updated 11 cluster(s) (skipped 14 unmodified cluster(s)); removed 0 cluster(s)
+Jul 31 23:41:35 node-5 envoy[298]: [2026-07-31T23:41:27.304Z] "GET /server_info HTTP/1.1" 200 - 0 98012 3 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Jul 31 23:41:35 node-5 envoy[298]: [2026-07-31T23:41:27.309Z] "GET /stats?format=json HTTP/1.1" 200 - 0 375365 7 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Jul 31 23:42:30 node-5 envoy[298]: [2026-07-31 23:42:30.004][298][info][upstream] [source/common/upstream/cluster_manager_impl.cc:248] cm init: all clusters initialized
+Jul 31 23:42:30 node-5 envoy[298]: [2026-07-31 23:42:30.004][298][info][main] [source/server/server.cc:1023] all clusters initialized. initializing init manager
+Jul 31 23:42:45 node-5 envoy[298]: [2026-07-31 23:42:45.004][298][warning][config] [source/extensions/config_subscription/grpc/grpc_subscription_impl.cc:130] gRPC config: initial fetch timed out for type.googleapis.com/envoy.config.listener.v3.Listener
+Jul 31 23:42:45 node-5 envoy[298]: [2026-07-31 23:42:45.004][298][info][config] [source/common/listener_manager/listener_manager_impl.cc:1003] all dependencies initialized. starting workers
+Jul 31 23:52:45 node-5 envoy[298]: [2026-07-31T23:52:39.622Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 550880 23 - "10.10.0.15" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Jul 31 23:52:55 node-5 envoy[298]: [2026-07-31T23:52:52.521Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 550880 18 - "10.10.0.15" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"

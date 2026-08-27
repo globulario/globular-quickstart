@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "scenario": "residue-negative-control",
+  "suite": "patterns",
+  "start_time": "2026-08-24T13:44:17.007083Z",
+  "end_time": "2026-08-24T13:44:42.551094Z",
+  "passed": false,
+  "item_count": 5,
+  "items": [
+    {
+      "id": "node5_running_before",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T13:44:17.702788Z"
+    },
+    {
+      "id": "stop_node5_and_abandon_it",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-5",
+        "exit_code": 0,
+        "stdout": "globular-node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T13:44:28.008772Z"
+    },
+    {
+      "id": "node5_is_stopped",
+      "section": "assertions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "running": false
+      },
+      "result": {
+        "running": false,
+        "node": "node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T13:44:28.038071Z"
+    },
+    {
+      "id": "enforce_restoration",
+      "section": "restoration",
+      "probe": "restoration",
+      "params": {},
+      "expect": {
+        "residue_free": true
+      },
+      "result": {
+        "outstanding_at_teardown": [
+          {
+            "kind": "node_stopped",
+            "node": "node-5"
+          }
+        ],
+        "reversed": [
+          {
+            "kind": "node_stopped",
+            "node": "node-5"
+          }
+        ],
+        "discharged": [],
+        "failed": [],
+        "unrestorable": []
+      },
+      "passed": false,
+      "timestamp": "2026-08-24T13:44:28.453990Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T13:44:30.911496Z"
+    }
+  ],
+  "result": "RESIDUE",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

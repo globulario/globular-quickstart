@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 07:45:23 UTC; 17min ago
+    Process: 228 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 255 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 269 (log_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 22.8M (peak: 30.4M)
+        CPU: 1.094s
+     CGroup: /system.slice/docker-87788f0b924d10f5586974eb309f0b9a77ad27d2ffe617aff2eb09907f60f0af.scope/system.slice/globular-log.service
+             └─269 /usr/lib/globular/bin/log_server
+
+Aug 11 07:57:56 node-4 log_server[269]: 2026/08/11 07:57:56 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 11 07:58:59 node-4 log_server[269]: time=2026-08-11T07:58:59.780Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.14:9042: connect: connection refused"
+Aug 11 07:58:59 node-4 log_server[269]: time=2026-08-11T07:58:59.781Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.14:9042: connect: connection refused"
+Aug 11 07:58:59 node-4 log_server[269]: 2026/08/11 07:58:59 INFO acc: AIMD decrease method=/log.LogService/Log rtt_ms=63014 baseline_ms=20 window=90 new_window=81
+Aug 11 07:58:59 node-4 log_server[269]: 2026/08/11 07:58:59 INFO acc: AIMD decrease method=/log.LogService/Log rtt_ms=63016 baseline_ms=20 window=81 new_window=72
+Aug 11 07:59:16 node-4 log_server[269]: {"level":"warn","ts":"2026-08-11T07:59:16.41352Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00017d4a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 07:59:16 node-4 log_server[269]: {"level":"info","ts":"2026-08-11T07:59:16.413636Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 08:01:51 node-4 log_server[269]: {"level":"warn","ts":"2026-08-11T08:01:51.42267Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00017d4a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 08:01:51 node-4 log_server[269]: {"level":"info","ts":"2026-08-11T08:01:51.422792Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 08:02:40 node-4 log_server[269]: 2026/08/11 08:02:40 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

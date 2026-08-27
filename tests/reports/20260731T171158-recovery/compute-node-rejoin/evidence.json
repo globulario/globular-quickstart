@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "scenario": "compute-node-rejoin",
+  "suite": "recovery",
+  "start_time": "2026-07-31T17:11:58.291016Z",
+  "end_time": "2026-07-31T17:12:10.572725Z",
+  "passed": false,
+  "item_count": 6,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:58.580727Z"
+    },
+    {
+      "id": "node5_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:58.610273Z"
+    },
+    {
+      "id": "node5_registered",
+      "section": "preconditions",
+      "probe": "node.etcd_registered",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": false,
+        "node": "node-5",
+        "uuid": "",
+        "error": "cannot_resolve_uuid"
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T17:11:58.679523Z"
+    },
+    {
+      "id": "all_5_nodes_before",
+      "section": "preconditions",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {
+        "count_gte": 5
+      },
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:58.823477Z"
+    },
+    {
+      "id": "final_node_count",
+      "section": "cleanup",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:58.966529Z"
+    },
+    {
+      "id": "final_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:59.235319Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

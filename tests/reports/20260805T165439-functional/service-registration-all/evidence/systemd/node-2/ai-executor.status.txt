@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:53:43 UTC; 3min 37s ago
+    Process: 2860 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 2864 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2867 (ai_executor_ser)
+      Tasks: 17 (limit: 8641)
+     Memory: 32.7M (peak: 33.7M)
+        CPU: 774ms
+     CGroup: /system.slice/docker-56d7015a866b54219120956bd676477ef39a32b1e00344e38afda3ff256ad80d.scope/system.slice/globular-ai-executor.service
+             └─2867 /usr/lib/globular/bin/ai_executor_server
+
+Aug 05 16:53:53 node-2 ai_executor_server[2867]: 2026/08/05 16:53:53 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 05 16:53:53 node-2 ai_executor_server[2867]: 2026/08/05 16:53:53 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 05 16:54:13 node-2 ai_executor_server[2867]: time=2026-08-05T16:54:13.685Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 05 16:54:13 node-2 ai_executor_server[2867]: time=2026-08-05T16:54:13.696Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010
+Aug 05 16:55:27 node-2 ai_executor_server[2867]: time=2026-08-05T16:55:27.106Z level=INFO msg="processing incident" incident_id=75561766-90ee-11f1-9da4-02420a0a000d rule_id=auth-denial tier=0 trigger=alert.auth.denied batch_size=4
+Aug 05 16:55:27 node-2 ai_executor_server[2867]: time=2026-08-05T16:55:27.201Z level=INFO msg="processing incident" incident_id=75611a3f-90ee-11f1-b0f1-02420a0a000b rule_id=auth-denial tier=0 trigger=alert.auth.denied batch_size=4
+Aug 05 16:55:27 node-2 ai_executor_server[2867]: time=2026-08-05T16:55:27.257Z level=INFO msg="diagnosis complete" incident_id=75561766-90ee-11f1-9da4-02420a0a000d root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 05 16:55:27 node-2 ai_executor_server[2867]: time=2026-08-05T16:55:27.257Z level=INFO msg="INCIDENT RESOLVED" incident_id=75561766-90ee-11f1-9da4-02420a0a000d summary="auth-denial triggered by alert.auth.denied on workflow.WorkflowService (4 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)"
+Aug 05 16:55:27 node-2 ai_executor_server[2867]: time=2026-08-05T16:55:27.279Z level=INFO msg="diagnosis complete" incident_id=75611a3f-90ee-11f1-b0f1-02420a0a000b root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 05 16:55:27 node-2 ai_executor_server[2867]: time=2026-08-05T16:55:27.279Z level=INFO msg="INCIDENT RESOLVED" incident_id=75611a3f-90ee-11f1-b0f1-02420a0a000b summary="auth-denial triggered by alert.auth.denied on workflow.WorkflowService (4 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)"

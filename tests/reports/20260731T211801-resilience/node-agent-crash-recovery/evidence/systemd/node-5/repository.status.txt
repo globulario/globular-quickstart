@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:41:25 UTC; 11min ago
+    Process: 533 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 561 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 576 (repository_serv)
+      Tasks: 12 (limit: 8641)
+     Memory: 16.9M (peak: 27.0M)
+        CPU: 509ms
+     CGroup: /system.slice/docker-4908e77bbf99ff3f7b177f626a29d247c8f9ef6a704b5c704dbea822ab1ca85b.scope/system.slice/globular-repository.service
+             └─576 /usr/lib/globular/bin/repository_server
+
+Jul 31 21:52:21 node-5 repository_server[576]: 2026/07/31 21:52:21 ERROR GetClient: constructor returned error function=NewEventService_Client address="" service=event.EventService err="InitClient: no address provided (id=event.EventService)"
+Jul 31 21:52:26 node-5 repository_server[576]: time=2026-07-31T21:52:26.514Z level=WARN msg="scylladb health check failed" err="scylla: not connected"
+Jul 31 21:52:30 node-5 repository_server[576]: {"level":"warn","ts":"2026-07-31T21:52:30.517496Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00029a780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:30 node-5 repository_server[576]: {"level":"warn","ts":"2026-07-31T21:52:30.518206Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00029a780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = error reading from server: EOF"}
+Jul 31 21:52:30 node-5 repository_server[576]: {"level":"warn","ts":"2026-07-31T21:52:30.518329Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00029a780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = error reading from server: EOF"}
+Jul 31 21:52:32 node-5 repository_server[576]: {"level":"warn","ts":"2026-07-31T21:52:32.296642Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00029b0e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:32 node-5 repository_server[576]: {"level":"info","ts":"2026-07-31T21:52:32.296764Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 21:52:40 node-5 repository_server[576]: time=2026-07-31T21:52:40.574Z level=ERROR msg="scylladb reconnect failed" err="scylla reconnect: scylla schema: gocql: no response received from cassandra within timeout period"
+Jul 31 21:52:41 node-5 repository_server[576]: time=2026-07-31T21:52:41.515Z level=WARN msg="scylladb health check failed" err="scylla: not connected"
+Jul 31 21:52:51 node-5 repository_server[576]: time=2026-07-31T21:52:51.524Z level=ERROR msg="scylladb reconnect failed" err="scylla reconnect: scylla schema: gocql: no response received from cassandra within timeout period"

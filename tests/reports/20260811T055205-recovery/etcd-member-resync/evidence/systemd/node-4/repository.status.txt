@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:49:53 UTC; 8min ago
+    Process: 108 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 151 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 189 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 50.4M (peak: 55.4M)
+        CPU: 10.254s
+     CGroup: /system.slice/docker-92f873056dfd35351056eba01528e64262dad1719adc1fcfb8785aad8dbc994c.scope/system.slice/globular-repository.service
+             └─189 /usr/lib/globular/bin/repository_server
+
+Aug 11 05:53:29 node-4 repository_server[189]: 2026/08/11 05:53:29 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=node-1 method=repository.artifact.read reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl ONE. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 11 05:53:29 node-4 repository_server[189]: 2026/08/11 05:53:29 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 11 05:53:29 node-4 repository_server[189]: 2026/08/11 05:53:29 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 11 05:53:29 node-4 repository_server[189]: 2026/08/11 05:53:29 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%event%v1.2.289%linux_amd64%0 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0" finding=service.silent_fallback_active
+Aug 11 05:53:29 node-4 repository_server[189]: 2026/08/11 05:53:29 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%event%v1.2.289%linux_amd64 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0" finding=service.silent_fallback_active
+Aug 11 05:54:55 node-4 repository_server[189]: 2026/08/11 05:54:55 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 11 05:54:56 node-4 repository_server[189]: 2026/08/11 05:54:56 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=183 baseline_ms=20 window=101 new_window=90
+Aug 11 05:54:58 node-4 repository_server[189]: 2026/08/11 05:54:58 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 11 05:55:59 node-4 repository_server[189]: 2026/08/11 05:55:59 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=41 baseline_ms=20 window=351 new_window=315
+Aug 11 05:56:56 node-4 repository_server[189]: 2026/08/11 05:56:56 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=192 baseline_ms=20 window=594 new_window=534

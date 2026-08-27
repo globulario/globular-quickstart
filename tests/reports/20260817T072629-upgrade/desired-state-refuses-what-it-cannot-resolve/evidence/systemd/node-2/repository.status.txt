@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 07:26:07 UTC; 1min 30s ago
+    Process: 491 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 509 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 519 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 41.5M (peak: 42.9M)
+        CPU: 2.218s
+     CGroup: /system.slice/docker-b984d7a1d8b9cce6ae32410395547b52d24763e7f6151f83e88c57e12ee42ffa.scope/system.slice/globular-repository.service
+             └─519 /usr/lib/globular/bin/repository_server
+
+Aug 17 07:26:08 node-2 repository_server[519]: 2026/08/17 07:26:08 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 17 07:26:08 node-2 repository_server[519]: time=2026-08-17T07:26:08.852Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 17 07:26:08 node-2 repository_server[519]: time=2026-08-17T07:26:08.852Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 17 07:26:08 node-2 repository_server[519]: 2026/08/17 07:26:08 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=39481
+Aug 17 07:26:08 node-2 repository_server[519]: 2026/08/17 07:26:08 INFO metrics listening service=repository.PackageRepository addr=[::]:39481
+Aug 17 07:26:20 node-2 repository_server[519]: 2026/08/17 07:26:20 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:10004: connect: connection refused\""
+Aug 17 07:26:21 node-2 repository_server[519]: 2026/08/17 07:26:21 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:10004: connect: connection refused\""
+Aug 17 07:26:26 node-2 repository_server[519]: 2026/08/17 07:26:26 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 17 07:27:19 node-2 repository_server[519]: 2026/08/17 07:27:19 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 17 07:27:19 node-2 repository_server[519]: 2026/08/17 07:27:19 INFO mesh: gRPC connection established target=node-2.globular.internal:443

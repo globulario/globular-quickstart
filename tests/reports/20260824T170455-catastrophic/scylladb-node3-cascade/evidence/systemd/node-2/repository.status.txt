@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:09:31 UTC; 1min 7s ago
+    Process: 441 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 475 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 495 (repository_serv)
+      Tasks: 19 (limit: 8641)
+     Memory: 26.1M (peak: 28.5M)
+        CPU: 536ms
+     CGroup: /system.slice/docker-8b98724c89d7814ef3d4703a4c42e0cc7bef5b84406d2f3799206f7b685a6043.scope/system.slice/globular-repository.service
+             └─495 /usr/lib/globular/bin/repository_server
+
+Aug 24 17:09:32 node-2 repository_server[495]: 2026/08/24 17:09:32 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 24 17:09:32 node-2 repository_server[495]: time=2026-08-24T17:09:32.388Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 24 17:09:32 node-2 repository_server[495]: time=2026-08-24T17:09:32.388Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 24 17:09:32 node-2 repository_server[495]: time=2026-08-24T17:09:32.391Z level=WARN msg="blob-seed: ListManifests failed — seeding skipped" err="scylla list manifests: Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 24 17:09:32 node-2 repository_server[495]: 2026/08/24 17:09:32 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=35441
+Aug 24 17:09:32 node-2 repository_server[495]: 2026/08/24 17:09:32 INFO metrics listening service=repository.PackageRepository addr=[::]:35441
+Aug 24 17:09:34 node-2 repository_server[495]: 2026/08/24 17:09:34 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10003 new_port=10003 old_proxy=35441 new_proxy=10001
+Aug 24 17:09:35 node-2 repository_server[495]: 2026/08/24 17:09:35 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:09:41 node-2 repository_server[495]: 2026/08/24 17:09:41 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 24 17:10:21 node-2 repository_server[495]: 2026/08/24 17:10:21 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused

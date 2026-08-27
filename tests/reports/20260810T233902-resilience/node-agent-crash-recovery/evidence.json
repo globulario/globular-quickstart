@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "scenario": "node-agent-crash-recovery",
+  "suite": "resilience",
+  "start_time": "2026-08-11T00:14:40.567709Z",
+  "end_time": "2026-08-11T00:14:54.756236Z",
+  "passed": false,
+  "item_count": 6,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 7
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T00:14:41.522537Z"
+    },
+    {
+      "id": "node4_container_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-4"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T00:14:41.551853Z"
+    },
+    {
+      "id": "node4_agent_active",
+      "section": "preconditions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-4",
+        "service": "node-agent"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-4",
+        "service": "node-agent"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T00:14:41.649835Z"
+    },
+    {
+      "id": "node4_registered_before",
+      "section": "preconditions",
+      "probe": "node.etcd_registered",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": false,
+        "node": "node-4",
+        "uuid": "",
+        "error": "cannot_resolve_uuid"
+      },
+      "passed": false,
+      "timestamp": "2026-08-11T00:14:41.715784Z"
+    },
+    {
+      "id": "final_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 7
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T00:14:42.013853Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T00:14:42.646698Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

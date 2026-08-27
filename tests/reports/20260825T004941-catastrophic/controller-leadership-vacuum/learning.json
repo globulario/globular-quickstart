@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-25T00:50:25.275269Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "controller-leadership-vacuum",
+  "suite": "catastrophic",
+  "result": "PASS",
+  "source_revision": "0ebfb24869929a4efe528be32759f80589ff0ba5",
+  "proof": {
+    "claim": "Simultaneously SIGKILL the cluster_controller process on ALL three control-plane\nnodes, creating a complete leadership vacuum \u2014 no instance holds the etcd lease,\nno controller loop is running, and the cluster is temporarily ungoverned.\n\nUnlike a single-controller crash (covered in controller-service-crash.yaml),\nthis test removes every leader and every standby at once. There is no warm\nstandby to immediately take over; a full election cycle must complete from\nscratch.\n\nWhat this stresses:\n  - Raft-backed lease expiry: the dead leader's etcd lease expires after its\n    TTL (typically 5-15s). Only after expiry can a new leader acquire it.\n  - Race-free election: all three nodes compete to acquire the leadership\n    lease simultaneously. Only one should win; others must recognize the\n    winner and park as standbys.\n  - systemd restart: each SIGKILL triggers Restart=on-failure, so all three\n    binary instances restart ~5s after the kill.\n  - Re-registration: the winner must re-write its service config and leader\n    addr to etcd before the harness considers it registered.\n\nExpected outcome (SELF-HEALING \u2014 this test should PASS):\n  - Within 60s of the kill: at least one controller acquires the lease.\n  - Within 90s: controller is re-registered in etcd, cluster health restores.\n  - etcd quorum is UNAFFECTED (we kill the controller process, not etcd).\n  - No data is lost \u2014 etcd durability is independent of controller liveness.\n\nIf this test FAILS it means the election mechanism is broken: no instance\ncan acquire the lease after simultaneous SIGKILL. That would be a critical\nself-healing regression.\n\nThis is the boundary between \"catastrophic\" and \"self-healing\": the\ncontroller vacuum is a catastrophe the system IS designed to recover from.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 01:41:31 UTC; 27min ago
+    Process: 2637 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 2640 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2644 (cluster_control)
+      Tasks: 22 (limit: 8641)
+     Memory: 48.0M (peak: 57.6M)
+        CPU: 1min 22.497s
+     CGroup: /system.slice/docker-c842962688ff0f7bae4f6f82083b79940148f679414e9ef1d68e47d44b2ebe21.scope/system.slice/globular-cluster-controller.service
+             └─2644 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 25 02:08:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:08:42 drift-reconciler: node=node-3 pkg=media — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 02:08:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:08:42 release-workflow: skipping restart for etcd (stateful infrastructure, self-managed lifecycle)
+Aug 25 02:08:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:08:42 drift-reconciler: node=node-2 pkg=title — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 02:08:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:08:42 drift-reconciler: node=node-2 pkg=media — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 02:08:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:08:42 drift-reconciler: node=node-2 pkg=torrent — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 02:08:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:08:42 release-workflow: node 35ac3821-6b90-52eb-a800-41130471770b succeeded for core@globular.io/etcd (v=3.5.14 binary_sha=d33ec103d8c3fda726dae633b35a161fa5c342196c803ff2e2e14731182628b1 workflow_release_identity=cf6351104cb88b655f2a5082180ce2c97c28338bca6b5d8da80de378b14a2c01)
+Aug 25 02:08:43 node-1 cluster_controller_server[2644]: 2026/08/25 02:08:43 InfrastructureRelease core@globular.io/etcd: workflow already in-flight, skipping dispatch
+Aug 25 02:08:43 node-1 cluster_controller_server[2644]: 2026/08/25 02:08:43 release-workflow: node 6400b443-cf38-52da-a683-de2fc5103c0b started for core@globular.io/etcd
+Aug 25 02:08:43 node-1 cluster_controller_server[2644]: 2026/08/25 02:08:43 InfrastructureRelease core@globular.io/etcd: workflow already in-flight, skipping dispatch
+Aug 25 02:08:43 node-1 cluster_controller_server[2644]: 2026/08/25 02:08:43 release-workflow: installing etcd@3.5.14+1 (INFRASTRUCTURE) build_id=01a03650-97d8-7708-9f5a-c14512cfb32e expected_sha256_present=true on node 6400b443-cf38-52da-a683-de2fc5103c0b via 10.10.0.14:11000

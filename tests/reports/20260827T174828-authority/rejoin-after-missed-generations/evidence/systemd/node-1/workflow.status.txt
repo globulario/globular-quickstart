@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 18:23:48 UTC; 42min ago
+    Process: 451 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 465 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 469 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 529 (workflow_server)
+      Tasks: 22 (limit: 8641)
+     Memory: 29.5M (peak: 34.5M)
+        CPU: 24.316s
+     CGroup: /system.slice/docker-4c675f6508b9a86c7b995eb51d86a0499df1ded44d81b29ffb1411f52fc36f32.scope/system.slice/globular-workflow.service
+             └─529 /usr/lib/globular/bin/workflow_server
+
+Aug 27 19:06:19 node-1 workflow_server[529]: 2026/08/27 19:06:19 workflow: step aggregate_remediation SUCCEEDED (attempt 1)
+Aug 27 19:06:19 node-1 workflow_server[529]: 2026/08/27 19:06:19 workflow: step finalize_reconcile starting (actor=cluster-controller action=controller.reconcile.finalize)
+Aug 27 19:06:19 node-1 workflow_server[529]: 2026/08/27 19:06:19 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 27 19:06:19 node-1 workflow_server[529]: 2026/08/27 19:06:19 workflow: step finalize_reconcile SUCCEEDED (attempt 1)
+Aug 27 19:06:19 node-1 workflow_server[529]: 2026/08/27 19:06:19 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 27 19:06:19 node-1 workflow_server[529]: time=2026-08-27T19:06:19.819Z level=INFO msg="executor: engine.Execute completed" run_id=reconcile:1787857578129
+Aug 27 19:06:19 node-1 workflow_server[529]: time=2026-08-27T19:06:19.846Z level=INFO msg="executor: workflow finished" workflow=cluster.reconcile run_id=reconcile:1787857578129 status=RUN_STATUS_SUCCEEDED
+Aug 27 19:06:35 node-1 workflow_server[529]: 2026/08/27 19:06:35 INFO superseded prior runs correlation_id=ai-remediation/globular-scylla-manager-agent.service/6c5064a8-a24a-11f1-848c-02420a0a000d new_run_id=6c6eef77-a24a-11f1-b516-02420a0a000b count=3
+Aug 27 19:06:35 node-1 workflow_server[529]: time=2026-08-27T19:06:35.626Z level=INFO msg="workflow run started" run_id=6c6eef77-a24a-11f1-b516-02420a0a000b component="" node=35ac3821-6b90-52eb-a800-41130471770b trigger=TRIGGER_REASON_REPAIR
+Aug 27 19:06:35 node-1 workflow_server[529]: 2026/08/27 19:06:35 INFO acc: AIMD decrease method=/workflow.WorkflowService/StartRun rtt_ms=57 baseline_ms=16 window=248 new_window=223

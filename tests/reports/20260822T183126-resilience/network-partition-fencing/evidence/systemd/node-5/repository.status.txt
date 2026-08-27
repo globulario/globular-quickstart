@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 18:53:50 UTC; 24min ago
+    Process: 158 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 189 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 231 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 43.6M (peak: 47.1M)
+        CPU: 8.269s
+     CGroup: /system.slice/docker-8f2c20fa44c525c5f9d44495f4696ab93e352f205e623d4a83e994a0a58a6e0d.scope/system.slice/globular-repository.service
+             └─231 /usr/lib/globular/bin/repository_server
+
+Aug 22 19:16:21 node-5 repository_server[231]: 2026/08/22 19:16:21 INFO scylladb connected hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=repository rf=3
+Aug 22 19:16:21 node-5 repository_server[231]: 2026/08/22 19:16:21 INFO scylladb reconnected hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=repository rf=3
+Aug 22 19:16:21 node-5 repository_server[231]: time=2026-08-22T19:16:21.388Z level=INFO msg="scylladb reconnected after health check failure"
+Aug 22 19:16:21 node-5 repository_server[231]: time=2026-08-22T19:16:21.388Z level=INFO msg="repository metadata recovered — service is SERVING"
+Aug 22 19:16:23 node-5 repository_server[231]: 2026/08/22 19:16:23 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 22 19:16:36 node-5 repository_server[231]: time=2026-08-22T19:16:36.372Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 22 19:16:36 node-5 repository_server[231]: time=2026-08-22T19:16:36.376Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 22 19:17:34 node-5 repository_server[231]: 2026/08/22 19:17:34 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=200 baseline_ms=20 window=256 new_window=230
+Aug 22 19:17:36 node-5 repository_server[231]: 2026/08/22 19:17:36 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=43 baseline_ms=20 window=296 new_window=266
+Aug 22 19:18:04 node-5 repository_server[231]: 2026/08/22 19:18:04 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=188 baseline_ms=20 window=546 new_window=491

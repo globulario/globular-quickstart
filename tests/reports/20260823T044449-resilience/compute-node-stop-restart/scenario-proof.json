@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-23T04:44:50.110326Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/resilience/compute-node-stop-restart.yaml",
+  "scenario": "compute-node-stop-restart",
+  "suite": "resilience",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that stopping a compute-only node does not affect cluster health.\n\nCompute nodes (node-4, node-5) run only the node agent \u2014 they do NOT\nparticipate in etcd quorum, controller leadership, or any core services.\nStopping one must be completely transparent to the control plane.\n\nThis is the simplest resilience test: it validates the architectural\nisolation between the execution plane (compute) and the control plane.\n\nWhat this test verifies:\n- etcd quorum is maintained when a compute node is removed\n- The cluster reports healthy with one fewer node\n- Stopping node-4 does not affect services running on node-1, 2, 3\n- etcd writes continue to work during and after the removal\n- The node re-registers its heartbeat after restart\n\nClassical distributed systems pattern: graceful node removal.\nIndustry known issue: compute node stoppage can trigger thundering-herd\nif the controller tries to reschedule all its workloads simultaneously.\nThe workflow semaphore (3 concurrent max) prevents this.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-23T04:45:03.116201Z",
+    "result": "FAIL",
+    "executor_exit": 1,
+    "proof_eligible": false
+  }
+}

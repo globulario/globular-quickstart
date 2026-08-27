@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 15:41:55 UTC; 6min ago
+    Process: 506 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 537 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 562 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 45.8M (peak: 47.1M)
+        CPU: 7.861s
+     CGroup: /system.slice/docker-01deae67c0e35f2c015b1214529e52ba3b4037aa3d6d22f20e73daa81d120901.scope/system.slice/globular-repository.service
+             └─562 /usr/lib/globular/bin/repository_server
+
+Aug 24 15:42:50 node-2 repository_server[562]: 2026/08/24 15:42:50 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=node-1 method=repository.artifact.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 24 15:43:05 node-2 repository_server[562]: 2026/08/24 15:43:05 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 24 15:43:05 node-2 repository_server[562]: 2026/08/24 15:43:05 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 24 15:46:56 node-2 repository_server[562]: time=2026-08-24T15:46:56.212Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 24 15:46:56 node-2 repository_server[562]: 2026/08/24 15:46:56 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 24 15:46:58 node-2 repository_server[562]: 2026/08/24 15:46:58 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=177 baseline_ms=20 window=208 new_window=187
+Aug 24 15:47:26 node-2 repository_server[562]: 2026/08/24 15:47:26 WARN authz_decision audit="{\"timestamp\":\"2026-08-24T15:47:26.222164311Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 24 15:47:38 node-2 repository_server[562]: 2026/08/24 15:47:38 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 15:47:38 node-2 repository_server[562]: 2026/08/24 15:47:38 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=196 baseline_ms=20 window=323 new_window=290
+Aug 24 15:47:47 node-2 repository_server[562]: 2026/08/24 15:47:47 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest

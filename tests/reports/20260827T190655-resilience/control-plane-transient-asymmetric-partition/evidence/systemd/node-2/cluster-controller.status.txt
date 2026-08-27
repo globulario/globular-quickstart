@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 19:07:17 UTC; 8min ago
+    Process: 23013 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 23017 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 23020 (cluster_control)
+      Tasks: 22 (limit: 8641)
+     Memory: 34.9M (peak: 51.6M)
+        CPU: 18.494s
+     CGroup: /system.slice/docker-9e575d08069298e7cc4546f8bf434e849bf1fb07fa8830021eea8927024e1d2e.scope/system.slice/globular-cluster-controller.service
+             └─23020 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 27 19:15:51 node-2 cluster_controller_server[23020]: {"level":"warn","ts":"2026-08-27T19:15:51.838354Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000780780/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:15:51 node-2 cluster_controller_server[23020]: 2026/08/27 19:15:51 leader: failed to load state from etcd: context deadline exceeded — keeping local state
+Aug 27 19:15:52 node-2 cluster_controller_server[23020]: 2026/08/27 19:15:52 dns reconciler: endpoint node-2.globular.internal:10006 is now HEALTHY — forcing re-push
+Aug 27 19:15:53 node-2 cluster_controller_server[23020]: {"level":"warn","ts":"2026-08-27T19:15:53.813641Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000780780/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:15:53 node-2 cluster_controller_server[23020]: {"level":"info","ts":"2026-08-27T19:15:53.813702Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 19:15:53 node-2 cluster_controller_server[23020]: {"level":"warn","ts":"2026-08-27T19:15:53.818006Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000780f00/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:15:53 node-2 cluster_controller_server[23020]: {"level":"info","ts":"2026-08-27T19:15:53.818062Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 19:15:54 node-2 cluster_controller_server[23020]: {"level":"warn","ts":"2026-08-27T19:15:54.050007Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000780780/10.10.0.12:2379","attempt":6,"error":"rpc error: code = Unavailable desc = etcdserver: request timed out"}
+Aug 27 19:16:08 node-2 cluster_controller_server[23020]: {"level":"warn","ts":"2026-08-27T19:16:08.05031Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000780780/10.10.0.12:2379","attempt":7,"error":"rpc error: code = Unavailable desc = etcdserver: request timed out"}
+Aug 27 19:16:09 node-2 cluster_controller_server[23020]: {"level":"warn","ts":"2026-08-27T19:16:09.546262Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000780780/10.10.0.12:2379","attempt":8,"error":"rpc error: code = Unavailable desc = etcdserver: leader changed"}

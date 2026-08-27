@@ -1,0 +1,33 @@
+● globular-minio.service - Globular MinIO
+     Loaded: loaded (/etc/systemd/system/globular-minio.service; enabled; preset: enabled)
+    Drop-In: /etc/systemd/system/globular-minio.service.d
+             └─distributed.conf
+     Active: active (running) since Sun 2026-08-23 18:45:17 UTC; 3min 34s ago
+    Process: 63 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/minio /var/lib/globular/minio/data (code=exited, status=0/SUCCESS)
+    Process: 85 ExecStartPre=/usr/bin/chown -R globular:globular /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 116 ExecStartPre=/usr/bin/chown -R globular:globular /var/lib/globular/minio/data (code=exited, status=0/SUCCESS)
+    Process: 151 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 170 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/minio/data (code=exited, status=0/SUCCESS)
+    Process: 194 ExecStartPre=/bin/sh -c chmod o+x "$(dirname /var/lib/globular/minio/data)" "$(dirname "$(dirname /var/lib/globular/minio/data)")" 2>/dev/null || true (code=exited, status=0/SUCCESS)
+    Process: 219 ExecStartPre=/usr/bin/test -w /var/lib/globular/minio/data (code=exited, status=0/SUCCESS)
+    Process: 242 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 252 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 262 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+    Process: 281 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+   Main PID: 285 (minio)
+      Tasks: 20 (limit: 8641)
+     Memory: 76.8M (peak: 77.7M)
+        CPU: 1.766s
+     CGroup: /system.slice/docker-7fac91a876a85840c60c302acf724a18f722fb5bd5d00f55ebb1b0ece4798c2c.scope/system.slice/globular-minio.service
+             └─285 /usr/lib/globular/bin/minio server https://10.10.0.11:9000/var/lib/minio/d1/data1 https://10.10.0.11:9000/var/lib/minio/d1/data2 https://10.10.0.12:9000/var/lib/minio/d1/data1 https://10.10.0.12:9000/var/lib/minio/d1/data2 https://10.10.0.13:9000/var/lib/minio/d1/data1 https://10.10.0.13:9000/var/lib/minio/d1/data2 --address 10.10.0.11:9000 --console-address 10.10.0.11:9001
+
+Aug 23 18:48:19 node-1 minio[285]: Time: 18:48:19 UTC 08/23/2026
+Aug 23 18:48:19 node-1 minio[285]: DeploymentID: 5fca3f29-a6e5-4a3c-8e0f-1a542368bf46
+Aug 23 18:48:19 node-1 minio[285]: Error: Read quorum could not be established on pool: 0, set: 0, expected read quorum: 3, drives-online: 2 (*errors.errorString)
+Aug 23 18:48:19 node-1 minio[285]:        maintenance="false"
+Aug 23 18:48:19 node-1 minio[285]:        5: internal/logger/logger.go:271:logger.LogIf()
+Aug 23 18:48:19 node-1 minio[285]:        4: cmd/logging.go:160:cmd.storageLogIf()
+Aug 23 18:48:19 node-1 minio[285]:        3: cmd/erasure-server-pool.go:2769:cmd.(*erasureServerPools).Health()
+Aug 23 18:48:19 node-1 minio[285]:        2: cmd/healthcheck-handler.go:108:cmd.ClusterReadCheckHandler()
+Aug 23 18:48:19 node-1 minio[285]:        1: net/http/server.go:2294:http.HandlerFunc.ServeHTTP()
+Aug 23 18:48:45 node-1 minio[285]: Client 'https://10.10.0.13:9000/minio/storage/var/lib/minio/d1/data1/v63' re-connected in 1m24.344769259s

@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 20:05:47 UTC; 29s ago
+    Process: 884 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 906 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 926 (log_server)
+      Tasks: 12 (limit: 8641)
+     Memory: 27.3M (peak: 28.8M)
+        CPU: 312ms
+     CGroup: /system.slice/docker-9e575d08069298e7cc4546f8bf434e849bf1fb07fa8830021eea8927024e1d2e.scope/system.slice/globular-log.service
+             └─926 /usr/lib/globular/bin/log_server
+
+Aug 27 20:06:06 node-2 log_server[926]: {"level":"warn","ts":"2026-08-27T20:06:06.390991Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002a0780/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 20:06:07 node-2 log_server[926]: 2026/08/27 20:06:07 INFO InitGrpcServer: gRPC server initialized service=log.LogService tls=true port=10100
+Aug 27 20:06:07 node-2 log_server[926]: time=2026-08-27T20:06:07.411Z level=INFO msg="service initialized" duration_ms=13025
+Aug 27 20:06:07 node-2 log_server[926]: time=2026-08-27T20:06:07.414Z level=INFO msg="service ready" service=log.LogService version=1.2.317 port=10100 proxy=10101 protocol=grpc domain=globular.internal startup_ms=13028
+Aug 27 20:06:07 node-2 log_server[926]: time=2026-08-27T20:06:07.414Z level=INFO msg="starting service" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 27 20:06:07 node-2 log_server[926]: 2026/08/27 20:06:07 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 27 20:06:07 node-2 log_server[926]: time=2026-08-27T20:06:07.415Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 27 20:06:07 node-2 log_server[926]: time=2026-08-27T20:06:07.415Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 27 20:06:07 node-2 log_server[926]: time=2026-08-27T20:06:07.416Z level=INFO msg="starting metrics server" address=0.0.0.0:9092
+Aug 27 20:06:07 node-2 log_server[926]: 2026/08/27 20:06:07 INFO metrics listening service=log.LogService addr=[::]:10101

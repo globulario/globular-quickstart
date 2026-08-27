@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:38:40 UTC; 5s ago
+    Process: 18005 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 18040 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 18066 (repository_serv)
+      Tasks: 9 (limit: 8641)
+     Memory: 7.5M (peak: 8.3M)
+        CPU: 85ms
+     CGroup: /system.slice/docker-9cbf484db170ae0c2e7abe0b6ccaf6884f6851db1bc95966564d78bfe2964b8d.scope/system.slice/globular-repository.service
+             └─18066 /usr/lib/globular/bin/repository_server
+
+Aug 18 19:38:38 node-5 systemd[1]: globular-repository.service: Failed with result 'exit-code'.
+Aug 18 19:38:40 node-5 systemd[1]: globular-repository.service: Scheduled restart job, restart counter is at 42.
+Aug 18 19:38:40 node-5 systemd[1]: Starting globular-repository.service - Globular repository...
+Aug 18 19:38:40 node-5 systemd[1]: Started globular-repository.service - Globular repository.
+Aug 18 19:38:40 node-5 repository_server[18066]: 2026/08/18 19:38:40 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 18 19:38:40 node-5 repository_server[18066]: 2026/08/18 19:38:40 INFO security: loaded cluster roles from external policy file roles=22
+Aug 18 19:38:40 node-5 repository_server[18066]: PortAllocator range: 10000 - 20000
+Aug 18 19:38:42 node-5 repository_server[18066]: {"level":"warn","ts":"2026-08-18T19:38:42.247873Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000275a40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \\\"crypto/rsa: verification error\\\" while trying to verify candidate authority certificate \\\"Globular Root CA\\\")\""}
+Aug 18 19:38:44 node-5 repository_server[18066]: {"level":"warn","ts":"2026-08-18T19:38:44.248494Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000275a40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \\\"crypto/rsa: verification error\\\" while trying to verify candidate authority certificate \\\"Globular Root CA\\\")\""}
+Aug 18 19:38:44 node-5 repository_server[18066]: 2026/08/18 19:38:44 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"

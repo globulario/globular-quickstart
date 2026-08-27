@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 02:58:31 UTC; 28min ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 68 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 82 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 29.2M (peak: 33.0M)
+        CPU: 13.110s
+     CGroup: /system.slice/docker-83b7ff05bb9a31fdf9235b005db83913f82c3bf8d6e8ec141a19cdf5357ffd90.scope/system.slice/globular-event.service
+             └─82 /usr/lib/globular/bin/event_server
+
+Aug 18 03:21:57 node-4 event_server[82]: 2026/08/18 03:21:57 INFO acc: AIMD decrease method=/event.EventService/Publish rtt_ms=44 baseline_ms=20 window=236 new_window=212
+Aug 18 03:22:22 node-4 event_server[82]: 2026/08/18 03:22:22 INFO acc: AIMD decrease method=/event.EventService/Publish rtt_ms=41 baseline_ms=20 window=222 new_window=199
+Aug 18 03:24:26 node-4 event_server[82]: time=2026-08-18T03:24:26.655Z level=INFO msg="Subscribe: ok" channel=node.* uuid=c5ea9105-156e-4741-8a67-5787430d9667
+Aug 18 03:24:26 node-4 event_server[82]: time=2026-08-18T03:24:26.655Z level=INFO msg=subscribed channel=node.* uuid=c5ea9105-156e-4741-8a67-5787430d9667 subscribers=2
+Aug 18 03:24:26 node-4 event_server[82]: time=2026-08-18T03:24:26.686Z level=INFO msg="Subscribe: ok" channel=workflow.* uuid=c5ea9105-156e-4741-8a67-5787430d9667
+Aug 18 03:24:26 node-4 event_server[82]: time=2026-08-18T03:24:26.686Z level=INFO msg=subscribed channel=workflow.* uuid=c5ea9105-156e-4741-8a67-5787430d9667 subscribers=1
+Aug 18 03:24:26 node-4 event_server[82]: time=2026-08-18T03:24:26.996Z level=INFO msg="subscriber cleanup" uuid=c5ea9105-156e-4741-8a67-5787430d9667
+Aug 18 03:24:34 node-4 event_server[82]: time=2026-08-18T03:24:34.002Z level=WARN msg="keepalive send failed; will drop stream" uuid=e210f11e-4048-4649-8ccd-bcbf13b8c23e err="rpc error: code = Canceled desc = context canceled"
+Aug 18 03:24:34 node-4 event_server[82]: time=2026-08-18T03:24:34.002Z level=INFO msg="subscriber cleanup" uuid=e210f11e-4048-4649-8ccd-bcbf13b8c23e
+Aug 18 03:24:34 node-4 event_server[82]: time=2026-08-18T03:24:34.002Z level=INFO msg="OnEvent: stream ended" uuid=e210f11e-4048-4649-8ccd-bcbf13b8c23e

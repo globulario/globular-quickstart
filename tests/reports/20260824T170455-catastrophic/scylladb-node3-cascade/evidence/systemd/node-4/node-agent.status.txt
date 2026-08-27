@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:09:27 UTC; 1min 14s ago
+    Process: 140 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 166 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 190 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 65.7M (peak: 74.3M)
+        CPU: 36.404s
+     CGroup: /system.slice/docker-46d3e9bf00c9e04118c1a14b2224ddcb115e85cb764bf2551f39a6475b534673.scope/system.slice/globular-node-agent.service
+             └─190 /usr/lib/globular/bin/node_agent_server
+
+Aug 24 17:10:29 node-4 node_agent_server[190]: 2026/08/24 17:10:29 behavioral observation: infra_probe skipped component=etcd node=6400b443-cf38-52da-a683-de2fc5103c0b: record evidence signal.probe.f99472c992e4c87d.evidence.0: rpc error: code = Internal desc = BehavioralMemoryService.RecordEvidence: record evidence: put evidence: Cannot achieve consistency level for cl ONE. Requires 1, alive 0
+Aug 24 17:10:32 node-4 node_agent_server[190]: 2026/08/24 17:10:32 behavioral observation: infra_probe skipped component=scylladb node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready
+Aug 24 17:10:32 node-4 node_agent_server[190]: 2026/08/24 17:10:32 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready
+Aug 24 17:10:32 node-4 node_agent_server[190]: 2026/08/24 17:10:32 behavioral observation: infra_probe skipped component=envoy node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready
+Aug 24 17:10:32 node-4 node_agent_server[190]: 2026/08/24 17:10:32 event-handler: subscribed to operation.*
+Aug 24 17:10:36 node-4 node_agent_server[190]: 2026/08/24 17:10:36 nodeagent: reporting 28 installed services (hash=d8281a1cb90968c832645fa1a95f7e2bb91790ed1abd095fbbbd3444b7540393, sample=[ai-router minio etcdctl log claude])
+Aug 24 17:10:39 node-4 node_agent_server[190]: 2026/08/24 17:10:39 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 24 17:10:39 node-4 node_agent_server[190]: 2026/08/24 17:10:39 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 24 17:10:42 node-4 node_agent_server[190]: 2026/08/24 17:10:42 grpc-workflow: install-package minio: installed_state matches but globular-minio.service is inactive; attempting repair
+Aug 24 17:10:42 node-4 node_agent_server[190]: 2026/08/24 17:10:42 grpc-workflow: install-package minio: unit inactive by topology hold (node not listed in approved objectstore topology) — leaving held, not repairing

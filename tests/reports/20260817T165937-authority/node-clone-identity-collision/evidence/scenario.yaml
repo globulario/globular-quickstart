@@ -1,0 +1,181 @@
+version: 1
+name: node-clone-identity-collision
+description: |
+  Two machines must never both hold the same node identity.
+
+  THE FAULT. Copy one node's entire persisted state onto another node's volume,
+  then start it. Two containers now present the same node_id, the same keys and
+  the same certificates, each with a complete and internally consistent claim.
+
+      node-4 state  ──copy──▶  node-5 volume
+            ↓
+      node-5 starts, presenting node-4's identity
+
+  WHY THIS IS REACHABLE IN PRACTICE. This is not an exotic attack; it is what
+  restoring a backup onto replacement hardware does, and what cloning a VM does.
+  It is also what happens when a node is rebuilt from a snapshot taken before it
+  was decommissioned. No packet is dropped and no process crashes — the fault is
+  purely that two actors hold identical evidence of being the same node.
+
+  WHY EXISTING SCENARIOS CANNOT REACH IT. Every node-level scenario in the suite
+  moves one node between up and down. None creates a second claimant. Identity
+  collision is invisible to availability testing because nothing is unavailable.
+
+  WHAT MUST HOLD. The cluster must not end up with two members sharing one
+  identity: either the impostor is refused before it can register, or it is
+  admitted only as a distinct identity. What is forbidden is a cluster that
+  accepts both and then quietly interleaves their heartbeats, installed-state
+  writes and runtime proofs under one node_id — because from then on every
+  per-node record has two writers and no way to tell them apart.
+
+  This scenario is destructive and its cleanup is deliberately thorough: it wipes
+  the impostor's state and removes any duplicate record so the cluster is left
+  with exactly the identities it started with.
+
+suite: authority
+tags:
+  - identity
+  - collision
+  - destructive
+  - gray-failure
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+      nodes_gte: 5
+
+  # Both participants must be real members first, so a collision afterwards is
+  # a change and not the starting condition.
+  - type: probe
+    id: source_node_registered
+    probe: node.etcd_registered
+    params:
+      node: node-4
+    expect:
+      registered: true
+
+  - type: probe
+    id: target_node_registered
+    probe: node.etcd_registered
+    params:
+      node: node-5
+    expect:
+      registered: true
+
+baseline:
+  - type: probe
+    id: nodes_before
+    probe: cluster.nodes
+
+steps:
+  # Detach and remove the target cleanly first, so what follows tests identity
+  # collision rather than a stale-membership conflict — those are different
+  # faults and mixing them would make the result unattributable.
+  - type: action
+    id: detach_target_etcd_member
+    action: chaos.detach_node_etcd
+    params:
+      node: node-5
+
+  - type: action
+    id: remove_target_from_cluster
+    action: ops.remove_node
+    params:
+      node: node-5
+      runner: node-1
+
+  - type: action
+    id: clone_the_identity
+    action: chaos.clone_node_state
+    params:
+      source: node-4
+      target: node-5
+
+  - type: action
+    id: start_the_impostor
+    action: chaos.start_node
+    params:
+      node: node-5
+
+  - type: action
+    id: give_the_impostor_time_to_claim
+    action: wait
+    params:
+      seconds: 300
+      reason: "the impostor must be given a full opportunity to register before concluding it cannot"
+
+assertions:
+  # ── No two members share one identity ─────────────────────────────────────
+  # The count is the tell: if the impostor were admitted under node-4's id, the
+  # cluster would still report the same number of nodes while two machines wrote
+  # to one record. A cluster that has NOT accepted the collision reports either
+  # the original set, or the original set minus the removed node.
+  - type: probe
+    id: no_duplicate_identity_admitted
+    probe: cluster.node_identity_collisions
+    expect:
+      collisions: 0
+
+  # ── The genuine node is unharmed ──────────────────────────────────────────
+  # The source of the clone must still be a normal, healthy member — its records
+  # must not have been corrupted by a second writer.
+  - type: probe
+    id: source_node_still_registered
+    probe: node.etcd_registered
+    params:
+      node: node-4
+    expect:
+      registered: true
+
+  - type: probe
+    id: source_node_agent_serving
+    probe: service.status
+    params:
+      node: node-4
+      service: node-agent
+    expect:
+      unit_state: active
+
+  # ── The cluster is coherent ───────────────────────────────────────────────
+  - type: probe
+    id: cluster_still_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: etcd_members_healthy
+    probe: cluster.etcd_members
+    expect:
+      unhealthy: 0
+
+  - type: probe
+    id: no_identity_findings
+    probe: repository.identity_findings
+    expect:
+      conflict: 0
+      ambiguous: 0
+
+cleanup:
+  # Wipe the impostor so no cloned identity survives this scenario, then let it
+  # come back as itself on the next run that needs it.
+  - type: action
+    id: wipe_the_impostor
+    action: chaos.wipe_node_state
+    params:
+      node: node-5
+
+  - type: action
+    id: restart_as_itself
+    action: chaos.start_node
+    params:
+      node: node-5

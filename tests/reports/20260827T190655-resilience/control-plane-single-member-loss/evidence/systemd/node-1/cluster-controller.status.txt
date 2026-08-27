@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 18:24:17 UTC; 44min ago
+    Process: 1106 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 1113 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1116 (cluster_control)
+      Tasks: 23 (limit: 8641)
+     Memory: 193.1M (peak: 193.9M)
+        CPU: 2min 15.608s
+     CGroup: /system.slice/docker-4c675f6508b9a86c7b995eb51d86a0499df1ded44d81b29ffb1411f52fc36f32.scope/system.slice/globular-cluster-controller.service
+             └─1116 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 27 19:08:23 node-1 cluster_controller_server[1116]: {"level":"warn","ts":"2026-08-27T19:08:23.730857Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000271c20/10.10.0.11:2379","attempt":3,"error":"rpc error: code = Unavailable desc = etcdserver: leader changed"}
+Aug 27 19:08:23 node-1 cluster_controller_server[1116]: 2026/08/27 19:08:23 dns reconciler: WITHDREW record=controller.globular.internal desired=4 installed=0 runtime=0 published=0 (filtered=[])
+Aug 27 19:08:23 node-1 cluster_controller_server[1116]: 2026/08/27 19:08:23 dns reconciler: applying to 4 DNS endpoints (healthy: 4/5)
+Aug 27 19:08:24 node-1 cluster_controller_server[1116]: 2026/08/27 19:08:24 dns reconciler: applied to node-2.globular.internal:10006: A=21, AAAA=0, SRV=4 records
+Aug 27 19:08:25 node-1 cluster_controller_server[1116]: 2026/08/27 19:08:25 dns reconciler: applied to node-5.globular.internal:10006: A=21, AAAA=0, SRV=4 records
+Aug 27 19:08:25 node-1 cluster_controller_server[1116]: 2026/08/27 19:08:25 INFO leader-proxy: connected to leader addr=10.10.0.11:12000
+Aug 27 19:08:26 node-1 cluster_controller_server[1116]: 2026/08/27 19:08:26 dns reconciler: applied to node-4.globular.internal:10006: A=21, AAAA=0, SRV=4 records
+Aug 27 19:08:26 node-1 cluster_controller_server[1116]: 2026/08/27 19:08:26 dns reconciler: applied to node-1.globular.internal:10006: A=21, AAAA=0, SRV=4 records
+Aug 27 19:08:26 node-1 cluster_controller_server[1116]: 2026/08/27 19:08:26 dns reconciler: SUCCESS - applied generation 5 to 1 domain(s)
+Aug 27 19:08:27 node-1 cluster_controller_server[1116]: 2026/08/27 19:08:27 enqueueReleasesForConvergingNodes: enqueued 0 service releases (skipped 24 already-served) for converging node check

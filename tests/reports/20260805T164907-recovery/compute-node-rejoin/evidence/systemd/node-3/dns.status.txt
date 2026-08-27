@@ -1,0 +1,19 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:49:14 UTC; 342ms ago
+    Process: 20999 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 21008 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 21011 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 21016 (dns_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 21.5M (peak: 21.6M)
+        CPU: 178ms
+     CGroup: /system.slice/docker-154ff78b33e38f88687df750b0fb75a8af915753f6ba66cfa182b12163553394.scope/system.slice/globular-dns.service
+             └─21016 /usr/lib/globular/bin/dns_server
+
+Aug 05 16:49:14 node-3 systemd[1]: Starting globular-dns.service - Globular dns...
+Aug 05 16:49:14 node-3 systemd[1]: Started globular-dns.service - Globular dns.
+Aug 05 16:49:14 node-3 dns_server[21016]: 2026/08/05 16:49:14 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 05 16:49:14 node-3 dns_server[21016]: 2026/08/05 16:49:14 INFO security: loaded cluster roles from external policy file roles=22
+Aug 05 16:49:14 node-3 dns_server[21016]: 2026/08/05 16:49:14 INFO InitService: loaded config by name fallback service=dns.DnsService current_id=ae25f75a-eb9c-45ef-b3f6-3cb7fea8a914 config_id=a4a8b9b2-6672-41e1-b5d1-968a20d3cc4b
+Aug 05 16:49:14 node-3 dns_server[21016]: 2026/08/05 16:49:14 INFO InitGrpcServer: gRPC server initialized service=dns.DnsService tls=true port=10006

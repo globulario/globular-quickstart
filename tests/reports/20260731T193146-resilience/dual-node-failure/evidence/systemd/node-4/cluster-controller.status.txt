@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 19:54:11 UTC; 9s ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 64 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 89 (cluster_control)
+      Tasks: 18 (limit: 8641)
+     Memory: 31.0M (peak: 31.5M)
+        CPU: 520ms
+     CGroup: /system.slice/docker-c0adeb54c3e856286dee91181b663fe0332b2e8184e7e300172c1db2276e7b0b.scope/system.slice/globular-cluster-controller.service
+             └─89 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 19:54:13 node-4 cluster_controller_server[89]: 2026/07/31 19:54:13 remediation-consumer: subscribed to operation.restart_requested
+Jul 31 19:54:18 node-4 cluster_controller_server[89]: 2026/07/31 19:54:18 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Jul 31 19:54:18 node-4 cluster_controller_server[89]: 2026/07/31 19:54:18 projections: ScyllaDB unavailable (create keyspace: gocql: no response received from cassandra within timeout period) — running without projections; resolvers fall back to in-memory state
+Jul 31 19:54:18 node-4 cluster_controller_server[89]: 2026/07/31 19:54:18 DNS reconciler: discovered 5 DNS endpoints from cluster membership: [node-4.globular.internal:10006 node-3.globular.internal:10006 node-1.globular.internal:10006 node-2.globular.internal:10006 node-5.globular.internal:10006]
+Jul 31 19:54:18 node-4 cluster_controller_server[89]: time=2026-07-31T19:54:18.135Z level=INFO msg="dns reconciler: ENABLED" domain=globular.internal endpoints=[]
+Jul 31 19:54:18 node-4 cluster_controller_server[89]: 2026/07/31 19:54:18 dns reconciler: starting loop (interval=30s)
+Jul 31 19:54:18 node-4 cluster_controller_server[89]: time=2026-07-31T19:54:18.135Z level=INFO msg="starting domain reconciler" interval=1m0s certs_dir=/var/lib/globular/domains renew_before=720h0m0s
+Jul 31 19:54:18 node-4 cluster_controller_server[89]: time=2026-07-31T19:54:18.135Z level=INFO msg="domain reconciler: ENABLED" certs_dir=/var/lib/globular/domains interval=1m renew_before=30d
+Jul 31 19:54:18 node-4 cluster_controller_server[89]: 2026/07/31 19:54:18 dns reconciler: starting health check loop (interval=30s)
+Jul 31 19:54:18 node-4 cluster_controller_server[89]: time=2026-07-31T19:54:18.270Z level=INFO msg="cluster controller ready" address=:12000 config=/var/lib/globular/cluster-controller/config.json cluster_domain=globular.internal version=1.2.288

@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:05:54 UTC; 3min 21s ago
+    Process: 8053 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 8057 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 8059 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 8066 (workflow_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 25.7M (peak: 26.5M)
+        CPU: 727ms
+     CGroup: /system.slice/docker-fac1d0fd94bea9a0d7ffcda0c0edf931a4d141c04f8b3de9361d6d7a1ebcb85f.scope/system.slice/globular-workflow.service
+             └─8066 /usr/lib/globular/bin/workflow_server
+
+Jul 31 20:07:00 node-5 workflow_server[8066]: time=2026-07-31T20:07:00.153Z level=INFO msg="scylla_reconnect: attempting reconnect" attempt=1 backoff=1s
+Jul 31 20:07:00 node-5 workflow_server[8066]: time=2026-07-31T20:07:00.158Z level=INFO msg=workflow.scylla_reconnected scylla_session_generation=2 scylla_reconnect_attempts=1
+Jul 31 20:07:06 node-5 workflow_server[8066]: 2026/07/31 20:07:06 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListWorkflowSummaries
+Jul 31 20:07:14 node-5 workflow_server[8066]: 2026/07/31 20:07:14 INFO executor lease: orphan scanner recovered previous_failures=3
+Jul 31 20:07:14 node-5 workflow_server[8066]: time=2026-07-31T20:07:14.155Z level=INFO msg="dependencies recovered — service is SERVING"
+Jul 31 20:07:33 node-5 workflow_server[8066]: 2026/07/31 20:07:33 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListDriftUnresolved
+Jul 31 20:07:44 node-5 workflow_server[8066]: time=2026-07-31T20:07:44.257Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+Jul 31 20:08:28 node-5 workflow_server[8066]: 2026/07/31 20:08:28 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListRuns
+Jul 31 20:08:28 node-5 workflow_server[8066]: 2026/07/31 20:08:28 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Jul 31 20:08:28 node-5 workflow_server[8066]: 2026/07/31 20:08:28 INFO mesh: gRPC connection established target=node-5.globular.internal:443

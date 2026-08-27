@@ -1,0 +1,66 @@
+version: 1
+name: residue-negative-control
+description: |
+  NEGATIVE CONTROL for the harness restoration law.
+
+  This scenario deliberately leaves residue: it stops a node and never restores
+  it — there is no `start_node` in steps and no cleanup section at all. It is
+  the test that proves the detector can fire.
+
+  Expected behaviour of the RUNNER (not of the product):
+    1. the mutation ledger records node_stopped(node-5);
+    2. teardown finds it outstanding after cleanup;
+    3. teardown reverses it (docker start) and verifies the container is running;
+    4. the scenario is marked FAILED with "RESIDUE: scenario left unrestored
+       mutations", even though every assertion in it passes.
+
+  A scenario whose assertions all pass but which leaks state MUST fail. If this
+  scenario ever reports PASS, the restoration law is not being enforced and
+  every other destructive scenario is free to contaminate its successors —
+  which is exactly what happened on 2026-08-05, when a detached etcd member and
+  a root-owned service key rode silently into three later suites.
+
+  This is intentionally the only scenario in the tree that is SUPPOSED to fail.
+  Do not "fix" it by adding cleanup — that would delete the control.
+
+suite: patterns
+tags:
+  - meta
+  - harness
+  - negative-control
+  - restoration-law
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: node5_running_before
+    probe: node.container_running
+    params:
+      node: node-5
+    expect:
+      running: true
+
+steps:
+  # Mutate, and deliberately never restore.
+  - id: stop_node5_and_abandon_it
+    action: chaos.stop_node
+    params:
+      node: node-5
+
+assertions:
+  # This assertion PASSES — the node really is stopped. The scenario must still
+  # fail, on residue alone. That is the whole point of the control.
+  - type: probe
+    id: node5_is_stopped
+    probe: node.container_running
+    params:
+      node: node-5
+    expect:
+      running: false
+
+# No cleanup section, on purpose.

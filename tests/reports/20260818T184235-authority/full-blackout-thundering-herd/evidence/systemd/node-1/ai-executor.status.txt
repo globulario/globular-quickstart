@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:54 UTC; 13s ago
+    Process: 1725 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 1738 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1749 (ai_executor_ser)
+      Tasks: 12 (limit: 8641)
+     Memory: 12.9M (peak: 13.0M)
+        CPU: 125ms
+     CGroup: /system.slice/docker-9a67632422a5502a1d64625e1932bb8e76fae6f90cdee0187c70d84ee68d0231.scope/system.slice/globular-ai-executor.service
+             └─1749 /usr/lib/globular/bin/ai_executor_server
+
+Aug 18 19:12:54 node-1 systemd[1]: Started globular-ai-executor.service - Globular ai_executor.
+Aug 18 19:12:54 node-1 ai_executor_server[1749]: 2026/08/18 19:12:54 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 18 19:12:54 node-1 ai_executor_server[1749]: 2026/08/18 19:12:54 INFO security: loaded cluster roles from external policy file roles=22
+Aug 18 19:12:54 node-1 ai_executor_server[1749]: PortAllocator range: 10000 - 20000
+Aug 18 19:12:56 node-1 ai_executor_server[1749]: {"level":"warn","ts":"2026-08-18T19:12:56.327562Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003c1a40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 18 19:12:58 node-1 ai_executor_server[1749]: {"level":"warn","ts":"2026-08-18T19:12:58.329509Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003c1a40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 18 19:12:58 node-1 ai_executor_server[1749]: 2026/08/18 19:12:58 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"
+Aug 18 19:12:58 node-1 ai_executor_server[1749]: time=2026-08-18T19:12:58.329Z level=INFO msg="starting ai_executor service" service=ai_executor.AiExecutorService version=1.2.312
+Aug 18 19:12:59 node-1 ai_executor_server[1749]: 2026/08/18 19:12:59 INFO InitGrpcServer: gRPC server initialized service=ai_executor.AiExecutorService tls=true port=10004
+Aug 18 19:12:59 node-1 ai_executor_server[1749]: time=2026-08-18T19:12:59.768Z level=INFO msg="claude: CLI configured" binary=/usr/local/bin/claude

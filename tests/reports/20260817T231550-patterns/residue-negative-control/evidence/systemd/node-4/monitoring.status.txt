@@ -1,0 +1,20 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:01:33 UTC; 14min ago
+    Process: 5120 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 5124 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 5126 (monitoring_serv)
+      Tasks: 17 (limit: 8641)
+     Memory: 21.6M (peak: 25.1M)
+        CPU: 737ms
+     CGroup: /system.slice/docker-b20775b8a2a560480b2efa5ecaabe93ae56dc7289499604fd316260a4deb88b6.scope/system.slice/globular-monitoring.service
+             └─5126 /usr/lib/globular/bin/monitoring_server
+
+Aug 17 23:01:33 node-4 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 17 23:01:33 node-4 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 17 23:01:33 node-4 monitoring_server[5126]: PortAllocator range: 10000 - 20000
+Aug 17 23:01:33 node-4 monitoring_server[5126]: 2026/08/17 23:01:33 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 17 23:01:34 node-4 monitoring_server[5126]: time=2026-08-17T23:01:34.040Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=96
+Aug 17 23:01:34 node-4 monitoring_server[5126]: 2026/08/17 23:01:34 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 17 23:01:45 node-4 monitoring_server[5126]: 2026/08/17 23:01:45 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 17 23:01:45 node-4 monitoring_server[5126]: 2026/08/17 23:01:45 INFO mesh: gRPC connection established target=node-4.globular.internal:443

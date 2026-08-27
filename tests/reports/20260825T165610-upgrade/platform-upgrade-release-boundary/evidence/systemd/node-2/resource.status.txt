@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 16:50:32 UTC; 54min ago
+    Process: 401 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 407 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 420 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 491 (resource_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 24.5M (peak: 29.6M)
+        CPU: 5.944s
+     CGroup: /system.slice/docker-2c43f49e279fa118f07963a114eb219c2e7ecffe9b7a67eb2ba2788837f46981.scope/system.slice/globular-resource.service
+             └─491 /usr/lib/globular/bin/resource_server
+
+Aug 25 16:52:33 node-2 resource_server[491]: 2026/08/25 16:52:33 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 25 16:52:33 node-2 resource_server[491]: 2026/08/25 16:52:33 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 25 16:54:03 node-2 resource_server[491]: 2026/08/25 16:54:03 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 25 16:54:07 node-2 resource_server[491]: 2026/08/25 16:54:07 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=resource.session.read reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 25 16:57:24 node-2 resource_server[491]: 2026/08/25 16:57:24 INFO acc: warmup complete baseline_rtt_ms=20 samples=272 elapsed=5m0s
+Aug 25 17:02:30 node-2 resource_server[491]: {"level":"warn","ts":"2026-08-25T17:02:30.654294Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000c605a0/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 25 17:02:30 node-2 resource_server[491]: {"level":"info","ts":"2026-08-25T17:02:30.654396Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 25 17:02:38 node-2 resource_server[491]: {"level":"warn","ts":"2026-08-25T17:02:38.54319Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000502780/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 25 17:02:38 node-2 resource_server[491]: {"level":"info","ts":"2026-08-25T17:02:38.543285Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 25 17:15:26 node-2 resource_server[491]: 2026/08/25 17:15:26 WARN acc: config watcher stopped, will retry err="etcdserver: mvcc: required revision has been compacted" backoff=5s

@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 08:06:12 UTC; 2min 37s ago
+    Process: 3611 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 3615 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3618 (log_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 26.3M (peak: 27.9M)
+        CPU: 423ms
+     CGroup: /system.slice/docker-e777060fbea10b3739f33f5ee3e047ce3b76190f3798311ed58c9019810fa500.scope/system.slice/globular-log.service
+             └─3618 /usr/lib/globular/bin/log_server
+
+Aug 27 08:06:12 node-4 log_server[3618]: time=2026-08-27T08:06:12.507Z level=INFO msg="service ready" service=log.LogService version=1.2.317 port=10100 proxy=10101 protocol=grpc domain=globular.internal startup_ms=46
+Aug 27 08:06:12 node-4 log_server[3618]: time=2026-08-27T08:06:12.507Z level=INFO msg="starting service" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 27 08:06:12 node-4 log_server[3618]: time=2026-08-27T08:06:12.507Z level=INFO msg="starting metrics server" address=0.0.0.0:9092
+Aug 27 08:06:12 node-4 log_server[3618]: 2026/08/27 08:06:12 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 27 08:06:12 node-4 log_server[3618]: time=2026-08-27T08:06:12.507Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 27 08:06:12 node-4 log_server[3618]: time=2026-08-27T08:06:12.507Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 27 08:06:12 node-4 log_server[3618]: 2026/08/27 08:06:12 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 27 08:06:22 node-4 log_server[3618]: 2026/08/27 08:06:22 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 27 08:06:22 node-4 log_server[3618]: 2026/08/27 08:06:22 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 27 08:08:14 node-4 log_server[3618]: 2026/08/27 08:08:14 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

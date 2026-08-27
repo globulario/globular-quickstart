@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 19:32:02 UTC; 2min 14s ago
+    Process: 59 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 93 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 110 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 37.0M (peak: 38.6M)
+        CPU: 2.572s
+     CGroup: /system.slice/docker-c0adeb54c3e856286dee91181b663fe0332b2e8184e7e300172c1db2276e7b0b.scope/system.slice/globular-repository.service
+             └─110 /usr/lib/globular/bin/repository_server
+
+Jul 31 19:32:13 node-4 repository_server[110]: 2026/07/31 19:32:13 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Jul 31 19:32:17 node-4 repository_server[110]: 2026/07/31 19:32:17 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.14:10004: connect: connection refused\""
+Jul 31 19:32:32 node-4 repository_server[110]: 2026/07/31 19:32:32 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.15 base=/var/lib/globular/.config/globular/tls err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"
+Jul 31 19:32:32 node-4 repository_server[110]: 2026/07/31 19:32:32 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.15:443 service=event.EventService err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"
+Jul 31 19:33:02 node-4 repository_server[110]: 2026/07/31 19:33:02 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.15 base=/var/lib/globular/.config/globular/tls err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"
+Jul 31 19:33:02 node-4 repository_server[110]: 2026/07/31 19:33:02 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.15:443 service=event.EventService err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"
+Jul 31 19:33:03 node-4 repository_server[110]: 2026/07/31 19:33:03 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Jul 31 19:33:03 node-4 repository_server[110]: 2026/07/31 19:33:03 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Jul 31 19:33:42 node-4 repository_server[110]: 2026/07/31 19:33:42 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.15 base=/var/lib/globular/.config/globular/tls err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"
+Jul 31 19:33:42 node-4 repository_server[110]: 2026/07/31 19:33:42 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.15:443 service=event.EventService err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"

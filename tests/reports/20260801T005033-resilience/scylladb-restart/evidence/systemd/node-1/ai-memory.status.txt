@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 00:43:54 UTC; 40min ago
+    Process: 27980 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 27984 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 27987 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 27993 (ai_memory_serve)
+      Tasks: 21 (limit: 8641)
+     Memory: 33.7M (peak: 36.1M)
+        CPU: 15.959s
+     CGroup: /system.slice/docker-18b323bfa9beb153eb9d36bc94faef425c64f4b85468ea1b94a5f78650f213de.scope/system.slice/globular-ai-memory.service
+             └─27993 /usr/lib/globular/bin/ai_memory_server
+
+Aug 01 01:24:27 node-1 ai_memory_server[27993]: 2026/08/01 01:24:27 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=18 baseline_ms=6 window=20 new_window=18
+Aug 01 01:24:27 node-1 ai_memory_server[27993]: 2026/08/01 01:24:27 ERROR rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0 domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/RecordSignal function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632
+Aug 01 01:24:27 node-1 ai_memory_server[27993]: 2026/08/01 01:24:27 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=19 baseline_ms=6 window=19 new_window=17
+Aug 01 01:24:28 node-1 ai_memory_server[27993]: 2026/08/01 01:24:28 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=16 baseline_ms=6 window=19 new_window=17
+Aug 01 01:24:35 node-1 ai_memory_server[27993]: 2026/08/01 01:24:35 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=19 baseline_ms=6 window=21 new_window=18
+Aug 01 01:24:38 node-1 ai_memory_server[27993]: 2026/08/01 01:24:38 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=18 baseline_ms=6 window=19 new_window=17
+Aug 01 01:24:38 node-1 ai_memory_server[27993]: 2026/08/01 01:24:38 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=24 baseline_ms=6 window=17 new_window=15
+Aug 01 01:24:38 node-1 ai_memory_server[27993]: 2026/08/01 01:24:38 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=17 baseline_ms=6 window=15 new_window=13
+Aug 01 01:24:38 node-1 ai_memory_server[27993]: 2026/08/01 01:24:38 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=17 baseline_ms=6 window=13 new_window=11
+Aug 01 01:24:38 node-1 ai_memory_server[27993]: 2026/08/01 01:24:38 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=14 baseline_ms=6 window=11 new_window=10

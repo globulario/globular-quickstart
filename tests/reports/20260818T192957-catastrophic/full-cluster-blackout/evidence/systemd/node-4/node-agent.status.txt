@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:25 UTC; 26min ago
+    Process: 141 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 179 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 203 (node_agent_serv)
+      Tasks: 26 (limit: 8641)
+     Memory: 1.3G (peak: 1.3G swap: 628.0K swap peak: 804.0K)
+        CPU: 4min 12.225s
+     CGroup: /system.slice/docker-c69956e40d44afec6c24aae66a0eb98093a9df7e8d446a0705e3a4916478dce3.scope/system.slice/globular-node-agent.service
+             └─203 /usr/lib/globular/bin/node_agent_server
+
+Aug 18 19:37:18 node-4 node_agent_server[203]: 2026/08/18 19:37:18 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 18 19:37:48 node-4 node_agent_server[203]: 2026/08/18 19:37:48 nodeagent: reporting 28 installed services (hash=c20113d306d1440ffaad388c618116c8e765924162887d79d80c7122227533de, sample=[prometheus authentication claude codex rbac])
+Aug 18 19:38:04 node-4 node_agent_server[203]: 2026/08/18 19:38:04 nodeagent: repaired installed-state INFRASTRUCTURE/gateway from local package cache gateway_1.2.324_linux_amd64.tgz (build_id=d3d43ff7-abc4-4a8b-9327-eae3c9044000)
+Aug 18 19:38:06 node-4 node_agent_server[203]: 2026/08/18 19:38:06 nodeagent: repaired installed-state INFRASTRUCTURE/xds from local package cache xds_1.2.312_linux_amd64.tgz (build_id=e8e65d6d-70f9-4a29-873d-228cc504f55e)
+Aug 18 19:38:08 node-4 node_agent_server[203]: 2026/08/18 19:38:08 nodeagent: self-hosted runtime proof skipped cluster-controller: process_not_running
+Aug 18 19:38:08 node-4 node_agent_server[203]: 2026/08/18 19:38:08 nodeagent: self-hosted runtime proof skipped cluster-doctor: process_not_running
+Aug 18 19:38:09 node-4 node_agent_server[203]: 2026/08/18 19:38:09 minio-topology-gate: node 6400b443-cf38-52da-a683-de2fc5103c0b (ip=10.10.0.14) not admitted — node not listed in approved objectstore topology (gen=1)
+Aug 18 19:38:11 node-4 node_agent_server[203]: 2026/08/18 19:38:11 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 18 19:38:11 node-4 node_agent_server[203]: 2026/08/18 19:38:11 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 18 19:38:19 node-4 node_agent_server[203]: 2026/08/18 19:38:19 nodeagent: reporting 28 installed services (hash=c20113d306d1440ffaad388c618116c8e765924162887d79d80c7122227533de, sample=[rbac globular-cli etcd node-agent xds])

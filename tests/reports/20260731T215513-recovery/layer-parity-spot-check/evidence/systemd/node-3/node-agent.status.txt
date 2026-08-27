@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:56:31 UTC; 55s ago
+    Process: 231 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 246 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 259 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 88.7M (peak: 90.9M)
+        CPU: 29.734s
+     CGroup: /system.slice/docker-4e49f89905e0a6d0d62c10e2c300dadaff8f929624017faf0a3ff78a831d8f81.scope/system.slice/globular-node-agent.service
+             └─259 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 21:57:10 node-3 node_agent_server[259]: 2026/07/31 21:57:10 minio-topology-gate: node a166b992-b66d-53cb-b7c7-61dfa4dd5a36 (ip=10.10.0.13) is NOT in ObjectStoreDesiredState.Nodes (gen=0) — stopping globular-minio.service to enforce topology contract (held_not_in_topology)
+Jul 31 21:57:10 node-3 node_agent_server[259]: 2026/07/31 21:57:10 minio-topology-gate: stopped globular-minio.service on non-member node a166b992-b66d-53cb-b7c7-61dfa4dd5a36 (ip=10.10.0.13) — state=held_not_in_topology; MinIO will start only after apply-topology admits this node
+Jul 31 21:57:12 node-3 node_agent_server[259]: 2026/07/31 21:57:12 event-publisher: service.stopped unit=globular-minio.service (active/running → inactive/dead)
+Jul 31 21:57:13 node-3 node_agent_server[259]: 2026/07/31 21:57:13 nodeagent: reporting 41 installed services (hash=0850d5d5c9405c3f43d36c9d06676c74e34ebdd391dc4bac490c2d006e9759b7, sample=[rclone rbac restic backup-manager persistence])
+Jul 31 21:57:14 node-3 node_agent_server[259]: 2026/07/31 21:57:14 ingress: spec changed (type: PUT), triggering reconciliation
+Jul 31 21:57:14 node-3 node_agent_server[259]: 2026/07/31 21:57:14 ingress: keepalived disabled on node a166b992-b66d-53cb-b7c7-61dfa4dd5a36
+Jul 31 21:57:21 node-3 node_agent_server[259]: {"level":"warn","ts":"2026-07-31T21:57:21.683392Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001fb860/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.13:2379: connect: connection refused\""}
+Jul 31 21:57:21 node-3 node_agent_server[259]: {"level":"warn","ts":"2026-07-31T21:57:21.684881Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001fb860/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:57:21 node-3 node_agent_server[259]: {"level":"warn","ts":"2026-07-31T21:57:21.685393Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001fb860/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:57:21 node-3 node_agent_server[259]: {"level":"warn","ts":"2026-07-31T21:57:21.685973Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001fb860/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}

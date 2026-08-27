@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "scenario": "control-plane-single-member-loss",
+  "suite": "resilience",
+  "start_time": "2026-07-31T19:34:39.957302Z",
+  "end_time": "2026-07-31T19:35:03.097955Z",
+  "passed": false,
+  "item_count": 6,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T19:34:40.257919Z"
+    },
+    {
+      "id": "all_three_members_healthy",
+      "section": "preconditions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "total": 3,
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 2,
+        "unhealthy": 1
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T19:34:45.538661Z"
+    },
+    {
+      "id": "write_quorum_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 264
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T19:34:45.835163Z"
+    },
+    {
+      "id": "node3_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T19:34:45.863334Z"
+    },
+    {
+      "id": "final_member_health",
+      "section": "cleanup",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 3,
+        "healthy": 2,
+        "unhealthy": 1
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T19:34:51.134834Z"
+    },
+    {
+      "id": "final_write_test",
+      "section": "cleanup",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 290
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T19:34:51.460566Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

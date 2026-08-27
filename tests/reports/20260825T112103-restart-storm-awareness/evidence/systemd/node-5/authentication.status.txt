@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 05:23:17 UTC; 5h 58min ago
+    Process: 5280 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 5283 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 5286 (authentication_)
+      Tasks: 20 (limit: 8641)
+     Memory: 20.0M (peak: 29.3M)
+        CPU: 9.548s
+     CGroup: /system.slice/docker-2279873d5c93474fbbe353f981a29c729dd71a4b4d6733c94885b44fb3f636b0.scope/system.slice/globular-authentication.service
+             └─5286 /usr/lib/globular/bin/authentication_server
+
+Aug 25 05:31:37 node-5 authentication_server[5286]: time=2026-08-25T05:31:37.592Z level=WARN msg="sessions list failed" err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.11/.cert.lock"
+Aug 25 05:32:37 node-5 authentication_server[5286]: time=2026-08-25T05:32:37.564Z level=ERROR msg="InitClient: InstallClientCertificates failed (gateway unavailable?)" domain=10.10.0.11 base=/var/lib/globular/.config/globular/tls err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.11/.cert.lock"
+Aug 25 05:32:37 node-5 authentication_server[5286]: fail to create resource client with error:  creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.11/.cert.lock
+Aug 25 05:32:37 node-5 authentication_server[5286]: time=2026-08-25T05:32:37.564Z level=ERROR msg="GetClient: constructor returned error" function=NewResourceService_Client address=10.10.0.11:10004 service=resource.ResourceService err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.11/.cert.lock"
+Aug 25 05:32:37 node-5 authentication_server[5286]: time=2026-08-25T05:32:37.564Z level=WARN msg="sessions list failed" err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.11/.cert.lock"
+Aug 25 05:53:20 node-5 authentication_server[5286]: time=2026-08-25T05:53:20.314Z level=INFO msg="acc: warmup complete" baseline_rtt_ms=20 samples=157 elapsed=30m0s
+Aug 25 08:06:23 node-5 authentication_server[5286]: {"level":"warn","ts":"2026-08-25T08:06:23.713969Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000540b40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 25 08:06:23 node-5 authentication_server[5286]: {"level":"info","ts":"2026-08-25T08:06:23.714089Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 25 08:06:27 node-5 authentication_server[5286]: {"level":"warn","ts":"2026-08-25T08:06:27.948335Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000541680/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 25 08:06:27 node-5 authentication_server[5286]: {"level":"info","ts":"2026-08-25T08:06:27.948402Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

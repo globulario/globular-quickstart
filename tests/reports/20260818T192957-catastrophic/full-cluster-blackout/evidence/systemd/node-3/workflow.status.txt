@@ -1,0 +1,21 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:37:29 UTC; 1min 11s ago
+    Process: 762 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1399 (workflow_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 18.2M (peak: 20.2M)
+        CPU: 1.493s
+     CGroup: /system.slice/docker-d012767a1d6021169228274ad798b8ec3e83c467525376ed8e947638c31723b1.scope/system.slice/globular-workflow.service
+             └─1399 /usr/lib/globular/bin/workflow_server
+
+Aug 18 19:37:30 node-3 workflow_server[1399]: time=2026-08-18T19:37:30.723Z level=INFO msg="service started successfully" name=workflow.WorkflowService id=062bc0e8-6495-41d1-9d47-068abee7d72a port=10220
+Aug 18 19:37:30 node-3 workflow_server[1399]: 2026/08/18 19:37:30 INFO metrics listening service=workflow.WorkflowService addr=[::]:10221
+Aug 18 19:37:40 node-3 workflow_server[1399]: {"level":"warn","ts":"2026-08-18T19:37:40.212529Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000277860/10.10.0.13:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:37:40 node-3 workflow_server[1399]: 2026/08/18 19:37:40 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 18 19:37:40 node-3 workflow_server[1399]: 2026/08/18 19:37:40 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 18 19:37:40 node-3 workflow_server[1399]: {"level":"warn","ts":"2026-08-18T19:37:40.95248Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000277860/10.10.0.13:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:38:00 node-3 workflow_server[1399]: time=2026-08-18T19:38:00.390Z level=INFO msg="retention: startup delay elapsed, running first prune"
+Aug 18 19:38:00 node-3 workflow_server[1399]: time=2026-08-18T19:38:00.390Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 18 19:38:00 node-3 workflow_server[1399]: time=2026-08-18T19:38:00.398Z level=INFO msg="retention: pruning old workflow runs" total_terminal=1019 keep=1000 deleting=19
+Aug 18 19:38:00 node-3 workflow_server[1399]: time=2026-08-18T19:38:00.778Z level=INFO msg="retention: pruning complete" deleted=19 remaining=1000

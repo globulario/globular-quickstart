@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 11:01:46 UTC; 32s ago
+    Process: 3165 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 3191 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3210 (repository_serv)
+      Tasks: 13 (limit: 8641)
+     Memory: 24.9M (peak: 29.4M)
+        CPU: 611ms
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-repository.service
+             └─3210 /usr/lib/globular/bin/repository_server
+
+Aug 18 11:02:10 node-2 repository_server[3210]: time=2026-08-18T11:02:10.637Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 18 11:02:10 node-2 repository_server[3210]: time=2026-08-18T11:02:10.637Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10011
+Aug 18 11:02:10 node-2 repository_server[3210]: time=2026-08-18T11:02:10.638Z level=WARN msg="blob-seed: ListManifests failed — seeding skipped" err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 18 11:02:10 node-2 repository_server[3210]: 2026/08/18 11:02:10 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=42251
+Aug 18 11:02:10 node-2 repository_server[3210]: 2026/08/18 11:02:10 INFO metrics listening service=repository.PackageRepository addr=[::]:42251
+Aug 18 11:02:12 node-2 repository_server[3210]: 2026/08/18 11:02:12 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 18 11:02:12 node-2 repository_server[3210]: 2026/08/18 11:02:12 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 18 11:02:12 node-2 repository_server[3210]: 2026/08/18 11:02:12 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = "
+Aug 18 11:02:14 node-2 repository_server[3210]: 2026/08/18 11:02:14 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10011 new_port=10011 old_proxy=42251 new_proxy=10001
+Aug 18 11:02:18 node-2 repository_server[3210]: 2026/08/18 11:02:18 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest

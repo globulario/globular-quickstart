@@ -1,0 +1,310 @@
+{
+  "schema_version": 1,
+  "scenario": "controller-service-crash",
+  "suite": "resilience",
+  "start_time": "2026-08-23T04:45:03.443074Z",
+  "end_time": "2026-08-23T04:45:32.967142Z",
+  "passed": false,
+  "item_count": 16,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 1,
+        "nodes": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:04.345479Z"
+    },
+    {
+      "id": "controller_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:04.445674Z"
+    },
+    {
+      "id": "write_quorum_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 250
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:04.727310Z"
+    },
+    {
+      "id": "initial_controller_registration",
+      "section": "baseline",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {},
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:04.814041Z"
+    },
+    {
+      "id": "initial_leader",
+      "section": "baseline",
+      "probe": "cluster.leader",
+      "params": {},
+      "expect": {},
+      "result": {
+        "leader_endpoint": "10.10.0.11:12000",
+        "is_leader": true
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:04.912746Z"
+    },
+    {
+      "id": "ensure_controller_running_node2",
+      "section": "steps",
+      "probe": "chaos.restart_service",
+      "params": {
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.restart_service",
+        "container": "globular-node-2",
+        "unit": "globular-cluster-controller.service",
+        "exit_code": 5,
+        "stderr": "Failed to restart globular-cluster-controller.service: Unit globular-cluster-controller.service not found."
+      },
+      "passed": false,
+      "timestamp": "2026-08-23T04:45:04.971829Z"
+    },
+    {
+      "id": "wait_for_node2_controller_registered",
+      "section": "steps",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:05.060020Z"
+    },
+    {
+      "id": "sigkill_controller_node2",
+      "section": "steps",
+      "probe": "chaos.sigkill_service",
+      "params": {
+        "node": "node-2",
+        "service": "cluster-controller"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.sigkill_service",
+        "container": "globular-node-2",
+        "unit": "globular-cluster-controller.service",
+        "signal": "SIGKILL",
+        "exit_code": 1,
+        "stderr": "Failed to kill unit globular-cluster-controller.service: Unit globular-cluster-controller.service not loaded."
+      },
+      "passed": false,
+      "timestamp": "2026-08-23T04:45:05.117474Z"
+    },
+    {
+      "id": "verify_etcd_unaffected",
+      "section": "steps",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 239
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:20.390126Z"
+    },
+    {
+      "id": "wait_for_re_registration",
+      "section": "steps",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:20.481611Z"
+    },
+    {
+      "id": "controller_registered_after",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:20.574933Z"
+    },
+    {
+      "id": "cluster_healthy_after",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 1,
+        "nodes": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:20.845067Z"
+    },
+    {
+      "id": "write_quorum_after",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 254
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:21.130661Z"
+    },
+    {
+      "id": "all_nodes_still_present",
+      "section": "assertions",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {
+        "count_gte": 5
+      },
+      "result": {
+        "count": 1,
+        "node_ids": [
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": false,
+      "timestamp": "2026-08-23T04:45:21.272512Z"
+    },
+    {
+      "id": "final_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 1,
+        "nodes": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:21.530988Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 1,
+          "etcd_member_count": "1",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "missing UNREADABLE backups=0",
+            "node-3": "missing UNREADABLE backups=0",
+            "node-4": "missing UNREADABLE backups=0",
+            "node-5": "missing UNREADABLE backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 1,
+          "etcd_member_count": "1",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "missing UNREADABLE backups=0",
+            "node-3": "missing UNREADABLE backups=0",
+            "node-4": "missing UNREADABLE backups=0",
+            "node-5": "missing UNREADABLE backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-23T04:45:22.074029Z"
+    }
+  ],
+  "result": "PARTIAL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

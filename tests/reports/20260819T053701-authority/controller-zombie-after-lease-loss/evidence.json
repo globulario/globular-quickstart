@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "scenario": "controller-zombie-after-lease-loss",
+  "suite": "authority",
+  "start_time": "2026-08-19T05:37:01.746273Z",
+  "end_time": "2026-08-19T05:37:02.501576Z",
+  "passed": false,
+  "item_count": 6,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "unknown",
+        "error": "primary container not running",
+        "members": 0,
+        "nodes": 0
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:01.810653Z"
+    },
+    {
+      "id": "leadership_is_established",
+      "section": "preconditions",
+      "probe": "controller.leadership",
+      "params": {},
+      "expect": {
+        "claimants_gte": 2,
+        "has_leader": true
+      },
+      "result": {
+        "leader_addr": "",
+        "leader_node": "",
+        "claimants": 0,
+        "instances": "",
+        "leader_instance": "",
+        "distinct_leaders": 0,
+        "error": "etcd container not running"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:01.846794Z"
+    },
+    {
+      "id": "etcd_accepts_writes",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": false,
+        "error": "primary container not running",
+        "latency_ms": 0
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:01.882267Z"
+    },
+    {
+      "id": "liveness_settled_before",
+      "section": "preconditions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 0,
+        "max_age_s": -1,
+        "stale_nodes": 0,
+        "error": "etcd container not running"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:01.917664Z"
+    },
+    {
+      "id": "ensure_no_controller_left_frozen",
+      "section": "cleanup",
+      "probe": "chaos.resume_all_controllers",
+      "params": {},
+      "expect": {},
+      "result": {
+        "action": "chaos.resume_all_controllers",
+        "resumed": [],
+        "not_applicable": []
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:01.936101Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {},
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "unproven": "no baseline captured"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:01.936183Z"
+    }
+  ],
+  "result": "INFRA_ERROR",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

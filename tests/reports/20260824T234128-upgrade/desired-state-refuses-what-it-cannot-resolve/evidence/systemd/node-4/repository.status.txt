@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 23:40:20 UTC; 2min 35s ago
+    Process: 544 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 547 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 550 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 43.4M (peak: 46.1M)
+        CPU: 4.056s
+     CGroup: /system.slice/docker-e306fe40f576a69920daf30d416500cd85371824b48ccd1b7d368ad9ed58c99e.scope/system.slice/globular-repository.service
+             └─550 /usr/lib/globular/bin/repository_server
+
+Aug 24 23:40:21 node-4 repository_server[550]: time=2026-08-24T23:40:21.550Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 24 23:40:21 node-4 repository_server[550]: 2026/08/24 23:40:21 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=44729
+Aug 24 23:40:21 node-4 repository_server[550]: 2026/08/24 23:40:21 INFO metrics listening service=repository.PackageRepository addr=[::]:44729
+Aug 24 23:40:23 node-4 repository_server[550]: 2026/08/24 23:40:23 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 24 23:41:22 node-4 repository_server[550]: 2026/08/24 23:41:22 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 24 23:41:22 node-4 repository_server[550]: 2026/08/24 23:41:22 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 24 23:41:30 node-4 repository_server[550]: 2026/08/24 23:41:30 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 23:41:42 node-4 repository_server[550]: 2026/08/24 23:41:42 WARN authz_decision audit="{\"timestamp\":\"2026-08-24T23:41:42.336217375Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 24 23:41:42 node-4 repository_server[550]: 2026/08/24 23:41:42 WARN authz_decision audit="{\"timestamp\":\"2026-08-24T23:41:42.481639363Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 24 23:41:42 node-4 repository_server[550]: 2026/08/24 23:41:42 WARN authz_decision audit="{\"timestamp\":\"2026-08-24T23:41:42.694253892Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown

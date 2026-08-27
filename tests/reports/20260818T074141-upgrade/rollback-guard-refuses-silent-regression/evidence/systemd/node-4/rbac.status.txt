@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 07:38:29 UTC; 1h 19min ago
+    Process: 143 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 193 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 215 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 335 (rbac_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 88.8M (peak: 89.8M)
+        CPU: 8.550s
+     CGroup: /system.slice/docker-c5069006ba31041ac65888901c23bf53009f95c522864462096898d3d31693fc.scope/system.slice/globular-rbac.service
+             └─335 /usr/lib/globular/bin/rbac_server
+
+Aug 18 08:49:17 node-4 rbac_server[335]: 2026/08/18 08:49:17 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 08:49:40 node-4 rbac_server[335]: 2026/08/18 08:49:40 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 08:51:41 node-4 rbac_server[335]: 2026/08/18 08:51:41 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 08:51:58 node-4 rbac_server[335]: 2026/08/18 08:51:58 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 08:53:17 node-4 rbac_server[335]: 2026/08/18 08:53:17 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 08:53:40 node-4 rbac_server[335]: 2026/08/18 08:53:40 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 08:55:40 node-4 rbac_server[335]: 2026/08/18 08:55:40 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 08:55:58 node-4 rbac_server[335]: 2026/08/18 08:55:58 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 08:57:18 node-4 rbac_server[335]: 2026/08/18 08:57:18 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 08:57:40 node-4 rbac_server[335]: 2026/08/18 08:57:40 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:52:32 UTC; 1min 4s ago
+    Process: 9209 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 9238 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 9260 (repository_serv)
+      Tasks: 15 (limit: 8641)
+     Memory: 24.7M (peak: 25.9M)
+        CPU: 672ms
+     CGroup: /system.slice/docker-b8fa6aca9bb82e631ce89b654ed458dabe59ec9fe67bf982b77e3cf43dab10a6.scope/system.slice/globular-repository.service
+             └─9260 /usr/lib/globular/bin/repository_server
+
+Jul 31 23:53:01 node-5 repository_server[9260]: time=2026-07-31T23:53:01.441Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=114 already_present=57 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Jul 31 23:53:01 node-5 repository_server[9260]: 2026/07/31 23:53:01 INFO release ledger migration complete entries=57
+Jul 31 23:53:01 node-5 repository_server[9260]: 2026/07/31 23:53:01 INFO publish-reconciler: started interval=1m0s
+Jul 31 23:53:01 node-5 repository_server[9260]: time=2026-07-31T23:53:01.541Z level=INFO msg="service ready" service=repository.PackageRepository port=10004 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=24754
+Jul 31 23:53:01 node-5 repository_server[9260]: time=2026-07-31T23:53:01.541Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Jul 31 23:53:01 node-5 repository_server[9260]: 2026/07/31 23:53:01 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Jul 31 23:53:01 node-5 repository_server[9260]: time=2026-07-31T23:53:01.549Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Jul 31 23:53:01 node-5 repository_server[9260]: time=2026-07-31T23:53:01.549Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Jul 31 23:53:01 node-5 repository_server[9260]: 2026/07/31 23:53:01 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=37849
+Jul 31 23:53:01 node-5 repository_server[9260]: 2026/07/31 23:53:01 INFO metrics listening service=repository.PackageRepository addr=[::]:37849

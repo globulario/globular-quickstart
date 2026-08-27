@@ -1,0 +1,133 @@
+version: 1
+name: pki-cert-health
+description: |
+  Verify the cluster PKI is healthy on every node.
+
+  Checks per node:
+    - Service cert is valid and not expiring within 30 days
+    - VIP (10.10.0.100) is present in the service cert SANs
+      (critical: if VIP is absent, services behind the VIP reject TLS)
+    - CA cert is valid for 30+ days
+    - Ed25519 signing keys are present (identity layer)
+
+  The PKI is the root of security for the entire cluster. A cert that's
+  missing the VIP SAN is the #1 silent failure mode for traffic behind
+  the keepalived VIP (this burned us for 16 hours on nuc — see session_vip_cert_fix.md).
+
+suite: security
+tags:
+  - pki
+  - certificates
+  - tls
+  - identity
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+baseline:
+  - type: probe
+    id: ca_cert_baseline
+    probe: pki.ca_valid
+    params:
+      node: node-1
+    # Capture CA cert state for evidence
+
+assertions:
+  # ── CA cert ────────────────────────────────────────────────────────────────
+  - type: probe
+    id: ca_cert_valid_node1
+    probe: pki.ca_valid
+    params:
+      node: node-1
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  # ── Service cert per node ──────────────────────────────────────────────────
+  - type: probe
+    id: service_cert_node1
+    probe: pki.cert_info
+    params:
+      node: node-1
+    expect:
+      valid: true
+      days_remaining_gte: 30
+      has_vip: true   # VIP MUST be in SANs — see session_vip_cert_fix.md
+
+  - type: probe
+    id: service_cert_node2
+    probe: pki.cert_info
+    params:
+      node: node-2
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: service_cert_node3
+    probe: pki.cert_info
+    params:
+      node: node-3
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: service_cert_node4
+    probe: pki.cert_info
+    params:
+      node: node-4
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  - type: probe
+    id: service_cert_node5
+    probe: pki.cert_info
+    params:
+      node: node-5
+    expect:
+      valid: true
+      days_remaining_gte: 30
+
+  # ── Ed25519 signing keys ────────────────────────────────────────────────────
+  - type: probe
+    id: signing_keys_node1
+    probe: pki.signing_keys
+    params:
+      node: node-1
+    expect:
+      present: true
+      node_key_present: true
+
+  - type: probe
+    id: signing_keys_node2
+    probe: pki.signing_keys
+    params:
+      node: node-2
+    expect:
+      present: true
+      node_key_present: true
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-1
+      service: node-agent
+
+cleanup:
+  - type: probe
+    id: final_cluster_health
+    probe: cluster.health
+    expect:
+      status: healthy

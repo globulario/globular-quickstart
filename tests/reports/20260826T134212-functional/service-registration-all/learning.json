@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-26T13:51:38.702638Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "service-registration-all",
+  "suite": "functional",
+  "result": "PASS",
+  "source_revision": "e9db6e24e9c489e9173c12829940a94adf206939",
+  "proof": {
+    "claim": "Verify that all expected Globular services are registered in etcd.\n\nExtends the smoke service-health-minimal check to cover the full service\ncatalog: control plane, security, infrastructure, storage, monitoring, and\nAI services. A service present in etcd means it started, connected, and\nannounced its endpoint \u2014 making this a distributed liveness check.\n\nKnown failure modes caught by this test:\n- Service binary crashed before registering (etcd has no entry)\n- systemd dependency ordering failure (service started too early, died)\n- ScyllaDB-dependent services (ai_memory, repository) not registering\n  after ScyllaDB takes time to become ready\n- Workflow service registering with unexpected port (etcd key present\n  but at wrong address)",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

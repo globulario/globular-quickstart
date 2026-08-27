@@ -1,0 +1,23 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 05:12:06 UTC; 51s ago
+    Process: 32712 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 32716 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 32719 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 32725 (dns_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 26.9M (peak: 30.8M)
+        CPU: 460ms
+     CGroup: /system.slice/docker-5b41ced5ee12e3c22039c3ee433821b71066f6f429d0d8ebdf05151192e44b08.scope/system.slice/globular-dns.service
+             └─32725 /usr/lib/globular/bin/dns_server
+
+Aug 19 05:12:34 node-1 dns_server[32725]: time=2026-08-19T05:12:34.851Z level=INFO msg="A record set" domain=controller-nodes.globular.internal. uuid=8c941541-ec8f-30e7-b595-b7aee90c9197 ipv4=10.10.0.13 ttl=60
+Aug 19 05:12:34 node-1 dns_server[32725]: time=2026-08-19T05:12:34.866Z level=INFO msg="A record set" domain=controller.globular.internal. uuid=e3f86572-da42-35a3-8d23-b9de7364ab37 ipv4=10.10.0.11 ttl=60
+Aug 19 05:12:34 node-1 dns_server[32725]: time=2026-08-19T05:12:34.882Z level=INFO msg="A record set" domain=dns.globular.internal. uuid=4f54ab5e-8681-370f-8d0f-ea0043a85335 ipv4=10.10.0.11 ttl=60
+Aug 19 05:12:34 node-1 dns_server[32725]: time=2026-08-19T05:12:34.896Z level=INFO msg="A record set" domain=dns.globular.internal. uuid=4f54ab5e-8681-370f-8d0f-ea0043a85335 ipv4=10.10.0.12 ttl=60
+Aug 19 05:12:34 node-1 dns_server[32725]: time=2026-08-19T05:12:34.910Z level=INFO msg="A record set" domain=dns.globular.internal. uuid=4f54ab5e-8681-370f-8d0f-ea0043a85335 ipv4=10.10.0.15 ttl=60
+Aug 19 05:12:34 node-1 dns_server[32725]: time=2026-08-19T05:12:34.926Z level=INFO msg="A record set" domain=dns.globular.internal. uuid=4f54ab5e-8681-370f-8d0f-ea0043a85335 ipv4=10.10.0.14 ttl=60
+Aug 19 05:12:34 node-1 dns_server[32725]: time=2026-08-19T05:12:34.942Z level=INFO msg="A record set" domain=dns.globular.internal. uuid=4f54ab5e-8681-370f-8d0f-ea0043a85335 ipv4=10.10.0.13 ttl=60
+Aug 19 05:12:34 node-1 dns_server[32725]: time=2026-08-19T05:12:34.954Z level=INFO msg="SRV set" id=_cluster-controller._tcp.globular.internal. uuid=1eb4e1d5-3fa2-3cf8-936e-44ea7b645a88 target=node-1.globular.internal. port=12000 priority=10 weight=100 ttl=60
+Aug 19 05:12:34 node-1 dns_server[32725]: time=2026-08-19T05:12:34.966Z level=INFO msg="SRV set" id=_cluster-controller._tcp.globular.internal. uuid=1eb4e1d5-3fa2-3cf8-936e-44ea7b645a88 target=node-2.globular.internal. port=12000 priority=10 weight=100 ttl=60
+Aug 19 05:12:34 node-1 dns_server[32725]: time=2026-08-19T05:12:34.981Z level=INFO msg="SRV set" id=_cluster-controller._tcp.globular.internal. uuid=1eb4e1d5-3fa2-3cf8-936e-44ea7b645a88 target=node-3.globular.internal. port=12000 priority=10 weight=100 ttl=60

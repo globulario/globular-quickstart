@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 20:03:41 UTC; 2min 37s ago
+    Process: 10656 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 10660 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10663 (node_agent_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 24.3M (peak: 40.4M)
+        CPU: 38.876s
+     CGroup: /system.slice/docker-f3b57fa875e02e17896cb99719df7ace5e96a1fe8040df4801270e0da7312769.scope/system.slice/globular-node-agent.service
+             └─10663 /usr/lib/globular/bin/node_agent_server
+
+Aug 27 20:06:02 node-4 node_agent_server[10663]: {"level":"warn","ts":"2026-08-27T20:06:02.04609Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000252780/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 20:06:02 node-4 node_agent_server[10663]: 2026/08/27 20:06:02 nodeagent: sync installed-state from local package cache SERVICE/conversation: PutRuntimeWithClass(normal_runtime): etcd put /globular/nodes/6400b443-cf38-52da-a683-de2fc5103c0b/packages/SERVICE/conversation after 3 attempt(s): context deadline exceeded
+Aug 27 20:06:04 node-4 node_agent_server[10663]: {"level":"warn","ts":"2026-08-27T20:06:04.211142Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000252780/10.10.0.14:2379","attempt":3,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 20:06:06 node-4 node_agent_server[10663]: {"level":"warn","ts":"2026-08-27T20:06:06.04713Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000252780/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 20:06:07 node-4 node_agent_server[10663]: {"level":"warn","ts":"2026-08-27T20:06:07.20662Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000252780/10.10.0.14:2379","attempt":0,"error":"rpc error: code = Unavailable desc = etcdserver: leader changed"}
+Aug 27 20:06:07 node-4 node_agent_server[10663]: 2026/08/27 20:06:07 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 27 20:06:11 node-4 node_agent_server[10663]: 2026/08/27 20:06:11 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 27 20:06:11 node-4 node_agent_server[10663]: 2026/08/27 20:06:11 behavioral observation: infra_probe skipped component=etcd node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused"
+Aug 27 20:06:11 node-4 node_agent_server[10663]: 2026/08/27 20:06:11 behavioral observation: infra_probe skipped component=scylladb node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused"
+Aug 27 20:06:11 node-4 node_agent_server[10663]: 2026/08/27 20:06:11 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused"

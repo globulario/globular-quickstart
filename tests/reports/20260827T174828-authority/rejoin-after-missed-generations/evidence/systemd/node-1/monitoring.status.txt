@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 18:23:48 UTC; 42min ago
+    Process: 547 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 580 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 617 (monitoring_serv)
+      Tasks: 16 (limit: 8641)
+     Memory: 18.3M (peak: 26.0M)
+        CPU: 1.607s
+     CGroup: /system.slice/docker-4c675f6508b9a86c7b995eb51d86a0499df1ded44d81b29ffb1411f52fc36f32.scope/system.slice/globular-monitoring.service
+             └─617 /usr/lib/globular/bin/monitoring_server
+
+Aug 27 18:23:48 node-1 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 27 18:23:48 node-1 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 27 18:23:48 node-1 monitoring_server[617]: 2026/08/27 18:23:48 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 27 18:23:48 node-1 monitoring_server[617]: 2026/08/27 18:23:48 INFO security: loaded cluster roles from external policy file roles=22
+Aug 27 18:23:48 node-1 monitoring_server[617]: PortAllocator range: 10000 - 20000
+Aug 27 18:23:48 node-1 monitoring_server[617]: 2026/08/27 18:23:48 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 27 18:23:49 node-1 monitoring_server[617]: time=2026-08-27T18:23:49.194Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=444
+Aug 27 18:23:49 node-1 monitoring_server[617]: 2026/08/27 18:23:49 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 27 18:46:02 node-1 monitoring_server[617]: {"level":"warn","ts":"2026-08-27T18:46:02.089321Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00043b0e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 18:54:49 node-1 monitoring_server[617]: 2026/08/27 18:54:49 INFO acc: warmup complete baseline_rtt_ms=20 samples=146 elapsed=30m0s

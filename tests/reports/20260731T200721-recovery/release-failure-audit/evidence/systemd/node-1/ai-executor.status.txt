@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:07:41 UTC; 1min 42s ago
+    Process: 53431 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 53435 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 53438 (ai_executor_ser)
+      Tasks: 19 (limit: 8641)
+     Memory: 26.8M (peak: 29.6M)
+        CPU: 521ms
+     CGroup: /system.slice/docker-ee855b6f64d9ef5e04c4c3441ee5307c595bf5de12bc17d42c2befebdeb830b4.scope/system.slice/globular-ai-executor.service
+             └─53438 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 20:07:41 node-1 ai_executor_server[53438]: 2026/07/31 20:07:41 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Jul 31 20:07:44 node-1 ai_executor_server[53438]: time=2026-07-31T20:07:44.407Z level=INFO msg="processing incident" incident_id=7e0bc310-8d1b-11f1-af87-02420a0a000f rule_id=service-stopped tier=0 trigger=service.stopped batch_size=8
+Jul 31 20:07:44 node-1 ai_executor_server[53438]: time=2026-07-31T20:07:44.616Z level=INFO msg="processing incident" incident_id=7e251dc4-8d1b-11f1-a5c1-02420a0a000b rule_id=service-stopped tier=0 trigger=service.stopped batch_size=8
+Jul 31 20:07:44 node-1 ai_executor_server[53438]: time=2026-07-31T20:07:44.668Z level=INFO msg="diagnosis complete" incident_id=7e0bc310-8d1b-11f1-af87-02420a0a000f root_cause="unknown_anomaly (minio)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Jul 31 20:07:44 node-1 ai_executor_server[53438]: time=2026-07-31T20:07:44.668Z level=INFO msg="INCIDENT RESOLVED" incident_id=7e0bc310-8d1b-11f1-af87-02420a0a000f summary="service-stopped triggered by service.stopped on minio (8 events in batch)" root_cause="unknown_anomaly (minio)"
+Jul 31 20:07:44 node-1 ai_executor_server[53438]: time=2026-07-31T20:07:44.677Z level=INFO msg="diagnosis complete" incident_id=7e251dc4-8d1b-11f1-a5c1-02420a0a000b root_cause="unknown_anomaly (minio)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Jul 31 20:07:44 node-1 ai_executor_server[53438]: time=2026-07-31T20:07:44.677Z level=INFO msg="INCIDENT RESOLVED" incident_id=7e251dc4-8d1b-11f1-a5c1-02420a0a000b summary="service-stopped triggered by service.stopped on minio (8 events in batch)" root_cause="unknown_anomaly (minio)"
+Jul 31 20:07:51 node-1 ai_executor_server[53438]: 2026/07/31 20:07:51 INFO mesh: Envoy available, routing through mesh target=node-1.globular.internal:443
+Jul 31 20:07:51 node-1 ai_executor_server[53438]: 2026/07/31 20:07:51 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Jul 31 20:08:11 node-1 ai_executor_server[53438]: time=2026-07-31T20:08:11.508Z level=INFO msg="peer: connected" node=node-5 endpoint=10.10.0.15:10010

@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 12:48:42 UTC; 2min 42s ago
+    Process: 54226 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 54230 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 54233 (node_agent_serv)
+      Tasks: 27 (limit: 8641)
+     Memory: 137.8M (peak: 152.3M)
+        CPU: 1min 23.422s
+     CGroup: /system.slice/docker-55178ed7227cfec5eb9dd9ec71facd927d12e3a04529f4c13cbc797245bc86c8.scope/system.slice/globular-node-agent.service
+             └─54233 /usr/lib/globular/bin/node_agent_server
+
+Aug 11 12:50:40 node-1 node_agent_server[54233]: 2026/08/11 12:50:40 join: v1 legacy path: RequestJoin failed: rpc error: code = Canceled desc = grpc: the client connection is closing — retry in 10s
+Aug 11 12:50:40 node-1 node_agent_server[54233]: 2026/08/11 12:50:40 nodeagent: refreshed etcd endpoint list from /globular/system/etcd_endpoints (5 endpoint(s))
+Aug 11 12:50:40 node-1 node_agent_server[54233]: 2026/08/11 12:50:40 node heartbeat failed (state=unreachable): rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote reset
+Aug 11 12:50:42 node-1 node_agent_server[54233]: 2026/08/11 12:50:42 ingress: keepalived disabled on node c777633e-6d07-5713-9c4c-deb3317eee25
+Aug 11 12:51:05 node-1 node_agent_server[54233]: 2026/08/11 12:51:05 join: v1 legacy path: RequestJoin failed: rpc error: code = Canceled desc = grpc: the client connection is closing — retry in 20s
+Aug 11 12:51:05 node-1 node_agent_server[54233]: 2026/08/11 12:51:05 node-agent: controller endpoint refreshed: 10.10.0.12:443 -> 10.10.0.11:443
+Aug 11 12:51:12 node-1 node_agent_server[54233]: 2026/08/11 12:51:12 nodeagent: reporting 48 installed services (hash=f2e7861a084245b27ad6565642a174bd81e9257e4834ed353d63beea7ae61d14, sample=[workflow xds ai-router etcd authentication])
+Aug 11 12:51:12 node-1 node_agent_server[54233]: 2026/08/11 12:51:12 ingress: keepalived disabled on node c777633e-6d07-5713-9c4c-deb3317eee25
+Aug 11 12:51:22 node-1 node_agent_server[54233]: 2026/08/11 12:51:22 nodeagent: refreshed etcd endpoint list from /globular/system/etcd_endpoints (5 endpoint(s))
+Aug 11 12:51:22 node-1 node_agent_server[54233]: 2026/08/11 12:51:22 node heartbeat failed (state=unreachable): rpc error: code = DeadlineExceeded desc = context deadline exceeded

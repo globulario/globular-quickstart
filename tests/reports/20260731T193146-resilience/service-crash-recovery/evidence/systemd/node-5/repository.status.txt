@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:06:12 UTC; 50s ago
+    Process: 8266 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 8270 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 8273 (repository_serv)
+      Tasks: 18 (limit: 8641)
+     Memory: 29.9M (peak: 31.4M)
+        CPU: 552ms
+     CGroup: /system.slice/docker-fac1d0fd94bea9a0d7ffcda0c0edf931a4d141c04f8b3de9361d6d7a1ebcb85f.scope/system.slice/globular-repository.service
+             └─8273 /usr/lib/globular/bin/repository_server
+
+Jul 31 20:06:15 node-5 repository_server[8273]: 2026/07/31 20:06:15 INFO publish-reconciler: started interval=1m0s
+Jul 31 20:06:15 node-5 repository_server[8273]: time=2026-07-31T20:06:15.034Z level=INFO msg="service ready" service=repository.PackageRepository port=10003 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=2661
+Jul 31 20:06:15 node-5 repository_server[8273]: time=2026-07-31T20:06:15.035Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Jul 31 20:06:15 node-5 repository_server[8273]: 2026/07/31 20:06:15 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Jul 31 20:06:15 node-5 repository_server[8273]: time=2026-07-31T20:06:15.037Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Jul 31 20:06:15 node-5 repository_server[8273]: time=2026-07-31T20:06:15.037Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Jul 31 20:06:15 node-5 repository_server[8273]: 2026/07/31 20:06:15 WARN port conflict detected - attempting reallocation service=repository.PackageRepository conflicting_port=10003 attempt=1 max_attempts=5
+Jul 31 20:06:15 node-5 repository_server[8273]: 2026/07/31 20:06:15 INFO port reallocated successfully service=repository.PackageRepository old_port=10003 new_port=10006
+Jul 31 20:06:15 node-5 repository_server[8273]: 2026/07/31 20:06:15 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=41309
+Jul 31 20:06:15 node-5 repository_server[8273]: 2026/07/31 20:06:15 INFO metrics listening service=repository.PackageRepository addr=[::]:41309

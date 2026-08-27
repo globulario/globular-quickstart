@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 23:36:36 UTC; 6min ago
+    Process: 674 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 688 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 711 (ai_executor_ser)
+      Tasks: 20 (limit: 8641)
+     Memory: 27.0M (peak: 31.8M)
+        CPU: 1.088s
+     CGroup: /system.slice/docker-9fe941577b188393d600caa05ab83e1ba976630520db98bfdeac6b8ab52f0f27.scope/system.slice/globular-ai-executor.service
+             └─711 /usr/lib/globular/bin/ai_executor_server
+
+Aug 24 23:36:37 node-3 ai_executor_server[711]: 2026/08/24 23:36:37 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 24 23:36:37 node-3 ai_executor_server[711]: time=2026-08-24T23:36:37.037Z level=INFO msg="job_store: loaded jobs from etcd" count=36
+Aug 24 23:36:37 node-3 ai_executor_server[711]: time=2026-08-24T23:36:37.799Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.13]"
+Aug 24 23:37:07 node-3 ai_executor_server[711]: time=2026-08-24T23:37:07.013Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 24 23:37:07 node-3 ai_executor_server[711]: time=2026-08-24T23:37:07.022Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10010
+Aug 24 23:41:37 node-3 ai_executor_server[711]: time=2026-08-24T23:41:37.015Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 24 23:41:37 node-3 ai_executor_server[711]: time=2026-08-24T23:41:37.048Z level=INFO msg="codex: CLI not found"
+Aug 24 23:41:50 node-3 ai_executor_server[711]: time=2026-08-24T23:41:50.453Z level=INFO msg="processing incident" incident_id=60d0dccf-a015-11f1-a3c4-02420a0a000d rule_id=auth-denial tier=0 trigger=alert.auth.denied batch_size=9
+Aug 24 23:41:50 node-3 ai_executor_server[711]: time=2026-08-24T23:41:50.512Z level=INFO msg="diagnosis complete" incident_id=60d0dccf-a015-11f1-a3c4-02420a0a000d root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 24 23:41:50 node-3 ai_executor_server[711]: time=2026-08-24T23:41:50.512Z level=INFO msg="INCIDENT RESOLVED" incident_id=60d0dccf-a015-11f1-a3c4-02420a0a000d summary="auth-denial triggered by alert.auth.denied on repository.PackageRepository (9 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)"

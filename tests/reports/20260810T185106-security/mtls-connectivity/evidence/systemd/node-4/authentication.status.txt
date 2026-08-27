@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 19:04:33 UTC; 4min 36s ago
+    Process: 291 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 306 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 320 (authentication_)
+      Tasks: 15 (limit: 8641)
+     Memory: 24.7M (peak: 28.5M)
+        CPU: 534ms
+     CGroup: /system.slice/docker-c614908eae77dbf4f1bb2e5b7eeb70368e8053dbd05376ba648db6afd6e2a352.scope/system.slice/globular-authentication.service
+             └─320 /usr/lib/globular/bin/authentication_server
+
+Aug 10 19:04:38 node-4 authentication_server[320]: time=2026-08-10T19:04:38.375Z level=INFO msg="service ready" service=authentication.AuthenticationService port=10003 proxy=10001 protocol=grpc domain=globular.internal startup_ms=208 version=1.2.289
+Aug 10 19:04:38 node-4 authentication_server[320]: time=2026-08-10T19:04:38.375Z level=INFO msg="starting service" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10003
+Aug 10 19:04:38 node-4 authentication_server[320]: time=2026-08-10T19:04:38.380Z level=INFO msg="policy: loaded permissions from file" service=authentication path=/var/lib/globular/policy/services/authentication/permissions.generated.json count=8
+Aug 10 19:04:38 node-4 authentication_server[320]: time=2026-08-10T19:04:38.382Z level=INFO msg="authz: permission mappings loaded" service=authentication count=8 action_mappings=8
+Aug 10 19:04:38 node-4 authentication_server[320]: time=2026-08-10T19:04:38.382Z level=INFO msg="service started successfully" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10003
+Aug 10 19:04:38 node-4 authentication_server[320]: time=2026-08-10T19:04:38.662Z level=INFO msg=setKey:generate mac=02:42:0a:0a:00:0e
+Aug 10 19:04:39 node-4 authentication_server[320]: time=2026-08-10T19:04:39.009Z level=INFO msg="metrics: proxy port conflict, using free port" service=authentication.AuthenticationService wanted=10001 actual=43889
+Aug 10 19:04:39 node-4 authentication_server[320]: time=2026-08-10T19:04:39.010Z level=INFO msg="metrics listening" service=authentication.AuthenticationService addr=[::]:43889
+Aug 10 19:07:47 node-4 authentication_server[320]: {"level":"warn","ts":"2026-08-10T19:07:47.472431Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00035af00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 10 19:07:47 node-4 authentication_server[320]: {"level":"info","ts":"2026-08-10T19:07:47.4725Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

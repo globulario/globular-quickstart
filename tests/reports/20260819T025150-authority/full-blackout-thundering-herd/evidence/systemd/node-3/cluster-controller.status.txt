@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:03 UTC; 18s ago
+    Process: 908 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 912 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 915 (cluster_control)
+      Tasks: 14 (limit: 8641)
+     Memory: 11.1M (peak: 12.0M)
+        CPU: 98ms
+     CGroup: /system.slice/docker-eaf603c2f39593e684a79b489943b17e4093c415bcd1a02da0f3503cb1e1f052.scope/system.slice/globular-cluster-controller.service
+             └─915 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 19 03:23:11 node-3 cluster_controller_server[915]: 2026/08/19 03:23:11 dns reconciler: initial reconciliation failed: apply dns state for domain globular.internal: no healthy DNS endpoints available
+Aug 19 03:23:11 node-3 cluster_controller_server[915]: time=2026-08-19T03:23:11.487Z level=WARN msg="failed to register in Globular service registry; xDS routing may be unavailable" err="save service configuration cluster_controller.ClusterControllerService: RunTxnWithClass(normal_runtime): etcd txn after 3 attempt(s): context deadline exceeded"
+Aug 19 03:23:11 node-3 cluster_controller_server[915]: time=2026-08-19T03:23:11.488Z level=WARN msg="failed to publish controller service instance" err="PutInstance: etcd connect: context deadline exceeded"
+Aug 19 03:23:11 node-3 cluster_controller_server[915]: time=2026-08-19T03:23:11.488Z level=INFO msg="cluster controller ready" address=:12000 config=/var/lib/globular/cluster-controller/config.json cluster_domain=globular.internal version=1.2.325
+Aug 19 03:23:18 node-3 cluster_controller_server[915]: {"level":"warn","ts":"2026-08-19T03:23:18.182211Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0008892c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:20 node-3 cluster_controller_server[915]: {"level":"warn","ts":"2026-08-19T03:23:20.182728Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0008892c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:20 node-3 cluster_controller_server[915]: time=2026-08-19T03:23:20.182Z level=WARN msg="startupAutoImport: desired state is EMPTY — operator must seed it explicitly via 'globular deploy' or SeedDesiredState RPC. Auto-import from runtime observations is disabled to prevent phantom rematerialization."
+Aug 19 03:23:20 node-3 cluster_controller_server[915]: 2026/08/19 03:23:20 ERROR InitClient: failed to fetch configuration id=event.EventService address=10.10.0.13:443 err="context deadline exceeded"
+Aug 19 03:23:21 node-3 cluster_controller_server[915]: 2026/08/19 03:23:21 ERROR InitClient: failed to fetch configuration id=rbac.RbacService address=10.10.0.13:8443 err="context deadline exceeded"
+Aug 19 03:23:21 node-3 cluster_controller_server[915]: 2026/08/19 03:23:21 WARN ensureNodeExecutorBinding: cannot connect to RBAC service: InitClient: failed to fetch configuration id=rbac.RbacService from 10.10.0.13:8443: context deadline exceeded

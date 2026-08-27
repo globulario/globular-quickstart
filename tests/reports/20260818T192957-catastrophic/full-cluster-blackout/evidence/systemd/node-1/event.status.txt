@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:33:21 UTC; 5min ago
+    Process: 48 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 76 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 99 (event_server)
+      Tasks: 24 (limit: 8641)
+     Memory: 48.9M (peak: 207.8M)
+        CPU: 28.951s
+     CGroup: /system.slice/docker-9a67632422a5502a1d64625e1932bb8e76fae6f90cdee0187c70d84ee68d0231.scope/system.slice/globular-event.service
+             └─99 /usr/lib/globular/bin/event_server
+
+Aug 18 19:37:38 node-1 event_server[99]: time=2026-08-18T19:37:38.906Z level=INFO msg="subscriber cleanup" uuid=ai_router_alert.*
+Aug 18 19:37:38 node-1 event_server[99]: time=2026-08-18T19:37:38.906Z level=INFO msg="subscriber cleanup" uuid=c6b437b5-7b41-4c1a-8595-e918f7fec666
+Aug 18 19:37:53 node-1 event_server[99]: 2026/08/18 19:37:53 ERROR Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1 (repeated 4 times in 30s) domain=10.10.0.11:8443 application=event.EventService user="" method=/event.EventService/Publish function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 18 19:38:10 node-1 event_server[99]: time=2026-08-18T19:38:10.506Z level=INFO msg="subscriber cleanup" uuid=9617b0b6-dd21-45a9-bfa8-4d88b4e3a850
+Aug 18 19:38:10 node-1 event_server[99]: time=2026-08-18T19:38:10.506Z level=INFO msg="subscriber cleanup" uuid=watcher_6416894b-ec10-387a-a734-fec3fc1e914e_operation.*
+Aug 18 19:38:11 node-1 event_server[99]: time=2026-08-18T19:38:11.689Z level=INFO msg="OnEvent: registered" uuid=bc7e715f-6783-4392-878f-926844a0f8a9
+Aug 18 19:38:11 node-1 event_server[99]: time=2026-08-18T19:38:11.689Z level=INFO msg="stream registered" uuid=bc7e715f-6783-4392-878f-926844a0f8a9
+Aug 18 19:38:31 node-1 event_server[99]: time=2026-08-18T19:38:31.505Z level=WARN msg="keepalive send failed; will drop stream" uuid=74eb31d8-e168-4390-b363-84420a75f1c0 err="rpc error: code = Canceled desc = context canceled"
+Aug 18 19:38:31 node-1 event_server[99]: time=2026-08-18T19:38:31.505Z level=INFO msg="subscriber cleanup" uuid=74eb31d8-e168-4390-b363-84420a75f1c0
+Aug 18 19:38:31 node-1 event_server[99]: time=2026-08-18T19:38:31.505Z level=INFO msg="OnEvent: stream ended" uuid=74eb31d8-e168-4390-b363-84420a75f1c0

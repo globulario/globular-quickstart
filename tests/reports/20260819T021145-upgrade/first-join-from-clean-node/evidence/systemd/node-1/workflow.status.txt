@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 02:11:34 UTC; 34min ago
+    Process: 32336 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 32339 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 32343 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 32349 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 30.7M (peak: 34.8M)
+        CPU: 12.230s
+     CGroup: /system.slice/docker-ca280363fa2453665805d4ffe29b667a4fb9760e5edf5d71628a9f162a1884b1.scope/system.slice/globular-workflow.service
+             └─32349 /usr/lib/globular/bin/workflow_server
+
+Aug 19 02:45:16 node-1 workflow_server[32349]: time=2026-08-19T02:45:16.985Z level=INFO msg="executor: workflow finished" workflow=cluster.reconcile run_id=reconcile:1787107513652 status=RUN_STATUS_SUCCEEDED
+Aug 19 02:45:43 node-1 workflow_server[32349]: 2026/08/19 02:45:43 workflow: loaded "cluster.reconcile" from etcd (5880 bytes)
+Aug 19 02:45:43 node-1 workflow_server[32349]: time=2026-08-19T02:45:43.763Z level=INFO msg="workflow run started" run_id=reconcile:1787107543652 component="" node="" trigger=TRIGGER_REASON_REPAIR
+Aug 19 02:45:43 node-1 workflow_server[32349]: time=2026-08-19T02:45:43.766Z level=INFO msg="executor: starting workflow" workflow=cluster.reconcile run_id=reconcile:1787107543652 actors="[repository workflow-service cluster-controller node-agent installer]"
+Aug 19 02:45:43 node-1 workflow_server[32349]: time=2026-08-19T02:45:43.766Z level=INFO msg="executor: engine.Execute starting" run_id=reconcile:1787107543652 steps=7
+Aug 19 02:45:43 node-1 workflow_server[32349]: 2026/08/19 02:45:43 workflow: step advance_infra_joins starting (actor=cluster-controller action=controller.reconcile.advance_infra_joins)
+Aug 19 02:45:43 node-1 workflow_server[32349]: 2026/08/19 02:45:43 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 19 02:45:44 node-1 workflow_server[32349]: 2026/08/19 02:45:44 workflow: step advance_infra_joins SUCCEEDED (attempt 1)
+Aug 19 02:45:44 node-1 workflow_server[32349]: 2026/08/19 02:45:44 workflow: step scan_drift starting (actor=cluster-controller action=controller.reconcile.scan_drift)
+Aug 19 02:45:44 node-1 workflow_server[32349]: 2026/08/19 02:45:44 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""

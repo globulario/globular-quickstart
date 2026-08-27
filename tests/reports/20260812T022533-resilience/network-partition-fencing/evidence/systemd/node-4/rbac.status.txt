@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-12 03:03:05 UTC; 2min 13s ago
+    Process: 3494 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 3498 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 3501 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3504 (rbac_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 205.3M (peak: 206.0M)
+        CPU: 826ms
+     CGroup: /system.slice/docker-faed26ba6352b002d9fd2b236802551dff4786595e70459f949ca6642bbf7486.scope/system.slice/globular-rbac.service
+             └─3504 /usr/lib/globular/bin/rbac_server
+
+Aug 12 03:03:06 node-4 rbac_server[3504]: time=2026-08-12T03:03:06.190Z level=INFO msg="starting grpc server" port=10004
+Aug 12 03:03:06 node-4 rbac_server[3504]: 2026/08/12 03:03:06 INFO metrics listening service=rbac.RbacService addr=[::]:10001
+Aug 12 03:03:13 node-4 rbac_server[3504]: 2026/08/12 03:03:13 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 12 03:03:13 node-4 rbac_server[3504]: 2026/08/12 03:03:13 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 12 03:03:16 node-4 rbac_server[3504]: 2026/08/12 03:03:16 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 12 03:03:16 node-4 rbac_server[3504]: 2026/08/12 03:03:16 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 12 03:03:17 node-4 rbac_server[3504]: 2026/08/12 03:03:17 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 12 03:03:17 node-4 rbac_server[3504]: 2026/08/12 03:03:17 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 12 03:03:21 node-4 rbac_server[3504]: 2026/08/12 03:03:21 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 12 03:03:25 node-4 rbac_server[3504]: 2026/08/12 03:03:25 INFO rbac: flushed permission cache on cross-instance RBAC change

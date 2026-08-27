@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 17:31:06 UTC; 4min 16s ago
+    Process: 397 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 403 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 413 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 486 (resource_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 25.4M (peak: 29.9M)
+        CPU: 1.089s
+     CGroup: /system.slice/docker-69025280349b196b081d33f2dd6f3c546bf2bf86ec60e97ca9d44389bf4681a5.scope/system.slice/globular-resource.service
+             └─486 /usr/lib/globular/bin/resource_server
+
+Aug 23 17:31:06 node-2 resource_server[486]: 2026/08/23 17:31:06 INFO scylla: connected id=local_resource hosts=[10.10.0.11] port=9042 keyspace=local_resource
+Aug 23 17:31:06 node-2 resource_server[486]: time=2026-08-23T17:31:06.879Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042
+Aug 23 17:31:06 node-2 resource_server[486]: 2026/08/23 17:31:06 error: failed to connect to "[HostInfo hostname=\"10.10.0.11\" connectAddress=\"10.10.0.11\" peer=\"<nil>\" rpc_address=\"10.10.0.11\" broadcast_address=\"10.10.0.11\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.11\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"f76683e0-1310-4907-a7e2-b720f5e8bb5f\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: EOF
+Aug 23 17:31:07 node-2 resource_server[486]: 2026/08/23 17:31:07 WARN scylla: Count fallback to scan; consider raw CQL with PK WHERE table=local_resource.accounts
+Aug 23 17:31:07 node-2 resource_server[486]: time=2026-08-23T17:31:07.444Z level=ERROR msg="fail to create account dir" error="failed to seed sa account: account with name sa already exist!"
+Aug 23 17:31:07 node-2 resource_server[486]: 2026/08/23 17:31:07 INFO metrics: proxy port conflict, using free port service=resource.ResourceService wanted=10011 actual=43887
+Aug 23 17:31:07 node-2 resource_server[486]: 2026/08/23 17:31:07 INFO metrics listening service=resource.ResourceService addr=[::]:43887
+Aug 23 17:31:15 node-2 resource_server[486]: 2026/08/23 17:31:15 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=resource.session.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 23 17:31:24 node-2 resource_server[486]: 2026/08/23 17:31:24 WARN port/proxy change detected in desired; restart required to take effect service=resource.ResourceService id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 old_port=10011 new_port=10011 old_proxy=43887 new_proxy=10011
+Aug 23 17:31:30 node-2 resource_server[486]: 2026/08/23 17:31:30 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused

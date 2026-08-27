@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-27T06:26:49.335855Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "network-partition-fencing",
+  "suite": "resilience",
+  "result": "PASS",
+  "source_revision": "661b8e66966476e1055ec07b50891dc3d3818e5b",
+  "proof": {
+    "claim": "Verify that Globular detects a network partition and automatically fences the\nisolated node to protect new deployments.\n\nThis test blocks all network traffic on node-3 (a worker node) using iptables,\nthen verifies that:\n  1. The cluster controller detects the heartbeat going stale within ~5 minutes\n  2. The invariant enforcement workflow classifies it as WARN (>5min) then CRITICAL (>15min)\n  3. After the critical threshold, the node is marked with partition_fenced_since\n  4. The fence is automatically cleared when the network is restored and heartbeat resumes\n\nWhat Globular does automatically:\n  - Heartbeat staleness tracked in cluster state (LastSeen field)\n  - WARN after 5 minutes (reconcile blocks new deployments to stale nodes)\n  - CRITICAL after 15 minutes \u2192 sets Metadata[\"partition_fenced_since\"]\n  - Fenced nodes are skipped by the release pipeline\n  - When heartbeat resumes, fence is auto-cleared and node_partition_healed event emitted\n  - If \u22652 nodes go critical simultaneously, quorum_loss_imminent event + etcd alert key written\n\nWhat requires operator action:\n  - Diagnosing and fixing the network issue\n  - Manual node recovery if heartbeat does not resume within the grace period\n\nNOTE: This test uses a worker node (node-3) which does NOT run etcd.\nIsolating a founding node (node-1, node-2, node-3 in a 3-node cluster) would\nrisk actual etcd quorum loss \u2014 use dual-node-failure.yaml for that scenario.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

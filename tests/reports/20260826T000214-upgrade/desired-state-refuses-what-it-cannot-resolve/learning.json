@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-26T00:03:40.078372Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "desired-state-refuses-what-it-cannot-resolve",
+  "suite": "upgrade",
+  "result": "PASS",
+  "source_revision": "f74014a77246bf13da82dcf4aa40c105e1b21f6c",
+  "proof": {
+    "claim": "Desired state must fail CLOSED: the control plane may only be pointed at an\nartifact it can actually resolve and install.\n\nWHY THIS EXISTS. The 2026-08-16 incident began with a deploy that reported\nsuccess it had not achieved, and every scenario in this suite until now\nobserved steady state \u2014 none drove the deploy path at all. The pipeline that\nfailed roughly one run in two had zero scenario coverage of its execution.\n\nThis drives the operator-facing half of that path: `globular services desired\nset`. It is the single command that turns \"an artifact exists\" into \"the\ncluster will install it\", and it is where a bad value does the most damage,\nbecause everything downstream treats desired state as authority.\n\nTHE PROPERTY. A request naming something the repository cannot resolve must be\nREFUSED, not accepted-and-retried-forever. An accepted-but-unresolvable\ndesired state is a rollout that can never finish and never says so: the\ncontroller keeps trying, reconcile keeps failing, and the operator sees a\ncluster that is perpetually \"converging\". That is strictly worse than an error\nat the point of the request.\n\nThree cases are exercised, and the refusals matter more than the acceptance \u2014\nwhich is why they are expressed as actions that FAIL the scenario on the wrong\noutcome, rather than as assertions about state afterwards. An action that\nquietly succeeded where a refusal was required would otherwise leave desired\nstate pointing at nothing while the scenario reported PASS.\n\nNOT COVERED HERE, and worth stating plainly: the desired-state REGRESSION\nfloor. On 2026-08-16 a rollback was refused with \"desired floor is 1.2.317,\nattempted 1.2.316; pass --allow-regression to override (audited)\". Exercising\nthat needs two published versions of one package, and a bundle ships one\nversion per package \u2014 so proving it needs a publish, not just a desired-state\nchange. See deploy-publish-then-converge for the half that is reachable.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

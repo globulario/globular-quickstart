@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 19:02:35 UTC; 10min ago
+    Process: 143 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 189 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 210 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 45.8M (peak: 48.6M)
+        CPU: 8.844s
+     CGroup: /system.slice/docker-777cd9df9c284b941093f537d5294319a57ddc1c880c214bd230bb11b823621a.scope/system.slice/globular-repository.service
+             └─210 /usr/lib/globular/bin/repository_server
+
+Aug 05 19:02:55 node-4 repository_server[210]: 2026/08/05 19:02:55 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=node-1 method=repository.artifact.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 05 19:02:55 node-4 repository_server[210]: 2026/08/05 19:02:55 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=node-1 method=repository.artifact.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 05 19:03:52 node-4 repository_server[210]: 2026/08/05 19:03:52 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 05 19:03:52 node-4 repository_server[210]: 2026/08/05 19:03:52 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 05 19:07:38 node-4 repository_server[210]: 2026/08/05 19:07:38 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 05 19:07:52 node-4 repository_server[210]: 2026/08/05 19:07:52 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 05 19:09:48 node-4 repository_server[210]: 2026/08/05 19:09:48 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 05 19:10:47 node-4 repository_server[210]: 2026/08/05 19:10:47 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10003 new_port=10003 old_proxy=44965 new_proxy=10001
+Aug 05 19:10:52 node-4 repository_server[210]: 2026/08/05 19:10:52 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=180 baseline_ms=20 window=543 new_window=488
+Aug 05 19:12:53 node-4 repository_server[210]: 2026/08/05 19:12:53 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest

@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 23:14:33 UTC; 22min ago
+    Process: 14432 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 14436 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 14439 (ai_executor_ser)
+      Tasks: 20 (limit: 8641)
+     Memory: 36.8M (peak: 40.6M)
+        CPU: 2.824s
+     CGroup: /system.slice/docker-32c39823ab65a7aca959c1030d0fd13e19284d18ea3ba28b626a92a6a30be339.scope/system.slice/globular-ai-executor.service
+             └─14439 /usr/lib/globular/bin/ai_executor_server
+
+Aug 10 23:32:53 node-3 ai_executor_server[14439]: time=2026-08-10T23:32:53.620Z level=INFO msg="INCIDENT RESOLVED" incident_id=cf065682-9513-11f1-9238-02420a0a000b summary="doctor-finding triggered by cluster.finding.created (2 events in batch)" root_cause=unknown_anomaly
+Aug 10 23:32:53 node-3 ai_executor_server[14439]: 2026/08/10 23:32:53 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=62 baseline_ms=20 window=90 new_window=81
+Aug 10 23:34:33 node-3 ai_executor_server[14439]: time=2026-08-10T23:34:33.341Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Aug 10 23:34:33 node-3 ai_executor_server[14439]: time=2026-08-10T23:34:33.347Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 10 23:34:33 node-3 ai_executor_server[14439]: time=2026-08-10T23:34:33.358Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Aug 10 23:34:33 node-3 ai_executor_server[14439]: time=2026-08-10T23:34:33.359Z level=INFO msg="codex: CLI not found"
+Aug 10 23:35:35 node-3 ai_executor_server[14439]: time=2026-08-10T23:35:35.374Z level=INFO msg="processing incident" incident_id=2f76d31d-9514-11f1-9239-02420a0a000b rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=2
+Aug 10 23:35:35 node-3 ai_executor_server[14439]: time=2026-08-10T23:35:35.414Z level=INFO msg="diagnosis complete" incident_id=2f76d31d-9514-11f1-9239-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 10 23:35:35 node-3 ai_executor_server[14439]: time=2026-08-10T23:35:35.414Z level=INFO msg="INCIDENT RESOLVED" incident_id=2f76d31d-9514-11f1-9239-02420a0a000b summary="doctor-finding triggered by cluster.finding.created (2 events in batch)" root_cause=unknown_anomaly
+Aug 10 23:35:35 node-3 ai_executor_server[14439]: 2026/08/10 23:35:35 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=55 baseline_ms=20 window=81 new_window=72

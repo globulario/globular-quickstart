@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:09:27 UTC; 1min 15s ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 62 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 82 (event_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 24.1M (peak: 27.5M)
+        CPU: 1.138s
+     CGroup: /system.slice/docker-46d3e9bf00c9e04118c1a14b2224ddcb115e85cb764bf2551f39a6475b534673.scope/system.slice/globular-event.service
+             └─82 /usr/lib/globular/bin/event_server
+
+Aug 24 17:09:40 node-4 event_server[82]: time=2026-08-24T17:09:40.510Z level=WARN msg="poll events error" bucket=2026-08-24T17:09 err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 24 17:09:40 node-4 event_server[82]: time=2026-08-24T17:09:40.709Z level=WARN msg="poll events error" bucket=2026-08-24T17:09 err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 24 17:09:41 node-4 event_server[82]: 2026/08/24 17:09:41 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 24 17:09:46 node-4 event_server[82]: time=2026-08-24T17:09:46.313Z level=WARN msg="keepalive send failed; will drop stream" uuid=680e2c21-ac17-40e8-b757-ea1da75be150 err="rpc error: code = Unavailable desc = transport is closing"
+Aug 24 17:09:46 node-4 event_server[82]: time=2026-08-24T17:09:46.313Z level=INFO msg="subscriber cleanup" uuid=680e2c21-ac17-40e8-b757-ea1da75be150
+Aug 24 17:09:46 node-4 event_server[82]: time=2026-08-24T17:09:46.313Z level=INFO msg="OnEvent: stream ended" uuid=680e2c21-ac17-40e8-b757-ea1da75be150
+Aug 24 17:10:30 node-4 event_server[82]: time=2026-08-24T17:10:30.781Z level=INFO msg="Subscribe: ok" channel=operation.restart_requested uuid=571a5921-e843-4102-8676-b1552be599d8
+Aug 24 17:10:30 node-4 event_server[82]: time=2026-08-24T17:10:30.781Z level=INFO msg=subscribed channel=operation.restart_requested uuid=571a5921-e843-4102-8676-b1552be599d8 subscribers=1
+Aug 24 17:10:30 node-4 event_server[82]: time=2026-08-24T17:10:30.916Z level=INFO msg="Subscribe: ok" channel=alert.* uuid=52126578-2626-4e1d-8f09-0f5530d340c2
+Aug 24 17:10:30 node-4 event_server[82]: time=2026-08-24T17:10:30.916Z level=INFO msg=subscribed channel=alert.* uuid=52126578-2626-4e1d-8f09-0f5530d340c2 subscribers=1

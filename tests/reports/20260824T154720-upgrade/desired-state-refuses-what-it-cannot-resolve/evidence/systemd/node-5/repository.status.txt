@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 15:16:48 UTC; 32min ago
+    Process: 165 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 202 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 232 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 39.3M (peak: 76.9M)
+        CPU: 8.320s
+     CGroup: /system.slice/docker-fc3370877ddffa814bdba4fa8349b78cd8af40773b6e1301274777b8655f6f94.scope/system.slice/globular-repository.service
+             └─232 /usr/lib/globular/bin/repository_server
+
+Aug 24 15:45:56 node-5 repository_server[232]: 2026/08/24 15:45:56 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=41 baseline_ms=20 window=1234 new_window=1110
+Aug 24 15:45:56 node-5 repository_server[232]: 2026/08/24 15:45:56 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=42 baseline_ms=20 window=1111 new_window=999
+Aug 24 15:45:56 node-5 repository_server[232]: 2026/08/24 15:45:56 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=47 baseline_ms=20 window=999 new_window=899
+Aug 24 15:45:56 node-5 repository_server[232]: 2026/08/24 15:45:56 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=57 baseline_ms=20 window=899 new_window=809
+Aug 24 15:46:49 node-5 repository_server[232]: time=2026-08-24T15:46:49.858Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 24 15:47:18 node-5 repository_server[232]: 2026/08/24 15:47:18 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=172 baseline_ms=20 window=1272 new_window=1144
+Aug 24 15:47:25 node-5 repository_server[232]: 2026/08/24 15:47:25 INFO artifact upload idempotent: identical artifact already exists key=core@globular.io%dns%1.2.317%linux_amd64%1 build_id=01a03430-d6b4-7982-a2bf-4aa9d21379c6 build=1 publish_state=PUBLISHED
+Aug 24 15:47:36 node-5 repository_server[232]: 2026/08/24 15:47:36 WARN skipping invalid version row in GetArtifactVersions key=ledger/core@globular.io/dns
+Aug 24 15:47:43 node-5 repository_server[232]: 2026/08/24 15:47:43 WARN authz_decision audit="{\"timestamp\":\"2026-08-24T15:47:43.037308288Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 24 15:47:43 node-5 repository_server[232]: 2026/08/24 15:47:43 WARN authz_decision audit="{\"timestamp\":\"2026-08-24T15:47:43.319236555Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown

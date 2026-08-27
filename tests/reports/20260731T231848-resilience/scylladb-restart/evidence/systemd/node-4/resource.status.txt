@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:41:23 UTC; 12min ago
+    Process: 484 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 490 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 500 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 623 (resource_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 23.9M (peak: 30.3M)
+        CPU: 2.031s
+     CGroup: /system.slice/docker-928b88015d720a8f11737bd2e4cef31a0f068e077aace4373fcff00bacea7705.scope/system.slice/globular-resource.service
+             └─623 /usr/lib/globular/bin/resource_server
+
+Jul 31 23:44:38 node-4 resource_server[623]: {"level":"warn","ts":"2026-07-31T23:44:38.843112Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000524f00/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:44:40 node-4 resource_server[623]: {"level":"warn","ts":"2026-07-31T23:44:40.909864Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000524f00/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:44:44 node-4 resource_server[623]: {"level":"warn","ts":"2026-07-31T23:44:44.91162Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000524f00/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:50:23 node-4 resource_server[623]: 2026/07/31 23:50:23 INFO acc: warmup complete baseline_rtt_ms=20 samples=204 elapsed=7m45s
+Jul 31 23:50:34 node-4 resource_server[623]: {"level":"warn","ts":"2026-07-31T23:50:34.398109Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000524f00/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:50:34 node-4 resource_server[623]: {"level":"info","ts":"2026-07-31T23:50:34.398214Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 23:51:39 node-4 resource_server[623]: {"level":"warn","ts":"2026-07-31T23:51:39.413553Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000524f00/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:51:39 node-4 resource_server[623]: {"level":"info","ts":"2026-07-31T23:51:39.413657Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 23:53:14 node-4 resource_server[623]: {"level":"warn","ts":"2026-07-31T23:53:14.507995Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000524f00/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:53:14 node-4 resource_server[623]: {"level":"info","ts":"2026-07-31T23:53:14.508094Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

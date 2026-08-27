@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-23T21:29:31.895759Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/authority/crash-during-mutation-is-atomic.yaml",
+  "scenario": "crash-during-mutation-is-atomic",
+  "suite": "authority",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "A mutation interrupted by a crash must end in one of exactly two states:\nit never happened, or it completed exactly once.\n\nTHE FAULT. Begin a real desired-state mutation, then SIGKILL the controller\nwhile it is in flight. Let it restart and settle.\n\n    desired-state write begins\n          \u2193  SIGKILL \u2014 no shutdown, no flush, no cleanup\n    controller restarts with no memory of what it was doing\n          \u2193\n    the cluster must resolve to one of two states, and no other\n\nTHE TWO ACCEPTABLE OUTCOMES:\n\n    the operation never happened\n    the operation eventually converged exactly once\n\nThere is no third state, and in particular there is no state called \"the\nworkflow says SUCCEEDED\". This suite has already established that a child\nworkflow reporting SUCCEEDED is dispatch acknowledgement rather than install\nproof, so \"it says it worked\" is not one of the permitted answers.\n\nWHAT MUST NOT HAPPEN. A desired-state record without its generation. An\nartifact published twice, or once under two build_ids. A reconcile loop that\nkeeps retrying a half-finished transition. A release marked converged on\nevidence written before the crash.\n\nSCOPE, STATED PLAINLY. This kills at ONE boundary \u2014 the controller during a\ndesired-state write. The full fault matrix wants a killpoint at every durable\ntransition:\n\n    publish \u2192 desired generation \u2192 dispatch \u2192 download \u2192\n    install \u2192 service start \u2192 installed receipt \u2192 converged\n\nand running the same scenario once per boundary, with only the two outcomes\nabove permitted at each. That needs deterministic failpoints inside the\nservices, because from outside the harness cannot reliably observe the moment\nbetween \"package installed\" and \"receipt written\" \u2014 the window is small and\nunobservable, and a timing-based approximation would test whichever boundary it\nhappened to hit rather than the one it named. Until those failpoints exist,\nthis scenario covers the boundary that IS reachable and says so, rather than\nclaiming a matrix it does not run.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-23T21:34:30.398323Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

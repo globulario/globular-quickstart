@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 19:04:33 UTC; 4min 36s ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 62 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 85 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 29.0M (peak: 30.7M)
+        CPU: 3.704s
+     CGroup: /system.slice/docker-c614908eae77dbf4f1bb2e5b7eeb70368e8053dbd05376ba648db6afd6e2a352.scope/system.slice/globular-event.service
+             └─85 /usr/lib/globular/bin/event_server
+
+Aug 10 19:06:53 node-4 event_server[85]: time=2026-08-10T19:06:53.712Z level=WARN msg="keepalive send failed; will drop stream" uuid=218d9f96-946c-49c4-8d1c-87b37136d4f5 err="rpc error: code = Unavailable desc = transport is closing"
+Aug 10 19:06:53 node-4 event_server[85]: time=2026-08-10T19:06:53.713Z level=INFO msg="subscriber cleanup" uuid=218d9f96-946c-49c4-8d1c-87b37136d4f5
+Aug 10 19:06:53 node-4 event_server[85]: time=2026-08-10T19:06:53.713Z level=INFO msg="OnEvent: stream ended" uuid=218d9f96-946c-49c4-8d1c-87b37136d4f5
+Aug 10 19:06:58 node-4 event_server[85]: time=2026-08-10T19:06:58.056Z level=INFO msg="Subscribe: ok" channel=alert.* uuid=ai_router_alert.*
+Aug 10 19:06:58 node-4 event_server[85]: time=2026-08-10T19:06:58.056Z level=INFO msg=subscribed channel=alert.* uuid=ai_router_alert.* subscribers=1
+Aug 10 19:07:05 node-4 event_server[85]: time=2026-08-10T19:07:05.060Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=node_agent_handler_6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 10 19:07:05 node-4 event_server[85]: time=2026-08-10T19:07:05.060Z level=INFO msg=subscribed channel=operation.* uuid=node_agent_handler_6400b443-cf38-52da-a683-de2fc5103c0b subscribers=1
+Aug 10 19:07:20 node-4 event_server[85]: time=2026-08-10T19:07:20.708Z level=INFO msg="subscriber cleanup" uuid=ai_router_alert.*
+Aug 10 19:08:08 node-4 event_server[85]: {"level":"warn","ts":"2026-08-10T19:08:08.29575Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00026cf00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 10 19:08:08 node-4 event_server[85]: {"level":"info","ts":"2026-08-10T19:08:08.29584Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

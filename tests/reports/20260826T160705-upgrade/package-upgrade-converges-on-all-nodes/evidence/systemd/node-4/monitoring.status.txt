@@ -1,0 +1,21 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 16:05:51 UTC; 39min ago
+    Process: 137 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 178 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 214 (monitoring_serv)
+      Tasks: 19 (limit: 8641)
+     Memory: 21.9M (peak: 28.0M)
+        CPU: 1.340s
+     CGroup: /system.slice/docker-330f1ea0cf83a8af762d90d84c6055397430bd86f6bd39f22fb343b17915c43a.scope/system.slice/globular-monitoring.service
+             └─214 /usr/lib/globular/bin/monitoring_server
+
+Aug 26 16:05:51 node-4 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 26 16:05:51 node-4 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 26 16:05:51 node-4 monitoring_server[214]: PortAllocator range: 10000 - 20000
+Aug 26 16:05:52 node-4 monitoring_server[214]: 2026/08/26 16:05:52 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 26 16:05:52 node-4 monitoring_server[214]: time=2026-08-26T16:05:52.428Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=619
+Aug 26 16:05:52 node-4 monitoring_server[214]: 2026/08/26 16:05:52 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 26 16:12:34 node-4 monitoring_server[214]: {"level":"warn","ts":"2026-08-26T16:12:34.554647Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002ba960/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 26 16:12:34 node-4 monitoring_server[214]: {"level":"info","ts":"2026-08-26T16:12:34.554747Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 26 16:35:59 node-4 monitoring_server[214]: 2026/08/26 16:35:59 INFO acc: warmup complete baseline_rtt_ms=20 samples=149 elapsed=30m0s

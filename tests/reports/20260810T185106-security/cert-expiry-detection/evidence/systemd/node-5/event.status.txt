@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 19:07:07 UTC; 1min 39s ago
+    Process: 52 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 67 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 94 (event_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 21.5M (peak: 25.3M)
+        CPU: 463ms
+     CGroup: /system.slice/docker-1922b087c7ce4994106927b33fe351bd335db325f5159c76517c47c941292364.scope/system.slice/globular-event.service
+             └─94 /usr/lib/globular/bin/event_server
+
+Aug 10 19:08:18 node-5 event_server[94]: {"level":"warn","ts":"2026-08-10T19:08:18.6293Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00012b860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 10 19:08:18 node-5 event_server[94]: {"level":"info","ts":"2026-08-10T19:08:18.629362Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 10 19:08:20 node-5 event_server[94]: time=2026-08-10T19:08:20.645Z level=WARN msg="poll events error" bucket=2026-08-10T19:08 err="gocql: no response received from cassandra within timeout period"
+Aug 10 19:08:23 node-5 event_server[94]: 2026/08/10 19:08:23 gocql: unable to dial control conn 10.10.0.12:9042: dial tcp 10.10.0.12:9042: i/o timeout
+Aug 10 19:08:30 node-5 event_server[94]: time=2026-08-10T19:08:30.647Z level=WARN msg="save cursor failed" err="gocql: no response received from cassandra within timeout period"
+Aug 10 19:08:32 node-5 event_server[94]: time=2026-08-10T19:08:32.839Z level=WARN msg="dependency health check failed" dep=scylladb err="gocql: no response received from cassandra within timeout period"
+Aug 10 19:08:33 node-5 event_server[94]: 2026/08/10 19:08:33 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: i/o timeout
+Aug 10 19:08:33 node-5 event_server[94]: 2026/08/10 19:08:33 gocql: unable to reconnect control connection: dial tcp 10.10.0.13:9042: i/o timeout
+Aug 10 19:08:40 node-5 event_server[94]: time=2026-08-10T19:08:40.649Z level=WARN msg="poll events error" bucket=2026-08-10T19:07 err="gocql: no response received from cassandra within timeout period"
+Aug 10 19:08:44 node-5 event_server[94]: 2026/08/10 19:08:44 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: i/o timeout

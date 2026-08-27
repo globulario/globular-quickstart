@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:36:48 UTC; 12min ago
+    Process: 53 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 70 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 90 (event_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 22.0M (peak: 25.0M)
+        CPU: 1.766s
+     CGroup: /system.slice/docker-5d41c244d63fdf110484c187a88324bad4f368046e8c066d557e163129a4efee.scope/system.slice/globular-event.service
+             └─90 /usr/lib/globular/bin/event_server
+
+Aug 05 16:48:24 node-5 event_server[90]: {"level":"warn","ts":"2026-08-05T16:48:24.497202Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002d41e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = error reading from server: read tcp 10.10.0.15:34214->10.10.0.11:2379: read: connection reset by peer"}
+Aug 05 16:48:28 node-5 event_server[90]: {"level":"warn","ts":"2026-08-05T16:48:28.436567Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000446f00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 05 16:48:28 node-5 event_server[90]: {"level":"info","ts":"2026-08-05T16:48:28.436669Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 05 16:48:46 node-5 event_server[90]: 2026/08/05 16:48:46 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.15:10002: connect: connection refused\""
+Aug 05 16:49:03 node-5 event_server[90]: 2026/08/05 16:49:03 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.15:10002: connect: connection refused\""
+Aug 05 16:49:11 node-5 event_server[90]: 2026/08/05 16:49:11 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.15:10002: connect: connection refused\""
+Aug 05 16:49:11 node-5 event_server[90]: time=2026-08-05T16:49:11.359Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=43c56ae9-3adc-4668-b196-7aaef3d07367
+Aug 05 16:49:11 node-5 event_server[90]: time=2026-08-05T16:49:11.359Z level=INFO msg=subscribed channel=operation.* uuid=43c56ae9-3adc-4668-b196-7aaef3d07367 subscribers=2
+Aug 05 16:49:11 node-5 event_server[90]: time=2026-08-05T16:49:11.361Z level=INFO msg="OnEvent: registered" uuid=43c56ae9-3adc-4668-b196-7aaef3d07367
+Aug 05 16:49:11 node-5 event_server[90]: time=2026-08-05T16:49:11.361Z level=INFO msg="stream registered" uuid=43c56ae9-3adc-4668-b196-7aaef3d07367

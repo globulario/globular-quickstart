@@ -1,0 +1,23 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:25:01 UTC; 1min 26s ago
+    Process: 778 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 782 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 784 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 791 (dns_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 27.5M (peak: 29.5M)
+        CPU: 551ms
+     CGroup: /system.slice/docker-8a2300a0f18747bba3241876cd92062f2571f5a82547685010954d3da55c4b12.scope/system.slice/globular-dns.service
+             └─791 /usr/lib/globular/bin/dns_server
+
+Aug 22 19:25:32 node-2 dns_server[791]: time=2026-08-22T19:25:32.268Z level=WARN msg="domain cache refresh failed" err="Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 1, alive 0"
+Aug 22 19:25:33 node-2 dns_server[791]: time=2026-08-22T19:25:33.492Z level=ERROR msg="dns dependency degraded; rejecting RPC" err="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down"
+Aug 22 19:25:37 node-2 dns_server[791]: time=2026-08-22T19:25:37.806Z level=ERROR msg="dns dependency degraded; rejecting RPC" err="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down"
+Aug 22 19:25:37 node-2 dns_server[791]: time=2026-08-22T19:25:37.820Z level=ERROR msg="dns dependency degraded; rejecting RPC" err="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down"
+Aug 22 19:25:47 node-2 dns_server[791]: time=2026-08-22T19:25:47.111Z level=WARN msg="dependency health check failed" dep=scylladb err="Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 1, alive 0"
+Aug 22 19:26:02 node-2 dns_server[791]: time=2026-08-22T19:26:02.114Z level=WARN msg="dependency health check failed" dep=scylladb err="Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 1, alive 0"
+Aug 22 19:26:02 node-2 dns_server[791]: time=2026-08-22T19:26:02.269Z level=WARN msg="domain cache refresh failed" err="Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 1, alive 0"
+Aug 22 19:26:03 node-2 dns_server[791]: time=2026-08-22T19:26:03.520Z level=ERROR msg="dns dependency degraded; rejecting RPC" err="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: degraded (Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 1, alive 0)"
+Aug 22 19:26:07 node-2 dns_server[791]: time=2026-08-22T19:26:07.821Z level=ERROR msg="dns dependency degraded; rejecting RPC" err="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: degraded (Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 1, alive 0)"
+Aug 22 19:26:17 node-2 dns_server[791]: time=2026-08-22T19:26:17.112Z level=INFO msg="dependencies recovered — service is SERVING"

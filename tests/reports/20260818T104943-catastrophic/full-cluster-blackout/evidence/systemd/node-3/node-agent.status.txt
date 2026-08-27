@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:56:31 UTC; 13s ago
+    Process: 201 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 227 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 257 (node_agent_serv)
+      Tasks: 19 (limit: 8641)
+     Memory: 21.7M (peak: 34.9M)
+        CPU: 10.028s
+     CGroup: /system.slice/docker-125f94d8224fd1635dcec958e8671abd276b2dca5e533a6b55d7697e3fec591c.scope/system.slice/globular-node-agent.service
+             └─257 /usr/lib/globular/bin/node_agent_server
+
+Aug 18 10:56:32 node-3 node_agent_server[257]: 2026/08/18 10:56:32 ca-key-sync: DISABLED by default (CA private key must stay on signer authority; enable with EnableCAKeySync())
+Aug 18 10:56:33 node-3 node_agent_server[257]: 2026/08/18 10:56:33 ingress: starting reconciliation loop (interval: 30s)
+Aug 18 10:56:33 node-3 node_agent_server[257]: 2026/08/18 10:56:33 INFO etcd.maintenance_started endpoint=https://10.10.0.13:2379 interval=1m0s min_file_bytes=268435456 min_reclaim_bytes=67108864
+Aug 18 10:56:33 node-3 node_agent_server[257]: 2026/08/18 10:56:33 ingress: keepalived disabled on node a166b992-b66d-53cb-b7c7-61dfa4dd5a36
+Aug 18 10:56:33 node-3 node_agent_server[257]: 2026/08/18 10:56:33 node agent listening on 0.0.0.0:11000
+Aug 18 10:56:33 node-3 node_agent_server[257]: 2026/08/18 10:56:33 behavioral observation: infra_probe skipped component=minio node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.11:443: connect: connection refused"
+Aug 18 10:56:33 node-3 node_agent_server[257]: 2026/08/18 10:56:33 behavioral observation: infra_probe skipped component=etcd node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused"
+Aug 18 10:56:33 node-3 node_agent_server[257]: 2026/08/18 10:56:33 behavioral observation: infra_probe skipped component=scylladb node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 18 10:56:33 node-3 node_agent_server[257]: 2026/08/18 10:56:33 behavioral observation: infra_probe skipped component=envoy node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused"
+Aug 18 10:56:33 node-3 node_agent_server[257]: 2026/08/18 10:56:33 metrics listening on 0.0.0.0:11001 (saved=11001, default=11001)

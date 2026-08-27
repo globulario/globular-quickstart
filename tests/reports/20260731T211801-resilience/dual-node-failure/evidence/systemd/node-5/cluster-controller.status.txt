@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:40:40 UTC; 13s ago
+    Process: 153 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 171 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 194 (cluster_control)
+      Tasks: 16 (limit: 8641)
+     Memory: 29.7M (peak: 30.8M)
+        CPU: 692ms
+     CGroup: /system.slice/docker-4908e77bbf99ff3f7b177f626a29d247c8f9ef6a704b5c704dbea822ab1ca85b.scope/system.slice/globular-cluster-controller.service
+             └─194 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 21:40:48 node-5 cluster_controller_server[194]: time=2026-07-31T21:40:48.266Z level=INFO msg="dns reconciler: ENABLED" domain=globular.internal endpoints=[]
+Jul 31 21:40:48 node-5 cluster_controller_server[194]: time=2026-07-31T21:40:48.266Z level=INFO msg="starting domain reconciler" interval=1m0s certs_dir=/var/lib/globular/domains renew_before=720h0m0s
+Jul 31 21:40:48 node-5 cluster_controller_server[194]: 2026/07/31 21:40:48 dns reconciler: starting loop (interval=30s)
+Jul 31 21:40:48 node-5 cluster_controller_server[194]: 2026/07/31 21:40:48 dns reconciler: starting health check loop (interval=30s)
+Jul 31 21:40:48 node-5 cluster_controller_server[194]: time=2026-07-31T21:40:48.266Z level=INFO msg="domain reconciler: ENABLED" certs_dir=/var/lib/globular/domains interval=1m renew_before=30d
+Jul 31 21:40:48 node-5 cluster_controller_server[194]: time=2026-07-31T21:40:48.305Z level=INFO msg="cluster controller ready" address=:12000 config=/var/lib/globular/cluster-controller/config.json cluster_domain=globular.internal version=1.2.288
+Jul 31 21:40:52 node-5 cluster_controller_server[194]: 2026/07/31 21:40:52 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Jul 31 21:40:52 node-5 cluster_controller_server[194]: 2026/07/31 21:40:52 ensureNodeExecutorBinding: bound node-5 to role globular-node-executor
+Jul 31 21:40:53 node-5 cluster_controller_server[194]: 2026/07/31 21:40:53 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Jul 31 21:40:53 node-5 cluster_controller_server[194]: 2026/07/31 21:40:53 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003

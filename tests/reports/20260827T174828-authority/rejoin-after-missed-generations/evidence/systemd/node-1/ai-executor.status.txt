@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 18:23:48 UTC; 42min ago
+    Process: 686 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 710 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 727 (ai_executor_ser)
+      Tasks: 23 (limit: 8641)
+     Memory: 31.9M (peak: 39.2M)
+        CPU: 7.733s
+     CGroup: /system.slice/docker-4c675f6508b9a86c7b995eb51d86a0499df1ded44d81b29ffb1411f52fc36f32.scope/system.slice/globular-ai-executor.service
+             └─727 /usr/lib/globular/bin/ai_executor_server
+
+Aug 27 19:06:18 node-1 ai_executor_server[727]: 2026/08/27 19:06:18 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=102 baseline_ms=20 window=10 new_window=10
+Aug 27 19:06:18 node-1 ai_executor_server[727]: time=2026-08-27T19:06:18.715Z level=INFO msg="diagnosis complete" incident_id=62556439-a24a-11f1-8cbc-02420a0a000f root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 27 19:06:18 node-1 ai_executor_server[727]: time=2026-08-27T19:06:18.715Z level=INFO msg="INCIDENT RESOLVED" incident_id=62556439-a24a-11f1-8cbc-02420a0a000f summary="doctor-finding triggered by cluster.finding.resolved (2 events in batch)" root_cause=unknown_anomaly
+Aug 27 19:06:18 node-1 ai_executor_server[727]: 2026/08/27 19:06:18 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=78 baseline_ms=20 window=10 new_window=10
+Aug 27 19:06:27 node-1 ai_executor_server[727]: time=2026-08-27T19:06:27.856Z level=INFO msg="processing incident" incident_id=67d15f25-a24a-11f1-8cbd-02420a0a000f rule_id=service-failed tier=1 trigger=service.failed batch_size=1
+Aug 27 19:06:27 node-1 ai_executor_server[727]: time=2026-08-27T19:06:27.959Z level=INFO msg="diagnosis complete" incident_id=67d15f25-a24a-11f1-8cbd-02420a0a000f root_cause="unknown_anomaly (etcd)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 27 19:06:27 node-1 ai_executor_server[727]: time=2026-08-27T19:06:27.959Z level=INFO msg="executing remediation" incident=67d15f25-a24a-11f1-8cbd-02420a0a000f action_type=ACTION_NONE target=observe_and_record
+Aug 27 19:06:27 node-1 ai_executor_server[727]: time=2026-08-27T19:06:27.959Z level=ERROR msg="remediation failed" incident=67d15f25-a24a-11f1-8cbd-02420a0a000f action_type=ACTION_NONE err="no backend supports action type ACTION_NONE"
+Aug 27 19:06:27 node-1 ai_executor_server[727]: time=2026-08-27T19:06:27.959Z level=ERROR msg="REMEDIATION FAILED" incident_id=67d15f25-a24a-11f1-8cbd-02420a0a000f summary="service-failed triggered by service.failed on etcd (1 events in batch)" proposed_action=observe_and_record
+Aug 27 19:06:27 node-1 ai_executor_server[727]: 2026/08/27 19:06:27 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=117 baseline_ms=20 window=10 new_window=10

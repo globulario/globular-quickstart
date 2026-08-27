@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 00:57:45 UTC; 20min ago
+    Process: 146 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 181 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 211 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 37.9M (peak: 41.2M)
+        CPU: 14.952s
+     CGroup: /system.slice/docker-fa274bd9520896b53f510fb132911781e9b929eb6ae2a2b3a1c60551930496d4.scope/system.slice/globular-repository.service
+             └─211 /usr/lib/globular/bin/repository_server
+
+Aug 25 01:14:12 node-4 repository_server[211]: 2026/08/25 01:14:12 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 25 01:14:53 node-4 repository_server[211]: 2026/08/25 01:14:53 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=44 baseline_ms=20 window=1757 new_window=1581
+Aug 25 01:14:55 node-4 repository_server[211]: 2026/08/25 01:14:55 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=205 baseline_ms=20 window=1671 new_window=1503
+Aug 25 01:15:12 node-4 repository_server[211]: 2026/08/25 01:15:12 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=50 baseline_ms=20 window=1649 new_window=1484
+Aug 25 01:15:12 node-4 repository_server[211]: 2026/08/25 01:15:12 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=43 baseline_ms=20 window=1484 new_window=1335
+Aug 25 01:15:12 node-4 repository_server[211]: 2026/08/25 01:15:12 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=57 baseline_ms=20 window=1207 new_window=1086
+Aug 25 01:15:12 node-4 repository_server[211]: 2026/08/25 01:15:12 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=45 baseline_ms=20 window=1341 new_window=1206
+Aug 25 01:15:12 node-4 repository_server[211]: 2026/08/25 01:15:12 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=53 baseline_ms=20 window=1086 new_window=977
+Aug 25 01:17:13 node-4 repository_server[211]: 2026/08/25 01:17:13 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=174 baseline_ms=20 window=1624 new_window=1461
+Aug 25 01:17:52 node-4 repository_server[211]: time=2026-08-25T01:17:52.301Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"

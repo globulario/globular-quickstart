@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 21:15:58 UTC; 1min 40s ago
+    Process: 323 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 343 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 349 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 417 (workflow_server)
+      Tasks: 16 (limit: 8641)
+     Memory: 24.8M (peak: 26.1M)
+        CPU: 540ms
+     CGroup: /system.slice/docker-0e78af8ba1bdfc8422d186913ed0a329b6a26c7e02110e620250056d31653f1d.scope/system.slice/globular-workflow.service
+             └─417 /usr/lib/globular/bin/workflow_server
+
+Aug 23 21:17:22 node-2 workflow_server[417]: 2026/08/23 21:17:22 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: no route to host
+Aug 23 21:17:22 node-2 workflow_server[417]: 2026/08/23 21:17:22 gocql: unable to reconnect control connection: dial tcp 10.10.0.13:9042: connect: no route to host
+Aug 23 21:17:23 node-2 workflow_server[417]: 2026/08/23 21:17:23 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 23 21:17:25 node-2 workflow_server[417]: 2026/08/23 21:17:25 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: no route to host
+Aug 23 21:17:25 node-2 workflow_server[417]: 2026/08/23 21:17:25 gocql: unable to connect to any ring node: dial tcp 10.10.0.13:9042: connect: no route to host
+Aug 23 21:17:25 node-2 workflow_server[417]: 2026/08/23 21:17:25 gocql: control falling back to initial contact points.
+Aug 23 21:17:25 node-2 workflow_server[417]: 2026/08/23 21:17:25 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 23 21:17:29 node-2 workflow_server[417]: 2026/08/23 21:17:29 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: no route to host
+Aug 23 21:17:29 node-2 workflow_server[417]: 2026/08/23 21:17:29 gocql: unable to reconnect control connection: dial tcp 10.10.0.13:9042: connect: no route to host
+Aug 23 21:17:31 node-2 workflow_server[417]: time=2026-08-23T21:17:31.554Z level=INFO msg="dependencies recovered — service is SERVING"

@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 04:18:26 UTC; 11s ago
+    Process: 169 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 459 (envoy)
+      Tasks: 8 (limit: 8641)
+     Memory: 19.8M (peak: 20.4M)
+        CPU: 188ms
+     CGroup: /system.slice/docker-d47a4e1b03f1e4d77b830f317694cfe422d58e219a7d5c9cada6466e4164ad60.scope/system.slice/globular-envoy.service
+             └─459 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Aug 27 04:18:26 node-5 envoy[459]: [2026-08-27 04:18:26.571][459][info][config] [source/server/configuration_impl.cc:156] loading stats configuration
+Aug 27 04:18:26 node-5 envoy[459]: [2026-08-27 04:18:26.571][459][info][runtime] [source/common/runtime/runtime_impl.cc:550] RTDS has finished initialization
+Aug 27 04:18:26 node-5 envoy[459]: [2026-08-27 04:18:26.571][459][info][upstream] [source/common/upstream/cluster_manager_impl.cc:244] cm init: initializing cds
+Aug 27 04:18:26 node-5 envoy[459]: [2026-08-27 04:18:26.573][459][warning][main] [source/server/server.cc:1001] There is no configured limit to the number of allowed active downstream connections. Configure a limit in `envoy.resource_monitors.global_downstream_max_connections` resource monitor.
+Aug 27 04:18:26 node-5 envoy[459]: [2026-08-27 04:18:26.573][459][info][main] [source/server/server.cc:1043] starting main dispatch loop
+Aug 27 04:18:27 node-5 envoy[459]: [2026-08-27 04:18:27.288][459][info][upstream] [source/common/upstream/cds_api_helper.cc:34] cds: response indicates 26 added/updated cluster(s), 1 removed cluster(s); applying changes
+Aug 27 04:18:27 node-5 envoy[459]: [2026-08-27 04:18:27.339][459][info][upstream] [source/common/upstream/cds_api_helper.cc:87] cds: added/updated 26 cluster(s) (skipped 0 unmodified cluster(s)); removed 0 cluster(s)
+Aug 27 04:18:27 node-5 envoy[459]: [2026-08-27T04:18:27.352Z] "GET /ready HTTP/1.1" 503 - 0 17 0 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 27 04:18:36 node-5 envoy[459]: [2026-08-27T04:18:27.353Z] "GET /server_info HTTP/1.1" 200 - 0 98012 2 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 27 04:18:36 node-5 envoy[459]: [2026-08-27T04:18:27.358Z] "GET /stats?format=json HTTP/1.1" 200 - 0 389124 5 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"

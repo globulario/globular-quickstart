@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:25 UTC; 14min ago
+    Process: 153 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 181 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 204 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 291 (rbac_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 127.2M (peak: 127.9M swap: 208.0K swap peak: 1.6M)
+        CPU: 27.651s
+     CGroup: /system.slice/docker-c69956e40d44afec6c24aae66a0eb98093a9df7e8d446a0705e3a4916478dce3.scope/system.slice/globular-rbac.service
+             └─291 /usr/lib/globular/bin/rbac_server
+
+Aug 18 19:19:21 node-4 rbac_server[291]: {"level":"info","ts":"2026-08-18T19:19:21.25507Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 18 19:19:23 node-4 rbac_server[291]: {"level":"warn","ts":"2026-08-18T19:19:23.210801Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc026e01860/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:19:24 node-4 rbac_server[291]: 2026/08/18 19:19:24 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10004 new_port=10001 old_proxy=35209 new_proxy=10001
+Aug 18 19:19:24 node-4 rbac_server[291]: time=2026-08-18T19:19:24.586Z level=INFO msg="permissions store (re)connected" backend=scylla
+Aug 18 19:19:24 node-4 rbac_server[291]: 2026/08/18 19:19:24 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10001 new_port=10004 old_proxy=10001 new_proxy=10001
+Aug 18 19:19:26 node-4 rbac_server[291]: 2026/08/18 19:19:26 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10004 new_port=10018 old_proxy=10001 new_proxy=10001
+Aug 18 19:19:34 node-4 rbac_server[291]: 2026/08/18 19:19:34 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 19:20:28 node-4 rbac_server[291]: 2026/08/18 19:20:28 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 19:20:42 node-4 rbac_server[291]: 2026/08/18 19:20:42 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 19:24:25 node-4 rbac_server[291]: 2026/08/18 19:24:25 INFO acc: warmup complete baseline_rtt_ms=20 samples=201 elapsed=5m0s

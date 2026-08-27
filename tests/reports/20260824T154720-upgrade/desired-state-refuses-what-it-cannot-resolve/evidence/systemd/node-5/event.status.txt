@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 15:16:48 UTC; 32min ago
+    Process: 52 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 68 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 90 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 29.0M (peak: 30.9M)
+        CPU: 7.515s
+     CGroup: /system.slice/docker-fc3370877ddffa814bdba4fa8349b78cd8af40773b6e1301274777b8655f6f94.scope/system.slice/globular-event.service
+             └─90 /usr/lib/globular/bin/event_server
+
+Aug 24 15:42:35 node-5 event_server[90]: time=2026-08-24T15:42:35.276Z level=INFO msg="Subscribe: ok" channel=service.* uuid=58046852-ecb1-44bf-a705-e4f6b2e776ed
+Aug 24 15:42:35 node-5 event_server[90]: time=2026-08-24T15:42:35.276Z level=INFO msg=subscribed channel=service.* uuid=58046852-ecb1-44bf-a705-e4f6b2e776ed subscribers=2
+Aug 24 15:42:35 node-5 event_server[90]: time=2026-08-24T15:42:35.277Z level=INFO msg="Subscribe: ok" channel=cluster.* uuid=58046852-ecb1-44bf-a705-e4f6b2e776ed
+Aug 24 15:42:35 node-5 event_server[90]: time=2026-08-24T15:42:35.277Z level=INFO msg=subscribed channel=cluster.* uuid=58046852-ecb1-44bf-a705-e4f6b2e776ed subscribers=2
+Aug 24 15:42:35 node-5 event_server[90]: time=2026-08-24T15:42:35.278Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=58046852-ecb1-44bf-a705-e4f6b2e776ed
+Aug 24 15:42:35 node-5 event_server[90]: time=2026-08-24T15:42:35.278Z level=INFO msg=subscribed channel=operation.* uuid=58046852-ecb1-44bf-a705-e4f6b2e776ed subscribers=4
+Aug 24 15:42:55 node-5 event_server[90]: 2026/08/24 15:42:55 ERROR Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0 (repeated 5 times in 30s) domain=10.10.0.15:8443 application=event.EventService user="" method=/event.EventService/Publish function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 24 15:42:56 node-5 event_server[90]: time=2026-08-24T15:42:56.612Z level=INFO msg="subscriber cleanup" uuid=node_agent_handler_35ac3821-6b90-52eb-a800-41130471770b
+Aug 24 15:44:33 node-5 event_server[90]: time=2026-08-24T15:44:33.806Z level=INFO msg="OnEvent: registered" uuid=d4ab1693-d7a0-4f1c-9d47-43220e98d0ec
+Aug 24 15:44:33 node-5 event_server[90]: time=2026-08-24T15:44:33.806Z level=INFO msg="stream registered" uuid=d4ab1693-d7a0-4f1c-9d47-43220e98d0ec

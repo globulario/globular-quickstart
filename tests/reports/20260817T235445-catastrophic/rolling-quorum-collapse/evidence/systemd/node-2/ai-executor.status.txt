@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:59:00 UTC; 5s ago
+    Process: 634 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 664 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 684 (ai_executor_ser)
+      Tasks: 15 (limit: 8641)
+     Memory: 25.4M (peak: 27.2M)
+        CPU: 307ms
+     CGroup: /system.slice/docker-9222800d3a47ca13f196913e2ca4b66dc75c10e92e0db6dc29b6567ac0cd909e.scope/system.slice/globular-ai-executor.service
+             └─684 /usr/lib/globular/bin/ai_executor_server
+
+Aug 17 23:59:01 node-2 ai_executor_server[684]: time=2026-08-17T23:59:01.525Z level=INFO msg="codex: CLI not found"
+Aug 17 23:59:01 node-2 ai_executor_server[684]: time=2026-08-17T23:59:01.525Z level=INFO msg="service ready" service=ai_executor.AiExecutorService port=10010 startup_ms=954
+Aug 17 23:59:01 node-2 ai_executor_server[684]: time=2026-08-17T23:59:01.525Z level=INFO msg="starting service" name=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd port=10010
+Aug 17 23:59:01 node-2 ai_executor_server[684]: time=2026-08-17T23:59:01.525Z level=WARN msg="authz: no permission mappings registered — RBAC will resolve raw method paths and deny role-based calls" service=ai_executor expected_path=/var/lib/globular/policy/services/ai_executor/permissions.generated.json
+Aug 17 23:59:01 node-2 ai_executor_server[684]: time=2026-08-17T23:59:01.525Z level=INFO msg="service started successfully" name=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd port=10010
+Aug 17 23:59:01 node-2 ai_executor_server[684]: time=2026-08-17T23:59:01.525Z level=INFO msg="ai-executor backend readiness" context=startup mode=deterministic_fallback backend="" claude_binary_present=false codex_binary_present=false credentials_present=false backend_ready=false analysis_available=false
+Aug 17 23:59:01 node-2 ai_executor_server[684]: time=2026-08-17T23:59:01.599Z level=INFO msg="job_store: connected to etcd"
+Aug 17 23:59:01 node-2 ai_executor_server[684]: time=2026-08-17T23:59:01.605Z level=INFO msg="job_store: loaded jobs from etcd" count=33
+Aug 17 23:59:01 node-2 ai_executor_server[684]: 2026/08/17 23:59:01 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 17 23:59:02 node-2 ai_executor_server[684]: time=2026-08-17T23:59:02.092Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.13]"

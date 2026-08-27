@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:14:00 UTC; 5min ago
+    Process: 33548 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 33552 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 33555 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 33561 (workflow_server)
+      Tasks: 22 (limit: 8641)
+     Memory: 29.6M (peak: 31.1M)
+        CPU: 2.767s
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-workflow.service
+             └─33561 /usr/lib/globular/bin/workflow_server
+
+Aug 17 23:17:58 node-1 workflow_server[33561]: 2026/08/17 23:17:58 workflow: step aggregate_remediation SUCCEEDED (attempt 1)
+Aug 17 23:17:58 node-1 workflow_server[33561]: 2026/08/17 23:17:58 workflow: step finalize_reconcile starting (actor=cluster-controller action=controller.reconcile.finalize)
+Aug 17 23:17:58 node-1 workflow_server[33561]: 2026/08/17 23:17:58 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 17 23:17:58 node-1 workflow_server[33561]: 2026/08/17 23:17:58 workflow: step finalize_reconcile SUCCEEDED (attempt 1)
+Aug 17 23:17:58 node-1 workflow_server[33561]: 2026/08/17 23:17:58 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 17 23:17:58 node-1 workflow_server[33561]: time=2026-08-17T23:17:58.420Z level=INFO msg="executor: engine.Execute completed" run_id=reconcile:1787008676888
+Aug 17 23:17:58 node-1 workflow_server[33561]: time=2026-08-17T23:17:58.444Z level=INFO msg="executor: workflow finished" workflow=cluster.reconcile run_id=reconcile:1787008676888 status=RUN_STATUS_SUCCEEDED
+Aug 17 23:18:11 node-1 workflow_server[33561]: 2026/08/17 23:18:11 WARN authz_decision audit="{\"timestamp\":\"2026-08-17T23:18:11.6168863Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":true,\"remote_addr\":\"unknown\",\"grpc_method\":\"/workflow.WorkflowService/ExecuteWorkflow\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"authentication_required\",\"decision_latency_ms\":0,\"cluster_id\":\"globular.internal\",\"call_source\":\"local\"}" subject="" method=/workflow.WorkflowService/ExecuteWorkflow allowed=false reason=authentication_required latency_ms=0 policy_version=unknown
+Aug 17 23:18:34 node-1 workflow_server[33561]: 2026/08/17 23:18:34 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListDriftUnresolved
+Aug 17 23:19:03 node-1 workflow_server[33561]: 2026/08/17 23:19:03 INFO acc: warmup complete baseline_rtt_ms=20 samples=231 elapsed=5m0s

@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 08:36:42 UTC; 44min ago
+    Process: 2335 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 2339 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2342 (cluster_control)
+      Tasks: 22 (limit: 8641)
+     Memory: 65.2M (peak: 73.6M)
+        CPU: 2min 15.080s
+     CGroup: /system.slice/docker-cef6ed79bbeff9e64be0590fdde03d11a70e19fdd36359ebd96753c2c7d2b8b8.scope/system.slice/globular-cluster-controller.service
+             └─2342 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 26 09:21:01 node-1 cluster_controller_server[2342]: 2026/08/26 09:21:01 actor[invariant]: node_reachability — quorum_at_risk=false
+Aug 26 09:21:01 node-1 cluster_controller_server[2342]: 2026/08/26 09:21:01 actor[invariant]: disk_health — 0 violation(s)
+Aug 26 09:21:01 node-1 cluster_controller_server[2342]: 2026/08/26 09:21:01 actor[invariant]: pki health — map[checked_nodes:5 total_nodes:5 violations:[]]
+Aug 26 09:21:01 node-1 cluster_controller_server[2342]: 2026/08/26 09:21:01 actor[invariant]: minio storage repair — map[repaired:[] repaired_count:0]
+Aug 26 09:21:01 node-1 cluster_controller_server[2342]: 2026/08/26 09:21:01 actor[invariant]: fence_unreachable — 0 node(s) fenced
+Aug 26 09:21:01 node-1 cluster_controller_server[2342]: 2026/08/26 09:21:01 actor[invariant]: enforcement report emitted
+Aug 26 09:21:01 node-1 cluster_controller_server[2342]: 2026/08/26 09:21:01 actor[invariant]: enforcement SUCCEEDED
+Aug 26 09:21:01 node-1 cluster_controller_server[2342]: 2026/08/26 09:21:01 invariant-workflow: enforcement completed successfully
+Aug 26 09:21:01 node-1 cluster_controller_server[2342]: 2026/08/26 09:21:01 workflow cluster.invariant.enforcement (correlation=invariant:1787736061): SUCCEEDED
+Aug 26 09:21:01 node-1 cluster_controller_server[2342]: 2026/08/26 09:21:01 invariant-workflow: SUCCEEDED in 241ms

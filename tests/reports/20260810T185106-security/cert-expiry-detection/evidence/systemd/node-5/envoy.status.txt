@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 19:07:08 UTC; 1min 39s ago
+    Process: 174 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 429 (envoy)
+      Tasks: 40 (limit: 8641)
+     Memory: 24.8M (peak: 27.4M)
+        CPU: 369ms
+     CGroup: /system.slice/docker-1922b087c7ce4994106927b33fe351bd335db325f5159c76517c47c941292364.scope/system.slice/globular-envoy.service
+             └─429 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Aug 10 19:07:08 node-5 envoy[429]: [2026-08-10 19:07:08.639][429][info][main] [source/server/server.cc:1043] starting main dispatch loop
+Aug 10 19:07:09 node-5 envoy[429]: [2026-08-10T19:07:09.191Z] "GET /ready HTTP/1.1" 503 - 0 17 0 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 10 19:07:09 node-5 envoy[429]: [2026-08-10 19:07:09.820][429][info][upstream] [source/common/upstream/cds_api_helper.cc:34] cds: response indicates 32 added/updated cluster(s), 1 removed cluster(s); applying changes
+Aug 10 19:07:09 node-5 envoy[429]: [2026-08-10 19:07:09.878][429][info][upstream] [source/common/upstream/cds_api_helper.cc:87] cds: added/updated 32 cluster(s) (skipped 0 unmodified cluster(s)); removed 0 cluster(s)
+Aug 10 19:07:18 node-5 envoy[429]: [2026-08-10T19:07:09.191Z] "GET /server_info HTTP/1.1" 200 - 0 98012 3 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 10 19:07:18 node-5 envoy[429]: [2026-08-10T19:07:09.197Z] "GET /stats?format=json HTTP/1.1" 200 - 0 24903 0 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 10 19:08:12 node-5 envoy[429]: [2026-08-10 19:08:12.888][429][info][upstream] [source/common/upstream/cluster_manager_impl.cc:248] cm init: all clusters initialized
+Aug 10 19:08:12 node-5 envoy[429]: [2026-08-10 19:08:12.888][429][info][main] [source/server/server.cc:1023] all clusters initialized. initializing init manager
+Aug 10 19:08:27 node-5 envoy[429]: [2026-08-10 19:08:27.888][429][warning][config] [source/extensions/config_subscription/grpc/grpc_subscription_impl.cc:130] gRPC config: initial fetch timed out for type.googleapis.com/envoy.config.listener.v3.Listener
+Aug 10 19:08:27 node-5 envoy[429]: [2026-08-10 19:08:27.888][429][info][config] [source/common/listener_manager/listener_manager_impl.cc:1003] all dependencies initialized. starting workers

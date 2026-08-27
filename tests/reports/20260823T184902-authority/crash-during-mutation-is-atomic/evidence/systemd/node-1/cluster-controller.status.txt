@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:45:17 UTC; 4min 8s ago
+    Process: 148 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 177 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 203 (cluster_control)
+      Tasks: 25 (limit: 8641)
+     Memory: 53.3M (peak: 475.7M)
+        CPU: 45.479s
+     CGroup: /system.slice/docker-7fac91a876a85840c60c302acf724a18f722fb5bd5d00f55ebb1b0ece4798c2c.scope/system.slice/globular-cluster-controller.service
+             └─203 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 23 18:49:26 node-1 cluster_controller_server[203]: 2026/08/23 18:49:26 InfrastructureRelease core@globular.io/envoy: skipping node a166b992-b66d-53cb-b7c7-61dfa4dd5a36/node-3 (stale heartbeat: last seen 6m18s ago)
+Aug 23 18:49:26 node-1 cluster_controller_server[203]: 2026/08/23 18:49:26 InfrastructureRelease core@globular.io/etcd: skipping node 35ac3821-6b90-52eb-a800-41130471770b/node-5 (stale heartbeat: last seen 6m31s ago)
+Aug 23 18:49:26 node-1 cluster_controller_server[203]: 2026/08/23 18:49:26 InfrastructureRelease core@globular.io/etcd: skipping node a166b992-b66d-53cb-b7c7-61dfa4dd5a36/node-3 (stale heartbeat: last seen 6m18s ago)
+Aug 23 18:49:26 node-1 cluster_controller_server[203]: 2026/08/23 18:49:26 InfrastructureRelease core@globular.io/etcd: workflow already in-flight, skipping dispatch
+Aug 23 18:49:26 node-1 cluster_controller_server[203]: 2026/08/23 18:49:26 release-workflow: starting release.apply.package for core@globular.io/node-exporter (INFRASTRUCTURE:node-exporter@1.10.2) across 3 nodes
+Aug 23 18:49:26 node-1 cluster_controller_server[203]: 2026/08/23 18:49:26 posture gate: suppressed workflow=release.apply.package class=ROLLOUT posture=RECOVERY_ONLY workflow_cb_open=false reconcile_cb_open=true
+Aug 23 18:49:26 node-1 cluster_controller_server[203]: 2026/08/23 18:49:26 InfrastructureRelease core@globular.io/scylladb: skip node 35ac3821-6b90-52eb-a800-41130471770b, profiles [compute core] don't match catalog [control-plane storage scylla database]
+Aug 23 18:49:26 node-1 cluster_controller_server[203]: 2026/08/23 18:49:26 InfrastructureRelease core@globular.io/scylladb: skip node 6400b443-cf38-52da-a683-de2fc5103c0b, profiles [compute core] don't match catalog [control-plane storage scylla database]
+Aug 23 18:49:26 node-1 cluster_controller_server[203]: 2026/08/23 18:49:26 InfrastructureRelease core@globular.io/scylladb: skipping node a166b992-b66d-53cb-b7c7-61dfa4dd5a36/node-3 (stale heartbeat: last seen 6m18s ago)
+Aug 23 18:49:26 node-1 cluster_controller_server[203]: 2026/08/23 18:49:26 InfrastructureRelease core@globular.io/scylladb: workflow already in-flight, skipping dispatch

@@ -1,0 +1,23 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-12 14:13:33 UTC; 17min ago
+    Process: 326 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 347 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 359 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 380 (dns_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 20.8M (peak: 30.8M)
+        CPU: 969ms
+     CGroup: /system.slice/docker-ba9fac652a3405e514249b33ab0346f14fc135e89814b53d3d37f427697e77f5.scope/system.slice/globular-dns.service
+             └─380 /usr/lib/globular/bin/dns_server
+
+Aug 12 14:30:33 node-5 dns_server[380]: time=2026-08-12T14:30:33.847Z level=WARN msg="domain cache refresh failed" err="gocql: no hosts available in the pool"
+Aug 12 14:30:36 node-5 dns_server[380]: 2026/08/12 14:30:36 gocql: unable to dial control conn 10.10.0.12:9042: dial tcp 10.10.0.12:9042: i/o timeout
+Aug 12 14:30:37 node-5 dns_server[380]: {"level":"warn","ts":"2026-08-12T14:30:37.848268Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00031c1e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 12 14:30:41 node-5 dns_server[380]: 2026/08/12 14:30:41 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: i/o timeout
+Aug 12 14:30:41 node-5 dns_server[380]: 2026/08/12 14:30:41 gocql: unable to connect to any ring node: dial tcp 10.10.0.11:9042: i/o timeout
+Aug 12 14:30:41 node-5 dns_server[380]: 2026/08/12 14:30:41 gocql: control falling back to initial contact points.
+Aug 12 14:30:41 node-5 dns_server[380]: {"level":"warn","ts":"2026-08-12T14:30:41.849395Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00031c1e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 12 14:30:46 node-5 dns_server[380]: 2026/08/12 14:30:46 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: i/o timeout
+Aug 12 14:30:46 node-5 dns_server[380]: {"level":"warn","ts":"2026-08-12T14:30:46.850539Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00031c1e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 12 14:30:48 node-5 dns_server[380]: time=2026-08-12T14:30:48.634Z level=INFO msg="dependencies recovered — service is SERVING"

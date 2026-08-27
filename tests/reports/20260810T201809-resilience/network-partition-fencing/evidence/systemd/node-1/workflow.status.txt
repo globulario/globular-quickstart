@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 20:24:58 UTC; 1min 53s ago
+    Process: 28361 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 28365 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 28368 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 28374 (workflow_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 22.6M (peak: 23.3M)
+        CPU: 437ms
+     CGroup: /system.slice/docker-ee3334bee62c5a7cf2cf1308b1f2bf99dfc8dacd5999c1dfb26cbefc556eead6.scope/system.slice/globular-workflow.service
+             └─28374 /usr/lib/globular/bin/workflow_server
+
+Aug 10 20:26:22 node-1 workflow_server[28374]: 2026/08/10 20:26:22 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/workflow.WorkflowService/ExecuteWorkflow action=workflow.dispatch hint="globular rbac bind sa --role globular-controller-sa"
+Aug 10 20:26:22 node-1 workflow_server[28374]: 2026/08/10 20:26:22 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/workflow.WorkflowService/ExecuteWorkflow action=workflow.dispatch hint="globular rbac bind sa --role globular-controller-sa"
+Aug 10 20:26:24 node-1 workflow_server[28374]: 2026/08/10 20:26:24 workflow: loaded "cluster.reconcile" from etcd (5880 bytes)
+Aug 10 20:26:26 node-1 workflow_server[28374]: 2026/08/10 20:26:26 workflow: loaded "cluster.ingress_spec_restore" from etcd (2335 bytes)
+Aug 10 20:26:27 node-1 workflow_server[28374]: 2026/08/10 20:26:27 ERROR run reconcile:1786393580637: lease claim failed — refusing unfenced execution: claim run reconcile:1786393580637: Operation timed out for workflow.executor_leases - received only 0 responses from 1 CL=LOCAL_ONE. domain=10.10.0.11:8443 application=workflow.WorkflowService user="" method=/workflow.WorkflowService/ExecuteWorkflow function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632
+Aug 10 20:26:28 node-1 workflow_server[28374]: 2026/08/10 20:26:28 ERROR run ingress-spec-restore-1786393582: lease claim failed — refusing unfenced execution: claim run ingress-spec-restore-1786393582: Operation timed out for workflow.executor_leases - received only 0 responses from 1 CL=LOCAL_ONE. domain=10.10.0.11:8443 application=workflow.WorkflowService user="" method=/workflow.WorkflowService/ExecuteWorkflow function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632
+Aug 10 20:26:31 node-1 workflow_server[28374]: 2026/08/10 20:26:31 INFO log forwarding enabled address=10.10.0.11:10100
+Aug 10 20:26:41 node-1 workflow_server[28374]: 2026/08/10 20:26:41 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/workflow.WorkflowService/ExecuteWorkflow action=workflow.dispatch hint="globular rbac bind sa --role globular-controller-sa"
+Aug 10 20:26:42 node-1 workflow_server[28374]: 2026/08/10 20:26:42 workflow: loaded "release.apply.package" from etcd (11911 bytes)
+Aug 10 20:26:45 node-1 workflow_server[28374]: 2026/08/10 20:26:45 ERROR run InfrastructureRelease/core@globular.io/scylladb: lease claim failed — refusing unfenced execution: claim run InfrastructureRelease/core@globular.io/scylladb: Operation timed out for workflow.executor_leases - received only 0 responses from 1 CL=SERIAL. domain=10.10.0.11:8443 application=workflow.WorkflowService user="" method=/workflow.WorkflowService/ExecuteWorkflow function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632

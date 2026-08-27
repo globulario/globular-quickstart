@@ -1,0 +1,111 @@
+version: 1
+name: published-artifact-is-installable-everywhere
+description: |
+  PUBLISHED must mean installable from every node, not from the node that
+  happened to handle the upload.
+
+  THE PROBLEM. The manifest authority is cluster-wide but the blob store is
+  per-node: a publish materializes bytes only in the local CAS of the instance
+  that received them. Every other node reads the same manifest, reports the
+  artifact as PUBLISHED, and cannot serve it. Nothing re-ran the seeder to fix
+  this, because seeding was a one-shot startup goroutine — so the gap persisted
+  until that node's repository happened to restart.
+
+  Observed 2026-08-16: cluster-controller@1.2.317's blob existed only on
+  globule-ryzen and ai-memory@1.2.317's only on globule-dell. The remaining
+  nodes raised repository.identity.missing_blob_for_published_manifest as an
+  ERROR while the staged archives that would have healed them sat unused in
+  /var/lib/globular/packages/ on those same nodes. An install routed to any of
+  them failed on an artifact the cluster insisted was published.
+
+  This is the single largest contributor to the deploy pipeline failing about
+  half the time: whether a deploy worked depended on which repository instance
+  served the install, which is not something the operator controls or can see.
+
+  WHY THE OBVIOUS FIX IS FORBIDDEN. Healing package bytes from the MinIO mirror
+  is ruled out (heal_published_artifacts_from_minio_mirror,
+  repository.minio_is_not_valid_package_source) — packages do not live in
+  MinIO. The only sanctioned source is the staged archive, and only when its
+  sha256 matches the manifest checksum: the manifest is authority, the file on
+  disk is evidence, and filenames never decide identity.
+
+  WHAT THIS PINS. After a publish, every node can serve the artifact. The
+  seeding pass repeats for the life of the process rather than running once at
+  startup, so a node that loses its CAS mid-life heals without a restart.
+suite: upgrade
+tags:
+  - repository
+  - cas
+  - publish
+  - deploy-pipeline
+  - incident-2026-08-16
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # Guard against a vacuous pass. If the harness cannot see all five nodes,
+  # "every node has the blob" is trivially satisfiable and proves nothing.
+  - type: probe
+    id: all_five_nodes_visible
+    probe: repository.blob_reachable_all_nodes
+    params:
+      name: cluster-controller
+    expect:
+      nodes_gte: 5
+
+baseline:
+  - type: probe
+    id: identity_findings_at_start
+    probe: repository.identity_findings
+
+assertions:
+  # ── The blob is where the manifest claims it is ───────────────────────────
+  - type: probe
+    id: blob_present_on_every_node
+    probe: repository.blob_reachable_all_nodes
+    params:
+      name: cluster-controller
+    expect:
+      missing: 0
+      nodes_gte: 5
+
+  # ── The repository's own verdict ──────────────────────────────────────────
+  # Asking the service rather than re-deriving it: a node advertising a
+  # manifest it cannot serve is exactly what this finding names, and it is the
+  # ERROR that fired across the cluster on 2026-08-16.
+  - type: probe
+    id: no_missing_blob_findings
+    probe: repository.identity_findings
+    expect:
+      missing_blob: 0
+
+  # ── One version resolves to one artifact ──────────────────────────────────
+  # Re-deploying an unchanged version used to mint a second build of it, giving
+  # that version two build_ids. The resolver requires exactly one, so it went
+  # ambiguous and the rollout stalled — the other half of the 1-in-2 deploy
+  # failure. cluster-controller 1.2.317 ended up with build 1 and build 2, the
+  # second blobless.
+  - type: probe
+    id: no_ambiguous_resolution
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+
+  # ── No identity conflicts of any kind ─────────────────────────────────────
+  - type: probe
+    id: no_build_id_checksum_conflicts
+    probe: repository.identity_findings
+    expect:
+      conflict: 0
+
+cleanup: []

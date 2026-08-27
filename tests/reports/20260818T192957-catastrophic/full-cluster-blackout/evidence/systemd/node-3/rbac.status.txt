@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:37:29 UTC; 1min 11s ago
+    Process: 1430 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 1447 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1456 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1486 (rbac_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 219.5M (peak: 220.0M)
+        CPU: 874ms
+     CGroup: /system.slice/docker-d012767a1d6021169228274ad798b8ec3e83c467525376ed8e947638c31723b1.scope/system.slice/globular-rbac.service
+             └─1486 /usr/lib/globular/bin/rbac_server
+
+Aug 18 19:37:40 node-3 rbac_server[1486]: {"level":"warn","ts":"2026-08-18T19:37:40.744502Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003a0780/10.10.0.13:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:37:41 node-3 rbac_server[1486]: {"level":"warn","ts":"2026-08-18T19:37:41.03631Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003a0780/10.10.0.13:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:37:41 node-3 rbac_server[1486]: 2026/08/18 19:37:41 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 18 19:37:41 node-3 rbac_server[1486]: 2026/08/18 19:37:41 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 18 19:38:21 node-3 rbac_server[1486]: 2026/08/18 19:38:21 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 19:38:21 node-3 rbac_server[1486]: 2026/08/18 19:38:21 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 19:38:21 node-3 rbac_server[1486]: 2026/08/18 19:38:21 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 19:38:21 node-3 rbac_server[1486]: 2026/08/18 19:38:21 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 19:38:21 node-3 rbac_server[1486]: 2026/08/18 19:38:21 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 19:38:21 node-3 rbac_server[1486]: 2026/08/18 19:38:21 INFO rbac: flushed permission cache on cross-instance RBAC change

@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:50:24 UTC; 22s ago
+    Process: 458 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 493 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 510 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 23.3M (peak: 28.6M)
+        CPU: 902ms
+     CGroup: /system.slice/docker-154ff78b33e38f88687df750b0fb75a8af915753f6ba66cfa182b12163553394.scope/system.slice/globular-repository.service
+             └─510 /usr/lib/globular/bin/repository_server
+
+Aug 05 16:50:25 node-3 repository_server[510]: 2026/08/05 16:50:25 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=35495
+Aug 05 16:50:25 node-3 repository_server[510]: 2026/08/05 16:50:25 INFO metrics listening service=repository.PackageRepository addr=[::]:35495
+Aug 05 16:50:25 node-3 repository_server[510]: 2026/08/05 16:50:25 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 05 16:50:25 node-3 repository_server[510]: 2026/08/05 16:50:25 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 05 16:50:25 node-3 repository_server[510]: 2026/08/05 16:50:25 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%sctool%3.11.1%linux_amd64 err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0" finding=service.silent_fallback_active
+Aug 05 16:50:25 node-3 repository_server[510]: 2026/08/05 16:50:25 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%sctool%v3.11.1%linux_amd64%0 err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0" finding=service.silent_fallback_active
+Aug 05 16:50:25 node-3 repository_server[510]: 2026/08/05 16:50:25 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 05 16:50:25 node-3 repository_server[510]: 2026/08/05 16:50:25 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%envoy%1.35.3%linux_amd64 err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0" finding=service.silent_fallback_active
+Aug 05 16:50:26 node-3 repository_server[510]: 2026/08/05 16:50:26 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10003 new_port=10003 old_proxy=35495 new_proxy=10001
+Aug 05 16:50:39 node-3 repository_server[510]: 2026/08/05 16:50:39 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""

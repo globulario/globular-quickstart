@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:02 UTC; 22s ago
+    Process: 926 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 940 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 953 (monitoring_serv)
+      Tasks: 13 (limit: 8641)
+     Memory: 18.4M (peak: 19.1M)
+        CPU: 209ms
+     CGroup: /system.slice/docker-385981ec9bab5109e8a8585b8d7070b5708eef8209ed44d8f8789bedfa13bd12.scope/system.slice/globular-monitoring.service
+             └─953 /usr/lib/globular/bin/monitoring_server
+
+Aug 19 03:23:17 node-4 monitoring_server[953]: 2026/08/19 03:23:17 WARN InitService: etcd config lookup failed (etcd may be unavailable); will use compiled-in defaults service=monitoring.MonitoringService id_err="context deadline exceeded" name_err="context deadline exceeded"
+Aug 19 03:23:17 node-4 monitoring_server[953]: 2026/08/19 03:23:17 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10000
+Aug 19 03:23:17 node-4 monitoring_server[953]: time=2026-08-19T03:23:17.687Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10000 proxy=10020 protocol=grpc domain=globular.internal listen_ms=10754
+Aug 19 03:23:17 node-4 monitoring_server[953]: 2026/08/19 03:23:17 WARN port conflict detected - attempting reallocation service=monitoring.MonitoringService conflicting_port=10000 attempt=1 max_attempts=5
+Aug 19 03:23:17 node-4 monitoring_server[953]: 2026/08/19 03:23:17 INFO port reallocated successfully service=monitoring.MonitoringService old_port=10000 new_port=10002
+Aug 19 03:23:17 node-4 monitoring_server[953]: 2026/08/19 03:23:17 WARN port conflict detected - attempting reallocation service=monitoring.MonitoringService conflicting_port=10002 attempt=2 max_attempts=5
+Aug 19 03:23:17 node-4 monitoring_server[953]: 2026/08/19 03:23:17 INFO port reallocated successfully service=monitoring.MonitoringService old_port=10002 new_port=10003
+Aug 19 03:23:17 node-4 monitoring_server[953]: 2026/08/19 03:23:17 WARN port conflict detected - attempting reallocation service=monitoring.MonitoringService conflicting_port=10003 attempt=3 max_attempts=5
+Aug 19 03:23:17 node-4 monitoring_server[953]: 2026/08/19 03:23:17 INFO port reallocated successfully service=monitoring.MonitoringService old_port=10003 new_port=10005
+Aug 19 03:23:18 node-4 monitoring_server[953]: 2026/08/19 03:23:18 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020

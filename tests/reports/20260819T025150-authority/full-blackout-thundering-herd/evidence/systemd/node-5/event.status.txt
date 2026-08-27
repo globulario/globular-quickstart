@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:03 UTC; 26s ago
+    Process: 913 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 918 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 925 (event_server)
+      Tasks: 12 (limit: 8641)
+     Memory: 20.2M (peak: 20.9M)
+        CPU: 166ms
+     CGroup: /system.slice/docker-d1f5b8be4d5e8a538660e463859f4b15e96ad466285c4e0d1073a4ae4c36e0a3.scope/system.slice/globular-event.service
+             └─925 /usr/lib/globular/bin/event_server
+
+Aug 19 03:23:23 node-5 event_server[925]: time=2026-08-19T03:23:23.326Z level=INFO msg="starting service" name=event.EventService id=ae220301-9352-393b-be03-90707f486149 port=10000
+Aug 19 03:23:23 node-5 event_server[925]: 2026/08/19 03:23:23 INFO policy: loaded permissions from file service=event path=/var/lib/globular/policy/services/event/permissions.generated.json count=7
+Aug 19 03:23:23 node-5 event_server[925]: time=2026-08-19T03:23:23.330Z level=INFO msg="authz: permission mappings loaded" service=event count=7 action_mappings=7
+Aug 19 03:23:23 node-5 event_server[925]: time=2026-08-19T03:23:23.330Z level=INFO msg="service started successfully" name=event.EventService id=ae220301-9352-393b-be03-90707f486149 port=10000
+Aug 19 03:23:28 node-5 event_server[925]: time=2026-08-19T03:23:28.092Z level=INFO msg="resumed from durable cursor" instance=event-node-5.globular.internal cursor_time=2026-08-19T03:15:00Z
+Aug 19 03:23:28 node-5 event_server[925]: time=2026-08-19T03:23:28.092Z level=INFO msg="scylla event bus connected" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=globular_events
+Aug 19 03:23:28 node-5 event_server[925]: 2026/08/19 03:23:28 WARN port conflict detected - attempting reallocation service=event.EventService conflicting_port=10000 attempt=1 max_attempts=5
+Aug 19 03:23:28 node-5 event_server[925]: time=2026-08-19T03:23:28.092Z level=INFO msg="event loop started" service=event.EventService id=ae220301-9352-393b-be03-90707f486149
+Aug 19 03:23:28 node-5 event_server[925]: time=2026-08-19T03:23:28.293Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=4
+Aug 19 03:23:28 node-5 event_server[925]: 2026/08/19 03:23:28 INFO port reallocated successfully service=event.EventService old_port=10000 new_port=10001

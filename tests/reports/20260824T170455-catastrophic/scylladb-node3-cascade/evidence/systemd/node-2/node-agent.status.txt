@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:09:27 UTC; 1min 11s ago
+    Process: 194 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 229 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 247 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 149.1M (peak: 156.8M)
+        CPU: 39.891s
+     CGroup: /system.slice/docker-8b98724c89d7814ef3d4703a4c42e0cc7bef5b84406d2f3799206f7b685a6043.scope/system.slice/globular-node-agent.service
+             └─247 /usr/lib/globular/bin/node_agent_server
+
+Aug 24 17:10:12 node-2 node_agent_server[247]: 2026/08/24 17:10:12 nodeagent: reporting 42 installed services (hash=be6154146db2539778329c994c8a4cc9b376768d8c50b67a191422abec575ee7, sample=[codex rbac backup-manager ai-watcher claude])
+Aug 24 17:10:12 node-2 node_agent_server[247]: 2026/08/24 17:10:12 node heartbeat failed (state=degraded): TLS probe to 10.10.0.12:443 (ServerName=10.10.0.12): dial tcp 10.10.0.12:443: connect: connection refused
+Aug 24 17:10:13 node-2 node_agent_server[247]: 2026/08/24 17:10:13 event-publisher: service.started unit=globular-scylla-manager.service (activating/auto-restart → active/running)
+Aug 24 17:10:18 node-2 node_agent_server[247]: 2026/08/24 17:10:18 event-publisher: service.exited unit=globular-scylla-manager.service (active/running → activating/auto-restart)
+Aug 24 17:10:23 node-2 node_agent_server[247]: 2026/08/24 17:10:23 event-publisher: service.started unit=globular-scylla-manager.service (activating/auto-restart → active/running)
+Aug 24 17:10:28 node-2 node_agent_server[247]: 2026/08/24 17:10:28 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Aug 24 17:10:28 node-2 node_agent_server[247]: 2026/08/24 17:10:28 event-publisher: service.exited unit=globular-scylla-manager.service (active/running → activating/auto-restart)
+Aug 24 17:10:29 node-2 node_agent_server[247]: 2026/08/24 17:10:29 behavioral observation: infra_probe skipped component=minio node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: no route to host"
+Aug 24 17:10:33 node-2 node_agent_server[247]: 2026/08/24 17:10:33 event-publisher: service.exited unit=globular-scylla-manager.service (activating/auto-restart → activating/auto-restart)
+Aug 24 17:10:38 node-2 node_agent_server[247]: 2026/08/24 17:10:38 event-publisher: service.started unit=globular-scylla-manager.service (activating/auto-restart → active/running)

@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 21:58:05 UTC; 12min ago
+    Process: 10994 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 10998 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 11001 (log_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 21.2M (peak: 25.0M)
+        CPU: 1.433s
+     CGroup: /system.slice/docker-4a575daf3de9af6077e1d892ea4f8cf05978f233ac8f32245b197390900f3d6d.scope/system.slice/globular-log.service
+             └─11001 /usr/lib/globular/bin/log_server
+
+Aug 10 21:58:05 node-3 log_server[11001]: time=2026-08-10T21:58:05.707Z level=INFO msg="service initialized" duration_ms=142
+Aug 10 21:58:05 node-3 log_server[11001]: time=2026-08-10T21:58:05.707Z level=INFO msg="service ready" service=log.LogService version=1.2.289 port=10100 proxy=10101 protocol=grpc domain=globular.internal startup_ms=142
+Aug 10 21:58:05 node-3 log_server[11001]: time=2026-08-10T21:58:05.707Z level=INFO msg="starting service" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 10 21:58:05 node-3 log_server[11001]: time=2026-08-10T21:58:05.707Z level=INFO msg="starting metrics server" address=0.0.0.0:9092
+Aug 10 21:58:05 node-3 log_server[11001]: 2026/08/10 21:58:05 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 10 21:58:05 node-3 log_server[11001]: time=2026-08-10T21:58:05.707Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 10 21:58:05 node-3 log_server[11001]: time=2026-08-10T21:58:05.707Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 10 21:58:05 node-3 log_server[11001]: 2026/08/10 21:58:05 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 10 21:58:15 node-3 log_server[11001]: 2026/08/10 21:58:15 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 10 21:58:15 node-3 log_server[11001]: 2026/08/10 21:58:15 INFO mesh: gRPC connection established target=node-3.globular.internal:443

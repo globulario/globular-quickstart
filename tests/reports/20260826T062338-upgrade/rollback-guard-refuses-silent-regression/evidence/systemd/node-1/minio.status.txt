@@ -1,0 +1,33 @@
+● globular-minio.service - Globular MinIO
+     Loaded: loaded (/etc/systemd/system/globular-minio.service; enabled; preset: enabled)
+    Drop-In: /etc/systemd/system/globular-minio.service.d
+             └─distributed.conf
+     Active: active (running) since Wed 2026-08-26 07:43:57 UTC; 27s ago
+    Process: 33705 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/minio /var/lib/globular/minio/data (code=exited, status=0/SUCCESS)
+    Process: 33707 ExecStartPre=/usr/bin/chown -R globular:globular /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 33709 ExecStartPre=/usr/bin/chown -R globular:globular /var/lib/globular/minio/data (code=exited, status=0/SUCCESS)
+    Process: 33711 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 33713 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/minio/data (code=exited, status=0/SUCCESS)
+    Process: 33715 ExecStartPre=/bin/sh -c chmod o+x "$(dirname /var/lib/globular/minio/data)" "$(dirname "$(dirname /var/lib/globular/minio/data)")" 2>/dev/null || true (code=exited, status=0/SUCCESS)
+    Process: 33722 ExecStartPre=/usr/bin/test -w /var/lib/globular/minio/data (code=exited, status=0/SUCCESS)
+    Process: 33723 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 33726 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 33735 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+    Process: 33737 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+   Main PID: 33742 (minio)
+      Tasks: 21 (limit: 8641)
+     Memory: 73.1M (peak: 74.1M)
+        CPU: 1.060s
+     CGroup: /system.slice/docker-cef6ed79bbeff9e64be0590fdde03d11a70e19fdd36359ebd96753c2c7d2b8b8.scope/system.slice/globular-minio.service
+             └─33742 /usr/lib/globular/bin/minio server https://10.10.0.11:9000/var/lib/minio/d1/data1 https://10.10.0.11:9000/var/lib/minio/d1/data2 https://10.10.0.12:9000/var/lib/minio/d1/data1 https://10.10.0.12:9000/var/lib/minio/d1/data2 https://10.10.0.13:9000/var/lib/minio/d1/data1 https://10.10.0.13:9000/var/lib/minio/d1/data2 --address 10.10.0.11:9000 --console-address 10.10.0.11:9001
+
+Aug 26 07:44:01 node-1 minio[33742]: INFO: IAM load(startup) finished. (duration: 1.171724ms)
+Aug 26 07:44:04 node-1 minio[33742]: API: SYSTEM.peers
+Aug 26 07:44:04 node-1 minio[33742]: Time: 07:44:04 UTC 08/26/2026
+Aug 26 07:44:04 node-1 minio[33742]: DeploymentID: f181cbe8-fac8-49b4-abe9-93d14a007a1b
+Aug 26 07:44:04 node-1 minio[33742]: Error: Server not initialized, please try again (grid.RemoteErr)
+Aug 26 07:44:04 node-1 minio[33742]:        peerAddress="10.10.0.12:9000"
+Aug 26 07:44:04 node-1 minio[33742]:        4: internal/logger/logonce.go:118:logger.(*logOnceType).logOnceIf()
+Aug 26 07:44:04 node-1 minio[33742]:        3: internal/logger/logonce.go:149:logger.LogOnceIf()
+Aug 26 07:44:04 node-1 minio[33742]:        2: cmd/logging.go:71:cmd.peersLogOnceIf()
+Aug 26 07:44:04 node-1 minio[33742]:        1: cmd/notification.go:140:cmd.(*NotificationGroup).Go.func1()

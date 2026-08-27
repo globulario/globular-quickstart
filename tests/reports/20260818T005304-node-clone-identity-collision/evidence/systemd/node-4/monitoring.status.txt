@@ -1,0 +1,19 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 00:50:52 UTC; 8min ago
+    Process: 148 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 181 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 212 (monitoring_serv)
+      Tasks: 14 (limit: 8641)
+     Memory: 19.5M (peak: 26.9M)
+        CPU: 569ms
+     CGroup: /system.slice/docker-b20775b8a2a560480b2efa5ecaabe93ae56dc7289499604fd316260a4deb88b6.scope/system.slice/globular-monitoring.service
+             └─212 /usr/lib/globular/bin/monitoring_server
+
+Aug 18 00:50:52 node-4 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 18 00:50:52 node-4 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 18 00:50:53 node-4 monitoring_server[212]: PortAllocator range: 10000 - 20000
+Aug 18 00:50:55 node-4 monitoring_server[212]: {"level":"warn","ts":"2026-08-18T00:50:55.158816Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00023c1e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 00:50:56 node-4 monitoring_server[212]: 2026/08/18 00:50:56 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 18 00:50:56 node-4 monitoring_server[212]: time=2026-08-18T00:50:56.833Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=571
+Aug 18 00:50:57 node-4 monitoring_server[212]: 2026/08/18 00:50:57 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020

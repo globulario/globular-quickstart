@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 16:51:54 UTC; 24min ago
+    Process: 138 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 175 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 197 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 49.7M (peak: 55.7M)
+        CPU: 20.241s
+     CGroup: /system.slice/docker-dab92beb975aa2797386e297c00d0bcba2ce8ae5ebc37c549fdba7e1f57d8454.scope/system.slice/globular-repository.service
+             └─197 /usr/lib/globular/bin/repository_server
+
+Aug 17 16:56:55 node-5 repository_server[197]: 2026/08/17 16:56:55 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 17 16:57:15 node-5 repository_server[197]: 2026/08/17 16:57:15 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 17 17:02:15 node-5 repository_server[197]: 2026/08/17 17:02:15 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 17 17:03:39 node-5 repository_server[197]: 2026/08/17 17:03:39 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 17 17:03:40 node-5 repository_server[197]: 2026/08/17 17:03:40 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=194 baseline_ms=20 window=2000 new_window=1800
+Aug 17 17:05:30 node-5 repository_server[197]: 2026/08/17 17:05:30 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=154 baseline_ms=20 window=1800 new_window=1620
+Aug 17 17:05:30 node-5 repository_server[197]: 2026/08/17 17:05:30 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=116 baseline_ms=20 window=1458 new_window=1312
+Aug 17 17:05:30 node-5 repository_server[197]: 2026/08/17 17:05:30 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=176 baseline_ms=20 window=1620 new_window=1458
+Aug 17 17:05:30 node-5 repository_server[197]: 2026/08/17 17:05:30 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=117 baseline_ms=20 window=1312 new_window=1180
+Aug 17 17:14:32 node-5 repository_server[197]: 2026/08/17 17:14:32 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest

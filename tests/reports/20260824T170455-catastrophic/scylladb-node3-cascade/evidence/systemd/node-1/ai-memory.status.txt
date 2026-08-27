@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:07:49 UTC; 2min 47s ago
+    Process: 1261 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 1268 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1272 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1283 (ai_memory_serve)
+      Tasks: 20 (limit: 8641)
+     Memory: 27.0M (peak: 28.9M)
+        CPU: 902ms
+     CGroup: /system.slice/docker-132f316b761e19b341cb3599f86ce40d781792bff8b801029cd06da093b8fd9e.scope/system.slice/globular-ai-memory.service
+             └─1283 /usr/lib/globular/bin/ai_memory_server
+
+Aug 24 17:09:14 node-1 ai_memory_server[1283]: {"level":"warn","ts":"2026-08-24T17:09:14.007596Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00052e3c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:09:14 node-1 ai_memory_server[1283]: 2026/08/24 17:09:14 ERROR InitClient: failed to fetch configuration id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f address=10.10.0.11:10100 err="context deadline exceeded"
+Aug 24 17:09:14 node-1 ai_memory_server[1283]: 2026/08/24 17:09:14 WARN log forwarding skipped: cannot connect to LogService (will retry) address=10.10.0.11:10100 error="InitClient: failed to fetch configuration id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f from 10.10.0.11:10100: context deadline exceeded" retry_after=1m0s
+Aug 24 17:09:18 node-1 ai_memory_server[1283]: 2026/08/24 17:09:18 ERROR rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl ONE. Requires 1, alive 0 (repeated 2 times in 30s) domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/RecordSignal function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 24 17:09:29 node-1 ai_memory_server[1283]: 2026/08/24 17:09:29 ERROR rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl ONE. Requires 1, alive 0 domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/RecordSignal function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663
+Aug 24 17:09:35 node-1 ai_memory_server[1283]: 2026/08/24 17:09:35 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:10:27 node-1 ai_memory_server[1283]: 2026/08/24 17:10:27 ERROR rpc error: code = Internal desc = BehavioralMemoryService.CheckAction: check action: persist: record action check: index by theme: Cannot achieve consistency level for cl ONE. Requires 1, alive 0 domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/CheckAction function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663
+Aug 24 17:10:27 node-1 ai_memory_server[1283]: 2026/08/24 17:10:27 INFO mesh: Envoy available, routing through mesh target=node-1.globular.internal:443
+Aug 24 17:10:27 node-1 ai_memory_server[1283]: 2026/08/24 17:10:27 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 24 17:10:27 node-1 ai_memory_server[1283]: 2026/08/24 17:10:27 INFO log forwarding enabled address=10.10.0.11:10100

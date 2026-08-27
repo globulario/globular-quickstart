@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:41:25 UTC; 15min ago
+    Process: 525 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 554 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 568 (log_server)
+      Tasks: 16 (limit: 8641)
+     Memory: 23.5M (peak: 27.8M)
+        CPU: 991ms
+     CGroup: /system.slice/docker-4908e77bbf99ff3f7b177f626a29d247c8f9ef6a704b5c704dbea822ab1ca85b.scope/system.slice/globular-log.service
+             └─568 /usr/lib/globular/bin/log_server
+
+Jul 31 21:55:03 node-5 log_server[568]: 2026/07/31 21:55:03 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Jul 31 21:55:03 node-5 log_server[568]: 2026/07/31 21:55:03 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Jul 31 21:55:03 node-5 log_server[568]: time=2026-07-31T21:55:03.841Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Jul 31 21:55:04 node-5 log_server[568]: time=2026-07-31T21:55:04.029Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Jul 31 21:55:46 node-5 log_server[568]: 2026/07/31 21:55:46 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Jul 31 21:56:15 node-5 log_server[568]: 2026/07/31 21:56:15 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Jul 31 21:56:32 node-5 log_server[568]: 2026/07/31 21:56:32 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Jul 31 21:56:46 node-5 log_server[568]: 2026/07/31 21:56:46 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Jul 31 21:56:46 node-5 log_server[568]: time=2026-07-31T21:56:46.553Z level=WARN msg="store write failed (suppressing repeats for 30s)" err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Jul 31 21:56:46 node-5 log_server[568]: 2026/07/31 21:56:46 WARN event client: publish circuit breaker closed dropped_during_window=1

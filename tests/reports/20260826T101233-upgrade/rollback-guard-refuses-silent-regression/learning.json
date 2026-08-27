@@ -1,0 +1,55 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-26T11:22:04.427556Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "rollback-guard-refuses-silent-regression",
+  "suite": "upgrade",
+  "result": "FAIL",
+  "source_revision": "b7d7bb017648ed8100610ce5f9975f94df4ca4dc",
+  "proof": {
+    "claim": "Going backwards must be possible, deliberate, and audited \u2014 never accidental.\n\nWHY THIS EXISTS. On 2026-08-16 a bad controller shipped and the rollback was\nREFUSED:\n\n    desired-state: refusing to regress cluster-controller \u2014 desired floor is\n    1.2.317, attempted 1.2.316; pass --allow-regression to override (audited)\n\nThat refusal is correct behaviour and it was still a surprise, at the worst\npossible moment, on a degraded cluster. \"Can I get back?\" is the only question\nthat matters once something bad is running, and nothing in the suite answered\nit. An operator should learn how the guard behaves from a test, not from an\nincident.\n\nTHE TWO PROPERTIES, and they pull against each other:\n\n  1. A regression must not happen by accident. `services desired set` to an\n     older version is refused unless the operator explicitly asks, so a\n     mistyped version or a stale script cannot walk the cluster backwards.\n\n  2. A regression must remain POSSIBLE. A guard with no override is not a\n     safety feature, it is a trap: it converts \"we shipped a bad version\" into\n     \"we shipped a bad version and cannot leave\". The override exists, is\n     explicit, and is audited.\n\nWHAT THIS SCENARIO CAN AND CANNOT DO HERE. Exercising the floor needs two\npublished versions of one package, and a release bundle ships exactly one\nversion per package \u2014 so on a freshly built simulation the older artifact\nsimply does not exist to roll back to. What IS reachable, and is asserted\nhere, is that the control plane refuses to move desired state to a version it\ncannot resolve, and that a refusal leaves no residue behind.\n\nThe full floor test belongs on a cluster that has taken at least two releases\nof the same package. That is the real cluster, and it is the reason this\nscenario states its limit rather than quietly asserting less than its name\nclaims \u2014 a scenario whose name overpromises is how a suite loses its meaning.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "preconditions",
+        "id": "releases_are_clean",
+        "probe_or_action": "release.audit",
+        "result": {
+          "total": 24,
+          "succeeded": 23,
+          "failed": 1,
+          "pending": 0
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

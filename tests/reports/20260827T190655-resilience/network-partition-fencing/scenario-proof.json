@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-27T19:40:32.461503Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/resilience/network-partition-fencing.yaml",
+  "scenario": "network-partition-fencing",
+  "suite": "resilience",
+  "source_revision": "92adaac14aa1ae8c0959eda2e745ce46fa8015f4",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that Globular detects a network partition and automatically fences the\nisolated node to protect new deployments.\n\nThis test blocks all network traffic on node-3 (a worker node) using iptables,\nthen verifies that:\n  1. The cluster controller detects the heartbeat going stale within ~5 minutes\n  2. The invariant enforcement workflow classifies it as WARN (>5min) then CRITICAL (>15min)\n  3. After the critical threshold, the node is marked with partition_fenced_since\n  4. The fence is automatically cleared when the network is restored and heartbeat resumes\n\nWhat Globular does automatically:\n  - Heartbeat staleness tracked in cluster state (LastSeen field)\n  - WARN after 5 minutes (reconcile blocks new deployments to stale nodes)\n  - CRITICAL after 15 minutes \u2192 sets Metadata[\"partition_fenced_since\"]\n  - Fenced nodes are skipped by the release pipeline\n  - When heartbeat resumes, fence is auto-cleared and node_partition_healed event emitted\n  - If \u22652 nodes go critical simultaneously, quorum_loss_imminent event + etcd alert key written\n\nWhat requires operator action:\n  - Diagnosing and fixing the network issue\n  - Manual node recovery if heartbeat does not resume within the grace period\n\nNOTE: This test uses a worker node (node-3) which does NOT run etcd.\nIsolating a founding node (node-1, node-2, node-3 in a 3-node cluster) would\nrisk actual etcd quorum loss \u2014 use dual-node-failure.yaml for that scenario.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-27T20:03:37.158824Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

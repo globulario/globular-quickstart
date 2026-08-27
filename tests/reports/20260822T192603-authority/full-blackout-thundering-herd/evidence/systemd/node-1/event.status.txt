@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:23:01 UTC; 3min 55s ago
+    Process: 48 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 72 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 99 (event_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 30.7M (peak: 32.2M)
+        CPU: 2.904s
+     CGroup: /system.slice/docker-fbd50be62ef8809d6e93c288dffbbd1077867e0e3f7fe69f97f12b29cb90c420.scope/system.slice/globular-event.service
+             └─99 /usr/lib/globular/bin/event_server
+
+Aug 22 19:26:03 node-1 event_server[99]: time=2026-08-22T19:26:03.305Z level=ERROR msg="Publish: ScyllaDB write failed" event=service.exited err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 22 19:26:03 node-1 event_server[99]: time=2026-08-22T19:26:03.317Z level=WARN msg="poll events error" bucket=2026-08-22T19:25 err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 22 19:26:03 node-1 event_server[99]: time=2026-08-22T19:26:03.318Z level=WARN msg="poll events error" bucket=2026-08-22T19:26 err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 22 19:26:03 node-1 event_server[99]: time=2026-08-22T19:26:03.320Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 22 19:26:19 node-1 event_server[99]: 2026/08/22 19:26:19 ERROR Cannot achieve consistency level for cl ONE. Requires 1, alive 0 (repeated 5 times in 26s) domain=10.10.0.11:8443 application=event.EventService user="" method=/event.EventService/Publish function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 22 19:26:19 node-1 event_server[99]: time=2026-08-22T19:26:19.721Z level=WARN msg="keepalive send failed; will drop stream" uuid=2bcd3d5b-9c71-446b-8d6b-3cdd76daafc4 err="rpc error: code = Canceled desc = context canceled"
+Aug 22 19:26:19 node-1 event_server[99]: time=2026-08-22T19:26:19.721Z level=INFO msg="subscriber cleanup" uuid=2bcd3d5b-9c71-446b-8d6b-3cdd76daafc4
+Aug 22 19:26:19 node-1 event_server[99]: time=2026-08-22T19:26:19.721Z level=INFO msg="OnEvent: stream ended" uuid=2bcd3d5b-9c71-446b-8d6b-3cdd76daafc4
+Aug 22 19:26:20 node-1 event_server[99]: time=2026-08-22T19:26:20.371Z level=INFO msg="OnEvent: registered" uuid=6bce55be-5edc-4f85-8a0d-3823a58c182e
+Aug 22 19:26:20 node-1 event_server[99]: time=2026-08-22T19:26:20.371Z level=INFO msg="stream registered" uuid=6bce55be-5edc-4f85-8a0d-3823a58c182e

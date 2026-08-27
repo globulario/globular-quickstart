@@ -1,0 +1,123 @@
+version: 1
+name: signing-keys-distribution
+description: |
+  Verify that Ed25519 signing keys are correctly generated and distributed
+  across all nodes.
+
+  Globular uses Ed25519 asymmetric cryptography for JWT signing and service
+  identity. Every node generates:
+  1. A node-name key: ${node_name}_private / ${node_name}_public
+     (e.g., node-1_private — used for deterministic testing)
+  2. A MAC-based key: ${mac_normalized}_private / ${mac_normalized}_public
+     (e.g., 02_42_0a_0a_00_0b_private — the actual JWT signing key)
+
+  For cross-node JWT verification, each node needs all peer PUBLIC keys.
+  Keys are exchanged via the /shared-pki/keys/ volume during boot.
+
+  Failure modes caught:
+  - Node private key not generated (JWT issuance fails silently)
+  - Peer public keys not distributed (cross-node auth fails with "invalid signature")
+  - Key directory missing entirely (services fall back to unsigned tokens)
+  - Key count too low (some peers' keys missing — partial auth failure)
+
+  Industry known problem: "key rotation breaks cross-node auth" — after a
+  node restart with a new MAC address (Docker assigns random MACs unless
+  pinned), all other nodes still have the OLD MAC's public key. The new node
+  signs with its NEW key, but peers reject it as unknown. The docker-compose.yml
+  uses static mac_address assignments to prevent this.
+
+  Note: This test checks presence and count, not cryptographic validity.
+  A full key validation (sign + verify round-trip) requires a running
+  JWT issuer, which is tested in the security suite's authz scenarios.
+suite: security
+tags:
+  - pki
+  - ed25519
+  - signing-keys
+  - jwt
+  - cross-node-auth
+  - key-distribution
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+baseline:
+  - type: probe
+    id: key_count_baseline_node1
+    probe: pki.signing_keys
+    params:
+      node: node-1
+
+steps: []
+
+assertions:
+  # ── node-1: has its own key + all peer keys ────────────────────────────────
+  # Each node has 1 private key + 1 public key per node (itself + 4 peers) =
+  # minimum 5 public keys + 1 private key = 6+ files. With node-name keys
+  # AND MAC-based keys, expect 10+ files (2 per node × 5 nodes).
+  - type: probe
+    id: signing_keys_node1
+    probe: pki.signing_keys
+    params:
+      node: node-1
+    expect:
+      present: true
+      node_key_present: true
+      key_count_gte: 6
+
+  - type: probe
+    id: signing_keys_node2
+    probe: pki.signing_keys
+    params:
+      node: node-2
+    expect:
+      present: true
+      node_key_present: true
+      key_count_gte: 6
+
+  - type: probe
+    id: signing_keys_node3
+    probe: pki.signing_keys
+    params:
+      node: node-3
+    expect:
+      present: true
+      node_key_present: true
+      key_count_gte: 6
+
+  # ── Compute nodes: have keys but node_key_present checks node-name key ────
+  # Compute nodes also participate in JWT signing (services run there too).
+  - type: probe
+    id: signing_keys_node4
+    probe: pki.signing_keys
+    params:
+      node: node-4
+    expect:
+      present: true
+      key_count_gte: 2   # at minimum: own private + own public
+
+  - type: probe
+    id: signing_keys_node5
+    probe: pki.signing_keys
+    params:
+      node: node-5
+    expect:
+      present: true
+      key_count_gte: 2
+
+cleanup:
+  - type: probe
+    id: final_health
+    probe: cluster.health
+    expect:
+      status: healthy

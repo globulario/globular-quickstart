@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 00:46:12 UTC; 5min ago
+    Process: 26318 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 26322 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 26325 (event_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 27.4M (peak: 29.9M)
+        CPU: 3.880s
+     CGroup: /system.slice/docker-bd868bb831879e7d2953eca7e64df98664b5c84599ed94629ed22704cfc76b69.scope/system.slice/globular-event.service
+             └─26325 /usr/lib/globular/bin/event_server
+
+Aug 19 00:50:53 node-1 event_server[26325]: time=2026-08-19T00:50:53.218Z level=INFO msg=subscribed channel=cluster.* uuid=38c38935-e03a-4922-ae58-3c17f040b1d5 subscribers=4
+Aug 19 00:50:53 node-1 event_server[26325]: time=2026-08-19T00:50:53.219Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=38c38935-e03a-4922-ae58-3c17f040b1d5
+Aug 19 00:50:53 node-1 event_server[26325]: time=2026-08-19T00:50:53.219Z level=INFO msg=subscribed channel=operation.* uuid=38c38935-e03a-4922-ae58-3c17f040b1d5 subscribers=6
+Aug 19 00:51:12 node-1 event_server[26325]: 2026/08/19 00:51:12 INFO acc: warmup complete baseline_rtt_ms=4 samples=512 elapsed=5m0s
+Aug 19 00:51:21 node-1 event_server[26325]: time=2026-08-19T00:51:21.357Z level=INFO msg="OnEvent: registered" uuid=13e3b879-5e9b-4bc7-a44c-5c130cf32050
+Aug 19 00:51:21 node-1 event_server[26325]: time=2026-08-19T00:51:21.357Z level=INFO msg="stream registered" uuid=13e3b879-5e9b-4bc7-a44c-5c130cf32050
+Aug 19 00:51:31 node-1 event_server[26325]: 2026/08/19 00:51:31 INFO acc: AIMD decrease method=/event.EventService/Publish rtt_ms=10 baseline_ms=4 window=108 new_window=97
+Aug 19 00:51:42 node-1 event_server[26325]: time=2026-08-19T00:51:42.148Z level=WARN msg="keepalive send failed; will drop stream" uuid=48e3c7ba-f1bb-414a-bda5-834f53a49a71 err="rpc error: code = Unavailable desc = transport is closing"
+Aug 19 00:51:42 node-1 event_server[26325]: time=2026-08-19T00:51:42.148Z level=INFO msg="subscriber cleanup" uuid=48e3c7ba-f1bb-414a-bda5-834f53a49a71
+Aug 19 00:51:42 node-1 event_server[26325]: time=2026-08-19T00:51:42.148Z level=INFO msg="OnEvent: stream ended" uuid=48e3c7ba-f1bb-414a-bda5-834f53a49a71

@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:45:25 UTC; 3min 44s ago
+    Process: 410 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 417 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 430 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 590 (resource_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 24.4M (peak: 25.5M)
+        CPU: 1.052s
+     CGroup: /system.slice/docker-7fac91a876a85840c60c302acf724a18f722fb5bd5d00f55ebb1b0ece4798c2c.scope/system.slice/globular-resource.service
+             └─590 /usr/lib/globular/bin/resource_server
+
+Aug 23 18:46:08 node-1 resource_server[590]: {"level":"warn","ts":"2026-08-23T18:46:08.044071Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004bd0e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 18:46:08 node-1 resource_server[590]: {"level":"info","ts":"2026-08-23T18:46:08.044152Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 18:46:21 node-1 resource_server[590]: 2026/08/23 18:46:21 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=resource.session.read reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 23 18:46:30 node-1 resource_server[590]: {"level":"warn","ts":"2026-08-23T18:46:30.26925Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004bc780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 18:46:30 node-1 resource_server[590]: {"level":"info","ts":"2026-08-23T18:46:30.269357Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 18:46:43 node-1 resource_server[590]: {"level":"warn","ts":"2026-08-23T18:46:43.045265Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004bd0e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 18:46:43 node-1 resource_server[590]: {"level":"info","ts":"2026-08-23T18:46:43.045355Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 18:47:05 node-1 resource_server[590]: {"level":"warn","ts":"2026-08-23T18:47:05.270922Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004bc780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 18:47:05 node-1 resource_server[590]: {"level":"info","ts":"2026-08-23T18:47:05.270992Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 18:47:17 node-1 resource_server[590]: 2026/08/23 18:47:17 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused

@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:19:12 UTC; 2min 54s ago
+    Process: 426 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 454 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 484 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 33.2M (peak: 34.7M)
+        CPU: 2.003s
+     CGroup: /system.slice/docker-928b88015d720a8f11737bd2e4cef31a0f068e077aace4373fcff00bacea7705.scope/system.slice/globular-repository.service
+             └─484 /usr/lib/globular/bin/repository_server
+
+Jul 31 23:19:13 node-4 repository_server[484]: 2026/07/31 23:19:13 INFO release ledger migration complete entries=57
+Jul 31 23:19:13 node-4 repository_server[484]: 2026/07/31 23:19:13 INFO publish-reconciler: started interval=1m0s
+Jul 31 23:19:13 node-4 repository_server[484]: time=2026-07-31T23:19:13.213Z level=INFO msg="service ready" service=repository.PackageRepository port=10004 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=843
+Jul 31 23:19:13 node-4 repository_server[484]: time=2026-07-31T23:19:13.213Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Jul 31 23:19:13 node-4 repository_server[484]: 2026/07/31 23:19:13 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Jul 31 23:19:13 node-4 repository_server[484]: time=2026-07-31T23:19:13.215Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Jul 31 23:19:13 node-4 repository_server[484]: time=2026-07-31T23:19:13.215Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Jul 31 23:19:13 node-4 repository_server[484]: 2026/07/31 23:19:13 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=34255
+Jul 31 23:19:13 node-4 repository_server[484]: 2026/07/31 23:19:13 INFO metrics listening service=repository.PackageRepository addr=[::]:34255
+Jul 31 23:19:35 node-4 repository_server[484]: 2026/07/31 23:19:35 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest

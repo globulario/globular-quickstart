@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:52:32 UTC; 18s ago
+    Process: 9179 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 9183 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 9186 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 9192 (resource_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 18.5M (peak: 19.9M)
+        CPU: 256ms
+     CGroup: /system.slice/docker-b8fa6aca9bb82e631ce89b654ed458dabe59ec9fe67bf982b77e3cf43dab10a6.scope/system.slice/globular-resource.service
+             └─9192 /usr/lib/globular/bin/resource_server
+
+Jul 31 23:52:32 node-5 resource_server[9192]: PortAllocator range: 10000 - 20000
+Jul 31 23:52:34 node-5 resource_server[9192]: {"level":"warn","ts":"2026-07-31T23:52:34.66287Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002ead20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Jul 31 23:52:36 node-5 resource_server[9192]: {"level":"warn","ts":"2026-07-31T23:52:36.665613Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002ead20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Jul 31 23:52:36 node-5 resource_server[9192]: 2026/07/31 23:52:36 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"
+Jul 31 23:52:36 node-5 resource_server[9192]: time=2026-07-31T23:52:36.667Z level=INFO msg="Scylla process detected, using Scylla as backend store" process="[247 8558 8559]"
+Jul 31 23:52:38 node-5 resource_server[9192]: {"level":"warn","ts":"2026-07-31T23:52:38.670533Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000fe3c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Jul 31 23:52:38 node-5 resource_server[9192]: time=2026-07-31T23:52:38.738Z level=WARN msg="scylla host resolution failed; using local routable IP as fallback" error="scylla hosts from etcd: cluster hosts: etcd unavailable: context deadline exceeded"
+Jul 31 23:52:38 node-5 resource_server[9192]: time=2026-07-31T23:52:38.738Z level=INFO msg="starting resource service" service=resource.ResourceService version=1.2.288 domain=globular.internal address=10.10.0.15:8443 port=10000 backend=SCYLLA backend_address=10.10.0.15 bootstrap_mode=true
+Jul 31 23:52:38 node-5 resource_server[9192]: 2026/07/31 23:52:38 INFO InitGrpcServer: gRPC server initialized service=resource.ResourceService tls=true port=10003
+Jul 31 23:52:38 node-5 resource_server[9192]: time=2026-07-31T23:52:38.831Z level=INFO msg="service ready" service=resource.ResourceService port=10003 proxy=10011 protocol=grpc domain=globular.internal startup_ms=92 pid=9192 id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 version=1.2.288 store=SCYLLA

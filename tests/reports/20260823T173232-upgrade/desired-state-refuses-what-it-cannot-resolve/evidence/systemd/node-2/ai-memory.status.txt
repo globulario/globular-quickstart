@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 17:31:06 UTC; 4min 16s ago
+    Process: 489 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 521 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 545 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 638 (ai_memory_serve)
+      Tasks: 20 (limit: 8641)
+     Memory: 32.8M (peak: 34.5M)
+        CPU: 2.077s
+     CGroup: /system.slice/docker-69025280349b196b081d33f2dd6f3c546bf2bf86ec60e97ca9d44389bf4681a5.scope/system.slice/globular-ai-memory.service
+             └─638 /usr/lib/globular/bin/ai_memory_server
+
+Aug 23 17:31:33 node-2 ai_memory_server[638]: 2026/08/23 17:31:33 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/ai_memory.AiMemoryService/Query
+Aug 23 17:31:33 node-2 ai_memory_server[638]: 2026/08/23 17:31:33 ERROR query memories: Operation failed for ai_memory.idx_memories_tags_index - received 0 responses and 1 failures from 1 CL=QUORUM. domain=10.10.0.12:8443 application=ai_memory.AiMemoryService user="" method=/ai_memory.AiMemoryService/Query function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663
+Aug 23 17:31:33 node-2 ai_memory_server[638]: 2026/08/23 17:31:33 INFO log forwarding enabled address=10.10.0.11:10100
+Aug 23 17:32:05 node-2 ai_memory_server[638]: time=2026-08-23T17:32:05.811Z level=INFO msg="memory updated" id=9c59f71c-9f10-11f1-951f-02420a0a000b project=globular-services
+Aug 23 17:32:20 node-2 ai_memory_server[638]: 2026/08/23 17:32:20 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 23 17:32:20 node-2 ai_memory_server[638]: 2026/08/23 17:32:20 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 23 17:32:37 node-2 ai_memory_server[638]: time=2026-08-23T17:32:37.480Z level=INFO msg="memory updated" id=c42f170b-9f12-11f1-8bda-02420a0a000c project=globular-services
+Aug 23 17:33:44 node-2 ai_memory_server[638]: 2026/08/23 17:33:44 ERROR rpc error: code = Internal desc = BehavioralMemoryService.GeneratePromotionCandidate: generate promotion candidate: theme "remediation.cluster.desired_state.absent" has 0 outcome(s) and 0 ungoverned check(s), need at least 2 observation(s) domain=10.10.0.12:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/GeneratePromotionCandidate function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663
+Aug 23 17:34:08 node-2 ai_memory_server[638]: time=2026-08-23T17:34:08.004Z level=INFO msg="memory updated" id=d8169fd7-9f18-11f1-9524-02420a0a000b project=globular-services
+Aug 23 17:34:43 node-2 ai_memory_server[638]: 2026/08/23 17:34:43 ERROR rpc error: code = Internal desc = BehavioralMemoryService.GeneratePromotionCandidate: generate promotion candidate: theme "remediation.cluster.desired_state.absent" has 0 outcome(s) and 0 ungoverned check(s), need at least 2 observation(s) domain=10.10.0.12:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/GeneratePromotionCandidate function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663

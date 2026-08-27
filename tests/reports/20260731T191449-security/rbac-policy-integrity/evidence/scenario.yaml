@@ -1,0 +1,122 @@
+version: 1
+name: rbac-policy-integrity
+description: |
+  Verify the RBAC policy infrastructure is correctly deployed.
+
+  Checks:
+    1. RBAC service is registered in etcd and unit is active
+    2. cluster-roles.json is deployed on every node running the RBAC service
+       (the file is baked into the service package and deployed at install time)
+    3. The policy file is valid JSON with at least 4 defined roles
+    4. The RBAC service's Ed25519 signing keys are present for token validation
+
+  This proves the authorization policy was correctly deployed from the package
+  manifest — the policy file is the ground truth for what each role can do.
+  If this file is missing or corrupt, every RBAC decision falls back to deny.
+
+  Note: Full allow/deny validation via gRPC ValidateAccess is in the
+  security/authz-enforcement scenario (requires grpcurl or runner container).
+
+suite: security
+tags:
+  - rbac
+  - policy
+  - authz
+  - bootstrap
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: rbac_registered
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true
+
+baseline:
+  - type: probe
+    id: baseline_rbac_policy
+    probe: rbac.policy_file
+    params:
+      node: node-1
+    # Capture policy state for evidence
+
+assertions:
+  # ── RBAC service health ─────────────────────────────────────────────────────
+  - type: probe
+    id: rbac_service_present
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true
+
+  - type: probe
+    id: rbac_unit_active
+    probe: service.status
+    params:
+      node: node-1
+      service: rbac
+    expect:
+      unit_state: active
+
+  # ── Policy file integrity ──────────────────────────────────────────────────
+  # node-1: control-plane profile — RBAC runs here
+  - type: probe
+    id: policy_file_node1
+    probe: rbac.policy_file
+    params:
+      node: node-1
+    expect:
+      present: true
+      valid_json: true
+      role_count_gte: 4   # globular-admin, globular-operator, globular-controller-sa, globular-node-executor
+
+  # node-2: also runs RBAC (all 5 nodes have rbac installed per etcd packages)
+  - type: probe
+    id: policy_file_node2
+    probe: rbac.policy_file
+    params:
+      node: node-2
+    expect:
+      present: true
+      valid_json: true
+      role_count_gte: 4
+
+  # ── Ed25519 signing keys ────────────────────────────────────────────────────
+  - type: probe
+    id: signing_keys_present
+    probe: pki.signing_keys
+    params:
+      node: node-1
+    expect:
+      present: true
+      node_key_present: true
+      key_count_gte: 2   # own key + at least one peer public key
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-1
+      service: rbac
+
+cleanup:
+  - type: probe
+    id: final_rbac_check
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true

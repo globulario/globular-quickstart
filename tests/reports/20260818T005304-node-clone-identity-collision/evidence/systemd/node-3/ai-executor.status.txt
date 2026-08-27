@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 00:51:03 UTC; 8min ago
+    Process: 568 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 582 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 596 (ai_executor_ser)
+      Tasks: 19 (limit: 8641)
+     Memory: 31.1M (peak: 37.0M)
+        CPU: 1.852s
+     CGroup: /system.slice/docker-6079adef0da3bc3f68c651f8633c2a4da8f699743c3be55be65685f3a47f17b4.scope/system.slice/globular-ai-executor.service
+             └─596 /usr/lib/globular/bin/ai_executor_server
+
+Aug 18 00:58:29 node-3 ai_executor_server[596]: time=2026-08-18T00:58:29.298Z level=INFO msg="INCIDENT RESOLVED" incident_id=ed034974-9a9f-11f1-b142-02420a0a000c summary="doctor-finding triggered by cluster.finding.created (32 events in batch)" root_cause=unknown_anomaly
+Aug 18 00:58:29 node-3 ai_executor_server[596]: 2026/08/18 00:58:29 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=78 baseline_ms=20 window=81 new_window=72
+Aug 18 00:58:29 node-3 ai_executor_server[596]: time=2026-08-18T00:58:29.425Z level=INFO msg="processing incident" incident_id=ed20883e-9a9f-11f1-8c06-02420a0a000b rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=32
+Aug 18 00:58:29 node-3 ai_executor_server[596]: time=2026-08-18T00:58:29.468Z level=INFO msg="diagnosis complete" incident_id=ed20883e-9a9f-11f1-8c06-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 18 00:58:29 node-3 ai_executor_server[596]: time=2026-08-18T00:58:29.468Z level=INFO msg="INCIDENT RESOLVED" incident_id=ed20883e-9a9f-11f1-8c06-02420a0a000b summary="doctor-finding triggered by cluster.finding.created (32 events in batch)" root_cause=unknown_anomaly
+Aug 18 00:58:29 node-3 ai_executor_server[596]: 2026/08/18 00:58:29 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=48 baseline_ms=20 window=72 new_window=64
+Aug 18 00:59:26 node-3 ai_executor_server[596]: time=2026-08-18T00:59:26.229Z level=INFO msg="processing incident" incident_id=0efb8228-9aa0-11f1-8c07-02420a0a000b rule_id=reconcile-item-failed tier=0 trigger=cluster.reconcile.item_failed batch_size=1
+Aug 18 00:59:26 node-3 ai_executor_server[596]: time=2026-08-18T00:59:26.289Z level=INFO msg="diagnosis complete" incident_id=0efb8228-9aa0-11f1-8c07-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 18 00:59:26 node-3 ai_executor_server[596]: time=2026-08-18T00:59:26.289Z level=INFO msg="INCIDENT RESOLVED" incident_id=0efb8228-9aa0-11f1-8c07-02420a0a000b summary="reconcile-item-failed triggered by cluster.reconcile.item_failed (1 events in batch)" root_cause=unknown_anomaly
+Aug 18 00:59:26 node-3 ai_executor_server[596]: 2026/08/18 00:59:26 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=68 baseline_ms=20 window=64 new_window=57

@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 12:51:48 UTC; 19min ago
+    Process: 52 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 69 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 91 (event_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 25.1M (peak: 27.1M)
+        CPU: 2.752s
+     CGroup: /system.slice/docker-e2243690b4f8c9f0801d813f3bf1a178b3bb7e83251429b100abe0863356f20f.scope/system.slice/globular-event.service
+             └─91 /usr/lib/globular/bin/event_server
+
+Aug 11 13:09:02 node-5 event_server[91]: time=2026-08-11T13:09:02.578Z level=WARN msg="save cursor failed" err="gocql: no hosts available in the pool"
+Aug 11 13:09:02 node-5 event_server[91]: time=2026-08-11T13:09:02.778Z level=WARN msg="poll events error" bucket=2026-08-11T13:06 err="gocql: no hosts available in the pool"
+Aug 11 13:09:02 node-5 event_server[91]: time=2026-08-11T13:09:02.778Z level=WARN msg="poll events error" bucket=2026-08-11T13:07 err="gocql: no hosts available in the pool"
+Aug 11 13:09:02 node-5 event_server[91]: time=2026-08-11T13:09:02.778Z level=WARN msg="poll events error" bucket=2026-08-11T13:08 err="gocql: no hosts available in the pool"
+Aug 11 13:09:02 node-5 event_server[91]: time=2026-08-11T13:09:02.778Z level=WARN msg="poll events error" bucket=2026-08-11T13:09 err="gocql: no hosts available in the pool"
+Aug 11 13:09:02 node-5 event_server[91]: time=2026-08-11T13:09:02.778Z level=WARN msg="save cursor failed" err="gocql: no hosts available in the pool"
+Aug 11 13:09:03 node-5 event_server[91]: time=2026-08-11T13:09:03.382Z level=INFO msg="dependencies recovered — service is SERVING"
+Aug 11 13:09:04 node-5 event_server[91]: 2026/08/11 13:09:04 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 11 13:09:04 node-5 event_server[91]: 2026/08/11 13:09:04 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 11 13:09:14 node-5 event_server[91]: {"level":"warn","ts":"2026-08-11T13:09:14.020575Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000ccf00/10.10.0.15:2379","attempt":0,"error":"rpc error: code = Unavailable desc = error reading from server: read tcp 10.10.0.15:45942->10.10.0.14:2379: read: connection reset by peer"}

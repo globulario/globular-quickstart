@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 19:08:31 UTC; 2s ago
+    Process: 625 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 653 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 678 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 769 (ai_memory_serve)
+      Tasks: 11 (limit: 8641)
+     Memory: 23.4M (peak: 23.9M)
+        CPU: 405ms
+     CGroup: /system.slice/docker-686e08c30f8397aeb316fbd344b32a3b480a30818af99daf150a3df2727e8c11.scope/system.slice/globular-ai-memory.service
+             └─769 /usr/lib/globular/bin/ai_memory_server
+
+Aug 27 19:08:31 node-3 systemd[1]: Started globular-ai-memory.service - Globular ai_memory.
+Aug 27 19:08:32 node-3 ai_memory_server[769]: 2026/08/27 19:08:32 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 27 19:08:32 node-3 ai_memory_server[769]: 2026/08/27 19:08:32 INFO security: loaded cluster roles from external policy file roles=22
+Aug 27 19:08:32 node-3 ai_memory_server[769]: PortAllocator range: 10000 - 20000
+Aug 27 19:08:32 node-3 ai_memory_server[769]: time=2026-08-27T19:08:32.200Z level=INFO msg="starting ai_memory service" service=ai_memory.AiMemoryService version=1.2.325 domain=globular.internal
+Aug 27 19:08:32 node-3 ai_memory_server[769]: 2026/08/27 19:08:32 INFO InitGrpcServer: gRPC server initialized service=ai_memory.AiMemoryService tls=true port=10013
+Aug 27 19:08:33 node-3 ai_memory_server[769]: time=2026-08-27T19:08:33.018Z level=INFO msg="ScyllaDB connected" hosts="[10.10.0.11 10.10.0.12 10.10.0.13 10.10.0.15]" keyspace=ai_memory
+Aug 27 19:08:33 node-3 ai_memory_server[769]: time=2026-08-27T19:08:33.018Z level=INFO msg="service initialized" duration_ms=817
+Aug 27 19:08:34 node-3 ai_memory_server[769]: time=2026-08-27T19:08:34.340Z level=INFO msg="behavioral seed: domain pack loaded" domain=cluster_operator authorities=20 conditions=29 principles_seeded=11 principles_skipped=0
+Aug 27 19:08:34 node-3 ai_memory_server[769]: time=2026-08-27T19:08:34.340Z level=INFO msg="behavioral seed: domain pack loaded" domain=programming authorities=6 conditions=10 principles_seeded=8 principles_skipped=0

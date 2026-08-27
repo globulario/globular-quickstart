@@ -1,0 +1,69 @@
+version: 1
+name: day0-single-node-awareness
+suite: training
+description: |
+  Day-0 bootstrap awareness training scenario.
+  Verifies that a single-node cluster reaches a healthy running state and
+  that the awareness graph captures the correct bootstrap invariants.
+  Intended for use with AWARENESS_TRAINING=1 to produce incident/proposal
+  artifacts when the cluster fails to converge.
+
+awareness:
+  enabled: true
+  task: "day-0 single node cluster bootstrap and convergence"
+  phase: "bootstrap"
+  include_runtime: true
+  runtime_window: "15m"
+  create_incident_on_failure: true
+  create_proposal_on_failure: false
+  expected_invariants:
+    - infra.founding_quorum
+    - runtime.installed_state_not_liveness
+  expected_failure_modes:
+    - node_agent.bootstrap_timeout
+    - etcd.single_node_quorum_loss
+
+preconditions:
+  - id: node-1-running
+    probe: docker.container_running
+    params:
+      container: node-1
+    expect:
+      running: true
+
+  - id: scylladb-running
+    probe: docker.container_running
+    params:
+      container: scylladb
+    expect:
+      running: true
+
+baseline:
+  - id: initial-health
+    probe: cluster.health
+    params:
+      node: node-1
+
+assertions:
+  - id: node-1-etcd-healthy
+    probe: cluster.etcd_healthy
+    params:
+      node: node-1
+    expect:
+      healthy: true
+
+  - id: node-agent-active
+    probe: cluster.service_active
+    params:
+      node: node-1
+      service: node-agent
+    expect:
+      active: true
+
+  - id: controller-active
+    probe: cluster.service_active
+    params:
+      node: node-1
+      service: cluster-controller
+    expect:
+      active: true

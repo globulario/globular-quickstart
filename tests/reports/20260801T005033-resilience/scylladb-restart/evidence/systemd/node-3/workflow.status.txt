@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 00:53:49 UTC; 30min ago
+    Process: 361 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 371 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 377 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 463 (workflow_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 24.0M (peak: 30.1M)
+        CPU: 3.561s
+     CGroup: /system.slice/docker-2206a9848d7057d723137cf808b7918b201d11357dec3e1e80cb2d0a702c0d6b.scope/system.slice/globular-workflow.service
+             └─463 /usr/lib/globular/bin/workflow_server
+
+Aug 01 01:23:16 node-3 workflow_server[463]: time=2026-08-01T01:23:16.999Z level=INFO msg="workflow run started" run_id=92c31982-8d47-11f1-be6f-02420a0a000d component="" node=35ac3821-6b90-52eb-a800-41130471770b trigger=TRIGGER_REASON_REPAIR
+Aug 01 01:23:17 node-3 workflow_server[463]: 2026/08/01 01:23:17 WARN event client: publish circuit breaker closed dropped_during_window=1
+Aug 01 01:23:17 node-3 workflow_server[463]: 2026/08/01 01:23:17 WARN mesh: invalidated stale connection (triggered by RPC error)
+Aug 01 01:23:17 node-3 workflow_server[463]: 2026/08/01 01:23:17 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 01 01:23:17 node-3 workflow_server[463]: 2026/08/01 01:23:17 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 01 01:23:19 node-3 workflow_server[463]: time=2026-08-01T01:23:19.816Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = stream terminated by RST_STREAM with error code: CANCEL"
+Aug 01 01:23:32 node-3 workflow_server[463]: 2026/08/01 01:23:32 WARN FinishRun: refusing to overwrite terminal run run_id=92c31982-8d47-11f1-be6f-02420a0a000d current=RUN_STATUS_SUPERSEDED requested=RUN_STATUS_FAILED
+Aug 01 01:24:19 node-3 workflow_server[463]: time=2026-08-01T01:24:19.708Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 01 01:24:19 node-3 workflow_server[463]: time=2026-08-01T01:24:19.711Z level=WARN msg="retention: scan workflow_runs failed" err="Cannot achieve consistency level for cl LOCAL_ONE. Requires 1, alive 0"
+Aug 01 01:24:19 node-3 workflow_server[463]: time=2026-08-01T01:24:19.817Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = context deadline exceeded"

@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:58:55 UTC; 1min 54s ago
+    Process: 48 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 72 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 94 (event_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 25.9M (peak: 27.6M)
+        CPU: 1.243s
+     CGroup: /system.slice/docker-9222800d3a47ca13f196913e2ca4b66dc75c10e92e0db6dc29b6567ac0cd909e.scope/system.slice/globular-event.service
+             └─94 /usr/lib/globular/bin/event_server
+
+Aug 17 23:59:20 node-2 event_server[94]: time=2026-08-17T23:59:20.482Z level=INFO msg="OnEvent: registered" uuid=76a47870-431e-4e29-aef1-813e01ba063b
+Aug 17 23:59:20 node-2 event_server[94]: time=2026-08-17T23:59:20.484Z level=INFO msg="Subscribe: ok" channel=service.* uuid=76a47870-431e-4e29-aef1-813e01ba063b
+Aug 17 23:59:20 node-2 event_server[94]: time=2026-08-17T23:59:20.484Z level=INFO msg=subscribed channel=service.* uuid=76a47870-431e-4e29-aef1-813e01ba063b subscribers=2
+Aug 17 23:59:20 node-2 event_server[94]: time=2026-08-17T23:59:20.486Z level=INFO msg="Subscribe: ok" channel=cluster.* uuid=76a47870-431e-4e29-aef1-813e01ba063b
+Aug 17 23:59:20 node-2 event_server[94]: time=2026-08-17T23:59:20.486Z level=INFO msg=subscribed channel=cluster.* uuid=76a47870-431e-4e29-aef1-813e01ba063b subscribers=2
+Aug 17 23:59:20 node-2 event_server[94]: time=2026-08-17T23:59:20.490Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=76a47870-431e-4e29-aef1-813e01ba063b
+Aug 17 23:59:20 node-2 event_server[94]: time=2026-08-17T23:59:20.490Z level=INFO msg=subscribed channel=operation.* uuid=76a47870-431e-4e29-aef1-813e01ba063b subscribers=2
+Aug 18 00:00:46 node-2 event_server[94]: time=2026-08-18T00:00:46.910Z level=WARN msg="keepalive send failed; will drop stream" uuid=9e193757-d2b7-4c48-b0dc-e020b7821310 err="rpc error: code = Unavailable desc = transport is closing"
+Aug 18 00:00:46 node-2 event_server[94]: time=2026-08-18T00:00:46.910Z level=INFO msg="subscriber cleanup" uuid=9e193757-d2b7-4c48-b0dc-e020b7821310
+Aug 18 00:00:46 node-2 event_server[94]: time=2026-08-18T00:00:46.910Z level=INFO msg="OnEvent: stream ended" uuid=9e193757-d2b7-4c48-b0dc-e020b7821310

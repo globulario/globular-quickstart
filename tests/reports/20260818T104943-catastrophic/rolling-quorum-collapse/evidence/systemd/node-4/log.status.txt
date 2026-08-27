@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 11:01:38 UTC; 44s ago
+    Process: 2708 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 2742 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2773 (log_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 25.7M (peak: 26.3M)
+        CPU: 387ms
+     CGroup: /system.slice/docker-3709ed3122a323a6580629ed1f1e6a631995d721adbd7a97c390ca582fa42e35.scope/system.slice/globular-log.service
+             └─2773 /usr/lib/globular/bin/log_server
+
+Aug 18 11:02:09 node-4 log_server[2773]: 2026/08/18 11:02:09 INFO InitGrpcServer: gRPC server initialized service=log.LogService tls=true port=10100
+Aug 18 11:02:09 node-4 log_server[2773]: time=2026-08-18T11:02:09.888Z level=INFO msg="service initialized" duration_ms=23919
+Aug 18 11:02:09 node-4 log_server[2773]: time=2026-08-18T11:02:09.888Z level=INFO msg="service ready" service=log.LogService version=1.2.312 port=10100 proxy=10101 protocol=grpc domain=globular.internal startup_ms=23919
+Aug 18 11:02:09 node-4 log_server[2773]: time=2026-08-18T11:02:09.888Z level=INFO msg="starting service" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 18 11:02:09 node-4 log_server[2773]: 2026/08/18 11:02:09 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 18 11:02:09 node-4 log_server[2773]: time=2026-08-18T11:02:09.888Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 18 11:02:09 node-4 log_server[2773]: time=2026-08-18T11:02:09.888Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 18 11:02:09 node-4 log_server[2773]: time=2026-08-18T11:02:09.888Z level=INFO msg="starting metrics server" address=0.0.0.0:9092
+Aug 18 11:02:10 node-4 log_server[2773]: 2026/08/18 11:02:10 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 18 11:02:12 node-4 log_server[2773]: 2026/08/18 11:02:12 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.14:10003: connect: connection refused\""

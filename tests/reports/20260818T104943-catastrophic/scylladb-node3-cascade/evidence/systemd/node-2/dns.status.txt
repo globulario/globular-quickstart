@@ -1,0 +1,23 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 11:02:13 UTC; 2min 28s ago
+    Process: 3628 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 3632 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 3634 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3641 (dns_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 20.4M (peak: 30.6M)
+        CPU: 569ms
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-dns.service
+             └─3641 /usr/lib/globular/bin/dns_server
+
+Aug 18 11:03:58 node-2 dns_server[3641]: time=2026-08-18T11:03:58.371Z level=WARN msg="dependency health check failed" dep=scylladb err="Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 2, alive 1"
+Aug 18 11:04:00 node-2 dns_server[3641]: {"level":"warn","ts":"2026-08-18T11:04:00.148408Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00027b860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:04:00 node-2 dns_server[3641]: {"level":"info","ts":"2026-08-18T11:04:00.14851Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 18 11:04:13 node-2 dns_server[3641]: time=2026-08-18T11:04:13.371Z level=WARN msg="dependency health check failed" dep=scylladb err="Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 2, alive 1"
+Aug 18 11:04:13 node-2 dns_server[3641]: time=2026-08-18T11:04:13.399Z level=WARN msg="domain cache refresh failed" err="Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 2, alive 1"
+Aug 18 11:04:16 node-2 dns_server[3641]: 2026/08/18 11:04:16 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=dns.zone.read reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 18 11:04:16 node-2 dns_server[3641]: time=2026-08-18T11:04:16.816Z level=ERROR msg="dns dependency degraded; rejecting RPC" err="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: degraded (Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 2, alive 1)"
+Aug 18 11:04:17 node-2 dns_server[3641]: {"level":"warn","ts":"2026-08-18T11:04:17.400563Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00027ad20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:04:22 node-2 dns_server[3641]: {"level":"warn","ts":"2026-08-18T11:04:22.401461Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00027ad20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:04:28 node-2 dns_server[3641]: time=2026-08-18T11:04:28.372Z level=WARN msg="dependency health check failed" dep=scylladb err="Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 2, alive 1"

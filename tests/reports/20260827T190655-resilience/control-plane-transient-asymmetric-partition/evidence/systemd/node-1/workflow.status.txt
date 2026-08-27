@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 18:23:48 UTC; 52min ago
+    Process: 451 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 465 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 469 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 529 (workflow_server)
+      Tasks: 22 (limit: 8641)
+     Memory: 31.3M (peak: 34.5M)
+        CPU: 28.450s
+     CGroup: /system.slice/docker-4c675f6508b9a86c7b995eb51d86a0499df1ded44d81b29ffb1411f52fc36f32.scope/system.slice/globular-workflow.service
+             └─529 /usr/lib/globular/bin/workflow_server
+
+Aug 27 19:15:48 node-1 workflow_server[529]: time=2026-08-27T19:15:48.914Z level=WARN msg="dependency health check failed" dep=scylladb err="gocql: no hosts available in the pool"
+Aug 27 19:15:48 node-1 workflow_server[529]: time=2026-08-27T19:15:48.915Z level=INFO msg="scylla_reconnect: stale session closed — rebuilding pool"
+Aug 27 19:15:49 node-1 workflow_server[529]: time=2026-08-27T19:15:49.915Z level=INFO msg="scylla_reconnect: attempting reconnect" attempt=1 backoff=1s
+Aug 27 19:15:49 node-1 workflow_server[529]: time=2026-08-27T19:15:49.919Z level=INFO msg=workflow.scylla_reconnected scylla_session_generation=6 scylla_reconnect_attempts=5
+Aug 27 19:15:57 node-1 workflow_server[529]: {"level":"warn","ts":"2026-08-27T19:15:57.095099Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002554a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:15:57 node-1 workflow_server[529]: {"level":"info","ts":"2026-08-27T19:15:57.095168Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 19:15:59 node-1 workflow_server[529]: {"level":"warn","ts":"2026-08-27T19:15:59.384032Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000f3f860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:15:59 node-1 workflow_server[529]: {"level":"info","ts":"2026-08-27T19:15:59.384111Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 19:16:03 node-1 workflow_server[529]: 2026/08/27 19:16:03 INFO executor lease: orphan scanner recovered previous_failures=3
+Aug 27 19:16:03 node-1 workflow_server[529]: time=2026-08-27T19:16:03.917Z level=INFO msg="dependencies recovered — service is SERVING"

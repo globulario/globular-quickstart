@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:59:00 UTC; 1min 50s ago
+    Process: 634 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 664 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 684 (ai_executor_ser)
+      Tasks: 18 (limit: 8641)
+     Memory: 27.1M (peak: 32.2M)
+        CPU: 564ms
+     CGroup: /system.slice/docker-9222800d3a47ca13f196913e2ca4b66dc75c10e92e0db6dc29b6567ac0cd909e.scope/system.slice/globular-ai-executor.service
+             └─684 /usr/lib/globular/bin/ai_executor_server
+
+Aug 17 23:59:01 node-2 ai_executor_server[684]: time=2026-08-17T23:59:01.599Z level=INFO msg="job_store: connected to etcd"
+Aug 17 23:59:01 node-2 ai_executor_server[684]: time=2026-08-17T23:59:01.605Z level=INFO msg="job_store: loaded jobs from etcd" count=33
+Aug 17 23:59:01 node-2 ai_executor_server[684]: 2026/08/17 23:59:01 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 17 23:59:02 node-2 ai_executor_server[684]: time=2026-08-17T23:59:02.092Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.13]"
+Aug 17 23:59:31 node-2 ai_executor_server[684]: time=2026-08-17T23:59:31.549Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 17 23:59:31 node-2 ai_executor_server[684]: time=2026-08-17T23:59:31.551Z level=WARN msg="peer: ping failed" endpoint=10.10.0.13:10010 err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.13:10010: connect: connection refused\""
+Aug 17 23:59:31 node-2 ai_executor_server[684]: time=2026-08-17T23:59:31.551Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010
+Aug 18 00:00:34 node-2 ai_executor_server[684]: time=2026-08-18T00:00:34.938Z level=INFO msg="processing incident" incident_id=d62b055d-9a97-11f1-b1c8-02420a0a000c rule_id=service-stopped tier=0 trigger=service.stopped batch_size=16
+Aug 18 00:00:34 node-2 ai_executor_server[684]: time=2026-08-18T00:00:34.986Z level=INFO msg="diagnosis complete" incident_id=d62b055d-9a97-11f1-b1c8-02420a0a000c root_cause="unknown_anomaly (globular-ai-executor.service)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 18 00:00:34 node-2 ai_executor_server[684]: time=2026-08-18T00:00:34.986Z level=INFO msg="INCIDENT RESOLVED" incident_id=d62b055d-9a97-11f1-b1c8-02420a0a000c summary="service-stopped triggered by service.stopped on globular-ai-executor.service (16 events in batch)" root_cause="unknown_anomaly (globular-ai-executor.service)"

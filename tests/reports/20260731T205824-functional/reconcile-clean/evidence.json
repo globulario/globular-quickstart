@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "scenario": "reconcile-clean",
+  "suite": "functional",
+  "start_time": "2026-07-31T20:59:07.589054Z",
+  "end_time": "2026-07-31T20:59:47.622013Z",
+  "passed": false,
+  "item_count": 3,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "degraded",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T20:59:17.532567Z"
+    },
+    {
+      "id": "controller_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T20:59:18.311528Z"
+    },
+    {
+      "id": "final_reconcile_state",
+      "section": "cleanup",
+      "probe": "cluster.reconcile_clean",
+      "params": {
+        "node": "node-1",
+        "since": "5 min ago"
+      },
+      "expect": {},
+      "result": {
+        "clean": false,
+        "error_count": 46,
+        "kinds": "intent resolution failed: unknown profile: ;",
+        "sample": "intent resolution failed: unknown profile: ",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T20:59:18.689919Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

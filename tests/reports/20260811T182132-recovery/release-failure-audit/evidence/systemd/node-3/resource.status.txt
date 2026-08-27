@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 18:40:26 UTC; 45s ago
+    Process: 9404 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 9408 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 9411 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 9417 (resource_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 24.5M (peak: 25.7M)
+        CPU: 519ms
+     CGroup: /system.slice/docker-f5e9fa592a50fbbd803466478b433990501a4031f2edc647987e7c9b3ff9c66c.scope/system.slice/globular-resource.service
+             └─9417 /usr/lib/globular/bin/resource_server
+
+Aug 11 18:40:26 node-3 resource_server[9417]: 2026/08/11 18:40:26 INFO InitGrpcServer: gRPC server initialized service=resource.ResourceService tls=true port=10010
+Aug 11 18:40:26 node-3 resource_server[9417]: time=2026-08-11T18:40:26.271Z level=INFO msg="service ready" service=resource.ResourceService port=10010 proxy=10011 protocol=grpc domain=globular.internal startup_ms=51 pid=9417 id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 version=1.2.311 store=SCYLLA
+Aug 11 18:40:26 node-3 resource_server[9417]: 2026/08/11 18:40:26 INFO scylla: connected id=local_resource hosts=[10.10.0.11] port=9042 keyspace=local_resource
+Aug 11 18:40:26 node-3 resource_server[9417]: time=2026-08-11T18:40:26.288Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042
+Aug 11 18:40:27 node-3 resource_server[9417]: 2026/08/11 18:40:27 WARN scylla: Count fallback to scan; consider raw CQL with PK WHERE table=local_resource.accounts
+Aug 11 18:40:27 node-3 resource_server[9417]: time=2026-08-11T18:40:27.252Z level=ERROR msg="fail to create account dir" error="failed to seed sa account: account with name sa already exist!"
+Aug 11 18:40:27 node-3 resource_server[9417]: 2026/08/11 18:40:27 INFO metrics listening service=resource.ResourceService addr=[::]:10011
+Aug 11 18:40:37 node-3 resource_server[9417]: 2026/08/11 18:40:37 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 11 18:40:37 node-3 resource_server[9417]: 2026/08/11 18:40:37 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 11 18:40:51 node-3 resource_server[9417]: 2026/08/11 18:40:51 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=resource.session.read reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl ONE. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"

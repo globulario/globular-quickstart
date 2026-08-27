@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:41:24 UTC; 12min ago
+    Process: 145 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 163 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 185 (cluster_control)
+      Tasks: 16 (limit: 8641)
+     Memory: 23.3M (peak: 28.2M)
+        CPU: 10.966s
+     CGroup: /system.slice/docker-b8fa6aca9bb82e631ce89b654ed458dabe59ec9fe67bf982b77e3cf43dab10a6.scope/system.slice/globular-cluster-controller.service
+             └─185 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 23:52:40 node-5 cluster_controller_server[185]: 2026/07/31 23:52:40 dns reconciler: endpoint node-1.globular.internal:10006 is now HEALTHY — forcing re-push
+Jul 31 23:52:40 node-5 cluster_controller_server[185]: 2026/07/31 23:52:40 dns reconciler: endpoint node-2.globular.internal:10006 is now HEALTHY — forcing re-push
+Jul 31 23:52:58 node-5 cluster_controller_server[185]: {"level":"warn","ts":"2026-07-31T23:52:58.961893Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000de3c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:52:58 node-5 cluster_controller_server[185]: 2026/07/31 23:52:58 leader: failed to load state from etcd: context deadline exceeded — keeping local state
+Jul 31 23:52:59 node-5 cluster_controller_server[185]: {"level":"warn","ts":"2026-07-31T23:52:59.844752Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00012af00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = error reading from server: read tcp 10.10.0.15:53348->10.10.0.11:2379: read: connection reset by peer"}
+Jul 31 23:53:04 node-5 cluster_controller_server[185]: {"level":"warn","ts":"2026-07-31T23:53:04.704689Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000de3c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:53:04 node-5 cluster_controller_server[185]: {"level":"info","ts":"2026-07-31T23:53:04.704774Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 23:53:10 node-5 cluster_controller_server[185]: 2026/07/31 23:53:10 dns reconciler: endpoint node-5.globular.internal:10006 is now HEALTHY — forcing re-push
+Jul 31 23:53:28 node-5 cluster_controller_server[185]: {"level":"warn","ts":"2026-07-31T23:53:28.962245Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000de3c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:53:28 node-5 cluster_controller_server[185]: 2026/07/31 23:53:28 leader: failed to load state from etcd: context deadline exceeded — keeping local state

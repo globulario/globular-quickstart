@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:56:31 UTC; 30s ago
+    Process: 136 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 209 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 213 (cluster_control)
+      Tasks: 18 (limit: 8641)
+     Memory: 31.1M (peak: 34.4M)
+        CPU: 1.003s
+     CGroup: /system.slice/docker-4e49f89905e0a6d0d62c10e2c300dadaff8f929624017faf0a3ff78a831d8f81.scope/system.slice/globular-cluster-controller.service
+             └─213 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 21:56:59 node-3 cluster_controller_server[213]: 2026/07/31 21:56:59 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Jul 31 21:56:59 node-3 cluster_controller_server[213]: 2026/07/31 21:56:59 watch-service-release: event MODIFIED name=core@globular.io/cluster-doctor phase=AVAILABLE
+Jul 31 21:56:59 node-3 cluster_controller_server[213]: 2026/07/31 21:56:59 watch-service-release: event MODIFIED name=core@globular.io/cluster-doctor phase=AVAILABLE
+Jul 31 21:56:59 node-3 cluster_controller_server[213]: 2026/07/31 21:56:59 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Jul 31 21:57:00 node-3 cluster_controller_server[213]: 2026/07/31 21:57:00 watch-service-release: event MODIFIED name=core@globular.io/cluster-doctor phase=RESOLVED
+Jul 31 21:57:01 node-3 cluster_controller_server[213]: 2026/07/31 21:57:01 watch-service-release: event MODIFIED name=core@globular.io/cluster-doctor phase=FAILED
+Jul 31 21:57:01 node-3 cluster_controller_server[213]: 2026/07/31 21:57:01 watch-service-release: event MODIFIED name=core@globular.io/cluster-doctor phase=DEFERRED
+Jul 31 21:57:01 node-3 cluster_controller_server[213]: 2026/07/31 21:57:01 watch-service-release: event MODIFIED name=core@globular.io/cluster-doctor phase=DEFERRED
+Jul 31 21:57:01 node-3 cluster_controller_server[213]: 2026/07/31 21:57:01 minio-creds: read from /var/lib/globular/minio/credentials (user=globular)
+Jul 31 21:57:01 node-3 cluster_controller_server[213]: 2026/07/31 21:57:01 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)

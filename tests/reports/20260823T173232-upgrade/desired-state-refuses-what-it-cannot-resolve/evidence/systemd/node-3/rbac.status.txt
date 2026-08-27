@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 17:31:24 UTC; 3min 59s ago
+    Process: 476 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 509 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 593 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 615 (rbac_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 189.3M (peak: 190.1M)
+        CPU: 1.347s
+     CGroup: /system.slice/docker-2933a85b7b1593c7729244973043c5e50a4611956f0941363dbbbe66b1c2a0e2.scope/system.slice/globular-rbac.service
+             └─615 /usr/lib/globular/bin/rbac_server
+
+Aug 23 17:32:00 node-3 rbac_server[615]: 2026/08/23 17:32:00 ERROR rpc error: code = Internal desc = {"ErrorMsg":"Operation failed for rbac_permissions.permissions - received 0 responses and 1 failures from 1 CL=QUORUM.","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193","FunctionName":"main.(*server).GetRoleBinding"} (repeated 4 times in 30s) domain=10.10.0.13:8443 application=rbac.RbacService user="" method=/rbac.RbacService/GetRoleBinding function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 23 17:32:00 node-3 rbac_server[615]: 2026/08/23 17:32:00 ERROR rpc error: code = Internal desc = {"ErrorMsg":"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193","FunctionName":"main.(*server).GetRoleBinding"} (repeated 4 times in 24s) domain=10.10.0.13:8443 application=rbac.RbacService user="" method=/rbac.RbacService/GetRoleBinding function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 23 17:32:12 node-3 rbac_server[615]: 2026/08/23 17:32:12 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 23 17:32:20 node-3 rbac_server[615]: 2026/08/23 17:32:20 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10002 new_port=10002 old_proxy=42993 new_proxy=10001
+Aug 23 17:32:32 node-3 rbac_server[615]: 2026/08/23 17:32:32 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 23 17:32:36 node-3 rbac_server[615]: 2026/08/23 17:32:36 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 23 17:32:37 node-3 rbac_server[615]: 2026/08/23 17:32:37 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 23 17:32:37 node-3 rbac_server[615]: 2026/08/23 17:32:37 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 23 17:32:37 node-3 rbac_server[615]: 2026/08/23 17:32:37 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 23 17:34:54 node-3 rbac_server[615]: 2026/08/23 17:34:54 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

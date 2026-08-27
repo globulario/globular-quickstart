@@ -1,0 +1,223 @@
+version: 1
+name: service-registration-all
+description: |
+  Verify that all expected Globular services are registered in etcd.
+
+  Extends the smoke service-health-minimal check to cover the full service
+  catalog: control plane, security, infrastructure, storage, monitoring, and
+  AI services. A service present in etcd means it started, connected, and
+  announced its endpoint — making this a distributed liveness check.
+
+  Known failure modes caught by this test:
+  - Service binary crashed before registering (etcd has no entry)
+  - systemd dependency ordering failure (service started too early, died)
+  - ScyllaDB-dependent services (ai_memory, repository) not registering
+    after ScyllaDB takes time to become ready
+  - Workflow service registering with unexpected port (etcd key present
+    but at wrong address)
+suite: functional
+tags:
+  - services
+  - registration
+  - etcd
+  - full-catalog
+  - convergence
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: all_nodes_heartbeating
+    probe: cluster.nodes
+    expect:
+      count_gte: 5
+
+baseline:
+  - type: probe
+    id: initial_service_count
+    probe: services.count
+
+steps:
+  - id: wait_for_full_stack
+    action: wait
+    params:
+      timeout: 180
+      poll_interval: 10
+      until:
+        probe: services.count
+        expect:
+          count_gte: 20
+
+assertions:
+  # ── Total count ───────────────────────────────────────────────────────────
+  # We have 24 services registered in the 5-node quickstart cluster.
+  # Allow some margin for slow-starting services.
+  - type: probe
+    id: service_count_adequate
+    probe: services.count
+    expect:
+      count_gte: 20
+
+  # ── Control plane ─────────────────────────────────────────────────────────
+  - type: probe
+    id: cluster_controller_registered
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+  - type: probe
+    id: cluster_doctor_registered
+    probe: service.registered
+    params:
+      service: cluster_doctor
+    expect:
+      registered: true
+
+  - type: probe
+    id: workflow_registered
+    probe: service.registered
+    params:
+      service: workflow
+    expect:
+      registered: true
+
+  # ── Security & identity ───────────────────────────────────────────────────
+  - type: probe
+    id: authentication_registered
+    probe: service.registered
+    params:
+      service: authentication
+    expect:
+      registered: true
+
+  - type: probe
+    id: rbac_registered
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true
+
+  - type: probe
+    id: resource_registered
+    probe: service.registered
+    params:
+      service: resource
+    expect:
+      registered: true
+
+  # ── Infrastructure ────────────────────────────────────────────────────────
+  - type: probe
+    id: dns_registered
+    probe: service.registered
+    params:
+      service: dns
+    expect:
+      registered: true
+
+  - type: probe
+    id: node_agent_registered
+    probe: service.registered
+    params:
+      service: node_agent
+    expect:
+      registered: true
+
+  - type: probe
+    id: discovery_registered
+    probe: service.registered
+    params:
+      service: discovery
+    expect:
+      registered: true
+
+  - type: probe
+    id: event_registered
+    probe: service.registered
+    params:
+      service: event
+    expect:
+      registered: true
+
+  - type: probe
+    id: log_registered
+    probe: service.registered
+    params:
+      service: log
+    expect:
+      registered: true
+
+  # ── Storage & monitoring (node-2 storage profile) ─────────────────────────
+  - type: probe
+    id: repository_registered
+    probe: service.registered
+    params:
+      service: repository
+    expect:
+      registered: true
+
+  - type: probe
+    id: monitoring_registered
+    probe: service.registered
+    params:
+      service: monitoring
+    expect:
+      registered: true
+
+  - type: probe
+    id: backup_manager_registered
+    probe: service.registered
+    params:
+      service: backup_manager
+    expect:
+      registered: true
+
+  # ── AI stack (node-3 ai profile) ──────────────────────────────────────────
+  # These depend on ScyllaDB — if ScyllaDB was slow to start, these may be
+  # absent. The wait step above ensures we give them time.
+  - type: probe
+    id: ai_memory_registered
+    probe: service.registered
+    params:
+      service: ai_memory
+    expect:
+      registered: true
+
+  - type: probe
+    id: ai_executor_registered
+    probe: service.registered
+    params:
+      service: ai_executor
+    expect:
+      registered: true
+
+  # ── Node agent metrics (one per node) ─────────────────────────────────────
+  # Each node registers a node-agent-metrics-node-{N} service for Prometheus.
+  # 5 nodes = 5 metrics endpoints registered.
+  - type: probe
+    id: node_metrics_all_nodes
+    probe: service.registered
+    params:
+      service: node-agent-metrics
+    expect:
+      registered: true
+      match_count_gte: 5
+
+cleanup:
+  - type: probe
+    id: final_health
+    probe: cluster.health
+    expect:
+      status: healthy

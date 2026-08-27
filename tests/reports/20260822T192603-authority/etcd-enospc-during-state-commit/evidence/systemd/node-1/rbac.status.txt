@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:23:10 UTC; 3min 32s ago
+    Process: 602 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 647 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 678 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 733 (rbac_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 423.0M (peak: 423.7M)
+        CPU: 1.798s
+     CGroup: /system.slice/docker-fbd50be62ef8809d6e93c288dffbbd1077867e0e3f7fe69f97f12b29cb90c420.scope/system.slice/globular-rbac.service
+             └─733 /usr/lib/globular/bin/rbac_server
+
+Aug 22 19:26:14 node-1 rbac_server[733]: time=2026-08-22T19:26:14.623Z level=ERROR msg="dependencies UNHEALTHY — service is NOT_SERVING"
+Aug 22 19:26:26 node-1 rbac_server[733]: 2026/08/22 19:26:26 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 22 19:26:26 node-1 rbac_server[733]: 2026/08/22 19:26:26 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 22 19:26:26 node-1 rbac_server[733]: 2026/08/22 19:26:26 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 22 19:26:26 node-1 rbac_server[733]: 2026/08/22 19:26:26 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 22 19:26:27 node-1 rbac_server[733]: 2026/08/22 19:26:27 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 22 19:26:27 node-1 rbac_server[733]: 2026/08/22 19:26:27 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 22 19:26:29 node-1 rbac_server[733]: time=2026-08-22T19:26:29.623Z level=WARN msg="permissions store unreachable; reconnecting with fresh host probe" err="gocql: no hosts available in the pool"
+Aug 22 19:26:29 node-1 rbac_server[733]: time=2026-08-22T19:26:29.664Z level=INFO msg="permissions store (re)connected" backend=scylla
+Aug 22 19:26:29 node-1 rbac_server[733]: time=2026-08-22T19:26:29.667Z level=INFO msg="dependencies recovered — service is SERVING"

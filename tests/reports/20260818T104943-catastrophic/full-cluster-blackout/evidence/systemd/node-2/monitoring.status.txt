@@ -1,0 +1,21 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:56:31 UTC; 11s ago
+    Process: 3962 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 3985 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 4005 (monitoring_serv)
+      Tasks: 11 (limit: 8641)
+     Memory: 23.2M (peak: 24.9M)
+        CPU: 233ms
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-monitoring.service
+             └─4005 /usr/lib/globular/bin/monitoring_server
+
+Aug 18 10:56:31 node-2 systemd[1]: globular-monitoring.service: Scheduled restart job, restart counter is at 6.
+Aug 18 10:56:31 node-2 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 18 10:56:31 node-2 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 18 10:56:31 node-2 monitoring_server[4005]: 2026/08/18 10:56:31 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 18 10:56:31 node-2 monitoring_server[4005]: 2026/08/18 10:56:31 INFO security: loaded cluster roles from external policy file roles=22
+Aug 18 10:56:31 node-2 monitoring_server[4005]: PortAllocator range: 10000 - 20000
+Aug 18 10:56:34 node-2 monitoring_server[4005]: 2026/08/18 10:56:34 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 18 10:56:34 node-2 monitoring_server[4005]: time=2026-08-18T10:56:34.973Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=1406
+Aug 18 10:56:35 node-2 monitoring_server[4005]: 2026/08/18 10:56:35 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020

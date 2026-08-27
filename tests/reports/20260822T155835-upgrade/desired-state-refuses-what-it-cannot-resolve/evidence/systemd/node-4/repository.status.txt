@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 15:58:15 UTC; 13min ago
+    Process: 158 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 190 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 219 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 46.4M (peak: 48.9M)
+        CPU: 9.983s
+     CGroup: /system.slice/docker-ece11a49be9718b76dfed82fbd4875cd4d94d066b24af0601dfafcf5a10fd300.scope/system.slice/globular-repository.service
+             └─219 /usr/lib/globular/bin/repository_server
+
+Aug 22 15:59:20 node-4 repository_server[219]: 2026/08/22 15:59:20 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 22 16:03:16 node-4 repository_server[219]: time=2026-08-22T16:03:16.754Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 22 16:03:20 node-4 repository_server[219]: 2026/08/22 16:03:20 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 22 16:03:42 node-4 repository_server[219]: 2026/08/22 16:03:42 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 22 16:06:49 node-4 repository_server[219]: 2026/08/22 16:06:49 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=175 baseline_ms=20 window=713 new_window=641
+Aug 22 16:08:16 node-4 repository_server[219]: time=2026-08-22T16:08:16.753Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 22 16:08:42 node-4 repository_server[219]: 2026/08/22 16:08:42 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 22 16:09:46 node-4 repository_server[219]: 2026/08/22 16:09:46 WARN authz_decision audit="{\"timestamp\":\"2026-08-22T16:09:46.344364054Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 22 16:10:06 node-4 repository_server[219]: 2026/08/22 16:10:06 WARN authz_decision audit="{\"timestamp\":\"2026-08-22T16:10:06.785470558Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 22 16:10:16 node-4 repository_server[219]: 2026/08/22 16:10:16 WARN authz_decision audit="{\"timestamp\":\"2026-08-22T16:10:16.941585454Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown

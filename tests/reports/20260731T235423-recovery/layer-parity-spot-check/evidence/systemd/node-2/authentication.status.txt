@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:56:09 UTC; 16s ago
+    Process: 860 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 883 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 896 (authentication_)
+      Tasks: 11 (limit: 8641)
+     Memory: 24.8M (peak: 26.0M)
+        CPU: 290ms
+     CGroup: /system.slice/docker-9d4b8e2a20ac1e6d6bf99864bf71926d1af05ff60dfd285e1db1bf7a32bc2282.scope/system.slice/globular-authentication.service
+             └─896 /usr/lib/globular/bin/authentication_server
+
+Jul 31 23:56:10 node-2 authentication_server[896]: time=2026-07-31T23:56:10.153Z level=INFO msg="starting authentication service" service=authentication.AuthenticationService version=1.2.288 domain=globular.internal address=10.10.0.12:8443 port=10000 session_timeout=15
+Jul 31 23:56:10 node-2 authentication_server[896]: time=2026-07-31T23:56:10.432Z level=INFO msg="InitGrpcServer: gRPC server initialized" service=authentication.AuthenticationService tls=true port=10003
+Jul 31 23:56:10 node-2 authentication_server[896]: time=2026-07-31T23:56:10.432Z level=INFO msg="service ready" service=authentication.AuthenticationService port=10003 proxy=10001 protocol=grpc domain=globular.internal startup_ms=279 version=1.2.288
+Jul 31 23:56:10 node-2 authentication_server[896]: time=2026-07-31T23:56:10.432Z level=INFO msg="starting service" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10003
+Jul 31 23:56:10 node-2 authentication_server[896]: time=2026-07-31T23:56:10.442Z level=INFO msg="policy: loaded permissions from file" service=authentication path=/var/lib/globular/policy/services/authentication/permissions.generated.json count=8
+Jul 31 23:56:10 node-2 authentication_server[896]: time=2026-07-31T23:56:10.442Z level=INFO msg="authz: permission mappings loaded" service=authentication count=8 action_mappings=8
+Jul 31 23:56:10 node-2 authentication_server[896]: time=2026-07-31T23:56:10.442Z level=INFO msg="service started successfully" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10003
+Jul 31 23:56:10 node-2 authentication_server[896]: time=2026-07-31T23:56:10.640Z level=INFO msg=setKey:generate mac=02:42:0a:0a:00:0c
+Jul 31 23:56:10 node-2 authentication_server[896]: time=2026-07-31T23:56:10.923Z level=INFO msg="metrics: proxy port conflict, using free port" service=authentication.AuthenticationService wanted=10001 actual=46263
+Jul 31 23:56:10 node-2 authentication_server[896]: time=2026-07-31T23:56:10.923Z level=INFO msg="metrics listening" service=authentication.AuthenticationService addr=[::]:46263

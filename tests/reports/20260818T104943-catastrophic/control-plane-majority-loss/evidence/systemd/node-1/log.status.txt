@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:52:47 UTC; 7s ago
+    Process: 4736 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 4758 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 4779 (log_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 24.6M (peak: 25.5M)
+        CPU: 326ms
+     CGroup: /system.slice/docker-059225d7a49fdbb867afd4a4acd66baab01c465f6ce3c4b555ea76d934cd376b.scope/system.slice/globular-log.service
+             └─4779 /usr/lib/globular/bin/log_server
+
+Aug 18 10:52:48 node-1 log_server[4779]: time=2026-08-18T10:52:48.560Z level=INFO msg="service ready" service=log.LogService version=1.2.312 port=10100 proxy=10101 protocol=grpc domain=globular.internal startup_ms=200
+Aug 18 10:52:48 node-1 log_server[4779]: time=2026-08-18T10:52:48.560Z level=INFO msg="starting service" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 18 10:52:48 node-1 log_server[4779]: 2026/08/18 10:52:48 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 18 10:52:48 node-1 log_server[4779]: time=2026-08-18T10:52:48.561Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 18 10:52:48 node-1 log_server[4779]: time=2026-08-18T10:52:48.561Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 18 10:52:48 node-1 log_server[4779]: time=2026-08-18T10:52:48.562Z level=INFO msg="starting metrics server" address=0.0.0.0:9092
+Aug 18 10:52:48 node-1 log_server[4779]: 2026/08/18 10:52:48 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 18 10:52:50 node-1 log_server[4779]: 2026/08/18 10:52:50 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 18 10:52:50 node-1 log_server[4779]: time=2026-08-18T10:52:50.989Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 18 10:52:51 node-1 log_server[4779]: time=2026-08-18T10:52:51.249Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB

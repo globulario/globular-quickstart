@@ -1,0 +1,20 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 09:12:50 UTC; 53min ago
+   Main PID: 11419 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 34.6M (peak: 40.5M)
+        CPU: 6.669s
+     CGroup: /system.slice/docker-093a4c075a39ac900d4fd49d75985e74f0e7367b50317a9550715c12020922ac.scope/system.slice/globular-ai-executor.service
+             └─11419 /usr/lib/globular/bin/ai_executor_server
+
+Aug 11 10:03:18 node-2 ai_executor_server[11419]: time=2026-08-11T10:03:18.044Z level=INFO msg="executing remediation" incident=e0211d47-956b-11f1-a589-02420a0a000d action_type=ACTION_RESTART_SERVICE target=restart_service:globular-scylla-manager.service
+Aug 11 10:03:18 node-2 ai_executor_server[11419]: time=2026-08-11T10:03:18.056Z level=INFO msg="restart_service: request published" target=restart_service:globular-scylla-manager.service
+Aug 11 10:03:20 node-2 ai_executor_server[11419]: time=2026-08-11T10:03:20.764Z level=INFO msg="processing incident" incident_id=e1ccaab0-956b-11f1-a58a-02420a0a000d rule_id=error-rate-spike tier=0 trigger=alert.error.spike batch_size=1
+Aug 11 10:03:20 node-2 ai_executor_server[11419]: time=2026-08-11T10:03:20.804Z level=INFO msg="diagnosis complete" incident_id=e1ccaab0-956b-11f1-a58a-02420a0a000d root_cause="service_overload_or_cascade_failure (ai_memory.AiMemoryService)" confidence=0.5 proposed_action=tighten_circuit_breaker job_state=JOB_DIAGNOSED
+Aug 11 10:03:20 node-2 ai_executor_server[11419]: time=2026-08-11T10:03:20.804Z level=INFO msg="INCIDENT RESOLVED" incident_id=e1ccaab0-956b-11f1-a58a-02420a0a000d summary="error-rate-spike triggered by alert.error.spike on ai_memory.AiMemoryService (1 events in batch)" root_cause="service_overload_or_cascade_failure (ai_memory.AiMemoryService)"
+Aug 11 10:03:20 node-2 ai_executor_server[11419]: 2026/08/11 10:03:20 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=49 baseline_ms=20 window=41 new_window=36
+Aug 11 10:03:20 node-2 ai_executor_server[11419]: time=2026-08-11T10:03:20.830Z level=WARN msg="behavioral feed action check failed" incident=e1ccaab0-956b-11f1-a58a-02420a0a000d action=observe err="rpc error: code = Internal desc = BehavioralMemoryService.CheckAction: check action: persist: record action check: Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 11 10:03:21 node-2 ai_executor_server[11419]: time=2026-08-11T10:03:21.057Z level=ERROR msg="remediation failed" incident=e0211d47-956b-11f1-a589-02420a0a000d action_type=ACTION_RESTART_SERVICE err="verification failed: inconclusive: restart of restart_service:globular-scylla-manager.service dispatched via event bus; confirm via node-agent or cluster doctor"
+Aug 11 10:03:21 node-2 ai_executor_server[11419]: time=2026-08-11T10:03:21.057Z level=ERROR msg="REMEDIATION FAILED" incident_id=e0211d47-956b-11f1-a589-02420a0a000d summary="service-crash triggered by service.exited on scylla-manager (2 events in batch)" proposed_action=restart_service:globular-scylla-manager.service
+Aug 11 10:03:21 node-2 ai_executor_server[11419]: 2026/08/11 10:03:21 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=3108 baseline_ms=20 window=36 new_window=32

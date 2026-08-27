@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 06:44:44 UTC; 7min ago
+    Process: 596 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 624 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 651 (log_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 24.6M (peak: 31.4M)
+        CPU: 1.099s
+     CGroup: /system.slice/docker-68c9df6406a20dbcc998b92c745cb45d72fad4944896271f0621b9345590a548.scope/system.slice/globular-log.service
+             └─651 /usr/lib/globular/bin/log_server
+
+Aug 24 06:44:45 node-2 log_server[651]: 2026/08/24 06:44:45 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 24 06:45:09 node-2 log_server[651]: 2026/08/24 06:45:09 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 24 06:45:09 node-2 log_server[651]: time=2026-08-24T06:45:09.290Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 24 06:45:09 node-2 log_server[651]: time=2026-08-24T06:45:09.503Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 24 06:45:26 node-2 log_server[651]: 2026/08/24 06:45:26 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 24 06:45:58 node-2 log_server[651]: 2026/08/24 06:45:58 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 24 06:45:58 node-2 log_server[651]: 2026/08/24 06:45:58 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 24 06:48:51 node-2 log_server[651]: 2026/08/24 06:48:51 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 06:48:51 node-2 log_server[651]: 2026/08/24 06:48:51 WARN event client: publish circuit breaker closed dropped_during_window=2
+Aug 24 06:49:52 node-2 log_server[651]: 2026/08/24 06:49:52 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

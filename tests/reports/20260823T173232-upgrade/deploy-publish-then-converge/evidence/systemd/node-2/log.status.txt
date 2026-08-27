@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 17:31:06 UTC; 2min 17s ago
+    Process: 497 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 530 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 554 (log_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 25.1M (peak: 25.9M)
+        CPU: 873ms
+     CGroup: /system.slice/docker-69025280349b196b081d33f2dd6f3c546bf2bf86ec60e97ca9d44389bf4681a5.scope/system.slice/globular-log.service
+             └─554 /usr/lib/globular/bin/log_server
+
+Aug 23 17:31:20 node-2 log_server[554]: 2026/08/23 17:31:20 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 23 17:31:20 node-2 log_server[554]: 2026/08/23 17:31:20 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 23 17:31:20 node-2 log_server[554]: time=2026-08-23T17:31:20.575Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 23 17:31:20 node-2 log_server[554]: time=2026-08-23T17:31:20.588Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 23 17:31:21 node-2 log_server[554]: time=2026-08-23T17:31:21.009Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 23 17:31:21 node-2 log_server[554]: time=2026-08-23T17:31:21.216Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 23 17:31:32 node-2 log_server[554]: 2026/08/23 17:31:32 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Operation failed for rbac_permissions.permissions - received 0 responses and 1 failures from 1 CL=QUORUM.\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 23 17:31:35 node-2 log_server[554]: 2026/08/23 17:31:35 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 23 17:31:44 node-2 log_server[554]: 2026/08/23 17:31:44 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 23 17:32:00 node-2 log_server[554]: 2026/08/23 17:32:00 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

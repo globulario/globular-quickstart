@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 09:19:37 UTC; 23min ago
+    Process: 14655 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 14659 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 14662 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 14668 (workflow_server)
+      Tasks: 22 (limit: 8641)
+     Memory: 29.6M (peak: 34.1M)
+        CPU: 3.146s
+     CGroup: /system.slice/docker-093a4c075a39ac900d4fd49d75985e74f0e7367b50317a9550715c12020922ac.scope/system.slice/globular-workflow.service
+             └─14668 /usr/lib/globular/bin/workflow_server
+
+Aug 11 09:39:20 node-2 workflow_server[14668]: time=2026-08-11T09:39:20.992Z level=INFO msg="workflow run started" run_id=879fb2d0-9568-11f1-82e7-02420a0a000c component="" node=35ac3821-6b90-52eb-a800-41130471770b trigger=TRIGGER_REASON_REPAIR
+Aug 11 09:39:41 node-2 workflow_server[14668]: 2026/08/11 09:39:41 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=121 baseline_ms=20 window=71 new_window=63
+Aug 11 09:40:08 node-2 workflow_server[14668]: time=2026-08-11T09:40:08.653Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 11 09:40:30 node-2 workflow_server[14668]: time=2026-08-11T09:40:30.995Z level=INFO msg="workflow run started" run_id=b159109f-9568-11f1-82e8-02420a0a000c component="" node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 trigger=TRIGGER_REASON_REPAIR
+Aug 11 09:40:42 node-2 workflow_server[14668]: 2026/08/11 09:40:42 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=105 baseline_ms=20 window=76 new_window=68
+Aug 11 09:41:06 node-2 workflow_server[14668]: 2026/08/11 09:41:06 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=76 baseline_ms=20 window=68 new_window=61
+Aug 11 09:41:42 node-2 workflow_server[14668]: 2026/08/11 09:41:42 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=104 baseline_ms=20 window=63 new_window=56
+Aug 11 09:41:45 node-2 workflow_server[14668]: time=2026-08-11T09:41:45.999Z level=INFO msg="workflow run started" run_id=de0d3533-9568-11f1-82e9-02420a0a000c component="" node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 trigger=TRIGGER_REASON_REPAIR
+Aug 11 09:42:45 node-2 workflow_server[14668]: 2026/08/11 09:42:45 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListWorkflowSummaries
+Aug 11 09:43:00 node-2 workflow_server[14668]: time=2026-08-11T09:43:00.994Z level=INFO msg="workflow run started" run_id=0ac104d4-9569-11f1-82ea-02420a0a000c component="" node=35ac3821-6b90-52eb-a800-41130471770b trigger=TRIGGER_REASON_REPAIR

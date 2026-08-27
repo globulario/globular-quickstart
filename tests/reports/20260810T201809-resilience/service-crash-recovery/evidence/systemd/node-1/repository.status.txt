@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 20:25:20 UTC; 4min 26s ago
+    Process: 28983 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 28987 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 28990 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 295.2M (peak: 661.3M)
+        CPU: 12.179s
+     CGroup: /system.slice/docker-ee3334bee62c5a7cf2cf1308b1f2bf99dfc8dacd5999c1dfb26cbefc556eead6.scope/system.slice/globular-repository.service
+             └─28990 /usr/lib/globular/bin/repository_server
+
+Aug 10 20:28:58 node-1 repository_server[28990]: 2026/08/10 20:28:58 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListArtifacts action=repository.artifact.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 10 20:28:59 node-1 repository_server[28990]: 2026/08/10 20:28:59 workflow recorder: StartRun failed: rpc error: code = Unauthenticated desc = authentication required: provide --token or configure client certificates
+Aug 10 20:29:11 node-1 repository_server[28990]: 2026/08/10 20:29:11 WARN publish workflow: descriptor registration failed (continuing to promote) key=core@globular.io%gateway%1.2.272%linux_amd64%1 err="rpc error: code = Unknown desc = Operation timed out for local_resource.bundles - received only 0 responses from 1 CL=ONE."
+Aug 10 20:29:11 node-1 repository_server[28990]: 2026/08/10 20:29:11 ERROR publish promotion failed: artifact stuck in VERIFIED state key=core@globular.io%gateway%1.2.272%linux_amd64%1 publisher=core@globular.io name=gateway version=1.2.272 step=promote_published err="promote to PUBLISHED blocked: manifest_json not present in ledger for \"core@globular.io%gateway%1.2.272%linux_amd64%1\" (skeleton row) — manifest sync must succeed before promotion"
+Aug 10 20:29:11 node-1 repository_server[28990]: 2026/08/10 20:29:11 ERROR publish failed — artifact stored but not promoted; retry with 'globular pkg publish --force' key=core@globular.io%gateway%1.2.272%linux_amd64%1 build_id=019fed5c-ecd6-7732-bc39-9c4aec6adc50 err="promote to PUBLISHED blocked: manifest_json not present in ledger for \"core@globular.io%gateway%1.2.272%linux_amd64%1\" (skeleton row) — manifest sync must succeed before promotion"
+Aug 10 20:29:27 node-1 repository_server[28990]: 2026/08/10 20:29:27 WARN scylladb manifest sync failed (non-fatal) key=core@globular.io%node-agent%1.2.302%linux_amd64%1 err="gocql: no response received from cassandra within timeout period"
+Aug 10 20:29:30 node-1 repository_server[28990]: 2026/08/10 20:29:30 INFO artifact uploaded key=core@globular.io%node-agent%1.2.302%linux_amd64%1 build_id=019fed5d-84b6-73d7-b3be-05bde8c68b23 kind=SERVICE build=1 size=10637438 publish_state=VERIFIED subject="" publish_mode=internal
+Aug 10 20:29:42 node-1 repository_server[28990]: 2026/08/10 20:29:42 workflow recorder: StartRun failed: rpc error: code = Unauthenticated desc = authentication required: provide --token or configure client certificates
+Aug 10 20:29:45 node-1 repository_server[28990]: 2026/08/10 20:29:45 ERROR publish promotion failed: artifact stuck in VERIFIED state key=core@globular.io%node-agent%1.2.302%linux_amd64%1 publisher=core@globular.io name=node-agent version=1.2.302 step=promote_published err="promote to PUBLISHED blocked: manifest_json not present in ledger for \"core@globular.io%node-agent%1.2.302%linux_amd64%1\" (skeleton row) — manifest sync must succeed before promotion"
+Aug 10 20:29:45 node-1 repository_server[28990]: 2026/08/10 20:29:45 ERROR publish failed — artifact stored but not promoted; retry with 'globular pkg publish --force' key=core@globular.io%node-agent%1.2.302%linux_amd64%1 build_id=019fed5d-84b6-73d7-b3be-05bde8c68b23 err="promote to PUBLISHED blocked: manifest_json not present in ledger for \"core@globular.io%node-agent%1.2.302%linux_amd64%1\" (skeleton row) — manifest sync must succeed before promotion"

@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:57:23 UTC; 3min 19s ago
+    Process: 3905 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 3909 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3912 (ai_executor_ser)
+      Tasks: 18 (limit: 8641)
+     Memory: 28.8M (peak: 30.5M)
+        CPU: 625ms
+     CGroup: /system.slice/docker-4e49f89905e0a6d0d62c10e2c300dadaff8f929624017faf0a3ff78a831d8f81.scope/system.slice/globular-ai-executor.service
+             └─3912 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 20:57:24 node-3 ai_executor_server[3912]: 2026/07/31 20:57:24 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Jul 31 20:57:54 node-3 ai_executor_server[3912]: time=2026-07-31T20:57:54.109Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Jul 31 21:00:00 node-3 ai_executor_server[3912]: time=2026-07-31T21:00:00.532Z level=INFO msg="processing incident" incident_id=c8d535db-8d22-11f1-bb85-02420a0a000b rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=1
+Jul 31 21:00:01 node-3 ai_executor_server[3912]: time=2026-07-31T21:00:01.316Z level=INFO msg="diagnosis complete" incident_id=c8d535db-8d22-11f1-bb85-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Jul 31 21:00:01 node-3 ai_executor_server[3912]: time=2026-07-31T21:00:01.316Z level=INFO msg="INCIDENT RESOLVED" incident_id=c8d535db-8d22-11f1-bb85-02420a0a000b summary="doctor-finding triggered by cluster.finding.created (1 events in batch)" root_cause=unknown_anomaly
+Jul 31 21:00:03 node-3 ai_executor_server[3912]: {"level":"warn","ts":"2026-07-31T21:00:03.317067Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000457a40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:00:03 node-3 ai_executor_server[3912]: time=2026-07-31T21:00:03.317Z level=WARN msg="job_store: persist failed" incident_id=c8d535db-8d22-11f1-bb85-02420a0a000b err="context deadline exceeded"
+Jul 31 21:00:19 node-3 ai_executor_server[3912]: time=2026-07-31T21:00:19.212Z level=INFO msg="processing incident" incident_id=d4c709c7-8d22-11f1-bb86-02420a0a000b rule_id=workflow-run-failed tier=0 trigger=workflow.run.failed batch_size=4
+Jul 31 21:00:20 node-3 ai_executor_server[3912]: time=2026-07-31T21:00:20.117Z level=INFO msg="diagnosis complete" incident_id=d4c709c7-8d22-11f1-bb86-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Jul 31 21:00:20 node-3 ai_executor_server[3912]: time=2026-07-31T21:00:20.117Z level=INFO msg="INCIDENT RESOLVED" incident_id=d4c709c7-8d22-11f1-bb86-02420a0a000b summary="workflow-run-failed triggered by workflow.run.failed (4 events in batch)" root_cause=unknown_anomaly

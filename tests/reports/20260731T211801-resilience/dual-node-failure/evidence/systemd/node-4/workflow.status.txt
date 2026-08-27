@@ -1,0 +1,14 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: activating (start-pre) since Fri 2026-07-31 21:40:49 UTC; 1s ago
+    Process: 364 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 376 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+  Cntrl PID: 390 (sh)
+      Tasks: 2 (limit: 8641)
+     Memory: 392.0K (peak: 1.7M)
+        CPU: 132ms
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-workflow.service
+             ├─390 /bin/sh -c "if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo \"no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate\"; exit 0; fi; for i in \$(seq 1 90); do ss -lnt | grep -q \":9042 \" && exit 0; sleep 1; done; echo \"local scylla 9042 not ready after 90s\"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1"
+             └─413 sleep 1
+
+Jul 31 21:40:49 node-4 systemd[1]: Starting globular-workflow.service - Globular workflow...

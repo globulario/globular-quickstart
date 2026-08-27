@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 11:02:13 UTC; 7s ago
+    Process: 507 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 541 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 564 (repository_serv)
+      Tasks: 15 (limit: 8641)
+     Memory: 26.9M (peak: 32.3M)
+        CPU: 520ms
+     CGroup: /system.slice/docker-125f94d8224fd1635dcec958e8671abd276b2dca5e533a6b55d7697e3fec591c.scope/system.slice/globular-repository.service
+             └─564 /usr/lib/globular/bin/repository_server
+
+Aug 18 11:02:15 node-3 repository_server[564]: 2026/08/18 11:02:15 INFO publish-reconciler: started interval=1m0s
+Aug 18 11:02:15 node-3 repository_server[564]: time=2026-08-18T11:02:15.804Z level=INFO msg="service ready" service=repository.PackageRepository port=10011 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=2139
+Aug 18 11:02:15 node-3 repository_server[564]: time=2026-08-18T11:02:15.804Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10011
+Aug 18 11:02:15 node-3 repository_server[564]: 2026/08/18 11:02:15 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 18 11:02:15 node-3 repository_server[564]: time=2026-08-18T11:02:15.804Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 18 11:02:15 node-3 repository_server[564]: time=2026-08-18T11:02:15.804Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10011
+Aug 18 11:02:15 node-3 repository_server[564]: time=2026-08-18T11:02:15.812Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 18 11:02:15 node-3 repository_server[564]: 2026/08/18 11:02:15 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=42905
+Aug 18 11:02:15 node-3 repository_server[564]: 2026/08/18 11:02:15 INFO metrics listening service=repository.PackageRepository addr=[::]:42905
+Aug 18 11:02:18 node-3 repository_server[564]: 2026/08/18 11:02:18 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest

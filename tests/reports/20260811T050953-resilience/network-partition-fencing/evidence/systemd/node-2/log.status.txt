@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:38:26 UTC; 8min ago
+    Process: 28626 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 28630 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 28633 (log_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 25.3M (peak: 30.1M)
+        CPU: 1.091s
+     CGroup: /system.slice/docker-2c3e1df9b00a56d277665fa4fc05d2f1b3851a0074ffa6d89c2beb01aae9b7ce.scope/system.slice/globular-log.service
+             └─28633 /usr/lib/globular/bin/log_server
+
+Aug 11 05:38:27 node-2 log_server[28633]: time=2026-08-11T05:38:27.553Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 11 05:38:27 node-2 log_server[28633]: time=2026-08-11T05:38:27.553Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 11 05:38:28 node-2 log_server[28633]: 2026/08/11 05:38:28 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 11 05:38:39 node-2 log_server[28633]: 2026/08/11 05:38:39 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 11 05:38:39 node-2 log_server[28633]: 2026/08/11 05:38:39 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 11 05:39:52 node-2 log_server[28633]: 2026/08/11 05:39:52 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 11 05:39:52 node-2 log_server[28633]: time=2026-08-11T05:39:52.486Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 11 05:39:52 node-2 log_server[28633]: time=2026-08-11T05:39:52.507Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 11 05:43:29 node-2 log_server[28633]: 2026/08/11 05:43:29 INFO acc: warmup complete baseline_rtt_ms=20 samples=241 elapsed=5m0s
+Aug 11 05:46:12 node-2 log_server[28633]: 2026/08/11 05:46:12 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

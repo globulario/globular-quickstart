@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 01:41:10 UTC; 46min ago
+    Process: 1974 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 1978 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1981 (cluster_doctor_)
+      Tasks: 22 (limit: 8641)
+     Memory: 46.3M (peak: 48.3M)
+        CPU: 44.050s
+     CGroup: /system.slice/docker-c842962688ff0f7bae4f6f82083b79940148f679414e9ef1d68e47d44b2ebe21.scope/system.slice/globular-cluster-doctor.service
+             └─1981 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 25 02:27:16 node-1 cluster_doctor_server[1981]: 2026/08/25 02:27:16 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb stored report (checked=43, findings=7) in 1.676473021s
+Aug 25 02:27:16 node-1 cluster_doctor_server[1981]: 2026/08/25 02:27:16 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 stored report (checked=43, findings=5) in 1.919221117s
+Aug 25 02:27:17 node-1 cluster_doctor_server[1981]: 2026/08/25 02:27:17 collector: VerifyPackageIntegrity on node=35ac3821-6b90-52eb-a800-41130471770b stored report (checked=48, findings=4) in 1.892676289s
+Aug 25 02:27:17 node-1 cluster_doctor_server[1981]: 2026/08/25 02:27:17 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 stored report (checked=47, findings=3) in 2.141181557s
+Aug 25 02:27:23 node-1 cluster_doctor_server[1981]: 2026/08/25 02:27:23 verification: 197/209 verdicts unchanged since last write (skipped)
+Aug 25 02:27:32 node-1 cluster_doctor_server[1981]: 2026/08/25 02:27:32 healer: dispatch restart_drifted_unit EXECUTION FAILED for 35ac3821-6b90-52eb-a800-41130471770b/globular-etcd.service: start remediation workflow (run f1c11fae-90d5-4eda-8015-390c105eff7f proposed; durable commit UNCONFIRMED): rpc error: code = Unauthenticated desc = authentication required: provide --token or configure client certificates
+Aug 25 02:27:32 node-1 cluster_doctor_server[1981]: 2026/08/25 02:27:32 healer: dispatch restart_drifted_unit EXECUTION FAILED for 6400b443-cf38-52da-a683-de2fc5103c0b/globular-etcd.service: start remediation workflow (run d750edb4-fccf-4c8b-a326-462701264e7d proposed; durable commit UNCONFIRMED): rpc error: code = Unauthenticated desc = authentication required: provide --token or configure client certificates
+Aug 25 02:27:32 node-1 cluster_doctor_server[1981]: 2026/08/25 02:27:32 healer: cycle complete mode=observe findings=55 auto=0 executed=0 proposed=0 errors=2
+Aug 25 02:27:32 node-1 cluster_doctor_server[1981]: 2026/08/25 02:27:32 healer: audit {"disposition":"auto","entity":"35ac3821-6b90-52eb-a800-41130471770b/globular-etcd.service","error":"start remediation workflow (run f1c11fae-90d5-4eda-8015-390c105eff7f proposed; durable commit UNCONFIRMED): rpc error: code = Unauthenticated desc = authentication required: provide --token or configure client certificates","executed":false,"invariant":"node.systemd.units_running","ts":"2026-08-25T02:27:32Z","verified":false}
+Aug 25 02:27:32 node-1 cluster_doctor_server[1981]: 2026/08/25 02:27:32 healer: audit {"disposition":"auto","entity":"6400b443-cf38-52da-a683-de2fc5103c0b/globular-etcd.service","error":"start remediation workflow (run d750edb4-fccf-4c8b-a326-462701264e7d proposed; durable commit UNCONFIRMED): rpc error: code = Unauthenticated desc = authentication required: provide --token or configure client certificates","executed":false,"invariant":"node.systemd.units_running","ts":"2026-08-25T02:27:32Z","verified":false}

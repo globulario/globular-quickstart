@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:09:31 UTC; 1min 7s ago
+    Process: 437 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 470 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 492 (log_server)
+      Tasks: 16 (limit: 8641)
+     Memory: 31.7M (peak: 33.2M)
+        CPU: 445ms
+     CGroup: /system.slice/docker-8b98724c89d7814ef3d4703a4c42e0cc7bef5b84406d2f3799206f7b685a6043.scope/system.slice/globular-log.service
+             └─492 /usr/lib/globular/bin/log_server
+
+Aug 24 17:09:31 node-2 log_server[492]: 2026/08/24 17:09:31 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 24 17:09:31 node-2 log_server[492]: time=2026-08-24T17:09:31.965Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 24 17:09:31 node-2 log_server[492]: time=2026-08-24T17:09:31.965Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 24 17:09:32 node-2 log_server[492]: 2026/08/24 17:09:32 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 24 17:09:39 node-2 log_server[492]: 2026/08/24 17:09:39 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"gocql: no hosts available in the pool\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 24 17:09:39 node-2 log_server[492]: time=2026-08-24T17:09:39.395Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 24 17:09:39 node-2 log_server[492]: time=2026-08-24T17:09:39.638Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 24 17:10:00 node-2 log_server[492]: 2026/08/24 17:10:00 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 17:10:29 node-2 log_server[492]: 2026/08/24 17:10:29 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 17:10:29 node-2 log_server[492]: 2026/08/24 17:10:29 WARN event client: publish circuit breaker closed dropped_during_window=2

@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:45:17 UTC; 19min ago
+    Process: 148 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 177 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 203 (cluster_control)
+      Tasks: 25 (limit: 8641)
+     Memory: 70.2M (peak: 475.7M)
+        CPU: 1min 44.256s
+     CGroup: /system.slice/docker-7fac91a876a85840c60c302acf724a18f722fb5bd5d00f55ebb1b0ece4798c2c.scope/system.slice/globular-cluster-controller.service
+             └─203 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 23 19:04:25 node-1 cluster_controller_server[203]: 2026/08/23 19:04:25 release core@globular.io/rbac: BLOCKED: invalid phase transition "AVAILABLE" → "RESOLVED"
+Aug 23 19:04:26 node-1 cluster_controller_server[203]: 2026/08/23 19:04:26 watch-service-release: event MODIFIED name=core@globular.io/rbac phase=RESOLVED
+Aug 23 19:04:26 node-1 cluster_controller_server[203]: 2026/08/23 19:04:26 materialize-infra: skipping keepalived — version unresolved (not installed on any node)
+Aug 23 19:04:26 node-1 cluster_controller_server[203]: 2026/08/23 19:04:26 materialize-infra: skipping minio (install_mode=topology_workflow, managed by dedicated workflow)
+Aug 23 19:04:26 node-1 cluster_controller_server[203]: 2026/08/23 19:04:26 materialize-infra: skipping sidekick (install_mode=topology_workflow, managed by dedicated workflow)
+Aug 23 19:04:26 node-1 cluster_controller_server[203]: 2026/08/23 19:04:26 convergence-committer: node=35ac3821-6b90-52eb-a800-41130471770b COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 23 19:04:26 node-1 cluster_controller_server[203]: 2026/08/23 19:04:26 release-workflow: skip node a166b992-b66d-53cb-b7c7-61dfa4dd5a36 for rbac (artifact+runtime converged: globular-rbac.service active)
+Aug 23 19:04:26 node-1 cluster_controller_server[203]: 2026/08/23 19:04:26 materialize-infra: skipping etcd (install_mode=day0_join, managed by dedicated workflow)
+Aug 23 19:04:26 node-1 cluster_controller_server[203]: 2026/08/23 19:04:26 release core@globular.io/rbac: node 6400b443-cf38-52da-a683-de2fc5103c0b drift detected, will re-enter PENDING for workflow re-apply
+Aug 23 19:04:26 node-1 cluster_controller_server[203]: 2026/08/23 19:04:26 release-workflow: skip node c777633e-6d07-5713-9c4c-deb3317eee25 for rbac (artifact+runtime converged: globular-rbac.service active)

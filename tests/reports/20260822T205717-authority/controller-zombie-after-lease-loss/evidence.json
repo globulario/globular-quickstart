@@ -1,0 +1,444 @@
+{
+  "schema_version": 1,
+  "scenario": "controller-zombie-after-lease-loss",
+  "suite": "authority",
+  "start_time": "2026-08-22T20:57:18.078807Z",
+  "end_time": "2026-08-22T21:03:26.899211Z",
+  "passed": false,
+  "item_count": 19,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T20:57:19.109236Z"
+    },
+    {
+      "id": "leadership_is_established",
+      "section": "preconditions",
+      "probe": "controller.leadership",
+      "params": {},
+      "expect": {
+        "claimants_gte": 2,
+        "has_leader": true
+      },
+      "result": {
+        "leader_addr": "10.10.0.11:12000",
+        "leader_node": "node-1",
+        "has_leader": true,
+        "claimants": 3,
+        "instances": "node-2:199:28d2f549-b409-4f90-b9a6-1090401a814b,node-1:213:6c604d80-5a65-40e0-879c-fb8beb0e8f08,node-3:202:146de53f-6abb-4cd5-a0c9-0fcc98ed3529",
+        "leader_instance": "node-1:213:6c604d80-5a65-40e0-879c-fb8beb0e8f08",
+        "distinct_leaders": 3
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T20:57:19.734391Z"
+    },
+    {
+      "id": "etcd_accepts_writes",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 345
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T20:57:20.116191Z"
+    },
+    {
+      "id": "liveness_settled_before",
+      "section": "preconditions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 44,
+        "stale_nodes": 0,
+        "oldest": "a166b992-b66d-53cb-b7c7-61dfa4dd5a36"
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T20:57:20.273234Z"
+    },
+    {
+      "id": "leadership_before",
+      "section": "baseline",
+      "probe": "controller.leadership",
+      "params": {},
+      "expect": {},
+      "result": {
+        "leader_addr": "10.10.0.11:12000",
+        "leader_node": "node-1",
+        "has_leader": true,
+        "claimants": 3,
+        "instances": "node-2:199:28d2f549-b409-4f90-b9a6-1090401a814b,node-1:213:6c604d80-5a65-40e0-879c-fb8beb0e8f08,node-3:202:146de53f-6abb-4cd5-a0c9-0fcc98ed3529",
+        "leader_instance": "node-1:213:6c604d80-5a65-40e0-879c-fb8beb0e8f08",
+        "distinct_leaders": 3
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T20:57:20.876769Z"
+    },
+    {
+      "id": "desired_state_before",
+      "section": "baseline",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 24,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "dns",
+          "event",
+          "file",
+          "log",
+          "mcp",
+          "media",
+          "monitoring",
+          "node-agent",
+          "persistence",
+          "rbac",
+          "repository",
+          "resource",
+          "search",
+          "title",
+          "torrent",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T20:57:21.041199Z"
+    },
+    {
+      "id": "freeze_the_leader",
+      "section": "steps",
+      "probe": "chaos.pause_service",
+      "params": {
+        "node": "leader",
+        "service": "cluster-controller"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.pause_service",
+        "container": "globular-leader",
+        "unit": "globular-cluster-controller.service",
+        "signal": "SIGSTOP",
+        "exit_code": 1,
+        "stderr": "Error response from daemon: No such container: globular-leader"
+      },
+      "passed": false,
+      "timestamp": "2026-08-22T20:57:21.062088Z"
+    },
+    {
+      "id": "new_leader_mutates_desired_state",
+      "section": "steps",
+      "probe": "ops.set_desired",
+      "params": {
+        "node": "node-2",
+        "name": "dns",
+        "version": "1.2.312",
+        "expect": "accepted"
+      },
+      "expect": {},
+      "result": {
+        "action": "ops.set_desired",
+        "service": "dns",
+        "version": "1.2.312",
+        "expect": "accepted",
+        "accepted": false,
+        "exit_code": 1,
+        "attempts": 2,
+        "error": "Error: UpsertDesiredService: rpc error: code = NotFound desc = artifact dns@1.2.312 (build 0) not found in repository; cannot set desired state for non-existent artifact | Usage: |   globular services desired set <service> <version> [flags]",
+        "output": "  --output string       Output format (table|json|yaml) (default \"table\")\n      --timeout duration    Request timeout (default 5s)\n      --token string        Authorization token for the control plane"
+      },
+      "passed": false,
+      "timestamp": "2026-08-22T21:00:31.428116Z"
+    },
+    {
+      "id": "thaw_the_zombie",
+      "section": "steps",
+      "probe": "chaos.resume_all_controllers",
+      "params": {},
+      "expect": {},
+      "result": {
+        "action": "chaos.resume_all_controllers",
+        "resumed": [
+          "globular-node-1",
+          "globular-node-2",
+          "globular-node-3",
+          "globular-node-4",
+          "globular-node-5"
+        ],
+        "not_applicable": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T21:00:31.903794Z"
+    },
+    {
+      "id": "exactly_one_leader_address",
+      "section": "assertions",
+      "probe": "controller.leadership",
+      "params": {},
+      "expect": {
+        "has_leader": true,
+        "claimants_gte": 2
+      },
+      "result": {
+        "leader_addr": "10.10.0.11:12000",
+        "leader_node": "node-1",
+        "has_leader": true,
+        "claimants": 3,
+        "instances": "node-2:199:28d2f549-b409-4f90-b9a6-1090401a814b,node-1:213:6c604d80-5a65-40e0-879c-fb8beb0e8f08,node-3:202:146de53f-6abb-4cd5-a0c9-0fcc98ed3529",
+        "leader_instance": "node-1:213:6c604d80-5a65-40e0-879c-fb8beb0e8f08",
+        "distinct_leaders": 3
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T21:03:02.517223Z"
+    },
+    {
+      "id": "desired_state_intact",
+      "section": "assertions",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {
+        "count_gte": 1
+      },
+      "result": {
+        "count": 24,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "dns",
+          "event",
+          "file",
+          "log",
+          "mcp",
+          "media",
+          "monitoring",
+          "node-agent",
+          "persistence",
+          "rbac",
+          "repository",
+          "resource",
+          "search",
+          "title",
+          "torrent",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T21:03:02.688081Z"
+    },
+    {
+      "id": "no_ambiguous_resolution_introduced",
+      "section": "assertions",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {
+        "ambiguous": 0,
+        "conflict": 0
+      },
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T21:03:03.181130Z"
+    },
+    {
+      "id": "no_doctor_errors",
+      "section": "assertions",
+      "probe": "doctor.report_severity",
+      "params": {},
+      "expect": {
+        "error": 0,
+        "reachable": true
+      },
+      "result": {
+        "reachable": true,
+        "info": 2,
+        "warn": 0,
+        "error": 0,
+        "total": 2,
+        "worst": "INFO",
+        "reduced_harvest": false
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T21:03:11.859014Z"
+    },
+    {
+      "id": "reconcile_clean_after_thaw",
+      "section": "assertions",
+      "probe": "cluster.reconcile_clean",
+      "params": {
+        "since": "3 min ago"
+      },
+      "expect": {
+        "clean": true
+      },
+      "result": {
+        "clean": true,
+        "error_count": 0,
+        "kinds": "",
+        "sample": "",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T21:03:11.990925Z"
+    },
+    {
+      "id": "cluster_healthy_after_thaw",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T21:03:12.313667Z"
+    },
+    {
+      "id": "etcd_still_accepts_writes",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 365
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T21:03:12.722564Z"
+    },
+    {
+      "id": "liveness_current",
+      "section": "assertions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 37,
+        "stale_nodes": 0,
+        "oldest": "35ac3821-6b90-52eb-a800-41130471770b"
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T21:03:12.953813Z"
+    },
+    {
+      "id": "ensure_no_controller_left_frozen",
+      "section": "cleanup",
+      "probe": "chaos.resume_all_controllers",
+      "params": {},
+      "expect": {},
+      "result": {
+        "action": "chaos.resume_all_controllers",
+        "resumed": [
+          "globular-node-1",
+          "globular-node-2",
+          "globular-node-3",
+          "globular-node-4",
+          "globular-node-5"
+        ],
+        "not_applicable": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T21:03:13.548033Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T21:03:14.204095Z"
+    }
+  ],
+  "result": "PARTIAL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

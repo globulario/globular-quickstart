@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:45:17 UTC; 18min ago
+    Process: 148 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 177 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 203 (cluster_control)
+      Tasks: 25 (limit: 8641)
+     Memory: 68.0M (peak: 475.7M)
+        CPU: 1min 41.235s
+     CGroup: /system.slice/docker-7fac91a876a85840c60c302acf724a18f722fb5bd5d00f55ebb1b0ece4798c2c.scope/system.slice/globular-cluster-controller.service
+             └─203 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 23 19:03:25 node-1 cluster_controller_server[203]: 2026/08/23 19:03:25 reconcile-workflow: scan_drift found 0 drift items across 5 nodes (Day-1 join isolation active: 2 join node(s))
+Aug 23 19:03:25 node-1 cluster_controller_server[203]: 2026/08/23 19:03:25 reconcile-workflow: classify_drift received 0 drift items
+Aug 23 19:03:25 node-1 cluster_controller_server[203]: 2026/08/23 19:03:25 actor[controller]: reconcile clean — no remediation needed for globular.internal
+Aug 23 19:03:25 node-1 cluster_controller_server[203]: 2026/08/23 19:03:25 reconcile-workflow: cluster globular.internal is clean — no drift detected
+Aug 23 19:03:25 node-1 cluster_controller_server[203]: 2026/08/23 19:03:25 reconcile-workflow: finalized (status=completed)
+Aug 23 19:03:25 node-1 cluster_controller_server[203]: 2026/08/23 19:03:25 reconcile-workflow: completed
+Aug 23 19:03:25 node-1 cluster_controller_server[203]: 2026/08/23 19:03:25 workflow cluster.reconcile (correlation=reconcile:1787511799849): SUCCEEDED
+Aug 23 19:03:25 node-1 cluster_controller_server[203]: 2026/08/23 19:03:25 reconcile-workflow: cluster.reconcile completed
+Aug 23 19:03:26 node-1 cluster_controller_server[203]: 2026/08/23 19:03:26 dns reconciler: applied to node-3.globular.internal:10007: A=18, AAAA=0, SRV=4 records
+Aug 23 19:03:26 node-1 cluster_controller_server[203]: 2026/08/23 19:03:26 dns reconciler: SUCCESS - applied generation 3 to 1 domain(s)

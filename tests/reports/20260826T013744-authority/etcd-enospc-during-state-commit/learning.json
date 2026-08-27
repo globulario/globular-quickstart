@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-26T02:20:53.548198Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "etcd-enospc-during-state-commit",
+  "suite": "authority",
+  "result": "PASS",
+  "source_revision": "f74014a77246bf13da82dcf4aa40c105e1b21f6c",
+  "proof": {
+    "claim": "A desired-state mutation attempted while etcd cannot write must be atomic:\ncommitted, or rejected. Never half-published.\n\nTHE FAULT. Exhaust etcd's backend QUOTA, then attempt a real desired-state\nchange, then release it.\n\nWHY QUOTA AND NOT A FULL DISK. The first version of this filled the filesystem\netcd writes to. That directory lives on the HOST root filesystem via a docker\nvolume, so \"leave 2 MB free\" meant writing ~57 GB to the developer's disk \u2014 and\nthe only reason it did not is that it timed out first. Filling someone's disk to\ntest a cluster property is not an acceptable trade at any speed.\nQuota exhaustion is also the faithful fault: the 2026-08-16 outage was\nquota-backend-bytes exceeded, not a full disk.\n\nWHY THIS IS NOT disk-pressure-detection. That scenario fills the node's root\ndisk and checks the cluster NOTICES. This makes etcd refuse writes and attempts\na mutation into that refusal \u2014 so the question is not detection but atomicity.\n\nWHY IT MATTERS HERE SPECIFICALLY. The 2026-08-16 outage was an etcd NOSPACE\nevent: the backend hit quota and the control plane went read-only. What was\nnever established is what happens to a mutation caught in that window. A\ndesired-state write is not one key: it is a record, a generation, and the\nreconcile that follows. A partial write leaves the cluster pointed at something\nnobody chose, and \u2014 worse \u2014 leaves no error for the operator to act on, because\nfrom the caller's side the command simply failed.\n\nTHE TWO ACCEPTABLE OUTCOMES, and there is no third:\n\n    the mutation never happened      \u2014 refused, nothing changed\n    the mutation completed exactly once\n\nThere is no acceptable state called \"the record is there but the generation is\nnot\", and none called \"the command failed but the write landed\".\n\nWHAT MUST HOLD. After the space is released, the cluster returns to healthy\nwith no standing alarms, no ambiguous or half-published artifacts, and desired\nstate coherent \u2014 whichever of the two outcomes occurred.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

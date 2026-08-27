@@ -1,0 +1,421 @@
+{
+  "schema_version": 1,
+  "scenario": "authz-scope-unavailable",
+  "suite": "security",
+  "start_time": "2026-08-22T15:15:04.698125Z",
+  "end_time": "2026-08-22T15:15:25.124581Z",
+  "passed": true,
+  "item_count": 21,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:05.770749Z"
+    },
+    {
+      "id": "rbac_registered_before",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 12
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:05.874576Z"
+    },
+    {
+      "id": "authz_reachable_before",
+      "section": "preconditions",
+      "probe": "authz.check",
+      "params": {
+        "subject": "system:sa:cluster-controller",
+        "action": "cluster.read",
+        "resource": "nodes"
+      },
+      "expect": {
+        "rbac_registered": true
+      },
+      "result": {
+        "rbac_registered": true,
+        "roles_seeded": false,
+        "binding_count": 0,
+        "result": "unknown",
+        "note": "full gRPC check requires runner container"
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:06.061821Z"
+    },
+    {
+      "id": "role_bindings_before",
+      "section": "baseline",
+      "probe": "authz.role_bindings",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:06.153217Z"
+    },
+    {
+      "id": "policy_file_before",
+      "section": "baseline",
+      "probe": "rbac.policy_file",
+      "params": {},
+      "expect": {},
+      "result": {
+        "present": true,
+        "role_count": 22,
+        "valid_json": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:06.326231Z"
+    },
+    {
+      "id": "kill_rbac",
+      "section": "steps",
+      "probe": "chaos.kill_service",
+      "params": {
+        "node": "node-2",
+        "service": "rbac"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.kill_service",
+        "container": "globular-node-2",
+        "unit": "globular-rbac.service",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:06.472330Z"
+    },
+    {
+      "id": "observe_under_unavailable_rbac",
+      "section": "steps",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {},
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:06.767997Z"
+    },
+    {
+      "id": "restart_rbac",
+      "section": "steps",
+      "probe": "chaos.restart_service",
+      "params": {
+        "node": "node-2",
+        "service": "rbac"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.restart_service",
+        "container": "globular-node-2",
+        "unit": "globular-rbac.service",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:06.842259Z"
+    },
+    {
+      "id": "wait_for_rbac_recovery",
+      "section": "steps",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 12
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:06.962860Z"
+    },
+    {
+      "id": "wait_for_cluster_recovery",
+      "section": "steps",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:07.495337Z"
+    },
+    {
+      "id": "rbac_registered_after",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 12
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:07.614170Z"
+    },
+    {
+      "id": "authz_reachable_after",
+      "section": "assertions",
+      "probe": "authz.check",
+      "params": {
+        "subject": "system:sa:cluster-controller",
+        "action": "cluster.read",
+        "resource": "nodes"
+      },
+      "expect": {
+        "rbac_registered": true
+      },
+      "result": {
+        "rbac_registered": true,
+        "roles_seeded": false,
+        "binding_count": 0,
+        "result": "unknown",
+        "note": "full gRPC check requires runner container"
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:07.831120Z"
+    },
+    {
+      "id": "role_bindings_intact",
+      "section": "assertions",
+      "probe": "authz.role_bindings",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:07.938940Z"
+    },
+    {
+      "id": "policy_file_intact",
+      "section": "assertions",
+      "probe": "rbac.policy_file",
+      "params": {},
+      "expect": {},
+      "result": {
+        "present": true,
+        "role_count": 22,
+        "valid_json": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:08.097085Z"
+    },
+    {
+      "id": "cluster_healthy_after",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:08.411254Z"
+    },
+    {
+      "id": "reconcile_clean_after",
+      "section": "assertions",
+      "probe": "cluster.reconcile_clean",
+      "params": {
+        "node": "node-1",
+        "since": "2 min ago"
+      },
+      "expect": {
+        "clean": true
+      },
+      "result": {
+        "clean": true,
+        "error_count": 0,
+        "kinds": "",
+        "sample": "",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:08.529831Z"
+    },
+    {
+      "id": "no_error_findings_after",
+      "section": "assertions",
+      "probe": "doctor.report_severity",
+      "params": {},
+      "expect": {
+        "error_lte": 0
+      },
+      "result": {
+        "reachable": true,
+        "info": 1,
+        "warn": 1,
+        "error": 0,
+        "total": 2,
+        "worst": "WARN",
+        "reduced_harvest": false
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:24.018518Z"
+    },
+    {
+      "id": "final_cluster_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:24.312776Z"
+    },
+    {
+      "id": "final_rbac_registered",
+      "section": "cleanup",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 12
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:24.440636Z"
+    },
+    {
+      "id": "enforce_restoration",
+      "section": "restoration",
+      "probe": "restoration",
+      "params": {},
+      "expect": {
+        "residue_free": true
+      },
+      "result": {
+        "outstanding_at_teardown": [
+          {
+            "kind": "service_killed",
+            "node": "node-2",
+            "service": "rbac",
+            "unit": "globular-rbac.service"
+          }
+        ],
+        "reversed": [],
+        "discharged": [
+          {
+            "kind": "service_killed",
+            "node": "node-2",
+            "service": "rbac",
+            "unit": "globular-rbac.service",
+            "recovered_by": "product"
+          }
+        ],
+        "failed": [],
+        "unrestorable": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:24.505505Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T15:15:25.124477Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

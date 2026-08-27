@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 17:35:52 UTC; 12min ago
+    Process: 5774 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 5778 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 5781 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 889.4M (peak: 933.1M)
+        CPU: 7.978s
+     CGroup: /system.slice/docker-ac702e6376ce15191244fb9c8e5b39e6ea04c7946de9a760ec53b393b742ec1e.scope/system.slice/globular-repository.service
+             └─5781 /usr/lib/globular/bin/repository_server
+
+Aug 27 17:36:10 node-5 repository_server[5781]: time=2026-08-27T17:36:10.484Z level=INFO msg="blob-seed: materialized blob into local CAS from staged join package" artifact=core@globular.io%prometheus%3.5.1%linux_amd64%1 staged=/var/lib/globular/packages/pinned/prometheus_3.5.1_linux_amd64.tgz checksum=sha256:8c878815a
+Aug 27 17:36:11 node-5 repository_server[5781]: time=2026-08-27T17:36:11.554Z level=INFO msg="blob-seed: materialized blob into local CAS from staged join package" artifact=core@globular.io%title%1.2.317%linux_amd64%1 staged=/var/lib/globular/packages/title_1.2.317_linux_amd64.tgz checksum=sha256:2cc5b486b
+Aug 27 17:36:11 node-5 repository_server[5781]: time=2026-08-27T17:36:11.554Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=11 seeded_from_staged=45 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 27 17:36:14 node-5 repository_server[5781]: 2026/08/27 17:36:14 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10003 new_port=10003 old_proxy=42923 new_proxy=10001
+Aug 27 17:36:49 node-5 repository_server[5781]: 2026/08/27 17:36:49 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 27 17:40:54 node-5 repository_server[5781]: 2026/08/27 17:40:54 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 27 17:41:11 node-5 repository_server[5781]: time=2026-08-27T17:41:11.559Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 27 17:42:35 node-5 repository_server[5781]: 2026/08/27 17:42:35 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 27 17:46:11 node-5 repository_server[5781]: time=2026-08-27T17:46:11.558Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 27 17:47:35 node-5 repository_server[5781]: 2026/08/27 17:47:35 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest

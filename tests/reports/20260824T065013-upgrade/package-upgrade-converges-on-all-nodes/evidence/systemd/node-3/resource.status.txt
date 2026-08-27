@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 06:45:04 UTC; 43min ago
+    Process: 439 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 452 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 465 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 538 (resource_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 23.2M (peak: 30.1M)
+        CPU: 4.245s
+     CGroup: /system.slice/docker-21d9b721864172ac3e65918a526d4a3f27ef8cf5d53cd86bd8ab30adc4b8941d.scope/system.slice/globular-resource.service
+             └─538 /usr/lib/globular/bin/resource_server
+
+Aug 24 06:45:04 node-3 resource_server[538]: 2026/08/24 06:45:04 error: failed to connect to "[HostInfo hostname=\"10.10.0.13\" connectAddress=\"10.10.0.13\" peer=\"10.10.0.13\" rpc_address=\"10.10.0.13\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.13\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"f7b71f8f-6b57-42df-89c9-c4874edd537d\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: EOF
+Aug 24 06:45:07 node-3 resource_server[538]: 2026/08/24 06:45:07 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 06:46:39 node-3 resource_server[538]: time=2026-08-24T06:46:39.476Z level=WARN msg="rbac client unavailable in bootstrap mode" error="rbac: endpoint unresolved"
+Aug 24 06:46:39 node-3 resource_server[538]: time=2026-08-24T06:46:39.476Z level=WARN msg="rbac disabled; skipping owner assignment" path=/users/sa@globular.internal subject=sa@globular.internal resourceType=file
+Aug 24 06:46:39 node-3 resource_server[538]: 2026/08/24 06:46:39 INFO metrics: proxy port conflict, using free port service=resource.ResourceService wanted=10011 actual=46869
+Aug 24 06:46:39 node-3 resource_server[538]: 2026/08/24 06:46:39 INFO metrics listening service=resource.ResourceService addr=[::]:46869
+Aug 24 06:46:45 node-3 resource_server[538]: 2026/08/24 06:46:45 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 24 06:46:45 node-3 resource_server[538]: 2026/08/24 06:46:45 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 24 06:51:40 node-3 resource_server[538]: 2026/08/24 06:51:40 INFO acc: warmup complete baseline_rtt_ms=20 samples=248 elapsed=5m0s
+Aug 24 07:11:56 node-3 resource_server[538]: 2026/08/24 07:11:56 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/resource.ResourceService/GetAccounts

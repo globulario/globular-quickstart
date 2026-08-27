@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 17:31:06 UTC; 41min ago
+    Process: 498 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 531 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 558 (monitoring_serv)
+      Tasks: 12 (limit: 8641)
+     Memory: 22.3M (peak: 29.6M)
+        CPU: 1.602s
+     CGroup: /system.slice/docker-69025280349b196b081d33f2dd6f3c546bf2bf86ec60e97ca9d44389bf4681a5.scope/system.slice/globular-monitoring.service
+             └─558 /usr/lib/globular/bin/monitoring_server
+
+Aug 23 17:31:06 node-2 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 23 17:31:06 node-2 monitoring_server[558]: 2026/08/23 17:31:06 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 23 17:31:06 node-2 monitoring_server[558]: 2026/08/23 17:31:06 INFO security: loaded cluster roles from external policy file roles=22
+Aug 23 17:31:06 node-2 monitoring_server[558]: PortAllocator range: 10000 - 20000
+Aug 23 17:31:06 node-2 monitoring_server[558]: 2026/08/23 17:31:06 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 23 17:31:07 node-2 monitoring_server[558]: time=2026-08-23T17:31:07.231Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=454
+Aug 23 17:31:07 node-2 monitoring_server[558]: 2026/08/23 17:31:07 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 23 17:40:12 node-2 monitoring_server[558]: {"level":"warn","ts":"2026-08-23T17:40:12.552117Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002d2960/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 17:40:12 node-2 monitoring_server[558]: {"level":"info","ts":"2026-08-23T17:40:12.552304Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 18:01:16 node-2 monitoring_server[558]: 2026/08/23 18:01:16 INFO acc: warmup complete baseline_rtt_ms=20 samples=150 elapsed=30m0s

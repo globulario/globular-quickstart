@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 08:52:47 UTC; 27min ago
+    Process: 3219 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 3223 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3226 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 32.6M (peak: 38.6M)
+        CPU: 3.307s
+     CGroup: /system.slice/docker-8fa9d58efde52911e2be750a87a31d61d0e072c16d7b0f594905bb9ee0012420.scope/system.slice/globular-ai-executor.service
+             └─3226 /usr/lib/globular/bin/ai_executor_server
+
+Aug 24 09:15:14 node-1 ai_executor_server[3226]: time=2026-08-24T09:15:14.481Z level=INFO msg="diagnosis complete" incident_id=50a48525-9f9c-11f1-a104-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 24 09:15:14 node-1 ai_executor_server[3226]: time=2026-08-24T09:15:14.481Z level=INFO msg="INCIDENT RESOLVED" incident_id=50a48525-9f9c-11f1-a104-02420a0a000b summary="reconcile-item-failed triggered by cluster.reconcile.item_failed (1 events in batch)" root_cause=unknown_anomaly
+Aug 24 09:15:14 node-1 ai_executor_server[3226]: 2026/08/24 09:15:14 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=455 baseline_ms=20 window=57 new_window=51
+Aug 24 09:17:47 node-1 ai_executor_server[3226]: time=2026-08-24T09:17:47.967Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 24 09:17:48 node-1 ai_executor_server[3226]: time=2026-08-24T09:17:48.034Z level=INFO msg="codex: no credentials found"
+Aug 24 09:18:18 node-1 ai_executor_server[3226]: time=2026-08-24T09:18:18.057Z level=INFO msg="peer: connected" node=node-5 endpoint=10.10.0.15:10013
+Aug 24 09:19:18 node-1 ai_executor_server[3226]: time=2026-08-24T09:19:18.048Z level=INFO msg="processing incident" incident_id=e1f5127a-9f9c-11f1-a107-02420a0a000b rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=62
+Aug 24 09:19:18 node-1 ai_executor_server[3226]: time=2026-08-24T09:19:18.253Z level=INFO msg="diagnosis complete" incident_id=e1f5127a-9f9c-11f1-a107-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 24 09:19:18 node-1 ai_executor_server[3226]: time=2026-08-24T09:19:18.253Z level=INFO msg="INCIDENT RESOLVED" incident_id=e1f5127a-9f9c-11f1-a107-02420a0a000b summary="doctor-finding triggered by cluster.finding.created (62 events in batch)" root_cause=unknown_anomaly
+Aug 24 09:19:18 node-1 ai_executor_server[3226]: 2026/08/24 09:19:18 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=234 baseline_ms=20 window=52 new_window=46

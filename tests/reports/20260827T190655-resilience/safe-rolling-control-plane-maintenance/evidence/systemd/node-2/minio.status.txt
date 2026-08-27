@@ -1,0 +1,33 @@
+● globular-minio.service - Globular MinIO
+     Loaded: loaded (/etc/systemd/system/globular-minio.service; enabled; preset: enabled)
+    Drop-In: /etc/systemd/system/globular-minio.service.d
+             └─distributed.conf
+     Active: active (running) since Thu 2026-08-27 20:04:58 UTC; 1min 18s ago
+    Process: 50 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/minio /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 75 ExecStartPre=/usr/bin/chown -R globular:globular /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 93 ExecStartPre=/usr/bin/chown -R globular:globular /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 113 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 141 ExecStartPre=/usr/bin/chmod 0700 /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 168 ExecStartPre=/bin/sh -c chmod o+x "$(dirname /shared/minio/data)" "$(dirname "$(dirname /shared/minio/data)")" 2>/dev/null || true (code=exited, status=0/SUCCESS)
+    Process: 194 ExecStartPre=/usr/bin/test -w /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 219 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 237 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 253 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+    Process: 264 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+   Main PID: 281 (minio)
+      Tasks: 21 (limit: 8641)
+     Memory: 76.5M (peak: 77.0M)
+        CPU: 1.268s
+     CGroup: /system.slice/docker-9e575d08069298e7cc4546f8bf434e849bf1fb07fa8830021eea8927024e1d2e.scope/system.slice/globular-minio.service
+             └─281 /usr/lib/globular/bin/minio server https://10.10.0.11:9000/var/lib/minio/d1/data1 https://10.10.0.11:9000/var/lib/minio/d1/data2 https://10.10.0.12:9000/var/lib/minio/d1/data1 https://10.10.0.12:9000/var/lib/minio/d1/data2 https://10.10.0.13:9000/var/lib/minio/d1/data1 https://10.10.0.13:9000/var/lib/minio/d1/data2 --address 10.10.0.12:9000 --console-address 10.10.0.12:9001
+
+Aug 27 20:05:59 node-2 minio[281]: DeploymentID: 17147c17-5391-48ef-83a3-3e29c98af823
+Aug 27 20:05:59 node-2 minio[281]: Error: Marking 10.10.0.13:9000 offline temporarily; caused by Get "https://10.10.0.13:9000/minio/storage/var/lib/minio/d1/data2/v63/rxl?did=483ab9dd-71b2-4a68-b9a3-c685c052d6a5&fp=buckets%2F.background-heal.json&vol=.minio.sys": dial tcp 10.10.0.13:9000: connect: no route to host (*fmt.wrapError)
+Aug 27 20:05:59 node-2 minio[281]:        6: internal/logger/logonce.go:118:logger.(*logOnceType).logOnceIf()
+Aug 27 20:05:59 node-2 minio[281]:        5: internal/logger/logonce.go:149:logger.LogOnceIf()
+Aug 27 20:05:59 node-2 minio[281]:        4: internal/rest/client.go:332:rest.(*Client).CallWithHTTPMethod()
+Aug 27 20:05:59 node-2 minio[281]:        3: cmd/storage-rest-client.go:183:cmd.(*storageRESTClient).callGet()
+Aug 27 20:05:59 node-2 minio[281]:        2: cmd/storage-rest-client.go:598:cmd.(*storageRESTClient).ReadXL()
+Aug 27 20:05:59 node-2 minio[281]:        1: cmd/erasure-object.go:758:cmd.erasureObjects.getObjectFileInfo.func1.1()
+Aug 27 20:06:06 node-2 minio[281]: Client 'https://10.10.0.13:9000/minio/storage/var/lib/minio/d1/data1/v63' re-connected in 6.391843049s
+Aug 27 20:06:06 node-2 minio[281]: Client 'https://10.10.0.13:9000/minio/storage/var/lib/minio/d1/data2/v63' re-connected in 7.298254781s

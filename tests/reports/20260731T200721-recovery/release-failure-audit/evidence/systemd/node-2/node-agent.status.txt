@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:08:24 UTC; 1min 0s ago
+    Process: 187 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 195 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 219 (node_agent_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 24.4M (peak: 34.7M)
+        CPU: 21.655s
+     CGroup: /system.slice/docker-4acd6a22fc26b5d459effe3a47be05dc5a9ffe3868d8dfefd3c60f55bc8a7157.scope/system.slice/globular-node-agent.service
+             └─219 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 20:08:45 node-2 node_agent_server[219]: 2026/07/31 20:08:45 minio-topology-gate: stopped globular-minio.service on non-member node c8a09d9e-3813-5357-ab58-93aa410f27fb (ip=10.10.0.12) — state=held_not_in_topology; MinIO will start only after apply-topology admits this node
+Jul 31 20:08:46 node-2 node_agent_server[219]: 2026/07/31 20:08:46 nodeagent: reporting 15 installed services (hash=713345b3f1599e79ec73ce654cfc79d249ace400295c8427170a080b8bea1644, sample=[envoy gateway cluster-doctor cluster-controller etcdctl])
+Jul 31 20:08:49 node-2 node_agent_server[219]: 2026/07/31 20:08:49 event-publisher: service.stopped unit=globular-minio.service (active/running → inactive/dead)
+Jul 31 20:08:50 node-2 node_agent_server[219]: 2026/07/31 20:08:50 ingress: spec changed (type: PUT), triggering reconciliation
+Jul 31 20:08:50 node-2 node_agent_server[219]: 2026/07/31 20:08:50 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Jul 31 20:08:54 node-2 node_agent_server[219]: 2026/07/31 20:08:54 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Jul 31 20:09:10 node-2 node_agent_server[219]: 2026/07/31 20:09:10 webroot-sync: synced=0 skipped=0 removed=0 (0.1s)
+Jul 31 20:09:17 node-2 node_agent_server[219]: 2026/07/31 20:09:17 nodeagent: reporting 15 installed services (hash=713345b3f1599e79ec73ce654cfc79d249ace400295c8427170a080b8bea1644, sample=[cluster-doctor workflow etcdctl xds minio])
+Jul 31 20:09:20 node-2 node_agent_server[219]: 2026/07/31 20:09:20 ingress: spec changed (type: PUT), triggering reconciliation
+Jul 31 20:09:20 node-2 node_agent_server[219]: 2026/07/31 20:09:20 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb

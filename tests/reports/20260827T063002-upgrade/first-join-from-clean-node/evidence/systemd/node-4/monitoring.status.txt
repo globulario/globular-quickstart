@@ -1,0 +1,20 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 06:29:50 UTC; 34min ago
+    Process: 150 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 198 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 253 (monitoring_serv)
+      Tasks: 14 (limit: 8641)
+     Memory: 18.1M (peak: 27.0M)
+        CPU: 1.202s
+     CGroup: /system.slice/docker-7a23b7b68e7a2e26d2fe281423b24afd02ff8bb8a14a979e5ed0d3fa2d7e304d.scope/system.slice/globular-monitoring.service
+             └─253 /usr/lib/globular/bin/monitoring_server
+
+Aug 27 06:29:50 node-4 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 27 06:29:50 node-4 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 27 06:29:50 node-4 monitoring_server[253]: PortAllocator range: 10000 - 20000
+Aug 27 06:29:50 node-4 monitoring_server[253]: 2026/08/27 06:29:50 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 27 06:29:50 node-4 monitoring_server[253]: time=2026-08-27T06:29:50.814Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=464
+Aug 27 06:29:51 node-4 monitoring_server[253]: 2026/08/27 06:29:51 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 27 06:49:04 node-4 monitoring_server[253]: 2026/08/27 06:49:04 WARN acc: config watcher stopped, will retry err="etcdserver: mvcc: required revision has been compacted" backoff=5s
+Aug 27 06:59:57 node-4 monitoring_server[253]: 2026/08/27 06:59:57 INFO acc: warmup complete baseline_rtt_ms=20 samples=150 elapsed=30m0s

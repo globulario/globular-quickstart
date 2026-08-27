@@ -1,0 +1,31 @@
+○ globular-minio.service - Globular MinIO
+     Loaded: loaded (/etc/systemd/system/globular-minio.service; enabled; preset: enabled)
+    Drop-In: /etc/systemd/system/globular-minio.service.d
+             └─distributed.conf
+     Active: inactive (dead) since Sun 2026-08-23 18:47:52 UTC; 1min 36s ago
+   Duration: 44.260s
+    Process: 50 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/minio /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 70 ExecStartPre=/usr/bin/chown -R globular:globular /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 94 ExecStartPre=/usr/bin/chown -R globular:globular /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 115 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 133 ExecStartPre=/usr/bin/chmod 0700 /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 149 ExecStartPre=/bin/sh -c chmod o+x "$(dirname /shared/minio/data)" "$(dirname "$(dirname /shared/minio/data)")" 2>/dev/null || true (code=exited, status=0/SUCCESS)
+    Process: 176 ExecStartPre=/usr/bin/test -w /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 189 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 200 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 215 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+    Process: 223 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+    Process: 230 ExecStart=/usr/lib/globular/bin/minio server $MINIO_VOLUMES --address 10.10.0.12:9000 --console-address 10.10.0.12:9001 (code=exited, status=0/SUCCESS)
+   Main PID: 230 (code=exited, status=0/SUCCESS)
+        CPU: 1.170s
+
+Aug 23 18:47:23 node-2 minio[230]:        endpoint="https://10.10.0.13:9000/var/lib/minio/d1/data2"
+Aug 23 18:47:23 node-2 minio[230]:        4: internal/logger/logger.go:261:logger.LogAlwaysIf()
+Aug 23 18:47:23 node-2 minio[230]:        3: cmd/logging.go:65:cmd.peersLogAlwaysIf()
+Aug 23 18:47:23 node-2 minio[230]:        2: cmd/prepare-storage.go:51:cmd.init.init.func23.func52()
+Aug 23 18:47:23 node-2 minio[230]:        1: cmd/erasure-sets.go:231:cmd.(*erasureSets).connectDisks.func2()
+Aug 23 18:47:52 node-2 minio[230]: INFO: Exiting on signal: TERMINATED
+Aug 23 18:47:52 node-2 systemd[1]: Stopping globular-minio.service - Globular MinIO...
+Aug 23 18:47:52 node-2 systemd[1]: globular-minio.service: Deactivated successfully.
+Aug 23 18:47:52 node-2 systemd[1]: Stopped globular-minio.service - Globular MinIO.
+Aug 23 18:47:52 node-2 systemd[1]: globular-minio.service: Consumed 1.170s CPU time, 77.0M memory peak, 0B memory swap peak.

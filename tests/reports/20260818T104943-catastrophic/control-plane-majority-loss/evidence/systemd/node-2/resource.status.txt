@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:52:51 UTC; 4s ago
+    Process: 363 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 369 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 382 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 483 (resource_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 22.3M (peak: 23.9M)
+        CPU: 359ms
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-resource.service
+             └─483 /usr/lib/globular/bin/resource_server
+
+Aug 18 10:52:51 node-2 resource_server[483]: PortAllocator range: 10000 - 20000
+Aug 18 10:52:51 node-2 resource_server[483]: time=2026-08-18T10:52:51.782Z level=INFO msg="Scylla process detected, using Scylla as backend store" process="[296 364]"
+Aug 18 10:52:51 node-2 resource_server[483]: time=2026-08-18T10:52:51.798Z level=INFO msg="scylla host detected" host=10.10.0.11 method=tcp-probe
+Aug 18 10:52:51 node-2 resource_server[483]: time=2026-08-18T10:52:51.798Z level=INFO msg="starting resource service" service=resource.ResourceService version=1.2.312 domain=globular.internal address=10.10.0.12:8443 port=10000 backend=SCYLLA backend_address=10.10.0.11 bootstrap_mode=true
+Aug 18 10:52:51 node-2 resource_server[483]: 2026/08/18 10:52:51 INFO InitGrpcServer: gRPC server initialized service=resource.ResourceService tls=true port=10013
+Aug 18 10:52:51 node-2 resource_server[483]: time=2026-08-18T10:52:51.874Z level=INFO msg="service ready" service=resource.ResourceService port=10013 proxy=10011 protocol=grpc domain=globular.internal startup_ms=76 pid=483 id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 version=1.2.312 store=SCYLLA
+Aug 18 10:52:52 node-2 resource_server[483]: 2026/08/18 10:52:52 INFO scylla: connected id=local_resource hosts=[10.10.0.11] port=9042 keyspace=local_resource
+Aug 18 10:52:52 node-2 resource_server[483]: time=2026-08-18T10:52:52.730Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042
+Aug 18 10:52:52 node-2 resource_server[483]: 2026/08/18 10:52:52 error: failed to connect to "[HostInfo hostname=\"10.10.0.13\" connectAddress=\"10.10.0.13\" peer=\"10.10.0.13\" rpc_address=\"10.10.0.13\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.13\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"80233298-ebe2-4e5b-ac15-9e33fa6d1131\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: EOF
+Aug 18 10:52:53 node-2 resource_server[483]: 2026/08/18 10:52:53 error: failed to connect to "[HostInfo hostname=\"10.10.0.15\" connectAddress=\"10.10.0.15\" peer=\"10.10.0.15\" rpc_address=\"10.10.0.15\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.15\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"9088b4ed-2a06-42da-99e6-2a55173e0ab7\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: EOF

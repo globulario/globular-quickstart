@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 15:42:15 UTC; 6min ago
+    Process: 649 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 672 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 686 (ai_executor_ser)
+      Tasks: 20 (limit: 8641)
+     Memory: 31.1M (peak: 34.5M)
+        CPU: 1.485s
+     CGroup: /system.slice/docker-fd698dfc9d5b3e5341edb61ea508012608ee08c59e2e9315dc3bb8ab883feb4c.scope/system.slice/globular-ai-executor.service
+             └─686 /usr/lib/globular/bin/ai_executor_server
+
+Aug 24 15:47:41 node-3 ai_executor_server[686]: time=2026-08-24T15:47:41.452Z level=INFO msg="INCIDENT RESOLVED" incident_id=23d7de65-9fd3-11f1-bf87-02420a0a000d summary="auth-denial triggered by alert.auth.denied on repository.PackageRepository (3 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)"
+Aug 24 15:48:23 node-3 ai_executor_server[686]: time=2026-08-24T15:48:23.591Z level=INFO msg="processing incident" incident_id=3cff34ad-9fd3-11f1-bf88-02420a0a000d rule_id=drift-detected tier=0 trigger=cluster.drift_detected batch_size=6
+Aug 24 15:48:23 node-3 ai_executor_server[686]: time=2026-08-24T15:48:23.644Z level=INFO msg="processing incident" incident_id=3d0a14a8-9fd3-11f1-b1b4-02420a0a000b rule_id=drift-detected tier=0 trigger=cluster.drift_detected batch_size=7
+Aug 24 15:48:23 node-3 ai_executor_server[686]: time=2026-08-24T15:48:23.649Z level=INFO msg="diagnosis complete" incident_id=3cff34ad-9fd3-11f1-bf88-02420a0a000d root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 24 15:48:23 node-3 ai_executor_server[686]: time=2026-08-24T15:48:23.649Z level=INFO msg="INCIDENT RESOLVED" incident_id=3cff34ad-9fd3-11f1-bf88-02420a0a000d summary="drift-detected triggered by cluster.drift_detected (6 events in batch)" root_cause=unknown_anomaly
+Aug 24 15:48:23 node-3 ai_executor_server[686]: 2026/08/24 15:48:23 INFO acc: warmup complete baseline_rtt_ms=20 samples=200 elapsed=6m6s
+Aug 24 15:48:23 node-3 ai_executor_server[686]: 2026/08/24 15:48:23 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=75 baseline_ms=20 window=100 new_window=90
+Aug 24 15:48:23 node-3 ai_executor_server[686]: time=2026-08-24T15:48:23.695Z level=INFO msg="diagnosis complete" incident_id=3d0a14a8-9fd3-11f1-b1b4-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 24 15:48:23 node-3 ai_executor_server[686]: time=2026-08-24T15:48:23.695Z level=INFO msg="INCIDENT RESOLVED" incident_id=3d0a14a8-9fd3-11f1-b1b4-02420a0a000b summary="drift-detected triggered by cluster.drift_detected (7 events in batch)" root_cause=unknown_anomaly
+Aug 24 15:48:23 node-3 ai_executor_server[686]: 2026/08/24 15:48:23 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=57 baseline_ms=20 window=90 new_window=81

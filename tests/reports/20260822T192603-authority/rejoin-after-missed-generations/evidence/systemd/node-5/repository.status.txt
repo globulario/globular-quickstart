@@ -1,0 +1,17 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:35:26 UTC; 2s ago
+    Process: 13438 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 13457 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 13473 (repository_serv)
+      Tasks: 12 (limit: 8641)
+     Memory: 9.0M (peak: 9.4M)
+        CPU: 84ms
+     CGroup: /system.slice/docker-8f2c20fa44c525c5f9d44495f4696ab93e352f205e623d4a83e994a0a58a6e0d.scope/system.slice/globular-repository.service
+             └─13473 /usr/lib/globular/bin/repository_server
+
+Aug 22 19:35:26 node-5 systemd[1]: globular-repository.service: Scheduled restart job, restart counter is at 62.
+Aug 22 19:35:26 node-5 systemd[1]: Starting globular-repository.service - Globular repository...
+Aug 22 19:35:26 node-5 systemd[1]: Started globular-repository.service - Globular repository.
+Aug 22 19:35:26 node-5 repository_server[13473]: PortAllocator range: 10000 - 20000
+Aug 22 19:35:28 node-5 repository_server[13473]: {"level":"warn","ts":"2026-08-22T19:35:28.892262Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001281e0/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}

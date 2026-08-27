@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 00:50:58 UTC; 8min ago
+    Process: 211 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 236 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 247 (cluster_doctor_)
+      Tasks: 21 (limit: 8641)
+     Memory: 35.7M (peak: 37.2M)
+        CPU: 6.548s
+     CGroup: /system.slice/docker-6079adef0da3bc3f68c651f8633c2a4da8f699743c3be55be65685f3a47f17b4.scope/system.slice/globular-cluster-doctor.service
+             └─247 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 18 00:59:06 node-3 cluster_doctor_server[247]: 2026/08/18 00:59:06 collector: data-source fetch failed (reduced harvest) service=node_agent@35ac3821-6b90-52eb-a800-41130471770b rpc=GetInfraProbe: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \"crypto/rsa: verification error\" while trying to verify candidate authority certificate \"Globular Root CA\")"
+Aug 18 00:59:06 node-3 cluster_doctor_server[247]: 2026/08/18 00:59:06 collector: VerifyPackageIntegrity on node=6400b443-cf38-52da-a683-de2fc5103c0b endpoint=10.10.0.14:11000 timeout=30s
+Aug 18 00:59:06 node-3 cluster_doctor_server[247]: 2026/08/18 00:59:06 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 endpoint=10.10.0.11:11000 timeout=30s
+Aug 18 00:59:06 node-3 cluster_doctor_server[247]: 2026/08/18 00:59:06 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb endpoint=10.10.0.12:11000 timeout=30s
+Aug 18 00:59:06 node-3 cluster_doctor_server[247]: 2026/08/18 00:59:06 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 endpoint=10.10.0.13:11000 timeout=30s
+Aug 18 00:59:07 node-3 cluster_doctor_server[247]: 2026/08/18 00:59:07 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb stored report (checked=43, findings=0) in 317.372031ms
+Aug 18 00:59:07 node-3 cluster_doctor_server[247]: 2026/08/18 00:59:07 collector: VerifyPackageIntegrity on node=6400b443-cf38-52da-a683-de2fc5103c0b stored report (checked=28, findings=2) in 931.835218ms
+Aug 18 00:59:08 node-3 cluster_doctor_server[247]: 2026/08/18 00:59:08 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 stored report (checked=43, findings=7) in 1.270682674s
+Aug 18 00:59:08 node-3 cluster_doctor_server[247]: 2026/08/18 00:59:08 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 stored report (checked=47, findings=4) in 1.564267562s
+Aug 18 00:59:13 node-3 cluster_doctor_server[247]: 2026/08/18 00:59:13 verification: 152/176 verdicts unchanged since last write (skipped)

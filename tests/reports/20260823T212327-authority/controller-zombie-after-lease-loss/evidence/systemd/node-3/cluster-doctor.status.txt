@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 21:26:43 UTC; 2min 40s ago
+    Process: 6071 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 6075 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 6078 (cluster_doctor_)
+      Tasks: 19 (limit: 8641)
+     Memory: 33.8M (peak: 34.3M)
+        CPU: 1.941s
+     CGroup: /system.slice/docker-9c01373e5342e889159ada45d2c53cbb4325e99444fa25b6ff88a2f4ca384a39.scope/system.slice/globular-cluster-doctor.service
+             └─6078 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 23 21:28:26 node-3 cluster_doctor_server[6078]: 2026/08/23 21:28:26 collector: VerifyPackageIntegrity on node=35ac3821-6b90-52eb-a800-41130471770b endpoint=10.10.0.15:11000 timeout=30s
+Aug 23 21:28:26 node-3 cluster_doctor_server[6078]: 2026/08/23 21:28:26 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb endpoint=10.10.0.12:11000 timeout=30s
+Aug 23 21:28:26 node-3 cluster_doctor_server[6078]: 2026/08/23 21:28:26 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 endpoint=10.10.0.11:11000 timeout=30s
+Aug 23 21:28:27 node-3 cluster_doctor_server[6078]: 2026/08/23 21:28:27 collector: VerifyPackageIntegrity on node=6400b443-cf38-52da-a683-de2fc5103c0b stored report (checked=28, findings=5) in 1.141438075s
+Aug 23 21:28:27 node-3 cluster_doctor_server[6078]: 2026/08/23 21:28:27 collector: VerifyPackageIntegrity on node=35ac3821-6b90-52eb-a800-41130471770b stored report (checked=28, findings=5) in 1.394834197s
+Aug 23 21:28:28 node-3 cluster_doctor_server[6078]: 2026/08/23 21:28:28 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb stored report (checked=43, findings=10) in 1.664007847s
+Aug 23 21:28:28 node-3 cluster_doctor_server[6078]: 2026/08/23 21:28:28 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 stored report (checked=43, findings=10) in 1.754187568s
+Aug 23 21:28:28 node-3 cluster_doctor_server[6078]: 2026/08/23 21:28:28 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 stored report (checked=47, findings=5) in 1.810778833s
+Aug 23 21:28:33 node-3 cluster_doctor_server[6078]: 2026/08/23 21:28:33 verification: 180/189 verdicts unchanged since last write (skipped)
+Aug 23 21:28:43 node-3 cluster_doctor_server[6078]: time=2026-08-23T21:28:43.691Z level=INFO msg="behavioral recorder: delivery health changed" health=healthy scope="node-local recorder; not a cluster health verdict" enqueued=2 persisted=2 retried=0 dropped=0 failed=0 queue_depth=0 previous=no_delivery_attempted last_success_at=2026-08-23T21:28:41Z

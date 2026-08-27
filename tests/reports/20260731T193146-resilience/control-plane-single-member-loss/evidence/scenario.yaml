@@ -1,0 +1,196 @@
+version: 1
+name: control-plane-single-member-loss
+description: |
+  Verify that losing one of three control-plane nodes maintains etcd quorum.
+
+  This is the most fundamental HA test for a distributed system using Raft
+  consensus. With 3 etcd members, the quorum requires (3/2)+1 = 2 members.
+  Losing 1 member leaves 2/3 active — quorum is maintained and the cluster
+  continues to accept reads AND writes.
+
+  What this test verifies:
+  - Raft quorum is maintained after one control-plane node stops
+  - etcd writes succeed with 2/3 members (the critical write-quorum test)
+  - The remaining 2 members are individually reachable
+  - Core services continue running (they're on node-1 and node-2)
+  - AI services on node-3 become unavailable (expected, acceptable)
+  - After node-3 restarts, it resyncs and joins the quorum
+
+  CAP theorem implication: Globular chooses C (consistency) over A
+  (availability) — writes continue on the majority partition, the minority
+  partition loses write access. This test validates that the majority side
+  functions correctly.
+
+  Classical distributed failure: "minority partition" — node-3 becomes
+  isolated (here: stopped entirely). The majority (nodes 1+2) continues.
+
+  IMPORTANT: node-3 hosts the AI services (ai_memory, ai_executor, ai_router,
+  ai_watcher) and one instance each of all control-plane services (etcd,
+  controller-standby, workflow-standby, etc.). Their loss during the test
+  is expected. The cluster control plane (leader) is on nodes 1 or 2.
+suite: resilience
+tags:
+  - chaos
+  - etcd-quorum
+  - raft
+  - control-plane
+  - cap-theorem
+  - single-member-loss
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: all_three_members_healthy
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  - type: probe
+    id: write_quorum_before
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: node3_running
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: true
+
+baseline:
+  - type: probe
+    id: initial_member_health
+    probe: cluster.etcd_members
+
+  - type: probe
+    id: initial_cluster_health
+    probe: cluster.health
+
+steps:
+  # ── Step 1: Stop one control-plane node ───────────────────────────────────
+  # node-3 runs etcd, controller-standby, workflow, doctor, dns, auth, rbac,
+  # resource, discovery, event, log, xds, envoy, AND all AI services.
+  # Its loss degrades AI and removes one etcd member, but quorum is maintained.
+  - id: stop_node3
+    action: chaos.stop_node
+    params:
+      node: node-3
+
+  # ── Step 2: Wait for the cluster to detect the loss ───────────────────────
+  # Allow up to 30s for the etcd leader to detect node-3's absence and for
+  # a new leader to be elected if node-3 was the leader. This is bounded by
+  # the etcd election timeout (typically 1s heartbeat, 5s election).
+  - id: wait_for_detection
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: node-3
+        expect:
+          running: false
+
+  # ── Step 3: Verify 2/3 quorum is maintained ───────────────────────────────
+  # This is the critical assertion: with node-3 down, nodes 1 and 2 still
+  # form a majority (2/3) and the cluster must accept writes.
+  - id: wait_for_quorum_stability
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: etcd.write_test
+        expect:
+          success: true
+
+  # ── Step 4: Restart node-3 ────────────────────────────────────────────────
+  - id: start_node3
+    action: chaos.start_node
+    params:
+      node: node-3
+
+  # ── Step 5: Wait for node-3 to resync and all 3 members to be healthy ────
+  # etcd resync is automatic via Raft log replication. New entries are
+  # streamed to node-3 and it catches up before accepting client requests.
+  - id: wait_for_full_quorum
+    action: wait
+    params:
+      timeout: 180
+      poll_interval: 10
+      until:
+        probe: cluster.etcd_members
+        expect:
+          healthy_gte: 3
+
+assertions:
+  # ── Final state: full quorum restored ────────────────────────────────────
+  - type: probe
+    id: all_members_healthy_after
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: write_quorum_after
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: node3_running_after
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: true
+
+  # Core services should still be registered (they run on nodes 1 and 2)
+  - type: probe
+    id: controller_still_registered
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+  - type: probe
+    id: workflow_still_registered
+    probe: service.registered
+    params:
+      service: workflow
+    expect:
+      registered: true
+
+cleanup:
+  - type: probe
+    id: final_member_health
+    probe: cluster.etcd_members
+
+  - type: probe
+    id: final_write_test
+    probe: etcd.write_test
+    expect:
+      success: true

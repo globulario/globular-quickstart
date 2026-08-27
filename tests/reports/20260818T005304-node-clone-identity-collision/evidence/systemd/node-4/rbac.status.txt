@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 00:50:53 UTC; 8min ago
+    Process: 151 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 192 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 233 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 297 (rbac_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 149.9M (peak: 324.3M)
+        CPU: 1.794s
+     CGroup: /system.slice/docker-b20775b8a2a560480b2efa5ecaabe93ae56dc7289499604fd316260a4deb88b6.scope/system.slice/globular-rbac.service
+             └─297 /usr/lib/globular/bin/rbac_server
+
+Aug 18 00:51:16 node-4 rbac_server[297]: 2026/08/18 00:51:16 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 00:51:29 node-4 rbac_server[297]: 2026/08/18 00:51:29 ERROR rpc error: code = Internal desc = {"ErrorMsg":"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_actions.go:250","FunctionName":"main.(*server).GetActionResourceInfos"} (repeated 2 times in 30s) domain=10.10.0.14:8443 application=rbac.RbacService user="" method=/rbac.RbacService/GetActionResourceInfos function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 18 00:51:32 node-4 rbac_server[297]: 2026/08/18 00:51:32 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 00:53:09 node-4 rbac_server[297]: 2026/08/18 00:53:09 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 00:54:24 node-4 rbac_server[297]: 2026/08/18 00:54:24 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 00:54:24 node-4 rbac_server[297]: 2026/08/18 00:54:24 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 00:55:57 node-4 rbac_server[297]: 2026/08/18 00:55:57 INFO acc: warmup complete baseline_rtt_ms=20 samples=205 elapsed=5m0s
+Aug 18 00:56:11 node-4 rbac_server[297]: 2026/08/18 00:56:11 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 00:57:38 node-4 rbac_server[297]: 2026/08/18 00:57:38 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 00:58:06 node-4 rbac_server[297]: 2026/08/18 00:58:06 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

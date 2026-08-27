@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "scenario": "network-partition-fencing",
+  "suite": "resilience",
+  "start_time": "2026-07-31T16:59:50.621887Z",
+  "end_time": "2026-07-31T17:11:04.487499Z",
+  "passed": false,
+  "item_count": 11,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "members_gte": 3
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:59:50.929002Z"
+    },
+    {
+      "id": "node5_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:59:50.955374Z"
+    },
+    {
+      "id": "cluster_health_before",
+      "section": "baseline",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {},
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:59:51.231884Z"
+    },
+    {
+      "id": "node5_registered",
+      "section": "baseline",
+      "probe": "cluster.nodes",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:59:51.383461Z"
+    },
+    {
+      "id": "block_network_node5",
+      "section": "steps",
+      "probe": "chaos.block_network",
+      "params": {
+        "node": "node-5",
+        "direction": "both"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.block_network",
+        "container": "globular-node-5",
+        "direction": "both",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:59:51.455518Z"
+    },
+    {
+      "id": "wait_warn_threshold",
+      "section": "steps",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:59:51.724923Z"
+    },
+    {
+      "id": "node5_fenced",
+      "section": "assertions",
+      "probe": "node.partition_fenced",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "fenced": true
+      },
+      "result": {
+        "fenced": false,
+        "node_id": "node-5"
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T17:10:51.812961Z"
+    },
+    {
+      "id": "cluster_still_healthy",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "members_gte": 3
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:10:52.087055Z"
+    },
+    {
+      "id": "no_quorum_loss_alert",
+      "section": "assertions",
+      "probe": "cluster.quorum_loss_alert",
+      "params": {},
+      "expect": {
+        "alert_present": false
+      },
+      "result": {
+        "alert_present": false
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:10:52.170961Z"
+    },
+    {
+      "id": "unblock_network_node5",
+      "section": "cleanup",
+      "probe": "chaos.unblock_network",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.unblock_network",
+        "container": "globular-node-5",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:10:52.263387Z"
+    },
+    {
+      "id": "wait_fence_cleared",
+      "section": "cleanup",
+      "probe": "node.partition_fenced",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "fenced": false
+      },
+      "result": {
+        "fenced": false,
+        "node_id": "node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:10:52.348000Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

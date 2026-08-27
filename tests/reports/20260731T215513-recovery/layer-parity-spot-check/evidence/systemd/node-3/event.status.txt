@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:56:31 UTC; 57s ago
+    Process: 48 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 99 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 111 (event_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 18.2M (peak: 29.4M)
+        CPU: 1.093s
+     CGroup: /system.slice/docker-4e49f89905e0a6d0d62c10e2c300dadaff8f929624017faf0a3ff78a831d8f81.scope/system.slice/globular-event.service
+             └─111 /usr/lib/globular/bin/event_server
+
+Jul 31 21:57:00 node-3 event_server[111]: time=2026-07-31T21:57:00.919Z level=INFO msg=subscribed channel=controller.* uuid=82c6a167-9d8c-44fe-b4b4-538cda1cf5b3 subscribers=1
+Jul 31 21:57:00 node-3 event_server[111]: time=2026-07-31T21:57:00.922Z level=INFO msg="Subscribe: ok" channel=desired.* uuid=82c6a167-9d8c-44fe-b4b4-538cda1cf5b3
+Jul 31 21:57:00 node-3 event_server[111]: time=2026-07-31T21:57:00.922Z level=INFO msg=subscribed channel=desired.* uuid=82c6a167-9d8c-44fe-b4b4-538cda1cf5b3 subscribers=1
+Jul 31 21:57:00 node-3 event_server[111]: time=2026-07-31T21:57:00.924Z level=INFO msg="Subscribe: ok" channel=alert.* uuid=82c6a167-9d8c-44fe-b4b4-538cda1cf5b3
+Jul 31 21:57:00 node-3 event_server[111]: time=2026-07-31T21:57:00.924Z level=INFO msg=subscribed channel=alert.* uuid=82c6a167-9d8c-44fe-b4b4-538cda1cf5b3 subscribers=1
+Jul 31 21:57:00 node-3 event_server[111]: time=2026-07-31T21:57:00.927Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=82c6a167-9d8c-44fe-b4b4-538cda1cf5b3
+Jul 31 21:57:00 node-3 event_server[111]: time=2026-07-31T21:57:00.927Z level=INFO msg=subscribed channel=operation.* uuid=82c6a167-9d8c-44fe-b4b4-538cda1cf5b3 subscribers=1
+Jul 31 21:57:00 node-3 event_server[111]: time=2026-07-31T21:57:00.929Z level=INFO msg="Subscribe: ok" channel=workflow.* uuid=82c6a167-9d8c-44fe-b4b4-538cda1cf5b3
+Jul 31 21:57:00 node-3 event_server[111]: time=2026-07-31T21:57:00.929Z level=INFO msg=subscribed channel=workflow.* uuid=82c6a167-9d8c-44fe-b4b4-538cda1cf5b3 subscribers=1
+Jul 31 21:57:13 node-3 event_server[111]: 2026/07/31 21:57:13 ERROR Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1 (repeated 2 times in 30s) domain=10.10.0.13:8443 application=event.EventService user="" method=/event.EventService/Publish function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher

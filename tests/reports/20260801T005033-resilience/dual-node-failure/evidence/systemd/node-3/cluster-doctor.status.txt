@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 00:53:38 UTC; 18min ago
+    Process: 194 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 208 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 220 (cluster_doctor_)
+      Tasks: 21 (limit: 8641)
+     Memory: 30.4M (peak: 37.2M)
+        CPU: 19.041s
+     CGroup: /system.slice/docker-2206a9848d7057d723137cf808b7918b201d11357dec3e1e80cb2d0a702c0d6b.scope/system.slice/globular-cluster-doctor.service
+             └─220 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 01 01:11:50 node-3 cluster_doctor_server[220]: 2026/08/01 01:11:50 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb stored report (checked=14, findings=6) in 471.672071ms
+Aug 01 01:11:51 node-3 cluster_doctor_server[220]: 2026/08/01 01:11:51 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 stored report (checked=40, findings=6) in 1.11453987s
+Aug 01 01:11:51 node-3 cluster_doctor_server[220]: 2026/08/01 01:11:51 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 stored report (checked=47, findings=3) in 1.237508827s
+Aug 01 01:11:52 node-3 cluster_doctor_server[220]: 2026/08/01 01:11:52 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListStepOutcomes: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: connect: no route to host"
+Aug 01 01:11:52 node-3 cluster_doctor_server[220]: 2026/08/01 01:11:52 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListWorkflowSummaries: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: connect: no route to host"
+Aug 01 01:11:52 node-3 cluster_doctor_server[220]: 2026/08/01 01:11:52 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListDriftUnresolved: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: connect: no route to host"
+Aug 01 01:11:52 node-3 cluster_doctor_server[220]: 2026/08/01 01:11:52 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListRuns(BLOCKED): rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: connect: no route to host"
+Aug 01 01:11:52 node-3 cluster_doctor_server[220]: 2026/08/01 01:11:52 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListCorrelationDeferState(abandoned): rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: connect: no route to host"
+Aug 01 01:11:52 node-3 cluster_doctor_server[220]: 2026/08/01 01:11:52 collector: data-source fetch failed (reduced harvest) service=repository rpc=ListArtifacts: rpc error: code = Unavailable desc = artifact ledger unavailable: scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0
+Aug 01 01:11:53 node-3 cluster_doctor_server[220]: 2026/08/01 01:11:53 verification: GetArtifactManifest(cluster-doctor) failed: rpc error: code = NotFound desc = artifact "core@globular.io%cluster-doctor%v1.2.288%linux_amd64%0" not found: artifact core@globular.io%cluster-doctor%1.2.288%linux_amd64%0 not found (tried latest, build-0, legacy)

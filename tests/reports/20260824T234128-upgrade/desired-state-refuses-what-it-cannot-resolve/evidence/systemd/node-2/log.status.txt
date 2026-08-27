@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 23:36:20 UTC; 6min ago
+    Process: 468 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 493 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 528 (log_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 26.7M (peak: 27.9M)
+        CPU: 1.241s
+     CGroup: /system.slice/docker-51a3f59fdce7167f6650e68f30741c3ebb9f8db00df0a2a6826c1e17a59cb81d.scope/system.slice/globular-log.service
+             └─528 /usr/lib/globular/bin/log_server
+
+Aug 24 23:36:20 node-2 log_server[528]: 2026/08/24 23:36:20 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 24 23:36:20 node-2 log_server[528]: time=2026-08-24T23:36:20.785Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 24 23:36:20 node-2 log_server[528]: time=2026-08-24T23:36:20.785Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 24 23:36:20 node-2 log_server[528]: 2026/08/24 23:36:20 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 24 23:36:32 node-2 log_server[528]: 2026/08/24 23:36:32 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 24 23:36:33 node-2 log_server[528]: time=2026-08-24T23:36:33.063Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 24 23:36:33 node-2 log_server[528]: time=2026-08-24T23:36:33.328Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 24 23:39:23 node-2 log_server[528]: 2026/08/24 23:39:23 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 23:39:28 node-2 log_server[528]: 2026/08/24 23:39:28 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 23:39:28 node-2 log_server[528]: time=2026-08-24T23:39:28.097Z level=WARN msg="store write failed (suppressing repeats for 30s)" err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"

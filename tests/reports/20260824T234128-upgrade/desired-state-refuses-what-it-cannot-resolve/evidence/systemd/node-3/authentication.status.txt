@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 23:36:36 UTC; 6min ago
+    Process: 690 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 710 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 727 (authentication_)
+      Tasks: 17 (limit: 8641)
+     Memory: 24.4M (peak: 25.4M)
+        CPU: 1.350s
+     CGroup: /system.slice/docker-9fe941577b188393d600caa05ab83e1ba976630520db98bfdeac6b8ab52f0f27.scope/system.slice/globular-authentication.service
+             └─727 /usr/lib/globular/bin/authentication_server
+
+Aug 24 23:36:36 node-3 authentication_server[727]: time=2026-08-24T23:36:36.385Z level=INFO msg="starting service" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10002
+Aug 24 23:36:36 node-3 authentication_server[727]: time=2026-08-24T23:36:36.385Z level=INFO msg="policy: loaded permissions from file" service=authentication path=/var/lib/globular/policy/services/authentication/permissions.generated.json count=8
+Aug 24 23:36:36 node-3 authentication_server[727]: time=2026-08-24T23:36:36.385Z level=INFO msg="authz: permission mappings loaded" service=authentication count=8 action_mappings=8
+Aug 24 23:36:36 node-3 authentication_server[727]: time=2026-08-24T23:36:36.385Z level=INFO msg="service started successfully" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10002
+Aug 24 23:36:36 node-3 authentication_server[727]: time=2026-08-24T23:36:36.632Z level=INFO msg=setKey:generate mac=02:42:0a:0a:00:0d
+Aug 24 23:36:36 node-3 authentication_server[727]: time=2026-08-24T23:36:36.828Z level=INFO msg="metrics listening" service=authentication.AuthenticationService addr=[::]:10001
+Aug 24 23:37:36 node-3 authentication_server[727]: time=2026-08-24T23:37:36.458Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-3.globular.internal:443
+Aug 24 23:37:36 node-3 authentication_server[727]: time=2026-08-24T23:37:36.461Z level=INFO msg="mesh: gRPC connection established" target=node-3.globular.internal:443
+Aug 24 23:41:32 node-3 authentication_server[727]: time=2026-08-24T23:41:32.979Z level=WARN msg="AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization" cluster_id=globular.internal method=/authentication.AuthenticationService/Authenticate
+Aug 24 23:41:33 node-3 authentication_server[727]: time=2026-08-24T23:41:33.861Z level=INFO msg=authenticate:root:ok

@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-15 04:33:49 UTC; 1 day 21h ago
+    Process: 4971 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 4975 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 4978 (authentication_)
+      Tasks: 18 (limit: 8641)
+     Memory: 21.0M (peak: 26.9M swap: 828.0K swap peak: 844.0K)
+        CPU: 42.164s
+     CGroup: /system.slice/docker-20e7ce9297d1ad08fe530254c6dc802d0cc34b8a2e2146647c336f132397c8f1.scope/system.slice/globular-authentication.service
+             └─4978 /usr/lib/globular/bin/authentication_server
+
+Aug 15 04:33:59 node-3 authentication_server[4978]: time=2026-08-15T04:33:59.395Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-3.globular.internal:443
+Aug 15 04:33:59 node-3 authentication_server[4978]: time=2026-08-15T04:33:59.395Z level=INFO msg="mesh: gRPC connection established" target=node-3.globular.internal:443
+Aug 15 13:37:05 node-3 authentication_server[4978]: time=2026-08-15T13:37:05.248Z level=INFO msg="acc: warmup complete" baseline_rtt_ms=20 samples=150 elapsed=30m0s
+Aug 17 01:30:38 node-3 authentication_server[4978]: time=2026-08-17T01:30:38.452Z level=WARN msg="sessions list failed" err="rpc error: code = Internal desc = {\"ErrorMsg\":\"rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down\",\"FileLine\":\"github.com/globulario/services/golang/resource/resource_server/sessions.go:106\",\"FunctionName\":\"main.(*server).GetSessions\"}"
+Aug 17 02:01:09 node-3 authentication_server[4978]: {"level":"warn","ts":"2026-08-17T02:01:09.761495Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00017b680/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 17 02:01:09 node-3 authentication_server[4978]: {"level":"info","ts":"2026-08-17T02:01:09.761583Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 17 02:02:09 node-3 authentication_server[4978]: {"level":"warn","ts":"2026-08-17T02:02:09.826496Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00060a960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 17 02:02:09 node-3 authentication_server[4978]: {"level":"info","ts":"2026-08-17T02:02:09.826577Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 17 02:03:14 node-3 authentication_server[4978]: {"level":"warn","ts":"2026-08-17T02:03:14.769895Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00017b680/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 17 02:03:14 node-3 authentication_server[4978]: {"level":"info","ts":"2026-08-17T02:03:14.770003Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

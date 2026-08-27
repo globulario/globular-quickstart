@@ -1,0 +1,52 @@
+{
+  "task": "node failure and restart storm — quorum maintenance and node recovery",
+  "classification": [
+    "RESTART_STORM",
+    "CONVERGENCE_RISK",
+    "ARCHITECTURE_SENSITIVE",
+    "UNKNOWN_IMPACT"
+  ],
+  "confidence": "UNKNOWN",
+  "starting_nodes": null,
+  "runtime_evidence": {
+    "included": true,
+    "captured_at": "2026-05-07T16:44:23Z",
+    "doctor_findings": [],
+    "service_statuses": [],
+    "workflow_receipts": [],
+    "state_deltas": [],
+    "matched_invariants": null,
+    "matched_failure_modes": null,
+    "warnings": null
+  },
+  "likely_root_cause_paths": null,
+  "relevant_invariants": [],
+  "relevant_failure_modes": [],
+  "relevant_fix_cases": [],
+  "forbidden_fixes": [],
+  "suggested_files": [],
+  "suggested_symbols": null,
+  "dependency_cycle_risks": [],
+  "required_tests": [],
+  "required_searches": [
+    "failure",
+    "restart",
+    "storm",
+    "quorum",
+    "maintenance",
+    "recovery"
+  ],
+  "investigation_plan": [
+    "Verify the failing layer: walk Repository → Desired → Installed → Runtime in order. The symptom layer is rarely the root-cause layer.",
+    "Restart storm: verify the singleflight gate prevents concurrent restarts per service per convergence tick. Check for stale SIGTERM and start-limit-hit in the systemd journal.",
+    "Convergence risk: inspect the convergence committer that stamps CONVERGED. Verify the desired→installed→runtime progression is not short-circuited.",
+    "UNKNOWN_IMPACT: no awareness facts matched this task. Query the graph before editing: 'globular awareness node-context --node \u003cservice\u003e'",
+    "Review runtime evidence: doctor findings, state deltas, and workflow receipts in runtime_evidence."
+  ],
+  "do_not_do": [],
+  "learning_recommendation": "Architecture-sensitive task with no prior fix record. After resolving, add a fix case to docs/awareness/fix_cases.yaml.",
+  "warnings": [
+    "NO_AWARENESS_MATCH: no awareness facts matched this task. This does not prove the task is safe.",
+    "fix-ledger: UNKNOWN — No matching fix cases found. Consider creating a fix case in docs/awareness/fix_cases.yaml."
+  ]
+}

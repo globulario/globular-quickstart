@@ -1,0 +1,18 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 05:40:07 UTC; 11s ago
+    Process: 127 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 160 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 192 (monitoring_serv)
+      Tasks: 14 (limit: 8641)
+     Memory: 22.4M (peak: 24.0M)
+        CPU: 236ms
+     CGroup: /system.slice/docker-e78c0a83b4338c9b877248d9746b7899f2416901c79a6edd5643d30705c4cb35.scope/system.slice/globular-monitoring.service
+             └─192 /usr/lib/globular/bin/monitoring_server
+
+Aug 18 05:40:07 node-5 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 18 05:40:07 node-5 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 18 05:40:07 node-5 monitoring_server[192]: PortAllocator range: 10000 - 20000
+Aug 18 05:40:07 node-5 monitoring_server[192]: 2026/08/18 05:40:07 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 18 05:40:08 node-5 monitoring_server[192]: time=2026-08-18T05:40:08.034Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=329
+Aug 18 05:40:08 node-5 monitoring_server[192]: 2026/08/18 05:40:08 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020

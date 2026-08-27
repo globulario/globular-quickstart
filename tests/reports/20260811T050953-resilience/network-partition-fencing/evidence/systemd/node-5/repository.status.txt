@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:29:51 UTC; 17min ago
+    Process: 164 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 213 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 245 (repository_serv)
+      Tasks: 17 (limit: 8641)
+     Memory: 21.9M (peak: 29.3M)
+        CPU: 731ms
+     CGroup: /system.slice/docker-98c9f00371cba0d41174bc35433238892478111b3c35d44e70376c304ba640d9.scope/system.slice/globular-repository.service
+             └─245 /usr/lib/globular/bin/repository_server
+
+Aug 11 05:46:56 node-5 repository_server[245]: {"level":"warn","ts":"2026-08-11T05:46:56.245391Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002805a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 11 05:47:00 node-5 repository_server[245]: {"level":"warn","ts":"2026-08-11T05:47:00.248213Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002805a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 11 05:47:00 node-5 repository_server[245]: {"level":"warn","ts":"2026-08-11T05:47:00.248302Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002805a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 05:47:00 node-5 repository_server[245]: time=2026-08-11T05:47:00.248Z level=ERROR msg="scylladb reconnect failed" err="scylla reconnect: scylla: cluster hosts: etcd get /globular/cluster/scylla/hosts: context deadline exceeded"
+Aug 11 05:47:07 node-5 repository_server[245]: time=2026-08-11T05:47:07.241Z level=WARN msg="scylladb health check failed" err="scylla: not connected"
+Aug 11 05:47:07 node-5 repository_server[245]: 2026/08/11 05:47:07 INFO scylladb connected hosts="[10.10.0.11 10.10.0.13]" keyspace=repository rf=2
+Aug 11 05:47:07 node-5 repository_server[245]: 2026/08/11 05:47:07 INFO scylladb reconnected hosts="[10.10.0.11 10.10.0.13]" keyspace=repository rf=2
+Aug 11 05:47:07 node-5 repository_server[245]: time=2026-08-11T05:47:07.755Z level=INFO msg="scylladb reconnected after health check failure"
+Aug 11 05:47:07 node-5 repository_server[245]: time=2026-08-11T05:47:07.755Z level=INFO msg="repository metadata recovered — service is SERVING"
+Aug 11 05:47:09 node-5 repository_server[245]: 2026/08/11 05:47:09 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""

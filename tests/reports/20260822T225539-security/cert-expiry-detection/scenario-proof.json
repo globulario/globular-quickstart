@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-22T22:56:00.058697Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/security/cert-expiry-detection.yaml",
+  "scenario": "cert-expiry-detection",
+  "suite": "security",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that Globular's PKI invariant enforcement detects an expired TLS certificate\nand triggers automatic repair.\n\nThis test injects an expired self-signed certificate into node-3's service cert path,\nthen verifies that:\n  1. The PKI invariant validator detects the expired/invalid cert\n  2. A cluster event is emitted (controller.invariant.pki_violation)\n  3. The invariant repair step restarts node-agent on the affected node\n  4. The node-agent re-issues a valid cert from the cluster CA\n  5. The cert is back within the valid window after repair\n\nWhat Globular does automatically:\n  - PKI invariant runs during cluster.invariant.enforcement workflow\n  - Checks every node's cert: expiry, SAN coverage, chain validity, CA presence\n  - If violations found: restarts node-agent on affected nodes\n  - node-agent restart triggers certificate re-issuance from the cluster CA\n  - Certs approaching expiry (<30 days) are flagged before they expire\n\nWhat requires operator action:\n  - CA expiry (no automatic renewal \u2014 requires manual CA rotation)\n  - Cert issued with wrong domain/SAN that doesn't match cluster config\n  - mTLS failures caused by cert/CA mismatch between services\n\nThis test directly validates the fix for the VIP cert SAN issue that caused\na 16-hour silent outage (missing 10.0.0.100 in SANs \u2192 all VIP traffic rejected).",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-22T22:56:40.017087Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

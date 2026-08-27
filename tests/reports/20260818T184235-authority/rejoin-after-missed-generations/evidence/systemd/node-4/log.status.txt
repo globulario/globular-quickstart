@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:48 UTC; 14min ago
+    Process: 533 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 546 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 563 (log_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 43.7M (peak: 44.2M swap: 44.0K swap peak: 56.0K)
+        CPU: 10.772s
+     CGroup: /system.slice/docker-c69956e40d44afec6c24aae66a0eb98093a9df7e8d446a0705e3a4916478dce3.scope/system.slice/globular-log.service
+             └─563 /usr/lib/globular/bin/log_server
+
+Aug 18 19:19:26 node-4 log_server[563]: 2026/08/18 19:19:26 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 18 19:20:29 node-4 log_server[563]: time=2026-08-18T19:20:29.228Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.14:9042: connect: connection refused"
+Aug 18 19:20:32 node-4 log_server[563]: 2026/08/18 19:20:32 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 18 19:20:32 node-4 log_server[563]: 2026/08/18 19:20:32 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 18 19:21:54 node-4 log_server[563]: 2026/08/18 19:21:54 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 18 19:22:57 node-4 log_server[563]: time=2026-08-18T19:22:57.613Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.14:9042: connect: connection refused"
+Aug 18 19:23:54 node-4 log_server[563]: 2026/08/18 19:23:54 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 18 19:23:54 node-4 log_server[563]: 2026/08/18 19:23:54 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 18 19:24:57 node-4 log_server[563]: time=2026-08-18T19:24:57.049Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.14:9042: connect: connection refused"
+Aug 18 19:24:57 node-4 log_server[563]: time=2026-08-18T19:24:57.052Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.14:9042: connect: connection refused"

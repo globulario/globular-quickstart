@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 08:36:21 UTC; 27min ago
+    Process: 1816 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 1841 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1869 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1971 (ai_memory_serve)
+      Tasks: 21 (limit: 8641)
+     Memory: 33.2M (peak: 43.4M)
+        CPU: 7.953s
+     CGroup: /system.slice/docker-cef6ed79bbeff9e64be0590fdde03d11a70e19fdd36359ebd96753c2c7d2b8b8.scope/system.slice/globular-ai-memory.service
+             └─1971 /usr/lib/globular/bin/ai_memory_server
+
+Aug 26 09:02:03 node-1 ai_memory_server[1971]: 2026/08/26 09:02:03 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=39 baseline_ms=19 window=68 new_window=61
+Aug 26 09:02:03 node-1 ai_memory_server[1971]: 2026/08/26 09:02:03 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=51 baseline_ms=19 window=64 new_window=57
+Aug 26 09:02:04 node-1 ai_memory_server[1971]: 2026/08/26 09:02:04 ERROR rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0 domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/RecordSignal function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663
+Aug 26 09:02:04 node-1 ai_memory_server[1971]: 2026/08/26 09:02:04 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=48 baseline_ms=19 window=60 new_window=54
+Aug 26 09:02:24 node-1 ai_memory_server[1971]: time=2026-08-26T09:02:24.259Z level=INFO msg="memory stored" id=da8c774e-a12c-11f1-9667-02420a0a000b project=globular-services type=debug title="incident-signature: unknown_anomaly (resource.ResourceService)"
+Aug 26 09:02:37 node-1 ai_memory_server[1971]: 2026/08/26 09:02:37 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/ai_memory.AiMemoryService/Query
+Aug 26 09:03:09 node-1 ai_memory_server[1971]: time=2026-08-26T09:03:09.024Z level=INFO msg="memory updated" id=8e85726f-a11f-11f1-b9ca-02420a0a000b project=globular-services
+Aug 26 09:03:09 node-1 ai_memory_server[1971]: 2026/08/26 09:03:09 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=45 baseline_ms=19 window=122 new_window=109
+Aug 26 09:03:09 node-1 ai_memory_server[1971]: 2026/08/26 09:03:09 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=43 baseline_ms=19 window=109 new_window=98
+Aug 26 09:03:36 node-1 ai_memory_server[1971]: 2026/08/26 09:03:36 ERROR rpc error: code = Internal desc = BehavioralMemoryService.GeneratePromotionCandidate: generate promotion candidate: theme "remediation.node.systemd.units_running" has 0 outcome(s) and 0 ungoverned check(s), need at least 2 observation(s) domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/GeneratePromotionCandidate function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663

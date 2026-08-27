@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:27 UTC; 1min 2s ago
+    Process: 327 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 337 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 342 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 376 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 29.7M (peak: 31.6M)
+        CPU: 2.480s
+     CGroup: /system.slice/docker-8f454c2373e807828ac154919ed7d095a53274b04530736be8114ed093686a0e.scope/system.slice/globular-workflow.service
+             └─376 /usr/lib/globular/bin/workflow_server
+
+Aug 17 17:18:57 node-3 workflow_server[376]: time=2026-08-17T17:18:57.339Z level=WARN msg="executor: engine.Execute returned error" run_id=reconcile:1786987134005 error="step classify_drift failed: actor cluster-controller action controller.reconcile.classify_drift: rpc error: code = Unavailable desc = error reading from server: EOF"
+Aug 17 17:18:57 node-3 workflow_server[376]: time=2026-08-17T17:18:57.356Z level=INFO msg="executor: workflow finished" workflow=cluster.reconcile run_id=reconcile:1786987134005 status=RUN_STATUS_FAILED
+Aug 17 17:18:57 node-3 workflow_server[376]: 2026/08/17 17:18:57 WARN incident projection: store failed title="cluster.reconcile FAILED: step classify_drift failed: actor cluster-controller action controller.reconcile..." err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.13:10013: connect: connection refused\""
+Aug 17 17:18:57 node-3 workflow_server[376]: 2026/08/17 17:18:57 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=node-3 method=workflow.admin reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.13:10002: connect: connection refused\""
+Aug 17 17:18:57 node-3 workflow_server[376]: 2026/08/17 17:18:57 WARN rbac fallback: DENY (fail-safe default) — user subject invoked a mutating method while RBAC unavailable outside bootstrap subject=node-3 method=workflow.admin full_method=/workflow.WorkflowService/RecordDriftObservation
+Aug 17 17:18:57 node-3 workflow_server[376]: 2026/08/17 17:18:57 WARN authz_decision audit="{\"timestamp\":\"2026-08-17T17:18:57.457647108Z\",\"policy_version\":\"unknown\",\"subject\":\"node-3\",\"principal_type\":\"application\",\"auth_method\":\"mtls\",\"is_loopback\":true,\"remote_addr\":\"unknown\",\"grpc_method\":\"/workflow.WorkflowService/RecordDriftObservation\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"role_binding_denied\",\"decision_latency_ms\":0,\"cluster_id\":\"globular.internal\",\"call_source\":\"local\"}" subject=node-3 method=/workflow.WorkflowService/RecordDriftObservation allowed=false reason=role_binding_denied latency_ms=0 policy_version=unknown
+Aug 17 17:18:59 node-3 workflow_server[376]: time=2026-08-17T17:18:59.089Z level=INFO msg="retention: startup delay elapsed, running first prune"
+Aug 17 17:18:59 node-3 workflow_server[376]: time=2026-08-17T17:18:59.089Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 17 17:18:59 node-3 workflow_server[376]: time=2026-08-17T17:18:59.095Z level=INFO msg="retention: pruning old workflow runs" total_terminal=1002 keep=1000 deleting=2
+Aug 17 17:18:59 node-3 workflow_server[376]: time=2026-08-17T17:18:59.136Z level=INFO msg="retention: pruning complete" deleted=2 remaining=1000

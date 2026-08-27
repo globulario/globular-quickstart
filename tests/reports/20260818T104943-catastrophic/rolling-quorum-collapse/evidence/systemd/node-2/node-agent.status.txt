@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:59:01 UTC; 3min 16s ago
+    Process: 210 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 240 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 255 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 24.3M (peak: 29.1M)
+        CPU: 5.187s
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-node-agent.service
+             └─255 /usr/lib/globular/bin/node_agent_server
+
+Aug 18 11:02:14 node-2 node_agent_server[255]: {"level":"warn","ts":"2026-08-18T11:02:14.225885Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000325a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:02:14 node-2 node_agent_server[255]: 2026/08/18 11:02:14 nodeagent: sync installed-state INFRASTRUCTURE/xds: PutRuntimeWithClass(normal_runtime): context done before first attempt: context deadline exceeded
+Aug 18 11:02:14 node-2 node_agent_server[255]: {"level":"warn","ts":"2026-08-18T11:02:14.336113Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000325a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:02:14 node-2 node_agent_server[255]: {"level":"warn","ts":"2026-08-18T11:02:14.366122Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000325a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:02:14 node-2 node_agent_server[255]: {"level":"warn","ts":"2026-08-18T11:02:14.384988Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000325a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:02:14 node-2 node_agent_server[255]: 2026/08/18 11:02:14 nodeagent: sync installed-state INFRASTRUCTURE/envoy: PutRuntimeWithClass(normal_runtime): context done before first attempt: context deadline exceeded
+Aug 18 11:02:15 node-2 node_agent_server[255]: 2026/08/18 11:02:15 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 18 11:02:15 node-2 node_agent_server[255]: 2026/08/18 11:02:15 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 18 11:02:17 node-2 node_agent_server[255]: 2026/08/18 11:02:17 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 18 11:02:17 node-2 node_agent_server[255]: 2026/08/18 11:02:17 INFO mesh: gRPC connection established target=node-2.globular.internal:443

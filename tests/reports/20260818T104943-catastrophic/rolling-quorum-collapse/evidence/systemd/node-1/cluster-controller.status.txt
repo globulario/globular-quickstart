@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:57:16 UTC; 4min 59s ago
+    Process: 9035 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 9039 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 9042 (cluster_control)
+      Tasks: 20 (limit: 8641)
+     Memory: 30.0M (peak: 31.0M)
+        CPU: 717ms
+     CGroup: /system.slice/docker-059225d7a49fdbb867afd4a4acd66baab01c465f6ce3c4b555ea76d934cd376b.scope/system.slice/globular-cluster-controller.service
+             └─9042 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 18 11:02:11 node-1 cluster_controller_server[9042]: 2026/08/18 11:02:11 release core@globular.io/event: AVAILABLE but build_id drift detected (resolved=01a01422) — re-queuing
+Aug 18 11:02:11 node-1 cluster_controller_server[9042]: 2026/08/18 11:02:11 release core@globular.io/log: AVAILABLE but build_id drift detected (resolved=01a01422) — re-queuing
+Aug 18 11:02:11 node-1 cluster_controller_server[9042]: 2026/08/18 11:02:11 release core@globular.io/node-agent: AVAILABLE but build_id drift detected (resolved=01a01422) — re-queuing
+Aug 18 11:02:11 node-1 cluster_controller_server[9042]: 2026/08/18 11:02:11 release core@globular.io/title: AVAILABLE but build_id drift detected (resolved=01a01422) — re-queuing
+Aug 18 11:02:11 node-1 cluster_controller_server[9042]: 2026/08/18 11:02:11 release core@globular.io/torrent: AVAILABLE but build_id drift detected (resolved=01a01422) — re-queuing
+Aug 18 11:02:11 node-1 cluster_controller_server[9042]: 2026/08/18 11:02:11 watch-service-release: started
+Aug 18 11:02:12 node-1 cluster_controller_server[9042]: 2026/08/18 11:02:12 INFO leader-proxy: connected to leader addr=10.10.0.13:12000
+Aug 18 11:02:12 node-1 cluster_controller_server[9042]: 2026/08/18 11:02:12 minio-creds: read from /var/lib/globular/minio/credentials (user=globular)
+Aug 18 11:02:12 node-1 cluster_controller_server[9042]: 2026/08/18 11:02:12 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)
+Aug 18 11:02:15 node-1 cluster_controller_server[9042]: 2026/08/18 11:02:15 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10011 host=10.10.0.11 port=10011

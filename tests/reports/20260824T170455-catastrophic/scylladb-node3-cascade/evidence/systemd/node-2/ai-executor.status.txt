@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:09:31 UTC; 1min 7s ago
+    Process: 587 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 609 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 623 (ai_executor_ser)
+      Tasks: 17 (limit: 8641)
+     Memory: 29.3M (peak: 31.1M)
+        CPU: 498ms
+     CGroup: /system.slice/docker-8b98724c89d7814ef3d4703a4c42e0cc7bef5b84406d2f3799206f7b685a6043.scope/system.slice/globular-ai-executor.service
+             └─623 /usr/lib/globular/bin/ai_executor_server
+
+Aug 24 17:09:33 node-2 ai_executor_server[623]: time=2026-08-24T17:09:33.003Z level=INFO msg="job_store: connected to etcd"
+Aug 24 17:09:33 node-2 ai_executor_server[623]: time=2026-08-24T17:09:33.038Z level=INFO msg="job_store: loaded jobs from etcd" count=19
+Aug 24 17:09:33 node-2 ai_executor_server[623]: 2026/08/24 17:09:33 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 24 17:09:33 node-2 ai_executor_server[623]: time=2026-08-24T17:09:33.619Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts=[10.10.0.11]
+Aug 24 17:09:35 node-2 ai_executor_server[623]: 2026/08/24 17:09:35 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:09:41 node-2 ai_executor_server[623]: 2026/08/24 17:09:41 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 24 17:10:03 node-2 ai_executor_server[623]: time=2026-08-24T17:10:03.028Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 24 17:10:08 node-2 ai_executor_server[623]: time=2026-08-24T17:10:08.030Z level=WARN msg="peer: ping failed" endpoint=10.10.0.13:10010 err="rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"
+Aug 24 17:10:08 node-2 ai_executor_server[623]: time=2026-08-24T17:10:08.030Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010
+Aug 24 17:10:21 node-2 ai_executor_server[623]: 2026/08/24 17:10:21 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused

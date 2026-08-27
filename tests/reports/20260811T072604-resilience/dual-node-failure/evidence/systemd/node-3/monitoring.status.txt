@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 07:30:00 UTC; 15min ago
+    Process: 2040 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 2044 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2047 (monitoring_serv)
+      Tasks: 19 (limit: 8641)
+     Memory: 20.9M (peak: 27.1M)
+        CPU: 672ms
+     CGroup: /system.slice/docker-ae6fd7eaee8493a0e394c079448f547dd48d00d411c11e52bf65510411334ed1.scope/system.slice/globular-monitoring.service
+             └─2047 /usr/lib/globular/bin/monitoring_server
+
+Aug 11 07:30:00 node-3 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 11 07:30:00 node-3 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 11 07:30:00 node-3 monitoring_server[2047]: 2026/08/11 07:30:00 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 11 07:30:00 node-3 monitoring_server[2047]: 2026/08/11 07:30:00 INFO security: loaded cluster roles from external policy file roles=22
+Aug 11 07:30:00 node-3 monitoring_server[2047]: PortAllocator range: 10000 - 20000
+Aug 11 07:30:00 node-3 monitoring_server[2047]: 2026/08/11 07:30:00 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 11 07:30:00 node-3 monitoring_server[2047]: time=2026-08-11T07:30:00.590Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=92
+Aug 11 07:30:00 node-3 monitoring_server[2047]: 2026/08/11 07:30:00 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 11 07:30:11 node-3 monitoring_server[2047]: 2026/08/11 07:30:11 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 11 07:30:11 node-3 monitoring_server[2047]: 2026/08/11 07:30:11 INFO mesh: gRPC connection established target=node-3.globular.internal:443

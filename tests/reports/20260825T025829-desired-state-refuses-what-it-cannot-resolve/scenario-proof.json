@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-25T02:58:29.707274Z",
+  "scenario_file": "tests/scenarios/upgrade/desired-state-refuses-what-it-cannot-resolve.yaml",
+  "scenario": "desired-state-refuses-what-it-cannot-resolve",
+  "suite": "upgrade",
+  "source_revision": "e1fd3f3c2d9792ccfa48a6ba3001e4a1971fd2cc",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Desired state must fail CLOSED: the control plane may only be pointed at an\nartifact it can actually resolve and install.\n\nWHY THIS EXISTS. The 2026-08-16 incident began with a deploy that reported\nsuccess it had not achieved, and every scenario in this suite until now\nobserved steady state \u2014 none drove the deploy path at all. The pipeline that\nfailed roughly one run in two had zero scenario coverage of its execution.\n\nThis drives the operator-facing half of that path: `globular services desired\nset`. It is the single command that turns \"an artifact exists\" into \"the\ncluster will install it\", and it is where a bad value does the most damage,\nbecause everything downstream treats desired state as authority.\n\nTHE PROPERTY. A request naming something the repository cannot resolve must be\nREFUSED, not accepted-and-retried-forever. An accepted-but-unresolvable\ndesired state is a rollout that can never finish and never says so: the\ncontroller keeps trying, reconcile keeps failing, and the operator sees a\ncluster that is perpetually \"converging\". That is strictly worse than an error\nat the point of the request.\n\nThree cases are exercised, and the refusals matter more than the acceptance \u2014\nwhich is why they are expressed as actions that FAIL the scenario on the wrong\noutcome, rather than as assertions about state afterwards. An action that\nquietly succeeded where a refusal was required would otherwise leave desired\nstate pointing at nothing while the scenario reported PASS.\n\nNOT COVERED HERE, and worth stating plainly: the desired-state REGRESSION\nfloor. On 2026-08-16 a rollback was refused with \"desired floor is 1.2.317,\nattempted 1.2.316; pass --allow-regression to override (audited)\". Exercising\nthat needs two published versions of one package, and a bundle ships one\nversion per package \u2014 so proving it needs a publish, not just a desired-state\nchange. See deploy-publish-then-converge for the half that is reachable.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-25T02:59:54.738413Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-23T05:35:29.559139Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "full-blackout-thundering-herd",
+  "suite": "authority",
+  "result": "FAIL",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "When every node starts at once from identical conditions, exactly one\nauthority must emerge.\n\nTHE FAULT. Stop all five nodes, then start all five simultaneously \u2014 one\ndocker invocation, not a sequence.\n\nWHY SIMULTANEITY IS THE POINT. full-cluster-blackout already stops all three\netcd nodes and checks the cluster comes back. But a staggered restart lets one\nnode establish leadership before the others finish booting, which is the easy\ncase and the one that usually happens in practice. Starting together removes\nthat accident: five controllers race from the same starting line, every one of\nthem with a valid local view, none of them with any reason to defer.\n\nThat is when election races, duplicate join requests, duplicate workflow\ndispatch and registration corruption become reachable. Each node has a\ncomplete local state directory and no evidence that anyone else is also\nstarting.\n\nWHAT MUST HOLD. One leader address, not several. Every node registered exactly\nonce. No duplicate or ambiguous artifacts from concurrent publish or\nregistration. No drift storm from several controllers each deciding the cluster\nneeds converging. And the cluster genuinely healthy afterwards rather than\nmerely responsive.\n\nThis is the most destructive scenario in the suite: it stops the entire\ncluster. It is also the closest thing to a real datacentre power event, which\nis exactly why staggering it would be testing the wrong thing.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "preconditions",
+        "id": "cluster_healthy",
+        "probe_or_action": "cluster.health",
+        "result": {
+          "status": "healthy",
+          "members": 1,
+          "nodes": 1
+        }
+      },
+      {
+        "section": "preconditions",
+        "id": "leadership_established_before",
+        "probe_or_action": "controller.leadership",
+        "result": {
+          "leader_addr": "10.10.0.11:12000",
+          "leader_node": "node-1",
+          "has_leader": true,
+          "claimants": 1,
+          "instances": "node-1:20944:f4642c30-82cd-465f-944b-4623cb82cec9",
+          "leader_instance": "node-1:20944:f4642c30-82cd-465f-944b-4623cb82cec9",
+          "distinct_leaders": 1
+        }
+      },
+      {
+        "section": "preconditions",
+        "id": "liveness_settled_before",
+        "probe_or_action": "state.liveness_freshness",
+        "result": {
+          "nodes": 1,
+          "max_age_s": 20,
+          "stale_nodes": 0,
+          "oldest": "c777633e-6d07-5713-9c4c-deb3317eee25"
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

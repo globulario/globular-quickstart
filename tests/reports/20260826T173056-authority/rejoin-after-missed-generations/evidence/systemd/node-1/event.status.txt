@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 18:15:24 UTC; 44min ago
+    Process: 443 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 448 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 454 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 29.0M (peak: 31.5M)
+        CPU: 19.712s
+     CGroup: /system.slice/docker-1a67bc533cf1057423c06ee241b688433eff61a2db6d73b4bfd0f73230762cce.scope/system.slice/globular-event.service
+             └─454 /usr/lib/globular/bin/event_server
+
+Aug 26 18:48:24 node-1 event_server[454]: time=2026-08-26T18:48:24.678Z level=WARN msg="poll events error" bucket=2026-08-26T18:48 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 26 18:48:24 node-1 event_server[454]: time=2026-08-26T18:48:24.878Z level=WARN msg="poll events error" bucket=2026-08-26T18:48 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 26 18:48:25 node-1 event_server[454]: time=2026-08-26T18:48:25.078Z level=WARN msg="poll events error" bucket=2026-08-26T18:48 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 26 18:48:25 node-1 event_server[454]: time=2026-08-26T18:48:25.278Z level=WARN msg="poll events error" bucket=2026-08-26T18:48 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 26 18:48:31 node-1 event_server[454]: 2026/08/26 18:48:31 ERROR Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1 (repeated 3 times in 30s) domain=10.10.0.11:8443 application=event.EventService user="" method=/event.EventService/Publish function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 26 18:50:59 node-1 event_server[454]: time=2026-08-26T18:50:59.434Z level=INFO msg="OnEvent: registered" uuid=9de3854d-1316-452c-a31f-05d3ff053f31
+Aug 26 18:50:59 node-1 event_server[454]: time=2026-08-26T18:50:59.434Z level=INFO msg="stream registered" uuid=9de3854d-1316-452c-a31f-05d3ff053f31
+Aug 26 18:56:11 node-1 event_server[454]: time=2026-08-26T18:56:11.875Z level=WARN msg="keepalive send failed; will drop stream" uuid=9de3854d-1316-452c-a31f-05d3ff053f31 err="rpc error: code = Canceled desc = context canceled"
+Aug 26 18:56:11 node-1 event_server[454]: time=2026-08-26T18:56:11.875Z level=INFO msg="subscriber cleanup" uuid=9de3854d-1316-452c-a31f-05d3ff053f31
+Aug 26 18:56:11 node-1 event_server[454]: time=2026-08-26T18:56:11.875Z level=INFO msg="OnEvent: stream ended" uuid=9de3854d-1316-452c-a31f-05d3ff053f31

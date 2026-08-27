@@ -1,0 +1,20 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 01:28:57 UTC; 726ms ago
+    Process: 11700 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 11704 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 11707 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 11731 (workflow_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 11.9M (peak: 13.3M)
+        CPU: 144ms
+     CGroup: /system.slice/docker-87a3a81b631cf715a7fdb8eb9198c66fc4ad0d0a27d9dc6ab1f1a48153d22d8c.scope/system.slice/globular-workflow.service
+             └─11731 /usr/lib/globular/bin/workflow_server
+
+Aug 24 01:28:57 node-1 systemd[1]: Starting globular-workflow.service - Globular workflow...
+Aug 24 01:28:57 node-1 systemd[1]: Started globular-workflow.service - Globular workflow.
+Aug 24 01:28:57 node-1 workflow_server[11731]: 2026/08/24 01:28:57 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 24 01:28:57 node-1 workflow_server[11731]: 2026/08/24 01:28:57 INFO security: loaded cluster roles from external policy file roles=22
+Aug 24 01:28:57 node-1 workflow_server[11731]: time=2026-08-24T01:28:57.356Z level=INFO msg="starting workflow service" service=workflow.WorkflowService version=1.2.326 domain=globular.internal
+Aug 24 01:28:57 node-1 workflow_server[11731]: 2026/08/24 01:28:57 WARN InitService: etcd config lookup failed (etcd may be unavailable); will use compiled-in defaults service=workflow.WorkflowService id_err="no service found with id/name \"629d9391-58af-4d72-b4eb-27e6089b9b5b\"" name_err="no services found with name workflow.WorkflowService"
+Aug 24 01:28:57 node-1 workflow_server[11731]: 2026/08/24 01:28:57 INFO InitGrpcServer: gRPC server initialized service=workflow.WorkflowService tls=true port=10220

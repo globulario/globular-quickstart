@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:02 UTC; 16s ago
+    Process: 1723 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 1727 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1730 (cluster_control)
+      Tasks: 11 (limit: 8641)
+     Memory: 10.2M (peak: 10.4M)
+        CPU: 90ms
+     CGroup: /system.slice/docker-c9ec52239bf0c1a466e721d2fce1da845ffe2a6f535fdc6be88efc93c18b00de.scope/system.slice/globular-cluster-controller.service
+             └─1730 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 19 03:23:10 node-2 cluster_controller_server[1730]: 2026/08/19 03:23:10 DNS reconciler: cannot resolve dns.DnsService port from etcd
+Aug 19 03:23:10 node-2 cluster_controller_server[1730]: 2026/08/19 03:23:10 dns reconciler: generation changed 0 -> 2, reconciling...
+Aug 19 03:23:10 node-2 cluster_controller_server[1730]: 2026/08/19 03:23:10 external dns: DISABLED
+Aug 19 03:23:10 node-2 cluster_controller_server[1730]: 2026/08/19 03:23:10 dns reconciler: WARN - failed to fetch services for SRV: context deadline exceeded
+Aug 19 03:23:10 node-2 cluster_controller_server[1730]: 2026/08/19 03:23:10 dns reconciler: initial reconciliation failed: apply dns state for domain globular.internal: no healthy DNS endpoints available
+Aug 19 03:23:10 node-2 cluster_controller_server[1730]: 2026/08/19 03:23:10 dns reconciler: starting health check loop (interval=30s)
+Aug 19 03:23:11 node-2 cluster_controller_server[1730]: time=2026-08-19T03:23:11.240Z level=WARN msg="failed to register in Globular service registry; xDS routing may be unavailable" err="save service configuration cluster_controller.ClusterControllerService: RunTxnWithClass(normal_runtime): etcd txn after 3 attempt(s): context deadline exceeded"
+Aug 19 03:23:11 node-2 cluster_controller_server[1730]: time=2026-08-19T03:23:11.241Z level=WARN msg="failed to publish controller service instance" err="PutInstance: etcd connect: context deadline exceeded"
+Aug 19 03:23:11 node-2 cluster_controller_server[1730]: time=2026-08-19T03:23:11.241Z level=INFO msg="cluster controller ready" address=:12000 config=/var/lib/globular/cluster-controller/config.json cluster_domain=globular.internal version=1.2.325
+Aug 19 03:23:17 node-2 cluster_controller_server[1730]: {"level":"warn","ts":"2026-08-19T03:23:17.935321Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000026f00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}

@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:22:18 UTC; 1min 5s ago
+    Process: 145 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 174 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 197 (node_agent_serv)
+      Tasks: 24 (limit: 8641)
+     Memory: 34.8M (peak: 790.5M)
+        CPU: 14.779s
+     CGroup: /system.slice/docker-385981ec9bab5109e8a8585b8d7070b5708eef8209ed44d8f8789bedfa13bd12.scope/system.slice/globular-node-agent.service
+             └─197 /usr/lib/globular/bin/node_agent_server
+
+Aug 19 03:23:16 node-4 node_agent_server[197]: 2026/08/19 03:23:16 nodeagent: list installed packages kind=SERVICE: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:23:16 node-4 node_agent_server[197]: 2026/08/19 03:23:16 nodeagent: list installed packages kind=COMMAND: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:23:16 node-4 node_agent_server[197]: 2026/08/19 03:23:16 nodeagent: reporting 28 installed services (hash=41cf270680dfbfde7e9cf48b5d4c7181684c6889727e074e5124885e65a12c99, sample=[node-agent globular-cli node-exporter rbac dns])
+Aug 19 03:23:16 node-4 node_agent_server[197]: 2026/08/19 03:23:16 node heartbeat failed (state=degraded): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: connection refused
+Aug 19 03:23:17 node-4 node_agent_server[197]: 2026/08/19 03:23:17 event-publisher: connected to event service
+Aug 19 03:23:22 node-4 node_agent_server[197]: 2026/08/19 03:23:22 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 19 03:23:22 node-4 node_agent_server[197]: 2026/08/19 03:23:22 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 19 03:23:22 node-4 node_agent_server[197]: 2026/08/19 03:23:22 event-handler: recovered (prior="event service not found in registry, retrying in 10s" suppressed=3)
+Aug 19 03:23:22 node-4 node_agent_server[197]: 2026/08/19 03:23:22 event-handler: connected to event service
+Aug 19 03:23:22 node-4 node_agent_server[197]: 2026/08/19 03:23:22 event-publisher: publish service.exited failed: rpc error: code = Unavailable desc =  (will reconnect)

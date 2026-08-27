@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 07:26:28 UTC; 1min 9s ago
+    Process: 12689 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 12693 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 12696 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 12702 (workflow_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 24.9M (peak: 26.2M)
+        CPU: 400ms
+     CGroup: /system.slice/docker-77ad6eda24b7a648eda9ffe24487b4c0451ea1f2ab359fd4cdc458d29690d40f.scope/system.slice/globular-workflow.service
+             └─12702 /usr/lib/globular/bin/workflow_server
+
+Aug 17 07:26:28 node-3 workflow_server[12702]: time=2026-08-17T07:26:28.667Z level=INFO msg="authz: permission mappings loaded" service=workflow count=40 action_mappings=40
+Aug 17 07:26:28 node-3 workflow_server[12702]: time=2026-08-17T07:26:28.667Z level=INFO msg="service started successfully" name=workflow.WorkflowService id=e7124f89-4707-46cc-8842-ddc034d1cb1e port=10220
+Aug 17 07:26:28 node-3 workflow_server[12702]: 2026/08/17 07:26:28 INFO metrics listening service=workflow.WorkflowService addr=[::]:10221
+Aug 17 07:26:38 node-3 workflow_server[12702]: 2026/08/17 07:26:38 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 17 07:26:38 node-3 workflow_server[12702]: 2026/08/17 07:26:38 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 17 07:26:41 node-3 workflow_server[12702]: 2026/08/17 07:26:41 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ExecuteWorkflow
+Aug 17 07:26:41 node-3 workflow_server[12702]: 2026/08/17 07:26:41 WARN authz_decision audit="{\"timestamp\":\"2026-08-17T07:26:41.236654083Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/workflow.WorkflowService/ExecuteWorkflow\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"authentication_required\",\"decision_latency_ms\":0,\"cluster_id\":\"globular.internal\",\"call_source\":\"peer\"}" subject="" method=/workflow.WorkflowService/ExecuteWorkflow allowed=false reason=authentication_required latency_ms=0 policy_version=unknown
+Aug 17 07:26:58 node-3 workflow_server[12702]: time=2026-08-17T07:26:58.652Z level=INFO msg="retention: startup delay elapsed, running first prune"
+Aug 17 07:26:58 node-3 workflow_server[12702]: time=2026-08-17T07:26:58.652Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 17 07:27:33 node-3 workflow_server[12702]: 2026/08/17 07:27:33 WARN authz_decision audit="{\"timestamp\":\"2026-08-17T07:27:33.96202056Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/workflow.WorkflowService/ExecuteWorkflow\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"authentication_required\",\"decision_latency_ms\":0,\"cluster_id\":\"globular.internal\",\"call_source\":\"peer\"}" subject="" method=/workflow.WorkflowService/ExecuteWorkflow allowed=false reason=authentication_required latency_ms=0 policy_version=unknown

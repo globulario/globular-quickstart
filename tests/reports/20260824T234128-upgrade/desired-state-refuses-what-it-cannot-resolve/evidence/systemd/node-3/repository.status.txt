@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 23:36:35 UTC; 6min ago
+    Process: 530 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 561 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 577 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 48.8M (peak: 90.1M)
+        CPU: 7.139s
+     CGroup: /system.slice/docker-9fe941577b188393d600caa05ab83e1ba976630520db98bfdeac6b8ab52f0f27.scope/system.slice/globular-repository.service
+             └─577 /usr/lib/globular/bin/repository_server
+
+Aug 24 23:37:22 node-3 repository_server[577]: 2026/08/24 23:37:22 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=node-2 method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 24 23:37:27 node-3 repository_server[577]: 2026/08/24 23:37:27 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 24 23:37:40 node-3 repository_server[577]: 2026/08/24 23:37:40 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 24 23:37:40 node-3 repository_server[577]: 2026/08/24 23:37:40 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 24 23:40:21 node-3 repository_server[577]: 2026/08/24 23:40:21 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10004 new_port=10004 old_proxy=46505 new_proxy=10001
+Aug 24 23:41:34 node-3 repository_server[577]: 2026/08/24 23:41:34 INFO artifact upload idempotent: identical artifact already exists key=core@globular.io%dns%1.2.317%linux_amd64%1 build_id=01a035da-ae72-7e00-b347-8a3b9dab4945 build=1 publish_state=PUBLISHED
+Aug 24 23:41:37 node-3 repository_server[577]: time=2026-08-24T23:41:37.916Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 24 23:41:39 node-3 repository_server[577]: 2026/08/24 23:41:39 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 24 23:41:42 node-3 repository_server[577]: 2026/08/24 23:41:42 WARN authz_decision audit="{\"timestamp\":\"2026-08-24T23:41:42.322611222Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 24 23:42:38 node-3 repository_server[577]: 2026/08/24 23:42:38 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest

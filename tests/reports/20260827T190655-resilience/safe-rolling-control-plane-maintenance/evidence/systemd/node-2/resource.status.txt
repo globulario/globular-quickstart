@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 20:05:52 UTC; 23s ago
+    Process: 1086 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 1090 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1093 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1099 (resource_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 25.0M (peak: 26.5M)
+        CPU: 359ms
+     CGroup: /system.slice/docker-9e575d08069298e7cc4546f8bf434e849bf1fb07fa8830021eea8927024e1d2e.scope/system.slice/globular-resource.service
+             └─1099 /usr/lib/globular/bin/resource_server
+
+Aug 27 20:05:59 node-2 resource_server[1099]: 2026/08/27 20:05:59 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"
+Aug 27 20:05:59 node-2 resource_server[1099]: time=2026-08-27T20:05:59.416Z level=INFO msg="Scylla process detected, using Scylla as backend store" process="[319 399 453]"
+Aug 27 20:06:03 node-2 resource_server[1099]: {"level":"warn","ts":"2026-08-27T20:06:03.418014Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003a1c20/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 20:06:04 node-2 resource_server[1099]: {"level":"warn","ts":"2026-08-27T20:06:04.41679Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003a1c20/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 20:06:04 node-2 resource_server[1099]: time=2026-08-27T20:06:04.416Z level=WARN msg="scylla host resolution failed; using local routable IP as fallback" error="scylla hosts from etcd: cluster hosts: etcd get /globular/cluster/scylla/hosts: context deadline exceeded"
+Aug 27 20:06:04 node-2 resource_server[1099]: time=2026-08-27T20:06:04.417Z level=INFO msg="starting resource service" service=resource.ResourceService version=1.2.317 domain=globular.internal address=10.10.0.12:8443 port=10000 backend=SCYLLA backend_address=10.10.0.12 bootstrap_mode=true
+Aug 27 20:06:07 node-2 resource_server[1099]: 2026/08/27 20:06:07 INFO InitGrpcServer: gRPC server initialized service=resource.ResourceService tls=true port=10008
+Aug 27 20:06:07 node-2 resource_server[1099]: time=2026-08-27T20:06:07.496Z level=INFO msg="service ready" service=resource.ResourceService port=10008 proxy=10011 protocol=grpc domain=globular.internal startup_ms=3079 pid=1099 id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 version=1.2.317 store=SCYLLA
+Aug 27 20:06:07 node-2 resource_server[1099]: 2026/08/27 20:06:07 INFO scylla: connected id=local_resource hosts=[10.10.0.11] port=9042 keyspace=local_resource
+Aug 27 20:06:07 node-2 resource_server[1099]: time=2026-08-27T20:06:07.724Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042

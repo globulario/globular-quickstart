@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:40:39 UTC; 14min ago
+    Process: 198 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 225 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 244 (cluster_doctor_)
+      Tasks: 19 (limit: 8641)
+     Memory: 29.0M (peak: 33.6M)
+        CPU: 5.155s
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-cluster-doctor.service
+             └─244 /usr/lib/globular/bin/cluster_doctor_server
+
+Jul 31 21:53:57 node-4 cluster_doctor_server[244]: 2026/07/31 21:53:57 collector: VerifyPackageIntegrity on node=6400b443-cf38-52da-a683-de2fc5103c0b stored report (checked=41, findings=0) in 163.40911ms
+Jul 31 21:53:57 node-4 cluster_doctor_server[244]: 2026/07/31 21:53:57 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 stored report (checked=41, findings=0) in 337.425436ms
+Jul 31 21:53:58 node-4 cluster_doctor_server[244]: 2026/07/31 21:53:58 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb stored report (checked=15, findings=6) in 523.39064ms
+Jul 31 21:53:58 node-4 cluster_doctor_server[244]: 2026/07/31 21:53:58 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 stored report (checked=47, findings=4) in 1.133275057s
+Jul 31 21:53:59 node-4 cluster_doctor_server[244]: 2026/07/31 21:53:59 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListStepOutcomes: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:53:59 node-4 cluster_doctor_server[244]: 2026/07/31 21:53:59 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListWorkflowSummaries: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:53:59 node-4 cluster_doctor_server[244]: 2026/07/31 21:53:59 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListDriftUnresolved: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:53:59 node-4 cluster_doctor_server[244]: 2026/07/31 21:53:59 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListRuns(BLOCKED): rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:53:59 node-4 cluster_doctor_server[244]: 2026/07/31 21:53:59 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListCorrelationDeferState(abandoned): rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:54:10 node-4 cluster_doctor_server[244]: 2026/07/31 21:54:10 WARN event client: publish circuit breaker closed dropped_during_window=3

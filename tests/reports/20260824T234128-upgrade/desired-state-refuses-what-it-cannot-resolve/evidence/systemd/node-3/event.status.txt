@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 23:36:31 UTC; 6min ago
+    Process: 48 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 73 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 88 (event_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 27.7M (peak: 30.3M)
+        CPU: 4.006s
+     CGroup: /system.slice/docker-9fe941577b188393d600caa05ab83e1ba976630520db98bfdeac6b8ab52f0f27.scope/system.slice/globular-event.service
+             └─88 /usr/lib/globular/bin/event_server
+
+Aug 24 23:39:35 node-3 event_server[88]: time=2026-08-24T23:39:35.225Z level=WARN msg="poll events error" bucket=2026-08-24T23:39 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 24 23:39:35 node-3 event_server[88]: time=2026-08-24T23:39:35.425Z level=WARN msg="poll events error" bucket=2026-08-24T23:39 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 24 23:39:58 node-3 event_server[88]: 2026/08/24 23:39:58 ERROR Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0 (repeated 2 times in 30s) domain=10.10.0.13:8443 application=event.EventService user="" method=/event.EventService/Publish function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 24 23:40:06 node-3 event_server[88]: time=2026-08-24T23:40:06.825Z level=INFO msg="subscriber cleanup" uuid=af810b25-26f2-41c6-abb7-de644fe6ea55
+Aug 24 23:40:14 node-3 event_server[88]: time=2026-08-24T23:40:14.540Z level=INFO msg="Subscribe: ok" channel=operation.restart_requested uuid=c3c0dab9-8f00-440e-9287-83f2fda8d51f
+Aug 24 23:40:14 node-3 event_server[88]: time=2026-08-24T23:40:14.541Z level=INFO msg=subscribed channel=operation.restart_requested uuid=c3c0dab9-8f00-440e-9287-83f2fda8d51f subscribers=1
+Aug 24 23:40:14 node-3 event_server[88]: time=2026-08-24T23:40:14.548Z level=INFO msg="OnEvent: registered" uuid=31e72add-5c9d-4bf2-b664-f5e5dbfc6f3e
+Aug 24 23:40:14 node-3 event_server[88]: time=2026-08-24T23:40:14.548Z level=INFO msg="stream registered" uuid=31e72add-5c9d-4bf2-b664-f5e5dbfc6f3e
+Aug 24 23:41:18 node-3 event_server[88]: time=2026-08-24T23:41:18.929Z level=INFO msg="Subscribe: ok" channel=operation.restart_requested uuid=c3c0dab9-8f00-440e-9287-83f2fda8d51f
+Aug 24 23:41:37 node-3 event_server[88]: 2026/08/24 23:41:37 INFO acc: warmup complete baseline_rtt_ms=20 samples=304 elapsed=5m0s

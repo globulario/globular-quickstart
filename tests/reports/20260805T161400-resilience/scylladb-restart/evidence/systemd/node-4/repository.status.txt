@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:39:26 UTC; 9min ago
+    Process: 872 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 880 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 888 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 33.2M (peak: 36.0M)
+        CPU: 2.611s
+     CGroup: /system.slice/docker-ad320a543adf0b98247f049770f1ddbb44e8f5a2f3712c4db491b6a85ccf76cf.scope/system.slice/globular-repository.service
+             └─888 /usr/lib/globular/bin/repository_server
+
+Aug 05 16:39:26 node-4 repository_server[888]: time=2026-08-05T16:39:26.672Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 05 16:39:26 node-4 repository_server[888]: time=2026-08-05T16:39:26.672Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 05 16:39:26 node-4 repository_server[888]: time=2026-08-05T16:39:26.675Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=114 already_present=57 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 05 16:39:26 node-4 repository_server[888]: 2026/08/05 16:39:26 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=43327
+Aug 05 16:39:26 node-4 repository_server[888]: 2026/08/05 16:39:26 INFO metrics listening service=repository.PackageRepository addr=[::]:43327
+Aug 05 16:39:36 node-4 repository_server[888]: 2026/08/05 16:39:36 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 05 16:39:36 node-4 repository_server[888]: 2026/08/05 16:39:36 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 05 16:39:58 node-4 repository_server[888]: 2026/08/05 16:39:58 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 05 16:44:28 node-4 repository_server[888]: 2026/08/05 16:44:28 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 05 16:45:17 node-4 repository_server[888]: 2026/08/05 16:45:17 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest

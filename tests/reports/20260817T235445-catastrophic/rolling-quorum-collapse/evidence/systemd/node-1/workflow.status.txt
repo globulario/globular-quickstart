@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:57:38 UTC; 1min 24s ago
+    Process: 429 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 444 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 456 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 625 (workflow_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 21.6M (peak: 29.4M)
+        CPU: 1.095s
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-workflow.service
+             └─625 /usr/lib/globular/bin/workflow_server
+
+Aug 17 23:58:55 node-1 workflow_server[625]: 2026/08/17 23:58:55 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 17 23:58:55 node-1 workflow_server[625]: time=2026-08-17T23:58:55.906Z level=WARN msg="scylla_reconnect: attempt failed" attempt=1 err="scylla connect: gocql: unable to create session: unable to connect to initial hosts: dial tcp 10.10.0.13:9042: connect: connection refused"
+Aug 17 23:58:57 node-1 workflow_server[625]: time=2026-08-17T23:58:57.906Z level=INFO msg="scylla_reconnect: attempting reconnect" attempt=2 backoff=2s
+Aug 17 23:58:57 node-1 workflow_server[625]: 2026/08/17 23:58:57 gocql: unable to dial control conn 10.10.0.12:9042: dial tcp 10.10.0.12:9042: connect: connection refused
+Aug 17 23:58:57 node-1 workflow_server[625]: 2026/08/17 23:58:57 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 17 23:58:57 node-1 workflow_server[625]: 2026/08/17 23:58:57 gocql: unable to dial control conn 10.10.0.12:9042: dial tcp 10.10.0.12:9042: connect: connection refused
+Aug 17 23:58:57 node-1 workflow_server[625]: 2026/08/17 23:58:57 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 17 23:58:57 node-1 workflow_server[625]: time=2026-08-17T23:58:57.909Z level=WARN msg="scylla_reconnect: attempt failed" attempt=2 err="scylla connect: gocql: unable to create session: unable to connect to initial hosts: dial tcp 10.10.0.13:9042: connect: connection refused"
+Aug 17 23:59:02 node-1 workflow_server[625]: time=2026-08-17T23:59:02.909Z level=INFO msg="scylla_reconnect: attempting reconnect" attempt=3 backoff=5s
+Aug 17 23:59:02 node-1 workflow_server[625]: time=2026-08-17T23:59:02.915Z level=INFO msg=workflow.scylla_reconnected scylla_session_generation=2 scylla_reconnect_attempts=3

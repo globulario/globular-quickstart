@@ -1,0 +1,68 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-23T23:49:18.113299Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "first-join-from-clean-node",
+  "suite": "upgrade",
+  "result": "FAIL",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "A node with no prior state must be able to join, install its services, and\nconverge \u2014 the Day-1 path, exercised as a FIRST join rather than a re-join.\n\nWHY THIS EXISTS. The suite already had node-join-convergence, but it asserts\ntarget_node_registered_before: it stops and restarts a node that is already a\ncluster member, so it exercises re-join and never the path a genuinely new\nmachine takes. The distinction is not academic \u2014 the bootstrap unit\nshort-circuits on an \"already bootstrapped\" marker in the node's state volume:\n\n    [bootstrap] already bootstrapped (day0 ...) \u2014 nothing to do\n\nso a node whose state survives never runs the join at all.\n\nOn 2026-08-17 that gap cost hours. A gateway carried forward from an older\nbase bundle still ran a join step installing libnss-resolve, a package the\nrelease deliberately no longer ships, and every joining node died:\n\n    FAIL: package libnss-resolve not found in /var/lib/globular/packages\n    [bootstrap] FATAL: join failed\n\nThe founding node bootstrapped normally, so the cluster reported HEALTHY at\none node while four could never join. Nothing in 74 scenarios would have\ncaught it; it was found by reading journals. That is the shape this scenario\ncloses \u2014 a join failure that presents as \"still converging\".\n\nWHAT IT PINS. Wipe a node's state completely, restart it, and require that it\ncomes back as a full member: registered in etcd, services installed, running,\nand the cluster healthy with every node accounted for. It asserts the OUTCOME\nof the join rather than any particular step, so it stays valid as the join\nprocedure changes \u2014 which it does, and which is how it broke.\n\nThis scenario is destructive by design and slow: a real first join installs\nthe full service set.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "assertions",
+        "id": "node_registered_in_etcd",
+        "probe_or_action": "node.etcd_registered",
+        "result": {
+          "registered": false,
+          "node": "node-5",
+          "uuid": "35ac3821-6b90-52eb-a800-41130471770b"
+        }
+      },
+      {
+        "section": "assertions",
+        "id": "no_doctor_errors",
+        "probe_or_action": "doctor.report_severity",
+        "result": {
+          "reachable": true,
+          "info": 1,
+          "warn": 9,
+          "error": 1,
+          "total": 11,
+          "worst": "CRITICAL",
+          "reduced_harvest": false
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-25T22:34:44.048866Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "compute-node-rejoin",
+  "suite": "recovery",
+  "result": "PASS",
+  "source_revision": "f74014a77246bf13da82dcf4aa40c105e1b21f6c",
+  "proof": {
+    "claim": "Verify that a stopped compute node fully rejoins the cluster after restart.\n\n\"Rejoin\" means more than just the container coming back up \u2014 the node agent\nmust restart, re-read its config from etcd, and re-register its heartbeat.\nThis test specifically validates the rejoin protocol, not just container\nlifecycle.\n\nRejoin sequence:\n1. Container stops \u2192 node agent process killed by Docker\n2. Container restarts \u2192 systemd starts, entrypoint.sh runs (PKI already done)\n3. systemd starts node-agent.service\n4. Node agent reads config.json \u2192 connects to etcd endpoints\n5. Node agent writes node_agent_metrics_port key to etcd \u2192 heartbeat\n6. Controller sees new heartbeat, node is back in the pool\n7. Convergence: controller compares installed packages vs desired state\n\nThis differs from compute-node-stop-restart in its assertion focus:\n- That test verifies cluster health during the outage\n- This test verifies the REJOIN PROTOCOL works correctly\n\nFailure modes caught:\n- Node agent starts but cannot connect to etcd (TLS cert mismatch after restart)\n- Node agent connects but fails to write heartbeat (RBAC permission missing)\n- etcd key written but controller doesn't detect it (watch subscription issue)\n- Node agent starts in a bad state (stale tokens from previous session)\n- Convergence doesn't trigger after rejoin (AppliedServicesHash not reported)\n\nNote: Token clearing \u2014 entrypoint.sh clears stale tokens on each boot:\n\"rm -f $STATE/tokens/*_token\" \u2014 this prevents auth failures from stale JWTs.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

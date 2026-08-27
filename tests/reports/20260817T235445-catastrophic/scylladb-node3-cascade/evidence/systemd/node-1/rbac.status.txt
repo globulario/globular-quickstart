@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:57:38 UTC; 3min 10s ago
+    Process: 620 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 661 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 695 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 747 (rbac_server)
+      Tasks: 12 (limit: 8641)
+     Memory: 206.0M (peak: 207.1M)
+        CPU: 1.150s
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-rbac.service
+             └─747 /usr/lib/globular/bin/rbac_server
+
+Aug 17 23:58:10 node-1 rbac_server[747]: 2026/08/17 23:58:10 gocql: unable to dial control conn 10.10.0.12:9042: dial tcp 10.10.0.12:9042: i/o timeout
+Aug 17 23:58:11 node-1 rbac_server[747]: 2026/08/17 23:58:11 ERROR rpc error: code = Internal desc = {"ErrorMsg":"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_ownership.go:168","FunctionName":"main.(*server).AddResourceOwner"} (repeated 2 times in 20s) domain=10.10.0.11:8443 application=rbac.RbacService user="" method=/rbac.RbacService/AddResourceOwner function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 17 23:58:11 node-1 rbac_server[747]: 2026/08/17 23:58:11 ERROR rpc error: code = Internal desc = {"ErrorMsg":"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_actions.go:250","FunctionName":"main.(*server).GetActionResourceInfos"} (repeated 3 times in 30s) domain=10.10.0.11:8443 application=rbac.RbacService user="" method=/rbac.RbacService/GetActionResourceInfos function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 17 23:58:33 node-1 rbac_server[747]: 2026/08/17 23:58:33 ERROR rpc error: code = Internal desc = {"ErrorMsg":"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_actions.go:250","FunctionName":"main.(*server).GetActionResourceInfos"} domain=10.10.0.11:8443 application=rbac.RbacService user="" method=/rbac.RbacService/GetActionResourceInfos function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632
+Aug 17 23:59:01 node-1 rbac_server[747]: 2026/08/17 23:59:01 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10003 new_port=10003 old_proxy=44015 new_proxy=10001
+Aug 17 23:59:06 node-1 rbac_server[747]: 2026/08/17 23:59:06 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 17 23:59:11 node-1 rbac_server[747]: 2026/08/17 23:59:11 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 17 23:59:11 node-1 rbac_server[747]: 2026/08/17 23:59:11 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 17 23:59:11 node-1 rbac_server[747]: 2026/08/17 23:59:11 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 00:00:07 node-1 rbac_server[747]: 2026/08/18 00:00:07 INFO rbac: flushed permission cache on cross-instance RBAC change

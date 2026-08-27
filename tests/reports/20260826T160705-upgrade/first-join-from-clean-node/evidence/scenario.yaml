@@ -1,0 +1,225 @@
+version: 1
+name: first-join-from-clean-node
+description: |
+  A node with no prior state must be able to join, install its services, and
+  converge — the Day-1 path, exercised as a FIRST join rather than a re-join.
+
+  WHY THIS EXISTS. The suite already had node-join-convergence, but it asserts
+  target_node_registered_before: it stops and restarts a node that is already a
+  cluster member, so it exercises re-join and never the path a genuinely new
+  machine takes. The distinction is not academic — the bootstrap unit
+  short-circuits on an "already bootstrapped" marker in the node's state volume:
+
+      [bootstrap] already bootstrapped (day0 ...) — nothing to do
+
+  so a node whose state survives never runs the join at all.
+
+  On 2026-08-17 that gap cost hours. A gateway carried forward from an older
+  base bundle still ran a join step installing libnss-resolve, a package the
+  release deliberately no longer ships, and every joining node died:
+
+      FAIL: package libnss-resolve not found in /var/lib/globular/packages
+      [bootstrap] FATAL: join failed
+
+  The founding node bootstrapped normally, so the cluster reported HEALTHY at
+  one node while four could never join. Nothing in 74 scenarios would have
+  caught it; it was found by reading journals. That is the shape this scenario
+  closes — a join failure that presents as "still converging".
+
+  WHAT IT PINS. Wipe a node's state completely, restart it, and require that it
+  comes back as a full member: registered in etcd, services installed, running,
+  and the cluster healthy with every node accounted for. It asserts the OUTCOME
+  of the join rather than any particular step, so it stays valid as the join
+  procedure changes — which it does, and which is how it broke.
+
+  This scenario is destructive by design and slow: a real first join installs
+  the full service set.
+
+suite: upgrade
+tags:
+  - day-1
+  - join
+  - bootstrap
+  - destructive
+  - incident-2026-08-17
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # All five present before we remove one, so "5 afterwards" means the wiped
+  # node genuinely came back rather than the count never having been 5.
+  - type: probe
+    id: all_five_present_before
+    probe: cluster.health
+    expect:
+      nodes_gte: 5
+
+  - type: probe
+    id: target_node_running_before
+    probe: node.container_running
+    params:
+      node: node-5
+    expect:
+      running: true
+
+baseline:
+  - type: probe
+    id: installed_packages_before
+    probe: node.installed_packages
+    params:
+      node: node-5
+
+steps:
+  # Detach this node's etcd member before wiping it, the way clean-node.sh does.
+  # Wiping a live voter and letting the cluster rediscover it is how a member
+  # ends up with a data directory the raft log no longer matches.
+  # self_ip is how the member is located in `member list` output, and peer_ip is
+  # the surviving endpoint the remove is committed against. Both were omitted,
+  # so the action refused with "self_ip param required" and never detached
+  # anything — the wipe below then ran against a LIVE voter, which is precisely
+  # the mistake this step exists to avoid.
+  - type: action
+    id: detach_etcd_member
+    action: chaos.detach_node_etcd
+    params:
+      node: node-5
+      self_ip: "10.10.0.15"
+      peer_ip: "10.10.0.11"
+
+  # Stop the node BEFORE removing its record.
+  #
+  # A running node-agent re-registers itself within a heartbeat. Removing the
+  # record from under a live agent therefore removes nothing that stays removed:
+  # on 2026-08-22 `ops.remove_node` returned exit 0, the agent re-registered
+  # seconds later, the wipe then destroyed the node's identity, and its fresh
+  # join was refused —
+  #
+  #     join blocked: controller denied — node identity conflict:
+  #     hostname already present
+  #
+  # — against a record its own pre-wipe agent had put back. The scenario ran for
+  # 46 minutes and reported a join failure that the harness had caused. This is
+  # the order clean-node.sh uses: stop the services first, then deregister.
+  - type: action
+    id: stop_the_node_before_deregistering
+    action: chaos.stop_node
+    params:
+      node: node-5
+
+  # Remove the node from the CONTROLLER as well.
+  #
+  # Wiping /var/lib/globular makes the node forget the cluster; it does not make
+  # the cluster forget the node. Skipping this produced exactly the refusal the
+  # guard is there for:
+  #
+  #     join blocked: controller denied — node identity conflict:
+  #     hostname already present
+  #
+  # which is correct behaviour and meant the scenario was testing a conflicted
+  # re-join rather than a first join. Both halves are required, and this is the
+  # half an operator performs.
+  - type: action
+    id: remove_node_from_cluster
+    action: ops.remove_node
+    params:
+      node: node-5
+      runner: node-1
+
+  - type: action
+    id: wipe_all_node_state
+    action: chaos.wipe_node_state
+    params:
+      node: node-5
+
+  - type: action
+    id: start_the_clean_node
+    action: chaos.start_node
+    params:
+      node: node-5
+
+  # A first join installs the full service set from the repository, which is
+  # substantially slower than a restart. The wait is generous on purpose: a
+  # flaky timeout here would train people to disbelieve a real join failure.
+  - type: action
+    id: allow_join_to_complete
+    action: wait
+    params:
+      seconds: 900
+      reason: "a genuine first join downloads and installs every service for the node's profiles"
+
+assertions:
+  # ── The node is actually a member again ───────────────────────────────────
+  - type: probe
+    id: node_registered_in_etcd
+    probe: node.etcd_registered
+    params:
+      node: node-5
+    expect:
+      registered: true
+
+  - type: probe
+    id: cluster_sees_all_five_again
+    probe: cluster.health
+    expect:
+      status: healthy
+      nodes_gte: 5
+
+  # ── It did not merely register; it installed and is running ───────────────
+  # Registration is the cheap half. On 2026-08-17 four nodes were reachable
+  # containers running no Globular services at all, which is exactly what
+  # "registered but empty" looks like.
+  - type: probe
+    id: node_has_installed_packages
+    probe: node.installed_packages
+    params:
+      node: node-5
+    expect:
+      count_gte: 5
+
+  - type: probe
+    id: node_agent_is_serving
+    probe: service.status
+    params:
+      node: node-5
+      service: node-agent
+    expect:
+      unit_state: active
+
+  # ── And the cluster as a whole is no worse for it ─────────────────────────
+  - type: probe
+    id: etcd_quorum_intact
+    probe: cluster.etcd_members
+    expect:
+      unhealthy: 0
+
+  - type: probe
+    id: writes_still_accepted
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: liveness_current_for_every_node
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+      nodes_gte: 5
+
+  - type: probe
+    id: no_doctor_errors
+    probe: doctor.report_severity
+    expect:
+      error: 0
+      reachable: true
+
+cleanup: []

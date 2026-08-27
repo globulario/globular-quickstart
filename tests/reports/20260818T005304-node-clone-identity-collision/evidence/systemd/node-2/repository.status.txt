@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 00:50:59 UTC; 8min ago
+    Process: 500 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 531 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 559 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 32.7M (peak: 36.3M)
+        CPU: 4.713s
+     CGroup: /system.slice/docker-9222800d3a47ca13f196913e2ca4b66dc75c10e92e0db6dc29b6567ac0cd909e.scope/system.slice/globular-repository.service
+             └─559 /usr/lib/globular/bin/repository_server
+
+Aug 18 00:51:00 node-2 repository_server[559]: 2026/08/18 00:51:00 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 18 00:51:00 node-2 repository_server[559]: time=2026-08-18T00:51:00.895Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 18 00:51:00 node-2 repository_server[559]: time=2026-08-18T00:51:00.895Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 18 00:51:02 node-2 repository_server[559]: 2026/08/18 00:51:02 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=41519
+Aug 18 00:51:02 node-2 repository_server[559]: 2026/08/18 00:51:02 INFO metrics listening service=repository.PackageRepository addr=[::]:41519
+Aug 18 00:51:04 node-2 repository_server[559]: 2026/08/18 00:51:04 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10004 new_port=10004 old_proxy=41519 new_proxy=10001
+Aug 18 00:52:33 node-2 repository_server[559]: 2026/08/18 00:52:33 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 18 00:56:02 node-2 repository_server[559]: 2026/08/18 00:56:02 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 18 00:57:33 node-2 repository_server[559]: 2026/08/18 00:57:33 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 18 00:58:08 node-2 repository_server[559]: 2026/08/18 00:58:08 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=172 baseline_ms=20 window=657 new_window=591

@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-26T16:05:29.019206Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "scylladb-restart",
+  "suite": "resilience",
+  "result": "PASS",
+  "source_revision": "47cc1d8c1e7eec28731a9e75e8832d6681c795a4",
+  "proof": {
+    "claim": "Verify that restarting ScyllaDB does not affect etcd quorum or core services.\n\nScyllaDB is the persistence layer for AI services (ai_memory stores knowledge),\nDNS zone records, and the package repository catalog. It is NOT on the critical\npath for etcd, the cluster controller, workflow, or basic gRPC authentication.\n\nThis test validates the architectural boundary: ScyllaDB is an infrastructure\ndependency for SOME services, but its loss must not cascade to the control plane.\n\nWhat this validates:\n- etcd remains healthy when ScyllaDB is stopped (different failure domain)\n- Core services (controller, workflow, auth, rbac) continue operating\n- ScyllaDB-dependent services (ai_memory, dns) may lose functionality briefly\n- After ScyllaDB restarts, it becomes available again (healthcheck recovers)\n- etcd write quorum is unaffected throughout\n\nIndustry known problem: \"shared infrastructure SPOF\" \u2014 if ScyllaDB were\non the critical path for etcd (e.g., etcd using ScyllaDB as storage), a\nScyllaDB restart would take down the entire cluster. Globular correctly\nseparates these failure domains: etcd uses its own Raft WAL, not ScyllaDB.\n\nKnown issue: DNS zones are stored in ScyllaDB. After ScyllaDB restarts,\nDNS zones may need to be re-registered (legacy issue documented in CLAUDE.md).\nThis test checks that DNS service is still registered in etcd but does not\nassert DNS resolution works (that's the dns-service-recovery scenario).\n\nTopology note: ScyllaDB does NOT have its own container. It runs as the\nupstream scylla-server.service INSIDE each storage-profile node container.\nThis scenario therefore stops that unit on a storage node rather than\nstopping a container.\n\nIt previously targeted node: \"scylladb\" -> container \"globular-scylladb\",\nwhich does not exist in this topology, so the precondition failed before any\nchaos was injected and the failure-domain isolation this scenario exists to\nprove was never actually exercised.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

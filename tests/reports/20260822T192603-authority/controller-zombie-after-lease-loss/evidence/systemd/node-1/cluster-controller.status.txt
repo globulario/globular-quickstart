@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:23:01 UTC; 3min 8s ago
+    Process: 148 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 188 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 213 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 42.5M (peak: 43.5M)
+        CPU: 4.041s
+     CGroup: /system.slice/docker-fbd50be62ef8809d6e93c288dffbbd1077867e0e3f7fe69f97f12b29cb90c420.scope/system.slice/globular-cluster-controller.service
+             └─213 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 22 19:26:08 node-1 cluster_controller_server[213]: 2026/08/22 19:26:08 release core@globular.io/log: reconciling phase=RESOLVED gen=2
+Aug 22 19:26:08 node-1 cluster_controller_server[213]: 2026/08/22 19:26:08 ServiceRelease core@globular.io/log: skipping node c777633e-6d07-5713-9c4c-deb3317eee25/node-1 (stale heartbeat: last seen 5m28s ago)
+Aug 22 19:26:08 node-1 cluster_controller_server[213]: 2026/08/22 19:26:08 ServiceRelease core@globular.io/log: skipping node c8a09d9e-3813-5357-ab58-93aa410f27fb/node-2 (stale heartbeat: last seen 5m21s ago)
+Aug 22 19:26:08 node-1 cluster_controller_server[213]: 2026/08/22 19:26:08 ServiceRelease core@globular.io/log: skipping node a166b992-b66d-53cb-b7c7-61dfa4dd5a36/node-3 (stale heartbeat: last seen 5m0s ago)
+Aug 22 19:26:08 node-1 cluster_controller_server[213]: 2026/08/22 19:26:08 ServiceRelease core@globular.io/log: workflow already in-flight, skipping dispatch
+Aug 22 19:26:08 node-1 cluster_controller_server[213]: 2026/08/22 19:26:08 ServiceRelease core@globular.io/file: workflow already in-flight, skipping dispatch
+Aug 22 19:26:08 node-1 cluster_controller_server[213]: 2026/08/22 19:26:08 convergence-committer: committed node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 SERVICE/event@1.2.317 build_number=1
+Aug 22 19:26:08 node-1 cluster_controller_server[213]: 2026/08/22 19:26:08 convergence-committer: committed node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 SERVICE/log@1.2.317 build_number=1
+Aug 22 19:26:08 node-1 cluster_controller_server[213]: 2026/08/22 19:26:08 convergence-committer: node=c777633e-6d07-5713-9c4c-deb3317eee25 COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 22 19:26:08 node-1 cluster_controller_server[213]: 2026/08/22 19:26:08 convergence-committer: node=35ac3821-6b90-52eb-a800-41130471770b COMMAND/claude outcome=FAILED_TRANSIENT reason=

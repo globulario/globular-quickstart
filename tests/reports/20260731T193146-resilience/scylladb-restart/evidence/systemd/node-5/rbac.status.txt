@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:03:42 UTC; 3min 6s ago
+    Process: 6541 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 6545 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 6548 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 6554 (rbac_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 82.6M (peak: 83.3M)
+        CPU: 624ms
+     CGroup: /system.slice/docker-fac1d0fd94bea9a0d7ffcda0c0edf931a4d141c04f8b3de9361d6d7a1ebcb85f.scope/system.slice/globular-rbac.service
+             └─6554 /usr/lib/globular/bin/rbac_server
+
+Jul 31 20:05:59 node-5 rbac_server[6554]: 2026/07/31 20:05:59 INFO InitGrpcServer: gRPC server initialized service=rbac.RbacService tls=true port=10004
+Jul 31 20:05:59 node-5 rbac_server[6554]: time=2026-07-31T20:05:59.701Z level=INFO msg="minio storage configured" endpoint=10.10.0.11:9000 bucket=globular secure=true
+Jul 31 20:05:59 node-5 rbac_server[6554]: time=2026-07-31T20:05:59.701Z level=INFO msg="dependency health watchdog started" deps=1
+Jul 31 20:05:59 node-5 rbac_server[6554]: time=2026-07-31T20:05:59.702Z level=INFO msg="rbac permission-cache invalidation watcher started"
+Jul 31 20:05:59 node-5 rbac_server[6554]: time=2026-07-31T20:05:59.709Z level=INFO msg="rbac service ready" id=8b384839-8473-3b00-9ccc-7cb36fe97836 version=1.2.288 port=10004 proxy=10001 protocol=grpc domain=globular.internal address=10.10.0.11:10004 startup_ms=129
+Jul 31 20:05:59 node-5 rbac_server[6554]: time=2026-07-31T20:05:59.709Z level=INFO msg="starting grpc server" port=10004
+Jul 31 20:05:59 node-5 rbac_server[6554]: 2026/07/31 20:05:59 INFO metrics listening service=rbac.RbacService addr=[::]:10001
+Jul 31 20:06:00 node-5 rbac_server[6554]: 2026/07/31 20:06:00 ERROR rpc error: code = Internal desc = {"ErrorMsg":"Cannot achieve consistency level for cl ONE. Requires 1, alive 0","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_actions.go:250","FunctionName":"main.(*server).GetActionResourceInfos"} domain=10.10.0.15:8443 application=rbac.RbacService user="" method=/rbac.RbacService/GetActionResourceInfos function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632
+Jul 31 20:06:00 node-5 rbac_server[6554]: 2026/07/31 20:06:00 INFO log forwarding enabled address=10.10.0.11:10100
+Jul 31 20:06:30 node-5 rbac_server[6554]: 2026/07/31 20:06:30 ERROR rpc error: code = Internal desc = {"ErrorMsg":"Cannot achieve consistency level for cl ONE. Requires 1, alive 0","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_actions.go:250","FunctionName":"main.(*server).GetActionResourceInfos"} (repeated 12 times in 30s) domain=10.10.0.15:8443 application=rbac.RbacService user="" method=/rbac.RbacService/GetActionResourceInfos function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher

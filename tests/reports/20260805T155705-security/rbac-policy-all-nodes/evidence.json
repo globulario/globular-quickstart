@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "scenario": "rbac-policy-all-nodes",
+  "suite": "security",
+  "start_time": "2026-08-05T16:13:21.771953Z",
+  "end_time": "2026-08-05T16:13:34.482134Z",
+  "passed": false,
+  "item_count": 12,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T16:13:22.089538Z"
+    },
+    {
+      "id": "rbac_service_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 11
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T16:13:22.191108Z"
+    },
+    {
+      "id": "initial_role_bindings",
+      "section": "baseline",
+      "probe": "authz.role_bindings",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T16:13:22.276572Z"
+    },
+    {
+      "id": "policy_file_node1",
+      "section": "assertions",
+      "probe": "rbac.policy_file",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {
+        "present": true,
+        "valid_json": true,
+        "role_count_gte": 3
+      },
+      "result": {
+        "present": false,
+        "role_count": 0,
+        "valid_json": false,
+        "node": "node-1"
+      },
+      "passed": false,
+      "timestamp": "2026-08-05T16:13:22.358729Z"
+    },
+    {
+      "id": "policy_file_node2",
+      "section": "assertions",
+      "probe": "rbac.policy_file",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "present": true,
+        "valid_json": true,
+        "role_count_gte": 3
+      },
+      "result": {
+        "present": false,
+        "role_count": 0,
+        "valid_json": false,
+        "node": "node-2"
+      },
+      "passed": false,
+      "timestamp": "2026-08-05T16:13:22.442536Z"
+    },
+    {
+      "id": "policy_file_node3",
+      "section": "assertions",
+      "probe": "rbac.policy_file",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "present": true,
+        "valid_json": true,
+        "role_count_gte": 3
+      },
+      "result": {
+        "present": false,
+        "role_count": 0,
+        "valid_json": false,
+        "node": "node-3"
+      },
+      "passed": false,
+      "timestamp": "2026-08-05T16:13:22.530547Z"
+    },
+    {
+      "id": "rbac_registered",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "rbac"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 11
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T16:13:22.625127Z"
+    },
+    {
+      "id": "rbac_unit_active_node1",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "rbac"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-1",
+        "service": "rbac"
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T16:13:22.716314Z"
+    },
+    {
+      "id": "rbac_unit_active_node2",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "rbac"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-2",
+        "service": "rbac"
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T16:13:22.809991Z"
+    },
+    {
+      "id": "rbac_unit_active_node3",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-3",
+        "service": "rbac"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-3",
+        "service": "rbac"
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T16:13:22.899612Z"
+    },
+    {
+      "id": "authz_layer_reachable",
+      "section": "assertions",
+      "probe": "authz.check",
+      "params": {
+        "subject": "cluster-admin",
+        "action": "read",
+        "resource": "cluster"
+      },
+      "expect": {
+        "rbac_registered": true
+      },
+      "result": {
+        "rbac_registered": true,
+        "roles_seeded": false,
+        "binding_count": 0,
+        "result": "unknown",
+        "note": "full gRPC check requires runner container"
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T16:13:23.097627Z"
+    },
+    {
+      "id": "final_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T16:13:23.394697Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

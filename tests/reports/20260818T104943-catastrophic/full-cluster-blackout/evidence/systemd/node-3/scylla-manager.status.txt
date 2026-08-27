@@ -1,0 +1,23 @@
+● globular-scylla-manager.service - Globular Scylla Manager
+     Loaded: loaded (/etc/systemd/system/globular-scylla-manager.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:56:37 UTC; 7s ago
+    Process: 369 ExecStartPre=/bin/sh -c for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "scylla 9042 not ready"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 494 ExecStartPre=/usr/lib/globular/bin/scylla-manager-configure (code=exited, status=0/SUCCESS)
+    Process: 499 ExecStartPost=/usr/lib/globular/bin/scylla-manager-register-cluster (code=exited, status=7)
+   Main PID: 498 (scylla-manager)
+      Tasks: 16 (limit: 8641)
+     Memory: 12.3M (peak: 13.8M)
+        CPU: 365ms
+     CGroup: /system.slice/docker-125f94d8224fd1635dcec958e8671abd276b2dca5e533a6b55d7697e3fec591c.scope/system.slice/globular-scylla-manager.service
+             └─498 /usr/bin/scylla-manager --config-file /var/lib/globular/scylla-manager/scylla-manager.yaml
+
+Aug 18 10:56:45 node-3 scylla_manager[498]: {"L":"INFO","T":"2026-08-18T10:56:45.064Z","M":"Clusters config cache initialized","_trace_id":"ERkIWnrdQiqUaDTAaBRjBA"}
+Aug 18 10:56:45 node-3 scylla_manager[498]: {"L":"INFO","T":"2026-08-18T10:56:45.073Z","M":"Loading TLS certificate from disk","cert_file":"/var/lib/globular/pki/issued/services/service.crt","key_file":"/var/lib/globular/pki/issued/services/service.key","_trace_id":"ERkIWnrdQiqUaDTAaBRjBA"}
+Aug 18 10:56:45 node-3 scylla_manager[498]: {"L":"INFO","T":"2026-08-18T10:56:45.085Z","N":"scheduler","M":"Loading tasks from database","_trace_id":"ERkIWnrdQiqUaDTAaBRjBA"}
+Aug 18 10:56:45 node-3 scylla_manager[498]: {"L":"INFO","T":"2026-08-18T10:56:45.097Z","N":"scheduler.dbe6ac98","M":"Schedule","task":"repair/1f4a7336-275b-433c-99e1-31b8b179d632","in":"108h3m14s","begin":"2026-08-22T23:00:00.000Z","retry":0,"_trace_id":"ERkIWnrdQiqUaDTAaBRjBA"}
+Aug 18 10:56:45 node-3 scylla_manager[498]: {"L":"INFO","T":"2026-08-18T10:56:45.097Z","N":"scheduler","M":"All tasks scheduled","_trace_id":"ERkIWnrdQiqUaDTAaBRjBA"}
+Aug 18 10:56:45 node-3 scylla_manager[498]: {"L":"INFO","T":"2026-08-18T10:56:45.097Z","M":"Starting HTTP server","address":"10.10.0.13:5080","_trace_id":"ERkIWnrdQiqUaDTAaBRjBA"}
+Aug 18 10:56:45 node-3 scylla_manager[498]: {"L":"INFO","T":"2026-08-18T10:56:45.097Z","M":"Starting HTTPS server","address":"10.10.0.13:5443","client_ca":"","_trace_id":"ERkIWnrdQiqUaDTAaBRjBA"}
+Aug 18 10:56:45 node-3 scylla_manager[498]: {"L":"INFO","T":"2026-08-18T10:56:45.097Z","M":"Starting Prometheus server","address":":5090","_trace_id":"ERkIWnrdQiqUaDTAaBRjBA"}
+Aug 18 10:56:45 node-3 scylla_manager[498]: {"L":"INFO","T":"2026-08-18T10:56:45.097Z","M":"Starting debug server","address":"127.0.0.1:5112","_trace_id":"ERkIWnrdQiqUaDTAaBRjBA"}
+Aug 18 10:56:45 node-3 scylla_manager[498]: {"L":"INFO","T":"2026-08-18T10:56:45.097Z","M":"Service started","_trace_id":"ERkIWnrdQiqUaDTAaBRjBA"}

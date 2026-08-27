@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:23:10 UTC; 11min ago
+    Process: 604 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 698 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 728 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 34.2M (peak: 39.2M)
+        CPU: 5.951s
+     CGroup: /system.slice/docker-fbd50be62ef8809d6e93c288dffbbd1077867e0e3f7fe69f97f12b29cb90c420.scope/system.slice/globular-repository.service
+             └─728 /usr/lib/globular/bin/repository_server
+
+Aug 22 19:25:10 node-1 repository_server[728]: 2026/08/22 19:25:10 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 22 19:26:00 node-1 repository_server[728]: 2026/08/22 19:26:00 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 22 19:26:59 node-1 repository_server[728]: 2026/08/22 19:26:59 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 22 19:28:15 node-1 repository_server[728]: time=2026-08-22T19:28:15.356Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 22 19:28:15 node-1 repository_server[728]: 2026/08/22 19:28:15 INFO acc: warmup complete baseline_rtt_ms=20 samples=401 elapsed=5m0s
+Aug 22 19:30:08 node-1 repository_server[728]: 2026/08/22 19:30:08 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=294 baseline_ms=20 window=862 new_window=775
+Aug 22 19:31:59 node-1 repository_server[728]: 2026/08/22 19:31:59 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 22 19:33:07 node-1 repository_server[728]: 2026/08/22 19:33:07 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=208 baseline_ms=20 window=1564 new_window=1407
+Aug 22 19:33:15 node-1 repository_server[728]: time=2026-08-22T19:33:15.357Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 22 19:34:04 node-1 repository_server[728]: 2026/08/22 19:34:04 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=44 baseline_ms=20 window=1624 new_window=1461

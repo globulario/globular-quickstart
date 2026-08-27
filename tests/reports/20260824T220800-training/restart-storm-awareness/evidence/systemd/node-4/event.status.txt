@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 22:09:00 UTC; 14s ago
+    Process: 52 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 70 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 91 (event_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 22.9M (peak: 24.6M)
+        CPU: 436ms
+     CGroup: /system.slice/docker-4e5f3a7def83b5e1b3e342d571c7017d42767f478e620f8032b0293ef3e519bc.scope/system.slice/globular-event.service
+             └─91 /usr/lib/globular/bin/event_server
+
+Aug 24 22:09:01 node-4 event_server[91]: time=2026-08-24T22:09:01.151Z level=INFO msg="scylla event bus connected" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=globular_events
+Aug 24 22:09:01 node-4 event_server[91]: time=2026-08-24T22:09:01.153Z level=INFO msg="event loop started" service=event.EventService id=ae220301-9352-393b-be03-90707f486149
+Aug 24 22:09:01 node-4 event_server[91]: 2026/08/24 22:09:01 INFO metrics listening service=event.EventService addr=[::]:10051
+Aug 24 22:09:02 node-4 event_server[91]: 2026/08/24 22:09:02 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 24 22:09:02 node-4 event_server[91]: time=2026-08-24T22:09:02.366Z level=INFO msg="Subscribe: ok" channel=index_file_event uuid=8097cebb-6038-4a61-a527-6663edc580a9
+Aug 24 22:09:02 node-4 event_server[91]: time=2026-08-24T22:09:02.366Z level=INFO msg=subscribed channel=index_file_event uuid=8097cebb-6038-4a61-a527-6663edc580a9 subscribers=1
+Aug 24 22:09:02 node-4 event_server[91]: time=2026-08-24T22:09:02.369Z level=INFO msg="OnEvent: registered" uuid=8097cebb-6038-4a61-a527-6663edc580a9
+Aug 24 22:09:02 node-4 event_server[91]: time=2026-08-24T22:09:02.369Z level=INFO msg="stream registered" uuid=8097cebb-6038-4a61-a527-6663edc580a9
+Aug 24 22:09:02 node-4 event_server[91]: time=2026-08-24T22:09:02.376Z level=INFO msg="Subscribe: ok" channel=create_account_evt uuid=8097cebb-6038-4a61-a527-6663edc580a9
+Aug 24 22:09:02 node-4 event_server[91]: time=2026-08-24T22:09:02.376Z level=INFO msg=subscribed channel=create_account_evt uuid=8097cebb-6038-4a61-a527-6663edc580a9 subscribers=1

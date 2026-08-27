@@ -1,0 +1,172 @@
+version: 1
+name: full-blackout-thundering-herd
+description: |
+  When every node starts at once from identical conditions, exactly one
+  authority must emerge.
+
+  THE FAULT. Stop all five nodes, then start all five simultaneously — one
+  docker invocation, not a sequence.
+
+  WHY SIMULTANEITY IS THE POINT. full-cluster-blackout already stops all three
+  etcd nodes and checks the cluster comes back. But a staggered restart lets one
+  node establish leadership before the others finish booting, which is the easy
+  case and the one that usually happens in practice. Starting together removes
+  that accident: five controllers race from the same starting line, every one of
+  them with a valid local view, none of them with any reason to defer.
+
+  That is when election races, duplicate join requests, duplicate workflow
+  dispatch and registration corruption become reachable. Each node has a
+  complete local state directory and no evidence that anyone else is also
+  starting.
+
+  WHAT MUST HOLD. One leader address, not several. Every node registered exactly
+  once. No duplicate or ambiguous artifacts from concurrent publish or
+  registration. No drift storm from several controllers each deciding the cluster
+  needs converging. And the cluster genuinely healthy afterwards rather than
+  merely responsive.
+
+  This is the most destructive scenario in the suite: it stops the entire
+  cluster. It is also the closest thing to a real datacentre power event, which
+  is exactly why staggering it would be testing the wrong thing.
+
+suite: authority
+tags:
+  - blackout
+  - election-race
+  - thundering-herd
+  - destructive
+  - authority
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+      nodes_gte: 5
+
+  # Recorded so "one leader afterwards" is a comparison and not an assumption.
+  - type: probe
+    id: leadership_established_before
+    probe: controller.leadership
+    expect:
+      has_leader: true
+      claimants_gte: 2
+
+baseline:
+  - type: probe
+    id: nodes_before
+    probe: cluster.nodes
+
+  - type: probe
+    id: desired_state_before
+    probe: cluster.desired_state
+
+steps:
+  - type: action
+    id: blackout_every_node
+    action: chaos.stop_all_nodes
+
+  - type: action
+    id: hold_the_blackout
+    action: wait
+    params:
+      seconds: 45
+      reason: "every lease must expire so no node can resume believing it still holds authority"
+
+  # One invocation: all five containers start together.
+  - type: action
+    id: power_on_everything_at_once
+    action: chaos.start_all_nodes
+
+  # A full cluster cold-start is slower than any single-node recovery: etcd must
+  # re-form, leases must be taken, services must restart and re-register.
+  - type: action
+    id: allow_the_herd_to_settle
+    action: wait
+    params:
+      seconds: 420
+      reason: "etcd re-forms, one controller wins the lease, services restart and re-register"
+
+assertions:
+  # ── Exactly one authority emerged ─────────────────────────────────────────
+  - type: probe
+    id: exactly_one_leader
+    probe: controller.leadership
+    expect:
+      has_leader: true
+      claimants_gte: 2
+
+  # ── Every node came back, once ─────────────────────────────────────────────
+  # A node registered twice, or a phantom sixth entry, is what registration
+  # corruption looks like from outside.
+  - type: probe
+    id: all_five_nodes_registered
+    probe: cluster.nodes
+    expect:
+      count_gte: 5
+
+  - type: probe
+    id: cluster_healthy_after_herd
+    probe: cluster.health
+    expect:
+      status: healthy
+      nodes_gte: 5
+
+  # ── No duplicate artifacts from concurrent startup ────────────────────────
+  # Several controllers publishing or resolving at once is exactly how one
+  # version acquires two build_ids.
+  - type: probe
+    id: no_duplicate_or_ambiguous_artifacts
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+      conflict: 0
+      missing_blob: 0
+
+  # ── etcd survived being re-formed from scratch ────────────────────────────
+  - type: probe
+    id: etcd_quorum_intact
+    probe: cluster.etcd_members
+    expect:
+      unhealthy: 0
+
+  - type: probe
+    id: writes_accepted_again
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: no_etcd_alarms
+    probe: etcd.backend_growth
+    expect:
+      alarms: 0
+
+  # ── No drift storm from several controllers each deciding to converge ─────
+  - type: probe
+    id: reconcile_settled
+    probe: cluster.reconcile_clean
+    params:
+      since: "4 min ago"
+    expect:
+      clean: true
+
+  - type: probe
+    id: liveness_current_everywhere
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+      nodes_gte: 5
+
+cleanup:
+  # Idempotent guarantee that nothing is left powered off.
+  - type: action
+    id: ensure_all_nodes_running
+    action: chaos.start_all_nodes

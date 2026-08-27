@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:22:19 UTC; 1min 9s ago
+    Process: 134 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 158 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 191 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 28.7M (peak: 932.7M)
+        CPU: 15.009s
+     CGroup: /system.slice/docker-d1f5b8be4d5e8a538660e463859f4b15e96ad466285c4e0d1073a4ae4c36e0a3.scope/system.slice/globular-node-agent.service
+             └─191 /usr/lib/globular/bin/node_agent_server
+
+Aug 19 03:23:21 node-5 node_agent_server[191]: 2026/08/19 03:23:21 nodeagent: list installed packages kind=INFRASTRUCTURE: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:23:21 node-5 node_agent_server[191]: 2026/08/19 03:23:21 nodeagent: list installed packages kind=APPLICATION: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:23:21 node-5 node_agent_server[191]: 2026/08/19 03:23:21 nodeagent: list installed packages kind=SERVICE: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:23:21 node-5 node_agent_server[191]: 2026/08/19 03:23:21 nodeagent: list installed packages kind=COMMAND: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:23:21 node-5 node_agent_server[191]: 2026/08/19 03:23:21 nodeagent: reporting 35 installed services (hash=3084bc55937ad2cb80dfc479f2454b57a504761f030fe83f5d8ff0cb19d5b032, sample=[gateway etcdctl mc conversation etcd])
+Aug 19 03:23:21 node-5 node_agent_server[191]: 2026/08/19 03:23:21 node heartbeat failed (state=degraded): TLS probe to 10.10.0.11:443 (ServerName=10.10.0.11): dial tcp 10.10.0.11:443: connect: connection refused
+Aug 19 03:23:25 node-5 node_agent_server[191]: 2026/08/19 03:23:25 behavioral observation: infra_probe skipped component=scylladb node=35ac3821-6b90-52eb-a800-41130471770b: behavioral-memory endpoint not resolvable
+Aug 19 03:23:25 node-5 node_agent_server[191]: 2026/08/19 03:23:25 behavioral observation: infra_probe skipped component=etcd node=35ac3821-6b90-52eb-a800-41130471770b: behavioral-memory endpoint not resolvable
+Aug 19 03:23:25 node-5 node_agent_server[191]: 2026/08/19 03:23:25 behavioral observation: infra_probe skipped component=minio node=35ac3821-6b90-52eb-a800-41130471770b: behavioral-memory endpoint not resolvable
+Aug 19 03:23:26 node-5 node_agent_server[191]: 2026/08/19 03:23:26 behavioral observation: infra_probe skipped component=envoy node=35ac3821-6b90-52eb-a800-41130471770b: behavioral-memory endpoint not resolvable

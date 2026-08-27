@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "scenario": "signing-keys-distribution",
+  "suite": "security",
+  "start_time": "2026-08-10T23:38:43.983293Z",
+  "end_time": "2026-08-10T23:38:47.068409Z",
+  "passed": true,
+  "item_count": 9,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T23:38:44.920245Z"
+    },
+    {
+      "id": "key_count_baseline_node1",
+      "section": "baseline",
+      "probe": "pki.signing_keys",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {},
+      "result": {
+        "present": true,
+        "key_count": 16,
+        "node_key_present": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T23:38:45.126769Z"
+    },
+    {
+      "id": "signing_keys_node1",
+      "section": "assertions",
+      "probe": "pki.signing_keys",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {
+        "present": true,
+        "node_key_present": true,
+        "key_count_gte": 6
+      },
+      "result": {
+        "present": true,
+        "key_count": 16,
+        "node_key_present": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T23:38:45.322205Z"
+    },
+    {
+      "id": "signing_keys_node2",
+      "section": "assertions",
+      "probe": "pki.signing_keys",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "present": true,
+        "node_key_present": true,
+        "key_count_gte": 6
+      },
+      "result": {
+        "present": true,
+        "key_count": 12,
+        "node_key_present": true,
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T23:38:45.524096Z"
+    },
+    {
+      "id": "signing_keys_node3",
+      "section": "assertions",
+      "probe": "pki.signing_keys",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "present": true,
+        "node_key_present": true,
+        "key_count_gte": 6
+      },
+      "result": {
+        "present": true,
+        "key_count": 12,
+        "node_key_present": true,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T23:38:45.739754Z"
+    },
+    {
+      "id": "signing_keys_node4",
+      "section": "assertions",
+      "probe": "pki.signing_keys",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {
+        "present": true,
+        "key_count_gte": 2
+      },
+      "result": {
+        "present": true,
+        "key_count": 12,
+        "node_key_present": true,
+        "node": "node-4"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T23:38:45.947879Z"
+    },
+    {
+      "id": "signing_keys_node5",
+      "section": "assertions",
+      "probe": "pki.signing_keys",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "present": true,
+        "key_count_gte": 2
+      },
+      "result": {
+        "present": true,
+        "key_count": 12,
+        "node_key_present": true,
+        "node": "node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T23:38:46.153229Z"
+    },
+    {
+      "id": "final_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T23:38:46.436611Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T23:38:47.068290Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

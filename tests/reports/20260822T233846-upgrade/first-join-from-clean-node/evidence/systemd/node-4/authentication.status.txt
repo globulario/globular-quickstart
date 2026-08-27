@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 23:41:54 UTC; 1h 9min ago
+    Process: 2286 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 2290 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2293 (authentication_)
+      Tasks: 18 (limit: 8641)
+     Memory: 22.1M (peak: 23.3M)
+        CPU: 2.629s
+     CGroup: /system.slice/docker-b657a5328fbe1e54da35cfdf75d0f2babfdd44e96f92ec0a5db78fe944826821.scope/system.slice/globular-authentication.service
+             └─2293 /usr/lib/globular/bin/authentication_server
+
+Aug 22 23:41:55 node-4 authentication_server[2293]: time=2026-08-22T23:41:55.068Z level=INFO msg=setKey:generate mac=02:42:0a:0a:00:0e
+Aug 22 23:41:55 node-4 authentication_server[2293]: time=2026-08-22T23:41:55.155Z level=INFO msg="metrics: proxy port conflict, using free port" service=authentication.AuthenticationService wanted=10001 actual=39303
+Aug 22 23:41:55 node-4 authentication_server[2293]: time=2026-08-22T23:41:55.157Z level=INFO msg="metrics listening" service=authentication.AuthenticationService addr=[::]:39303
+Aug 22 23:42:04 node-4 authentication_server[2293]: {"level":"warn","ts":"2026-08-22T23:42:04.91079Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004094a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 22 23:42:05 node-4 authentication_server[2293]: {"level":"warn","ts":"2026-08-22T23:42:05.308087Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004094a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 22 23:42:05 node-4 authentication_server[2293]: time=2026-08-22T23:42:05.444Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-4.globular.internal:443
+Aug 22 23:42:05 node-4 authentication_server[2293]: time=2026-08-22T23:42:05.445Z level=INFO msg="mesh: gRPC connection established" target=node-4.globular.internal:443
+Aug 22 23:44:34 node-4 authentication_server[2293]: {"level":"warn","ts":"2026-08-22T23:44:34.976086Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000ac23c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 22 23:44:34 node-4 authentication_server[2293]: {"level":"info","ts":"2026-08-22T23:44:34.976198Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 22 23:51:59 node-4 authentication_server[2293]: time=2026-08-22T23:51:59.591Z level=INFO msg="acc: warmup complete" baseline_rtt_ms=20 samples=210 elapsed=10m0s

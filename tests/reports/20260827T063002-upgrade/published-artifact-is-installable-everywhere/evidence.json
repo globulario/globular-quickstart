@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "scenario": "published-artifact-is-installable-everywhere",
+  "suite": "upgrade",
+  "start_time": "2026-08-27T07:19:45.459591Z",
+  "end_time": "2026-08-27T07:19:50.743665Z",
+  "passed": true,
+  "item_count": 8,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T07:19:47.050186Z"
+    },
+    {
+      "id": "all_five_nodes_visible",
+      "section": "preconditions",
+      "probe": "repository.blob_reachable_all_nodes",
+      "params": {
+        "name": "cluster-controller"
+      },
+      "expect": {
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 5,
+        "with_blob": 5,
+        "missing": 0,
+        "missing_nodes": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T07:19:47.766907Z"
+    },
+    {
+      "id": "identity_findings_at_start",
+      "section": "baseline",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T07:19:48.181718Z"
+    },
+    {
+      "id": "blob_present_on_every_node",
+      "section": "assertions",
+      "probe": "repository.blob_reachable_all_nodes",
+      "params": {
+        "name": "cluster-controller"
+      },
+      "expect": {
+        "missing": 0,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 5,
+        "with_blob": 5,
+        "missing": 0,
+        "missing_nodes": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T07:19:48.875119Z"
+    },
+    {
+      "id": "no_missing_blob_findings",
+      "section": "assertions",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {
+        "missing_blob": 0
+      },
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T07:19:49.294212Z"
+    },
+    {
+      "id": "no_ambiguous_resolution",
+      "section": "assertions",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {
+        "ambiguous": 0
+      },
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T07:19:49.706585Z"
+    },
+    {
+      "id": "no_build_id_checksum_conflicts",
+      "section": "assertions",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {
+        "conflict": 0
+      },
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T07:19:50.138071Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T07:19:50.743540Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

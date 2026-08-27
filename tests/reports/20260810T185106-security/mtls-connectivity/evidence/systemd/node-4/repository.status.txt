@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 19:04:33 UTC; 4min 36s ago
+    Process: 140 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 172 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 202 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 52.9M (peak: 54.6M)
+        CPU: 5.547s
+     CGroup: /system.slice/docker-c614908eae77dbf4f1bb2e5b7eeb70368e8053dbd05376ba648db6afd6e2a352.scope/system.slice/globular-repository.service
+             └─202 /usr/lib/globular/bin/repository_server
+
+Aug 10 19:04:38 node-4 repository_server[202]: 2026/08/10 19:04:38 INFO metrics listening service=repository.PackageRepository addr=[::]:10001
+Aug 10 19:04:41 node-4 repository_server[202]: 2026/08/10 19:04:41 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 10 19:05:12 node-4 repository_server[202]: 2026/08/10 19:05:12 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 10 19:05:23 node-4 repository_server[202]: 2026/08/10 19:05:23 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 10 19:05:44 node-4 repository_server[202]: 2026/08/10 19:05:44 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 10 19:05:44 node-4 repository_server[202]: 2026/08/10 19:05:44 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 10 19:07:44 node-4 repository_server[202]: {"level":"warn","ts":"2026-08-10T19:07:44.698737Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002b0960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 10 19:07:44 node-4 repository_server[202]: {"level":"info","ts":"2026-08-10T19:07:44.698833Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 10 19:08:38 node-4 repository_server[202]: {"level":"warn","ts":"2026-08-10T19:08:38.53994Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001ed680/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 10 19:08:38 node-4 repository_server[202]: {"level":"info","ts":"2026-08-10T19:08:38.540025Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

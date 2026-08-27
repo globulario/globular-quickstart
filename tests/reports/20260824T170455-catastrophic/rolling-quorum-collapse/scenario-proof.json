@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-24T17:07:48.328377Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/catastrophic/rolling-quorum-collapse.yaml",
+  "scenario": "rolling-quorum-collapse",
+  "suite": "catastrophic",
+  "source_revision": "0ebfb24869929a4efe528be32759f80589ff0ba5",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Simulate a rolling quorum collapse: first remove one etcd member (node-2),\nobserve that the remaining 2/3 quorum is healthy, then while node-2 is still\ndown, remove a second member (node-3). The cluster now has only 1/3 members \u2014\nbelow quorum \u2014 and transitions from \"degraded but functional\" to\n\"completely unable to accept writes.\"\n\nThis is a realistic \"bad maintenance window\" scenario: an operator takes\nnode-2 offline for maintenance, does not wait for it to come back, then\nnode-3 fails unexpectedly. The cluster collapses through two distinct phases.\n\nPhase 1 (1 member down \u2014 DEGRADED, still functional):\n  - 2/3 etcd members alive \u2192 quorum maintained\n  - Writes accepted\n  - Cluster reports degraded (one member missing)\n  - This state is RECOVERABLE automatically (restart node-2)\n\nPhase 2 (2 members down \u2014 CATASTROPHIC, read-only):\n  - 1/3 etcd members alive \u2192 quorum lost\n  - Writes REJECTED by etcd\n  - Cluster is read-only: services can still serve cached reads but cannot\n    update state, register, or write heartbeats\n  - This state CANNOT self-recover \u2014 operator must restart 1+ node\n\nKey measurement: Does the cluster correctly detect the quorum-loss transition\nand emit the emergency alert BEFORE losing write access entirely? If the\ncontroller is on node-1 (the probe node, still running) it may write the\nalert key before quorum is lost. If the alert IS written, that's the\ncluster protecting its integrity: \"I'm about to lose write access, alerting now.\"\n\nRecovery in this scenario:\n  1. Restore node-2 first \u2192 2/3 quorum re-established, writes resume\n  2. Restore node-3 \u2192 full 3/3 health\n  3. Verify data integrity (Raft log was preserved on node-1)\n\nIntegrity verdict: PROTECTED \u2014 Raft durability on node-1 guarantees no data\nloss. The cluster degrades gracefully through two observable phases.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-24T17:09:32.089075Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

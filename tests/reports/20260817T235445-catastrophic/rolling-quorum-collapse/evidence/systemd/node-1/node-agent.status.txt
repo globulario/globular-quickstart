@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:57:29 UTC; 1min 32s ago
+    Process: 211 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 237 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 257 (node_agent_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 29.3M (peak: 35.5M)
+        CPU: 27.034s
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-node-agent.service
+             └─257 /usr/lib/globular/bin/node_agent_server
+
+Aug 17 23:58:36 node-1 node_agent_server[257]: 2026/08/17 23:58:36 INFO mesh: Envoy available, routing through mesh target=node-1.globular.internal:443
+Aug 17 23:58:36 node-1 node_agent_server[257]: 2026/08/17 23:58:36 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 17 23:58:37 node-1 node_agent_server[257]: 2026/08/17 23:58:37 event-handler: subscribed to operation.*
+Aug 17 23:58:52 node-1 node_agent_server[257]: 2026/08/17 23:58:52 join: v1 legacy path: controller unreachable: TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: i/o timeout — retry in 1m20s
+Aug 17 23:59:01 node-1 node_agent_server[257]: 2026/08/17 23:59:01 ingress: keepalived disabled on node c777633e-6d07-5713-9c4c-deb3317eee25
+Aug 17 23:59:01 node-1 node_agent_server[257]: 2026/08/17 23:59:01 event-publisher: service.exited unit=globular-scylla-manager.service (active/running → activating/auto-restart)
+Aug 17 23:59:02 node-1 node_agent_server[257]: 2026/08/17 23:59:02 behavioral observation: infra_probe skipped component=scylladb node=c777633e-6d07-5713-9c4c-deb3317eee25: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 17 23:59:02 node-1 node_agent_server[257]: 2026/08/17 23:59:02 behavioral observation: infra_probe skipped component=etcd node=c777633e-6d07-5713-9c4c-deb3317eee25: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 17 23:59:02 node-1 node_agent_server[257]: 2026/08/17 23:59:02 behavioral observation: infra_probe skipped component=minio node=c777633e-6d07-5713-9c4c-deb3317eee25: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused"
+Aug 17 23:59:02 node-1 node_agent_server[257]: 2026/08/17 23:59:02 behavioral observation: infra_probe skipped component=envoy node=c777633e-6d07-5713-9c4c-deb3317eee25: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"

@@ -1,0 +1,361 @@
+{
+  "schema_version": 1,
+  "scenario": "control-plane-transient-asymmetric-partition",
+  "suite": "resilience",
+  "start_time": "2026-08-24T22:46:32.574398Z",
+  "end_time": "2026-08-24T22:47:20.494089Z",
+  "passed": true,
+  "item_count": 19,
+  "items": [
+    {
+      "id": "cluster_healthy_before",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:46:33.900516Z"
+    },
+    {
+      "id": "full_etcd_quorum_before",
+      "section": "preconditions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "total": 3,
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:46:34.224542Z"
+    },
+    {
+      "id": "writes_work_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 274
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:46:34.533316Z"
+    },
+    {
+      "id": "node3_running_before",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:46:34.565481Z"
+    },
+    {
+      "id": "node3_not_fenced_before",
+      "section": "preconditions",
+      "probe": "node.partition_fenced",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "fenced": false
+      },
+      "result": {
+        "fenced": false,
+        "fenced_since": "",
+        "node_id": "a166b992-b66d-53cb-b7c7-61dfa4dd5a36",
+        "hostname": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:46:34.696315Z"
+    },
+    {
+      "id": "baseline_etcd_members",
+      "section": "baseline",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:46:35.034405Z"
+    },
+    {
+      "id": "baseline_cluster_health",
+      "section": "baseline",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {},
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:46:35.321547Z"
+    },
+    {
+      "id": "block_node3_outbound",
+      "section": "steps",
+      "probe": "chaos.block_network",
+      "params": {
+        "node": "node-3",
+        "direction": "out"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.block_network",
+        "container": "globular-node-3",
+        "direction": "out",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:46:35.398432Z"
+    },
+    {
+      "id": "wait_until_node3_is_unhealthy_peer",
+      "section": "steps",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_gte": 2,
+        "unhealthy_gte": 1
+      },
+      "result": {
+        "total": 3,
+        "healthy": 2,
+        "unhealthy": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:46:40.700605Z"
+    },
+    {
+      "id": "prove_majority_still_accepts_writes",
+      "section": "steps",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 289
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:46:41.025268Z"
+    },
+    {
+      "id": "majority_quorum_remains_available",
+      "section": "assertions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "total": 3,
+        "healthy_gte": 2,
+        "unhealthy_gte": 1
+      },
+      "result": {
+        "total": 3,
+        "healthy": 2,
+        "unhealthy": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:47:16.312295Z"
+    },
+    {
+      "id": "writes_still_succeed",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 259
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:47:16.608199Z"
+    },
+    {
+      "id": "node3_container_never_stopped",
+      "section": "assertions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:47:16.637338Z"
+    },
+    {
+      "id": "transient_partition_not_fenced",
+      "section": "assertions",
+      "probe": "node.partition_fenced",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "fenced": false
+      },
+      "result": {
+        "fenced": false,
+        "fenced_since": "",
+        "node_id": "a166b992-b66d-53cb-b7c7-61dfa4dd5a36",
+        "hostname": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:47:16.770755Z"
+    },
+    {
+      "id": "unblock_node3_network",
+      "section": "cleanup",
+      "probe": "chaos.unblock_network",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.unblock_network",
+        "container": "globular-node-3",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:47:16.864270Z"
+    },
+    {
+      "id": "wait_for_full_etcd_recovery",
+      "section": "cleanup",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:47:19.019186Z"
+    },
+    {
+      "id": "final_write_test",
+      "section": "cleanup",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 306
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:47:19.361113Z"
+    },
+    {
+      "id": "final_cluster_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:47:19.694086Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T22:47:20.493858Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

@@ -1,0 +1,19 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:05:56 UTC; 11s ago
+    Process: 2178 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 2181 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2185 (repository_serv)
+      Tasks: 14 (limit: 8641)
+     Memory: 18.7M (peak: 20.2M)
+        CPU: 121ms
+     CGroup: /system.slice/docker-c0adeb54c3e856286dee91181b663fe0332b2e8184e7e300172c1db2276e7b0b.scope/system.slice/globular-repository.service
+             └─2185 /usr/lib/globular/bin/repository_server
+
+Jul 31 20:05:56 node-4 systemd[1]: globular-repository.service: Scheduled restart job, restart counter is at 7.
+Jul 31 20:05:56 node-4 systemd[1]: Starting globular-repository.service - Globular repository...
+Jul 31 20:05:56 node-4 systemd[1]: Started globular-repository.service - Globular repository.
+Jul 31 20:05:56 node-4 repository_server[2185]: 2026/07/31 20:05:56 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Jul 31 20:05:56 node-4 repository_server[2185]: 2026/07/31 20:05:56 INFO security: loaded cluster roles from external policy file roles=22
+Jul 31 20:05:56 node-4 repository_server[2185]: PortAllocator range: 10000 - 20000
+Jul 31 20:05:56 node-4 repository_server[2185]: 2026/07/31 20:05:56 INFO InitGrpcServer: gRPC server initialized service=repository.PackageRepository tls=true port=10003

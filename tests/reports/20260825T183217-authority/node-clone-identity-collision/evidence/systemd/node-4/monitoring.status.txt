@@ -1,0 +1,21 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 19:05:15 UTC; 27min ago
+    Process: 1068 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 1086 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1111 (monitoring_serv)
+      Tasks: 14 (limit: 8641)
+     Memory: 32.1M (peak: 39.4M)
+        CPU: 1.078s
+     CGroup: /system.slice/docker-493cddaa5a66d4b71f3ae34df7d1328b538798dc85b5595b7b9921056f921f89.scope/system.slice/globular-monitoring.service
+             └─1111 /usr/lib/globular/bin/monitoring_server
+
+Aug 25 19:05:15 node-4 systemd[1]: globular-monitoring.service: Scheduled restart job, restart counter is at 4.
+Aug 25 19:05:15 node-4 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 25 19:05:15 node-4 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 25 19:05:15 node-4 monitoring_server[1111]: PortAllocator range: 10000 - 20000
+Aug 25 19:05:16 node-4 monitoring_server[1111]: 2026/08/25 19:05:16 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10009
+Aug 25 19:05:17 node-4 monitoring_server[1111]: time=2026-08-25T19:05:17.251Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10009 proxy=10020 protocol=grpc domain=globular.internal listen_ms=1156
+Aug 25 19:05:17 node-4 monitoring_server[1111]: 2026/08/25 19:05:17 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 25 19:05:28 node-4 monitoring_server[1111]: 2026/08/25 19:05:28 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 25 19:05:28 node-4 monitoring_server[1111]: 2026/08/25 19:05:28 INFO mesh: gRPC connection established target=node-4.globular.internal:443

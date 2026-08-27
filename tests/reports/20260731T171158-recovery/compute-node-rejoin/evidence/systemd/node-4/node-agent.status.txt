@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 17:11:47 UTC; 18s ago
+    Process: 363 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 369 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 373 (node_agent_serv)
+      Tasks: 19 (limit: 8641)
+     Memory: 21.4M
+        CPU: 1.447s
+     CGroup: /system.slice/docker-09f6e3fd0105ea36b64cc1d5223e57d727633cf4b1bc00f5bfd34f72d0eec23a.scope/system.slice/globular-node-agent.service
+             └─373 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 17:11:47 node-4 node_agent_server[373]: 2026/07/31 17:11:47 nodeagent: self-hosted runtime proof skipped repository: manifest_missing
+Jul 31 17:11:47 node-4 node_agent_server[373]: 2026/07/31 17:11:47 nodeagent: self-hosted runtime proof skipped node-agent: manifest_missing
+Jul 31 17:11:47 node-4 node_agent_server[373]: 2026/07/31 17:11:47 nodeagent: sync repo artifacts: repository service not registered in etcd (service discovery returned empty address)
+Jul 31 17:11:47 node-4 node_agent_server[373]: 2026/07/31 17:11:47 minio-topology-gate: node 1a0bed89-043a-57f9-94ce-1ec9cb2bd482 (ip=10.10.0.14) not admitted — node not listed in approved objectstore topology (gen=0)
+Jul 31 17:11:47 node-4 node_agent_server[373]: 2026/07/31 17:11:47 nodeagent: scylla user not found — cannot set owner on /var/lib/globular/scylla-manager-agent/scylla-manager-agent.yaml: user: unknown user scylla
+Jul 31 17:11:48 node-4 node_agent_server[373]: 2026/07/31 17:11:48 nodeagent: reporting 4 installed services (hash=7ac4d8b6f9c93509d1cb1bb604f86c85b0c4e1bd53a952f547b6d73fd163d74f, sample=[dns event rbac resource])
+Jul 31 17:12:02 node-4 node_agent_server[373]: 2026/07/31 17:12:02 event-publisher: connected to event service
+Jul 31 17:12:02 node-4 node_agent_server[373]: 2026/07/31 17:12:02 event-handler: connected to event service
+Jul 31 17:12:02 node-4 node_agent_server[373]: 2026/07/31 17:12:02 event-handler: subscribed to operation.*
+Jul 31 17:12:02 node-4 node_agent_server[373]: 2026/07/31 17:12:02 event-publisher: service.exited unit=globular-dns.service (/ → activating/auto-restart)

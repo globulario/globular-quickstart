@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:09:08 UTC; 7min ago
+    Process: 32548 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 32552 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 32555 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 32561 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 26.4M (peak: 30.5M)
+        CPU: 5.713s
+     CGroup: /system.slice/docker-5d15dbcb588f4faf87874f91ec9ae53b5875b1b57ddf375544f5d8f24c40a261.scope/system.slice/globular-workflow.service
+             └─32561 /usr/lib/globular/bin/workflow_server
+
+Jul 31 21:16:26 node-1 workflow_server[32561]: time=2026-07-31T21:16:26.075Z level=WARN msg="executor: refusing dispatch — correlation ABANDONED after max defers" workflow=release.apply.package correlation_id=InfrastructureRelease/core@globular.io/minio defer_count=5 max_defers=5 last_step_id=verify_runtime last_reason="actor node-agent action node.verify_package_runtime rejected: controller actor=node-agent action=node.verify_package_runtime failed: verify runtime minio: health check minio on node c8a09d9e-3813-5357-ab58-93aa410f27fb: status=inactive (want active)" last_blocker_tags="[deps.installed:c8a09d9e-3813-5357-ab58-93aa410f27fb:minio runtime.active:c8a09d9e-3813-5357-ab58-93aa410f27fb:minio]" abandoned_at=2026-07-31T21:14:13.458Z operator_action="globular workflow defer-state clear --correlation-id InfrastructureRelease/core@globular.io/minio"
+Jul 31 21:16:26 node-1 workflow_server[32561]: 2026/07/31 21:16:26 workflow: loaded "release.apply.package" from etcd (11911 bytes)
+Jul 31 21:16:26 node-1 workflow_server[32561]: time=2026-07-31T21:16:26.202Z level=WARN msg="executor: refusing dispatch — correlation ABANDONED after max defers" workflow=release.apply.package correlation_id=InfrastructureRelease/core@globular.io/minio defer_count=5 max_defers=5 last_step_id=verify_runtime last_reason="actor node-agent action node.verify_package_runtime rejected: controller actor=node-agent action=node.verify_package_runtime failed: verify runtime minio: health check minio on node c8a09d9e-3813-5357-ab58-93aa410f27fb: status=inactive (want active)" last_blocker_tags="[deps.installed:c8a09d9e-3813-5357-ab58-93aa410f27fb:minio runtime.active:c8a09d9e-3813-5357-ab58-93aa410f27fb:minio]" abandoned_at=2026-07-31T21:14:13.458Z operator_action="globular workflow defer-state clear --correlation-id InfrastructureRelease/core@globular.io/minio"
+Jul 31 21:16:39 node-1 workflow_server[32561]: time=2026-07-31T21:16:39.182Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+Jul 31 21:16:44 node-1 workflow_server[32561]: 2026/07/31 21:16:44 workflow: loaded "cluster.reconcile" from etcd (5880 bytes)
+Jul 31 21:16:44 node-1 workflow_server[32561]: time=2026-07-31T21:16:44.694Z level=INFO msg="workflow run started" run_id=reconcile:1785532604507 component="" node="" trigger=TRIGGER_REASON_REPAIR
+Jul 31 21:16:44 node-1 workflow_server[32561]: time=2026-07-31T21:16:44.700Z level=INFO msg="executor: starting workflow" workflow=cluster.reconcile run_id=reconcile:1785532604507 actors="[cluster-controller node-agent installer repository workflow-service]"
+Jul 31 21:16:44 node-1 workflow_server[32561]: time=2026-07-31T21:16:44.700Z level=INFO msg="executor: engine.Execute starting" run_id=reconcile:1785532604507 steps=7
+Jul 31 21:16:44 node-1 workflow_server[32561]: 2026/07/31 21:16:44 workflow: step advance_infra_joins starting (actor=cluster-controller action=controller.reconcile.advance_infra_joins)
+Jul 31 21:16:44 node-1 workflow_server[32561]: 2026/07/31 21:16:44 INFO executor: dispatching action actor=cluster-controller action=controller.reconcile.advance_infra_joins run_id=reconcile:1785532604507 step_id=advance_infra_joins

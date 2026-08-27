@@ -1,0 +1,249 @@
+{
+  "schema_version": 1,
+  "scenario": "rollback-guard-refuses-silent-regression",
+  "suite": "upgrade",
+  "start_time": "2026-08-24T01:28:09.096215Z",
+  "end_time": "2026-08-24T01:29:00.715070Z",
+  "passed": false,
+  "item_count": 11,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 1,
+        "nodes": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T01:28:09.680878Z"
+    },
+    {
+      "id": "releases_are_clean",
+      "section": "preconditions",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {
+        "failed": 0
+      },
+      "result": {
+        "total": 0,
+        "succeeded": 0,
+        "failed": 0,
+        "pending": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T01:28:09.770790Z"
+    },
+    {
+      "id": "convergence_before",
+      "section": "baseline",
+      "probe": "cluster.installed_version_convergence",
+      "params": {
+        "package": "node-agent"
+      },
+      "expect": {},
+      "result": {
+        "nodes": 0,
+        "converged": 0,
+        "lagging": 0,
+        "versions": "",
+        "unique": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T01:28:09.887732Z"
+    },
+    {
+      "id": "refuse_backwards_step",
+      "section": "steps",
+      "probe": "ops.set_desired",
+      "params": {
+        "node": "node-1",
+        "name": "node-agent",
+        "version": "1.2.300",
+        "expect": "refused"
+      },
+      "expect": {},
+      "result": {
+        "action": "ops.set_desired",
+        "service": "node-agent",
+        "version": "1.2.300",
+        "expect": "refused",
+        "accepted": false,
+        "exit_code": 1,
+        "attempts": 1,
+        "error": "Error: cannot verify node-agent is a SERVICE package (no published version with a resolvable kind); `services desired set` fails closed on an unknown kind per desired.keyed_by_kind_and_name \u2014 publish the package first, then retry | Usage: |   globular services desired set <service> <version> [flags]",
+        "output": "  --output string       Output format (table|json|yaml) (default \"table\")\n      --timeout duration    Request timeout (default 5s)\n      --token string        Authorization token for the control plane"
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T01:28:09.999206Z"
+    },
+    {
+      "id": "override_does_not_bypass_resolvability",
+      "section": "steps",
+      "probe": "ops.set_desired",
+      "params": {
+        "node": "node-1",
+        "name": "node-agent",
+        "version": "1.2.300",
+        "allow_regression": true,
+        "expect": "refused"
+      },
+      "expect": {},
+      "result": {
+        "action": "ops.set_desired",
+        "service": "node-agent",
+        "version": "1.2.300",
+        "expect": "refused",
+        "accepted": false,
+        "exit_code": 1,
+        "attempts": 1,
+        "error": "Error: cannot verify node-agent is a SERVICE package (no published version with a resolvable kind); `services desired set` fails closed on an unknown kind per desired.keyed_by_kind_and_name \u2014 publish the package first, then retry | Usage: |   globular services desired set <service> <version> [flags]",
+        "output": "  --output string       Output format (table|json|yaml) (default \"table\")\n      --timeout duration    Request timeout (default 5s)\n      --token string        Authorization token for the control plane"
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T01:28:10.120451Z"
+    },
+    {
+      "id": "installed_version_unchanged",
+      "section": "assertions",
+      "probe": "cluster.installed_version_convergence",
+      "params": {
+        "package": "node-agent"
+      },
+      "expect": {
+        "unique_lte": 1,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 0,
+        "converged": 0,
+        "lagging": 0,
+        "versions": "",
+        "unique": 0
+      },
+      "passed": false,
+      "timestamp": "2026-08-24T01:28:55.244560Z"
+    },
+    {
+      "id": "no_release_failures_introduced",
+      "section": "assertions",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {
+        "failed": 0
+      },
+      "result": {
+        "total": 0,
+        "succeeded": 0,
+        "failed": 0,
+        "pending": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T01:28:55.322489Z"
+    },
+    {
+      "id": "repository_identity_still_clean",
+      "section": "assertions",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T01:28:55.544384Z"
+    },
+    {
+      "id": "cluster_still_healthy",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 1,
+        "nodes": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T01:28:55.851201Z"
+    },
+    {
+      "id": "liveness_unaffected",
+      "section": "assertions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0
+      },
+      "result": {
+        "nodes": 0,
+        "max_age_s": -1,
+        "stale_nodes": 0,
+        "oldest": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T01:28:56.009621Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1"
+          ],
+          "etcd_healthy_endpoints": 1,
+          "etcd_member_count": "1",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "node-not-running",
+            "node-3": "node-not-running",
+            "node-4": "node-not-running",
+            "node-5": "node-not-running"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1"
+          ],
+          "etcd_healthy_endpoints": 1,
+          "etcd_member_count": "1",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "node-not-running",
+            "node-3": "node-not-running",
+            "node-4": "node-not-running",
+            "node-5": "node-not-running"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-24T01:28:56.291592Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

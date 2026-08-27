@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-26T03:58:47.706875Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/functional/doctor-report-clean.yaml",
+  "scenario": "doctor-report-clean",
+  "suite": "functional",
+  "source_revision": "18e2d1202d390302d87b5d293fa69bb9239f8459",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that cluster-doctor reports no ERROR-severity findings against a\nsettled cluster.\n\nWhy this scenario exists:\n\nOn 2026-08-11 the certification suite scored 34/36 green while\ncluster-doctor simultaneously reported 39 findings, 20 of them ERROR \u2014 a\ncorrupted etcd member on node-2, a poisoned scylladb package digest, and\nnine units wedged in start-pre behind a failed ScyllaDB. Every one of those\ndefects was real, and the scenario suite sailed past all of them, because\nthe suite asserts almost entirely on PRESENCE (is the service registered? is\nthe unit active?) while the doctor asserts on COHERENCE ACROSS LAYERS (does\ninstalled state match the manifest? does runtime match installed?).\n\nA green suite alongside a 20-ERROR doctor report means the suite was not\nmeasuring the thing that was broken. This scenario closes that gap by making\nthe doctor's own verdict a gated assertion instead of something a human has\nto remember to read.\n\nWhat it asserts, and what it deliberately does not:\n\n- ERROR/CRITICAL count MUST be zero. These are coherence violations with an\n  identified owner and a remediation; none should survive a settled cluster.\n- WARN is recorded as evidence but NOT gated. The quickstart runs MinIO in\n  standalone mode across 5 nodes, which is a legitimate standing WARN for\n  this topology (objectstore.standalone_in_cluster). Gating on zero WARN\n  would make the scenario permanently red for a known, accepted condition,\n  and a permanently red test is one people learn to ignore.\n- reduced_harvest MUST be false. When collector sub-fetches fail, the doctor\n  marks its findings \"[reduced-harvest]\" and its verdict is bounded by\n  partial data. A zero-ERROR count harvested from partial data is absence of\n  evidence, not evidence of health \u2014 accepting it would rebuild the exact\n  false-green this scenario exists to prevent\n  (ops.always.doctor.reduced-harvest-honesty).\n- reachable MUST be true. An unreachable doctor is not a clean cluster; it\n  is an unknown one. Without this the probe's zero counts on a dead RPC\n  would read as perfect health.\n\nRun placement: functional, not resilience. The doctor legitimately reports\nERRORs while chaos is in flight (a stopped node IS unconverged), so this\nbelongs in a suite that runs against a settled cluster.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-26T03:59:58.758528Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

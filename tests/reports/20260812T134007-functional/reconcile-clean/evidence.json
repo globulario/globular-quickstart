@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "scenario": "reconcile-clean",
+  "suite": "functional",
+  "start_time": "2026-08-12T13:41:19.491404Z",
+  "end_time": "2026-08-12T13:43:23.221685Z",
+  "passed": true,
+  "item_count": 8,
+  "items": [
+    {
+      "id": "controller_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-08-12T13:41:20.270410Z"
+    },
+    {
+      "id": "cluster_health_context",
+      "section": "baseline",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {},
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-12T13:41:20.571683Z"
+    },
+    {
+      "id": "reconcile_baseline",
+      "section": "baseline",
+      "probe": "cluster.reconcile_clean",
+      "params": {
+        "node": "node-1",
+        "since": "30 min ago"
+      },
+      "expect": {},
+      "result": {
+        "clean": false,
+        "error_count": 6,
+        "kinds": "circuit OPEN;reconcile-workflow: cluster.reconcile FAILED;",
+        "sample": "reconcile-workflow: cluster.reconcile FAILED",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-12T13:41:21.923689Z"
+    },
+    {
+      "id": "reconcile_clean_recent",
+      "section": "assertions",
+      "probe": "cluster.reconcile_clean",
+      "params": {
+        "node": "node-1",
+        "since": "2 min ago"
+      },
+      "expect": {
+        "clean": true,
+        "error_count": 0
+      },
+      "result": {
+        "clean": true,
+        "error_count": 0,
+        "kinds": "",
+        "sample": "",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-12T13:43:22.046512Z"
+    },
+    {
+      "id": "desired_state_present",
+      "section": "assertions",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {
+        "count_gte": 1
+      },
+      "result": {
+        "count": 24,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "dns",
+          "event",
+          "file",
+          "log",
+          "mcp",
+          "media",
+          "monitoring",
+          "node-agent",
+          "persistence",
+          "rbac",
+          "repository",
+          "resource",
+          "search",
+          "title",
+          "torrent",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-12T13:43:22.182938Z"
+    },
+    {
+      "id": "leader_elected",
+      "section": "assertions",
+      "probe": "cluster.leader",
+      "params": {},
+      "expect": {
+        "is_leader": true
+      },
+      "result": {
+        "leader_endpoint": "10.10.0.11:12000",
+        "is_leader": true
+      },
+      "passed": true,
+      "timestamp": "2026-08-12T13:43:22.289667Z"
+    },
+    {
+      "id": "final_reconcile_state",
+      "section": "cleanup",
+      "probe": "cluster.reconcile_clean",
+      "params": {
+        "node": "node-1",
+        "since": "5 min ago"
+      },
+      "expect": {},
+      "result": {
+        "clean": false,
+        "error_count": 3,
+        "kinds": "circuit OPEN;reconcile-workflow: cluster.reconcile FAILED;",
+        "sample": "circuit OPEN",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-12T13:43:22.638892Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-12T13:43:23.221584Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

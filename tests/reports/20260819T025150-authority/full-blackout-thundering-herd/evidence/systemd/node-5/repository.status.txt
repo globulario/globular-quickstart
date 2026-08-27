@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:03 UTC; 26s ago
+    Process: 953 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 974 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 986 (repository_serv)
+      Tasks: 17 (limit: 8641)
+     Memory: 24.5M (peak: 25.2M swap: 68.0K swap peak: 68.0K)
+        CPU: 494ms
+     CGroup: /system.slice/docker-d1f5b8be4d5e8a538660e463859f4b15e96ad466285c4e0d1073a4ae4c36e0a3.scope/system.slice/globular-repository.service
+             └─986 /usr/lib/globular/bin/repository_server
+
+Aug 19 03:23:28 node-5 repository_server[986]: 2026/08/19 03:23:28 INFO publish-reconciler: started interval=1m0s
+Aug 19 03:23:28 node-5 repository_server[986]: time=2026-08-19T03:23:28.150Z level=INFO msg="service ready" service=repository.PackageRepository port=10000 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=20441
+Aug 19 03:23:28 node-5 repository_server[986]: time=2026-08-19T03:23:28.150Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10000
+Aug 19 03:23:28 node-5 repository_server[986]: time=2026-08-19T03:23:28.155Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 19 03:23:28 node-5 repository_server[986]: 2026/08/19 03:23:28 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 19 03:23:28 node-5 repository_server[986]: time=2026-08-19T03:23:28.156Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 19 03:23:28 node-5 repository_server[986]: time=2026-08-19T03:23:28.156Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10000
+Aug 19 03:23:28 node-5 repository_server[986]: 2026/08/19 03:23:28 WARN port conflict detected - attempting reallocation service=repository.PackageRepository conflicting_port=10000 attempt=1 max_attempts=5
+Aug 19 03:23:28 node-5 repository_server[986]: 2026/08/19 03:23:28 INFO port reallocated successfully service=repository.PackageRepository old_port=10000 new_port=10001
+Aug 19 03:23:28 node-5 repository_server[986]: 2026/08/19 03:23:28 WARN port conflict detected - attempting reallocation service=repository.PackageRepository conflicting_port=10001 attempt=2 max_attempts=5

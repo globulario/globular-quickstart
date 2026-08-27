@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:43:17 UTC; 5min ago
+    Process: 1531 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 1535 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1538 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1542 (rbac_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 144.6M (peak: 187.1M)
+        CPU: 953ms
+     CGroup: /system.slice/docker-ad320a543adf0b98247f049770f1ddbb44e8f5a2f3712c4db491b6a85ccf76cf.scope/system.slice/globular-rbac.service
+             └─1542 /usr/lib/globular/bin/rbac_server
+
+Aug 05 16:43:18 node-4 rbac_server[1542]: 2026/08/05 16:43:18 INFO metrics listening service=rbac.RbacService addr=[::]:37423
+Aug 05 16:43:28 node-4 rbac_server[1542]: 2026/08/05 16:43:28 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 05 16:43:28 node-4 rbac_server[1542]: 2026/08/05 16:43:28 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 05 16:43:41 node-4 rbac_server[1542]: 2026/08/05 16:43:41 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 05 16:43:45 node-4 rbac_server[1542]: 2026/08/05 16:43:45 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 05 16:43:45 node-4 rbac_server[1542]: 2026/08/05 16:43:45 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 05 16:43:45 node-4 rbac_server[1542]: 2026/08/05 16:43:45 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 05 16:43:45 node-4 rbac_server[1542]: 2026/08/05 16:43:45 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 05 16:43:45 node-4 rbac_server[1542]: 2026/08/05 16:43:45 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 05 16:48:19 node-4 rbac_server[1542]: 2026/08/05 16:48:19 INFO acc: warmup complete baseline_rtt_ms=20 samples=258 elapsed=5m0s

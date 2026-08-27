@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:25 UTC; 42s ago
+    Process: 145 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 300 (envoy)
+      Tasks: 40 (limit: 8641)
+     Memory: 32.8M (peak: 38.6M)
+        CPU: 319ms
+     CGroup: /system.slice/docker-9a67632422a5502a1d64625e1932bb8e76fae6f90cdee0187c70d84ee68d0231.scope/system.slice/globular-envoy.service
+             └─300 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Aug 18 19:12:41 node-1 envoy[300]: [2026-08-18 19:12:41.036][300][warning][config] [source/extensions/config_subscription/grpc/grpc_subscription_impl.cc:130] gRPC config: initial fetch timed out for type.googleapis.com/envoy.config.cluster.v3.Cluster
+Aug 18 19:12:41 node-1 envoy[300]: [2026-08-18 19:12:41.036][300][info][upstream] [source/common/upstream/cluster_manager_impl.cc:248] cm init: all clusters initialized
+Aug 18 19:12:41 node-1 envoy[300]: [2026-08-18 19:12:41.036][300][info][main] [source/server/server.cc:1023] all clusters initialized. initializing init manager
+Aug 18 19:12:56 node-1 envoy[300]: [2026-08-18T19:12:49.405Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 56713 1 - "10.10.0.11" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 18 19:12:56 node-1 envoy[300]: [2026-08-18 19:12:56.036][300][warning][config] [source/extensions/config_subscription/grpc/grpc_subscription_impl.cc:130] gRPC config: initial fetch timed out for type.googleapis.com/envoy.config.listener.v3.Listener
+Aug 18 19:12:56 node-1 envoy[300]: [2026-08-18 19:12:56.036][300][info][config] [source/common/listener_manager/listener_manager_impl.cc:1003] all dependencies initialized. starting workers
+Aug 18 19:13:06 node-1 envoy[300]: [2026-08-18T19:13:01.945Z] "GET /ready HTTP/1.1" 200 - 0 5 0 - "10.10.0.11" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 18 19:13:06 node-1 envoy[300]: [2026-08-18T19:13:01.946Z] "GET /server_info HTTP/1.1" 200 - 0 98002 3 - "10.10.0.11" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 18 19:13:06 node-1 envoy[300]: [2026-08-18T19:13:01.951Z] "GET /stats?format=json HTTP/1.1" 200 - 0 27914 1 - "10.10.0.11" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 18 19:13:06 node-1 envoy[300]: [2026-08-18T19:13:04.413Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 60212 24 - "10.10.0.11" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"

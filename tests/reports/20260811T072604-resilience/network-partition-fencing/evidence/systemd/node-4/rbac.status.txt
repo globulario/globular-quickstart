@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 07:45:23 UTC; 17min ago
+    Process: 240 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 260 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 278 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 341 (rbac_server)
+      Tasks: 12 (limit: 8641)
+     Memory: 86.4M (peak: 87.4M)
+        CPU: 1.985s
+     CGroup: /system.slice/docker-87788f0b924d10f5586974eb309f0b9a77ad27d2ffe617aff2eb09907f60f0af.scope/system.slice/globular-rbac.service
+             └─341 /usr/lib/globular/bin/rbac_server
+
+Aug 11 07:59:51 node-4 rbac_server[341]: {"level":"info","ts":"2026-08-11T07:59:51.175344Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 08:01:12 node-4 rbac_server[341]: {"level":"warn","ts":"2026-08-11T08:01:12.925425Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00051ad20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 08:01:12 node-4 rbac_server[341]: {"level":"info","ts":"2026-08-11T08:01:12.925503Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 08:01:26 node-4 rbac_server[341]: {"level":"warn","ts":"2026-08-11T08:01:26.215007Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc026e223c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 08:01:26 node-4 rbac_server[341]: {"level":"info","ts":"2026-08-11T08:01:26.215107Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 08:01:48 node-4 rbac_server[341]: 2026/08/11 08:01:48 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 11 08:01:53 node-4 rbac_server[341]: {"level":"warn","ts":"2026-08-11T08:01:53.613479Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003ce780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 08:01:53 node-4 rbac_server[341]: {"level":"info","ts":"2026-08-11T08:01:53.613555Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 08:03:01 node-4 rbac_server[341]: {"level":"warn","ts":"2026-08-11T08:03:01.227294Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc026e223c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 08:03:01 node-4 rbac_server[341]: {"level":"info","ts":"2026-08-11T08:03:01.227376Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

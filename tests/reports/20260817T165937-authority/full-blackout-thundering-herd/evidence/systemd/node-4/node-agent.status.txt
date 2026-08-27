@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:18 UTC; 1min 12s ago
+    Process: 146 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 178 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 219 (node_agent_serv)
+      Tasks: 24 (limit: 8641)
+     Memory: 25.9M (peak: 34.8M)
+        CPU: 22.650s
+     CGroup: /system.slice/docker-cfd5ada68a3ca339623f6df7921f9fd5ffefba9fbd39d2998331bb23e8ac8901.scope/system.slice/globular-node-agent.service
+             └─219 /usr/lib/globular/bin/node_agent_server
+
+Aug 17 17:18:56 node-4 node_agent_server[219]: 2026/08/17 17:18:56 event-publisher: connected to event service
+Aug 17 17:19:20 node-4 node_agent_server[219]: 2026/08/17 17:19:20 nodeagent: reporting 28 installed services (hash=a22f67354a82fb41c70451854bcc2a0df0514ebe71cb9fc2a1fc130bb7202b9b, sample=[prometheus dns ai-router gateway envoy])
+Aug 17 17:19:20 node-4 node_agent_server[219]: 2026/08/17 17:19:20 node heartbeat failed (state=degraded): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: connection refused
+Aug 17 17:19:21 node-4 node_agent_server[219]: 2026/08/17 17:19:21 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 17 17:19:23 node-4 node_agent_server[219]: 2026/08/17 17:19:23 behavioral observation: infra_probe skipped component=scylladb node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 17 17:19:23 node-4 node_agent_server[219]: 2026/08/17 17:19:23 behavioral observation: infra_probe skipped component=etcd node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 17 17:19:23 node-4 node_agent_server[219]: 2026/08/17 17:19:23 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.11:443: connect: connection refused"
+Aug 17 17:19:23 node-4 node_agent_server[219]: 2026/08/17 17:19:23 behavioral observation: infra_probe skipped component=envoy node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 17 17:19:26 node-4 node_agent_server[219]: 2026/08/17 17:19:26 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 17 17:19:26 node-4 node_agent_server[219]: 2026/08/17 17:19:26 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b

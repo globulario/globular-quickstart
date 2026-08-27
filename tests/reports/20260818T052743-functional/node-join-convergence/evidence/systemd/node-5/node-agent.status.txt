@@ -1,0 +1,23 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 05:28:56 UTC; 25s ago
+    Process: 120 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 165 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 189 (node_agent_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 24.3M (peak: 30.8M)
+        CPU: 19.915s
+     CGroup: /system.slice/docker-e78c0a83b4338c9b877248d9746b7899f2416901c79a6edd5643d30705c4cb35.scope/system.slice/globular-node-agent.service
+             ├─189 /usr/lib/globular/bin/node_agent_server
+             └─683 systemctl show --property=Id,ActiveState,SubState,MainPID,Result,ExecMainStatus,NRestarts --no-pager globular-ai-router.service globular-alertmanager.service globular-authentication.service globular-cluster-controller.service globular-dns.service globular-envoy.service globular-etcd.service globular-event.service globular-file.service globular-gateway.service globular-ldap.service globular-log.service globular-media.service globular-minio.service globular-monitoring.service globular-node-agent.service globular-node-exporter.service globular-persistence.service globular-prometheus.service globular-quickstart-bootstrap.service globular-rbac.service globular-repository.service globular-resource.service globular-search.service globular-title.service globular-xds.service
+
+Aug 18 05:29:12 node-5 node_agent_server[189]: 2026/08/18 05:29:12 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 18 05:29:13 node-5 node_agent_server[189]: 2026/08/18 05:29:13 nodeagent: repaired installed-state INFRASTRUCTURE/xds from local package cache xds_1.2.312_linux_amd64.tgz (build_id=e8e65d6d-70f9-4a29-873d-228cc504f55e)
+Aug 18 05:29:14 node-5 node_agent_server[189]: 2026/08/18 05:29:14 nodeagent: self-hosted runtime proof skipped cluster-controller: process_not_running
+Aug 18 05:29:14 node-5 node_agent_server[189]: 2026/08/18 05:29:14 nodeagent: self-hosted runtime proof skipped cluster-doctor: process_not_running
+Aug 18 05:29:16 node-5 node_agent_server[189]: 2026/08/18 05:29:16 minio-topology-gate: node 35ac3821-6b90-52eb-a800-41130471770b (ip=10.10.0.15) not admitted — node not listed in approved objectstore topology (gen=0)
+Aug 18 05:29:16 node-5 node_agent_server[189]: 2026/08/18 05:29:16 minio-topology-gate: node 35ac3821-6b90-52eb-a800-41130471770b (ip=10.10.0.15) is NOT in ObjectStoreDesiredState.Nodes (gen=0) — stopping globular-minio.service to enforce topology contract (held_not_in_topology)
+Aug 18 05:29:16 node-5 node_agent_server[189]: 2026/08/18 05:29:16 minio-topology-gate: stopped globular-minio.service on non-member node 35ac3821-6b90-52eb-a800-41130471770b (ip=10.10.0.15) — state=held_not_in_topology; MinIO will start only after apply-topology admits this node
+Aug 18 05:29:16 node-5 node_agent_server[189]: 2026/08/18 05:29:16 tls-convergence: derived cluster network spec from config (domain=globular.internal protocol=https) — controller never pushed one
+Aug 18 05:29:16 node-5 node_agent_server[189]: 2026/08/18 05:29:16 event-publisher: service.stopped unit=globular-minio.service (active/running → inactive/dead)
+Aug 18 05:29:17 node-5 node_agent_server[189]: 2026/08/18 05:29:17 nodeagent: reporting 28 installed services (hash=0cb78d318e8a0300a2a4d4d00392bc3fb983568ea03fa50d27e9cf96944fbe71, sample=[sha256sum authentication ai-router restic file])

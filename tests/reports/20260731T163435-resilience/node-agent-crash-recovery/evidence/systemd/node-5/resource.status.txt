@@ -1,0 +1,22 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 16:59:40 UTC; 11min ago
+    Process: 372 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 386 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 393 (resource_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 13.3M
+        CPU: 382ms
+     CGroup: /system.slice/docker-3268ddda9a10330e4ec4242498abd74864b23ece1671b72108fec7d4010c506f.scope/system.slice/globular-resource.service
+             └─393 /usr/lib/globular/bin/resource_server
+
+Jul 31 17:10:52 node-5 resource_server[393]: {"level":"warn","ts":"2026-07-31T17:10:52.417369Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004da960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 17:10:52 node-5 resource_server[393]: {"level":"info","ts":"2026-07-31T17:10:52.417455Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 17:10:55 node-5 resource_server[393]: time=2026-07-31T17:10:55.670Z level=INFO msg="dependencies recovered — service is SERVING"
+Jul 31 17:11:07 node-5 resource_server[393]: 2026/07/31 17:11:07 WARN acc: config watcher stopped, will retry err="etcdserver: mvcc: required revision has been compacted" backoff=5s
+Jul 31 17:11:08 node-5 resource_server[393]: {"level":"warn","ts":"2026-07-31T17:11:08.834679Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000352960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = error reading from server: read tcp 10.10.0.15:33940->10.10.0.11:2379: read: connection reset by peer"}
+Jul 31 17:11:08 node-5 resource_server[393]: {"level":"warn","ts":"2026-07-31T17:11:08.83504Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000352960/10.10.0.11:2379","attempt":1,"error":"rpc error: code = Unavailable desc = error reading from server: read tcp 10.10.0.15:40694->10.10.0.12:2379: read: connection reset by peer"}
+Jul 31 17:11:08 node-5 resource_server[393]: {"level":"warn","ts":"2026-07-31T17:11:08.862301Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000352960/10.10.0.11:2379","attempt":2,"error":"rpc error: code = Unavailable desc = error reading from server: read tcp 10.10.0.15:41418->10.10.0.13:2379: read: connection reset by peer"}
+Jul 31 17:11:08 node-5 resource_server[393]: 2026/07/31 17:11:08 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-5.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-5.globular.internal:8443/get_ca_certificate\": dial tcp: lookup node-5.globular.internal on 127.0.0.11:53: no such host"
+Jul 31 17:11:08 node-5 resource_server[393]: 2026/07/31 17:11:08 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.11 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-5.globular.internal:8443: Get \"http://node-5.globular.internal:8443/get_ca_certificate\": dial tcp: lookup node-5.globular.internal on 127.0.0.11:53: no such host"
+Jul 31 17:11:08 node-5 resource_server[393]: 2026/07/31 17:11:08 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.11:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-5.globular.internal:8443: Get \"http://node-5.globular.internal:8443/get_ca_certificate\": dial tcp: lookup node-5.globular.internal on 127.0.0.11:53: no such host"

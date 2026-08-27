@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 21:14:05 UTC; 3min 32s ago
+    Process: 194 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 218 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 240 (cluster_doctor_)
+      Tasks: 17 (limit: 8641)
+     Memory: 23.6M (peak: 26.4M)
+        CPU: 668ms
+     CGroup: /system.slice/docker-dae82d356e76e6016996f999716cccadf9a25ac7e9d047300b9f7e21e912cd83.scope/system.slice/globular-cluster-doctor.service
+             └─240 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 23 21:17:08 node-1 cluster_doctor_server[240]: 2026/08/23 21:17:08 collector: data-source fetch failed (reduced harvest) service=node_agent@a166b992-b66d-53cb-b7c7-61dfa4dd5a36 rpc=GetSubsystemHealth: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:11000: connect: no route to host"
+Aug 23 21:17:08 node-1 cluster_doctor_server[240]: 2026/08/23 21:17:08 collector: data-source fetch failed (reduced harvest) service=node_agent@a166b992-b66d-53cb-b7c7-61dfa4dd5a36 rpc=GetCertificateStatus: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:11000: connect: no route to host"
+Aug 23 21:17:08 node-1 cluster_doctor_server[240]: 2026/08/23 21:17:08 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 endpoint=10.10.0.13:11000 timeout=30s
+Aug 23 21:17:08 node-1 cluster_doctor_server[240]: 2026/08/23 21:17:08 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 FAILED after 17.342µs: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:11000: connect: no route to host"
+Aug 23 21:17:08 node-1 cluster_doctor_server[240]: 2026/08/23 21:17:08 collector: data-source fetch failed (reduced harvest) service=node_agent@a166b992-b66d-53cb-b7c7-61dfa4dd5a36 rpc=VerifyPackageIntegrity: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:11000: connect: no route to host"
+Aug 23 21:17:08 node-1 cluster_doctor_server[240]: 2026/08/23 21:17:08 collector: data-source fetch failed (reduced harvest) service=node_agent@a166b992-b66d-53cb-b7c7-61dfa4dd5a36 rpc=GetServiceRuntimeProof: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:11000: connect: no route to host"
+Aug 23 21:17:08 node-1 cluster_doctor_server[240]: 2026/08/23 21:17:08 collector: data-source fetch failed (reduced harvest) service=node_agent@a166b992-b66d-53cb-b7c7-61dfa4dd5a36 rpc=GetInfraProbe: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:11000: connect: no route to host"
+Aug 23 21:17:18 node-1 cluster_doctor_server[240]: 2026/08/23 21:17:18 collector: VerifyPackageIntegrity on node=6400b443-cf38-52da-a683-de2fc5103c0b stored report (checked=28, findings=1) in 10.657365573s
+Aug 23 21:17:28 node-1 cluster_doctor_server[240]: 2026/08/23 21:17:28 collector: VerifyPackageIntegrity on node=35ac3821-6b90-52eb-a800-41130471770b stored report (checked=28, findings=1) in 20.622094608s
+Aug 23 21:17:32 node-1 cluster_doctor_server[240]: 2026/08/23 21:17:32 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 stored report (checked=47, findings=0) in 24.628877392s

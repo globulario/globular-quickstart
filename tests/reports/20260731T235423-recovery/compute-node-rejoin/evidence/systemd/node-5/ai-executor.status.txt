@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:53:48 UTC; 50s ago
+    Process: 10256 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 10261 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10263 (ai_executor_ser)
+      Tasks: 16 (limit: 8641)
+     Memory: 25.8M (peak: 30.2M)
+        CPU: 575ms
+     CGroup: /system.slice/docker-b8fa6aca9bb82e631ce89b654ed458dabe59ec9fe67bf982b77e3cf43dab10a6.scope/system.slice/globular-ai-executor.service
+             └─10263 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 23:53:49 node-5 ai_executor_server[10263]: 2026/07/31 23:53:49 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Jul 31 23:53:49 node-5 ai_executor_server[10263]: time=2026-07-31T23:53:49.080Z level=INFO msg="job_store: loaded jobs from etcd" count=84
+Jul 31 23:53:49 node-5 ai_executor_server[10263]: time=2026-07-31T23:53:49.191Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.12]"
+Jul 31 23:54:17 node-5 ai_executor_server[10263]: time=2026-07-31T23:54:17.591Z level=INFO msg="processing incident" incident_id=2437c10d-8d3b-11f1-971b-02420a0a000f rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=142
+Jul 31 23:54:17 node-5 ai_executor_server[10263]: time=2026-07-31T23:54:17.670Z level=INFO msg="diagnosis complete" incident_id=2437c10d-8d3b-11f1-971b-02420a0a000f root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Jul 31 23:54:17 node-5 ai_executor_server[10263]: time=2026-07-31T23:54:17.670Z level=INFO msg="INCIDENT RESOLVED" incident_id=2437c10d-8d3b-11f1-971b-02420a0a000f summary="doctor-finding triggered by cluster.finding.created (142 events in batch)" root_cause=unknown_anomaly
+Jul 31 23:54:18 node-5 ai_executor_server[10263]: time=2026-07-31T23:54:18.952Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Jul 31 23:54:18 node-5 ai_executor_server[10263]: time=2026-07-31T23:54:18.964Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10010
+Jul 31 23:54:18 node-5 ai_executor_server[10263]: time=2026-07-31T23:54:18.966Z level=WARN msg="peer: ping failed" endpoint=10.10.0.14:10010 err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.14:10010: connect: connection refused\""
+Jul 31 23:54:18 node-5 ai_executor_server[10263]: time=2026-07-31T23:54:18.966Z level=INFO msg="peer: connected" node=node-4 endpoint=10.10.0.14:10010

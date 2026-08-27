@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 23:36:20 UTC; 6min ago
+    Process: 472 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 500 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 532 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 42.0M (peak: 46.5M)
+        CPU: 6.314s
+     CGroup: /system.slice/docker-51a3f59fdce7167f6650e68f30741c3ebb9f8db00df0a2a6826c1e17a59cb81d.scope/system.slice/globular-repository.service
+             └─532 /usr/lib/globular/bin/repository_server
+
+Aug 24 23:41:21 node-2 repository_server[532]: time=2026-08-24T23:41:21.259Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 24 23:41:24 node-2 repository_server[532]: 2026/08/24 23:41:24 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 24 23:41:35 node-2 repository_server[532]: 2026/08/24 23:41:35 WARN skipping invalid version row in GetArtifactVersions key=ledger/core@globular.io/dns
+Aug 24 23:41:41 node-2 repository_server[532]: 2026/08/24 23:41:41 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 23:41:42 node-2 repository_server[532]: 2026/08/24 23:41:42 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=180 baseline_ms=20 window=200 new_window=180
+Aug 24 23:41:42 node-2 repository_server[532]: 2026/08/24 23:41:42 WARN authz_decision audit="{\"timestamp\":\"2026-08-24T23:41:42.715021073Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 24 23:42:38 node-2 repository_server[532]: 2026/08/24 23:42:38 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 24 23:42:41 node-2 repository_server[532]: 2026/08/24 23:42:41 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=175 baseline_ms=20 window=475 new_window=427
+Aug 24 23:42:43 node-2 repository_server[532]: 2026/08/24 23:42:43 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 23:42:43 node-2 repository_server[532]: 2026/08/24 23:42:43 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=174 baseline_ms=20 window=475 new_window=427

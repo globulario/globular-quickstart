@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 17:13:01 UTC; 27s ago
+    Process: 602 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 624 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 638 (ai_executor_ser)
+      Tasks: 13 (limit: 8641)
+     Memory: 15.9M
+        CPU: 208ms
+     CGroup: /system.slice/docker-a940c3d3d301ea460c6ef6d5072c25365503c7b1b37629387a254e2e32970eca.scope/system.slice/globular-ai-executor.service
+             └─638 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 17:13:01 node-3 ai_executor_server[638]: time=2026-07-31T17:13:01.353Z level=INFO msg="job_store: connected to etcd"
+Jul 31 17:13:01 node-3 ai_executor_server[638]: 2026/07/31 17:13:01 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Jul 31 17:13:01 node-3 ai_executor_server[638]: time=2026-07-31T17:13:01.363Z level=INFO msg="job_store: loaded jobs from etcd" count=55
+Jul 31 17:13:01 node-3 ai_executor_server[638]: time=2026-07-31T17:13:01.385Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts=[10.10.0.20]
+Jul 31 17:13:11 node-3 ai_executor_server[638]: 2026/07/31 17:13:11 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-3.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 17:13:11 node-3 ai_executor_server[638]: 2026/07/31 17:13:11 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.14 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-3.globular.internal:8443: Get \"http://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 17:13:11 node-3 ai_executor_server[638]: 2026/07/31 17:13:11 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.14:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-3.globular.internal:8443: Get \"http://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 17:13:21 node-3 ai_executor_server[638]: 2026/07/31 17:13:21 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-3.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 17:13:21 node-3 ai_executor_server[638]: 2026/07/31 17:13:21 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.11 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-3.globular.internal:8443: Get \"http://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 17:13:21 node-3 ai_executor_server[638]: 2026/07/31 17:13:21 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.11:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-3.globular.internal:8443: Get \"http://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"

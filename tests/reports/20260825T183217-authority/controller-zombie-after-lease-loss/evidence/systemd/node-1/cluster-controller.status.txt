@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 18:22:27 UTC; 15min ago
+    Process: 2571 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 2575 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2578 (cluster_control)
+      Tasks: 22 (limit: 8641)
+     Memory: 47.0M (peak: 50.1M)
+        CPU: 37.922s
+     CGroup: /system.slice/docker-2c9bb35747f9e01b5ee59e23fbccef39c248607555d453cfba4ed458fe886c34.scope/system.slice/globular-cluster-controller.service
+             └─2578 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 25 18:38:05 node-1 cluster_controller_server[2578]: 2026/08/25 18:38:05 drift-reconciler: node=node-3 pkg=title — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 18:38:05 node-1 cluster_controller_server[2578]: 2026/08/25 18:38:05 drift-reconciler: node=node-3 pkg=torrent — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 18:38:05 node-1 cluster_controller_server[2578]: 2026/08/25 18:38:05 drift-reconciler: node=node-2 pkg=torrent — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 18:38:05 node-1 cluster_controller_server[2578]: 2026/08/25 18:38:05 drift-reconciler: node=node-2 pkg=media — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 18:38:05 node-1 cluster_controller_server[2578]: 2026/08/25 18:38:05 drift-reconciler: node=node-2 pkg=title — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 18:38:07 node-1 cluster_controller_server[2578]: 2026/08/25 18:38:07 convergence-committer: node=35ac3821-6b90-52eb-a800-41130471770b COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 25 18:38:07 node-1 cluster_controller_server[2578]: 2026/08/25 18:38:07 convergence-committer: node=6400b443-cf38-52da-a683-de2fc5103c0b COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 25 18:38:07 node-1 cluster_controller_server[2578]: 2026/08/25 18:38:07 convergence-committer: node=c777633e-6d07-5713-9c4c-deb3317eee25 COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 25 18:38:08 node-1 systemd[1]: globular-cluster-controller.service: Sent signal SIGCONT to main process 2578 (cluster_control) on client request.
+Aug 25 18:38:11 node-1 cluster_controller_server[2578]: 2026/08/25 18:38:11 buildPlanActions: unknown profile "media-server" — skipping (no managed units)

@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:18 UTC; 1min 12s ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 69 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 80 (event_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 27.1M (peak: 28.3M)
+        CPU: 1.866s
+     CGroup: /system.slice/docker-cfd5ada68a3ca339623f6df7921f9fd5ffefba9fbd39d2998331bb23e8ac8901.scope/system.slice/globular-event.service
+             └─80 /usr/lib/globular/bin/event_server
+
+Aug 17 17:18:45 node-4 event_server[80]: time=2026-08-17T17:18:45.961Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=14e0370a-e15d-4460-857a-77ed721f23e7
+Aug 17 17:18:45 node-4 event_server[80]: time=2026-08-17T17:18:45.961Z level=INFO msg=subscribed channel=operation.* uuid=14e0370a-e15d-4460-857a-77ed721f23e7 subscribers=3
+Aug 17 17:19:02 node-4 event_server[80]: 2026/08/17 17:19:02 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 17 17:19:02 node-4 event_server[80]: time=2026-08-17T17:19:02.626Z level=INFO msg="Subscribe: ok" channel=operation.restart_requested uuid=6583e4a3-9c3e-4775-a6bf-932d578d3306
+Aug 17 17:19:02 node-4 event_server[80]: time=2026-08-17T17:19:02.626Z level=INFO msg=subscribed channel=operation.restart_requested uuid=6583e4a3-9c3e-4775-a6bf-932d578d3306 subscribers=2
+Aug 17 17:19:02 node-4 event_server[80]: time=2026-08-17T17:19:02.626Z level=INFO msg="OnEvent: registered" uuid=6583e4a3-9c3e-4775-a6bf-932d578d3306
+Aug 17 17:19:02 node-4 event_server[80]: time=2026-08-17T17:19:02.626Z level=INFO msg="stream registered" uuid=6583e4a3-9c3e-4775-a6bf-932d578d3306
+Aug 17 17:19:07 node-4 event_server[80]: time=2026-08-17T17:19:07.857Z level=WARN msg="keepalive send failed; will drop stream" uuid=df98ec90-e6ff-4be9-9ccc-0d721236a1ac err="rpc error: code = Unavailable desc = transport is closing"
+Aug 17 17:19:07 node-4 event_server[80]: time=2026-08-17T17:19:07.858Z level=INFO msg="subscriber cleanup" uuid=df98ec90-e6ff-4be9-9ccc-0d721236a1ac
+Aug 17 17:19:07 node-4 event_server[80]: time=2026-08-17T17:19:07.858Z level=INFO msg="OnEvent: stream ended" uuid=df98ec90-e6ff-4be9-9ccc-0d721236a1ac

@@ -1,0 +1,23 @@
+● globular-scylla-manager.service - Globular Scylla Manager
+     Loaded: loaded (/etc/systemd/system/globular-scylla-manager.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:23:20 UTC; 2min 11s ago
+    Process: 9398 ExecStartPre=/bin/sh -c for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "scylla 9042 not ready"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 9403 ExecStartPre=/usr/lib/globular/bin/scylla-manager-configure (code=exited, status=0/SUCCESS)
+    Process: 9407 ExecStartPost=/usr/lib/globular/bin/scylla-manager-register-cluster (code=exited, status=7)
+   Main PID: 9406 (scylla-manager)
+      Tasks: 14 (limit: 8641)
+     Memory: 12.9M (peak: 14.2M)
+        CPU: 653ms
+     CGroup: /system.slice/docker-2206a9848d7057d723137cf808b7918b201d11357dec3e1e80cb2d0a702c0d6b.scope/system.slice/globular-scylla-manager.service
+             └─9406 /usr/bin/scylla-manager --config-file /var/lib/globular/scylla-manager/scylla-manager.yaml
+
+Aug 01 01:24:29 node-3 scylla_manager[9406]: {"L":"INFO","T":"2026-08-01T01:24:29.877Z","M":"Starting Prometheus server","address":":5090","_trace_id":"M52VhPpPQim03m9ID7fVGw"}
+Aug 01 01:24:29 node-3 scylla_manager[9406]: {"L":"INFO","T":"2026-08-01T01:24:29.877Z","M":"Starting debug server","address":"127.0.0.1:5112","_trace_id":"M52VhPpPQim03m9ID7fVGw"}
+Aug 01 01:24:29 node-3 scylla_manager[9406]: {"L":"INFO","T":"2026-08-01T01:24:29.877Z","M":"Service started","_trace_id":"M52VhPpPQim03m9ID7fVGw"}
+Aug 01 01:25:00 node-3 scylla_manager[9406]: {"L":"INFO","T":"2026-08-01T01:25:00.023Z","N":"cluster","M":"Creating new Scylla HTTP client","cluster_id":"cef85481-78cc-4ba5-a446-0da3c92e582b","_trace_id":"y5Tn-i7VTNWGfUyKEvRdfQ"}
+Aug 01 01:25:00 node-3 scylla_manager[9406]: {"L":"ERROR","T":"2026-08-01T01:25:00.054Z","N":"healthcheck.REST healthcheck","M":"Parallel hosts check failed","host":"10.10.0.14","error":"dial tcp 10.10.0.14:5612: connect: connection refused","_trace_id":"y5Tn-i7VTNWGfUyKEvRdfQ","S":"github.com/scylladb/go-log.Logger.log\n\tgithub.com/scylladb/go-log@v0.0.7/logger.go:101\ngithub.com/scylladb/go-log.Logger.Error\n\tgithub.com/scylladb/go-log@v0.0.7/logger.go:84\ngithub.com/scylladb/scylla-manager/v3/pkg/service/healthcheck.runner.checkHosts.func2\n\tgithub.com/scylladb/scylla-manager/v3/pkg/service/healthcheck/runner.go:110\ngithub.com/scylladb/scylla-manager/v3/pkg/util/parallel.Run.func1\n\tgithub.com/scylladb/scylla-manager/v3/pkg/util@v0.0.0-20260527104540-b3e9f76ffdee/parallel/parallel.go:79"}
+Aug 01 01:25:00 node-3 scylla_manager[9406]: {"L":"ERROR","T":"2026-08-01T01:25:00.877Z","N":"healthcheck.CQL healthcheck","M":"Parallel hosts check failed","host":"10.10.0.14","error":"timeout","_trace_id":"uhrpqOcmR_GHCveatP3yoA","S":"github.com/scylladb/go-log.Logger.log\n\tgithub.com/scylladb/go-log@v0.0.7/logger.go:101\ngithub.com/scylladb/go-log.Logger.Error\n\tgithub.com/scylladb/go-log@v0.0.7/logger.go:84\ngithub.com/scylladb/scylla-manager/v3/pkg/service/healthcheck.runner.checkHosts.func2\n\tgithub.com/scylladb/scylla-manager/v3/pkg/service/healthcheck/runner.go:110\ngithub.com/scylladb/scylla-manager/v3/pkg/util/parallel.Run.func1\n\tgithub.com/scylladb/scylla-manager/v3/pkg/util@v0.0.0-20260527104540-b3e9f76ffdee/parallel/parallel.go:79"}
+Aug 01 01:25:28 node-3 scylla_manager[9406]: {"L":"INFO","T":"2026-08-01T01:25:28.118Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.11:33114","status":500,"bytes":173,"duration":"7020ms","error":"list clusters: Cannot achieve consistency level for cl ONE. Requires 1, alive 0 (potentially executed: false)","_trace_id":"nci31AORRlKxgWGLSakzJw"}
+Aug 01 01:25:28 node-3 scylla_manager[9406]: {"L":"INFO","T":"2026-08-01T01:25:28.398Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.11:33120","status":500,"bytes":173,"duration":"7226ms","error":"list clusters: Cannot achieve consistency level for cl ONE. Requires 1, alive 0 (potentially executed: false)","_trace_id":"R8iDewzjRnGSw46Rklr8YA"}
+Aug 01 01:25:30 node-3 scylla_manager[9406]: {"L":"INFO","T":"2026-08-01T01:25:30.876Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.11:56282","status":500,"bytes":173,"duration":"6781ms","error":"list clusters: Cannot achieve consistency level for cl ONE. Requires 1, alive 0 (potentially executed: false)","_trace_id":"3AeRum0AQnyFOgwkpVTtQA"}
+Aug 01 01:25:31 node-3 scylla_manager[9406]: {"L":"INFO","T":"2026-08-01T01:25:31.480Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.11:56284","status":500,"bytes":173,"duration":"7309ms","error":"list clusters: Cannot achieve consistency level for cl ONE. Requires 1, alive 0 (potentially executed: false)","_trace_id":"nCjIB-XOQY6sKpI_7H05ag"}

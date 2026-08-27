@@ -1,0 +1,179 @@
+version: 1
+name: etcd-enospc-during-state-commit
+description: |
+  A desired-state mutation attempted while etcd cannot write must be atomic:
+  committed, or rejected. Never half-published.
+
+  THE FAULT. Fill the filesystem etcd writes to, then attempt a real
+  desired-state change, then release the space.
+
+  WHY THIS IS NOT disk-pressure-detection. That scenario fills the node's root
+  disk and checks the cluster NOTICES. This targets the specific filesystem a
+  state commit has to land on, and attempts a mutation while it cannot succeed —
+  so the question is not detection but atomicity.
+
+  WHY IT MATTERS HERE SPECIFICALLY. The 2026-08-16 outage was an etcd NOSPACE
+  event: the backend hit quota and the control plane went read-only. What was
+  never established is what happens to a mutation caught in that window. A
+  desired-state write is not one key: it is a record, a generation, and the
+  reconcile that follows. A partial write leaves the cluster pointed at something
+  nobody chose, and — worse — leaves no error for the operator to act on, because
+  from the caller's side the command simply failed.
+
+  THE TWO ACCEPTABLE OUTCOMES, and there is no third:
+
+      the mutation never happened      — refused, nothing changed
+      the mutation completed exactly once
+
+  There is no acceptable state called "the record is there but the generation is
+  not", and none called "the command failed but the write landed".
+
+  WHAT MUST HOLD. After the space is released, the cluster returns to healthy
+  with no standing alarms, no ambiguous or half-published artifacts, and desired
+  state coherent — whichever of the two outcomes occurred.
+
+suite: authority
+tags:
+  - atomicity
+  - etcd
+  - nospc
+  - destructive
+  - incident-2026-08-16
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: no_standing_alarms
+    probe: etcd.backend_growth
+    expect:
+      alarms: 0
+
+  - type: probe
+    id: writes_work_before
+    probe: etcd.write_test
+    expect:
+      success: true
+
+baseline:
+  - type: probe
+    id: desired_state_before
+    probe: cluster.desired_state
+
+  - type: probe
+    id: identity_findings_before
+    probe: repository.identity_findings
+
+steps:
+  # Leave a couple of megabytes so the filesystem is full rather than the node
+  # unbootable — the target is the write path, not the machine.
+  - type: action
+    id: exhaust_the_etcd_filesystem
+    action: chaos.fill_etcd_volume
+    params:
+      node: node-1
+      leave_free_mb: 2
+
+  - type: action
+    id: let_etcd_notice
+    action: wait
+    params:
+      seconds: 60
+      reason: "give etcd time to fail a write and raise its alarm before a mutation is attempted"
+
+  # Deliberately NOT asserted as accepted or refused: either is correct. What is
+  # forbidden is a half-applied result, which the assertions below look for.
+  # expect:any records the outcome without prejudging it.
+  - type: action
+    id: attempt_mutation_while_full
+    action: ops.set_desired
+    params:
+      node: node-1
+      name: dns
+      version: 1.2.312
+      expect: any
+
+  - type: action
+    id: release_the_space
+    action: chaos.clear_etcd_volume_fill
+    params:
+      node: node-1
+
+  - type: action
+    id: allow_recovery
+    action: wait
+    params:
+      seconds: 180
+      reason: "compaction, defrag and alarm disarm need time once space is available again"
+
+assertions:
+  # ── Nothing half-published ────────────────────────────────────────────────
+  # A partial commit surfaces as an artifact that resolves ambiguously, or a
+  # manifest whose blob never landed.
+  - type: probe
+    id: no_half_published_artifacts
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+      conflict: 0
+      missing_blob: 0
+
+  - type: probe
+    id: desired_state_coherent
+    probe: cluster.desired_state
+    expect:
+      count_gte: 1
+
+  # ── etcd recovered rather than latched ────────────────────────────────────
+  # NOSPACE latches: once raised, etcd stays read-only until the alarm is
+  # disarmed even after space returns. A cluster that cannot clear its own alarm
+  # is a cluster that needs an operator for a condition it created.
+  - type: probe
+    id: alarms_cleared
+    probe: etcd.backend_growth
+    expect:
+      alarms: 0
+
+  - type: probe
+    id: writes_work_again
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  # ── And the cluster is whole ──────────────────────────────────────────────
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: etcd_members_healthy
+    probe: cluster.etcd_members
+    expect:
+      unhealthy: 0
+
+  - type: probe
+    id: liveness_current
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+
+cleanup:
+  # Idempotent: removing a fill file that is already gone is harmless, and this
+  # guarantees the filesystem is not left full if the scenario aborted.
+  - type: action
+    id: ensure_space_released
+    action: chaos.clear_etcd_volume_fill
+    params:
+      node: node-1

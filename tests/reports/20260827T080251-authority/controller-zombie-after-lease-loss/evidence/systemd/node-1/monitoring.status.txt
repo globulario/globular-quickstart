@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 07:51:27 UTC; 17min ago
+    Process: 597 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 604 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 635 (monitoring_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 20.6M (peak: 24.0M)
+        CPU: 855ms
+     CGroup: /system.slice/docker-397e55c282c79081902ab126fff23289815f88f1c2098484b8470853bced6027.scope/system.slice/globular-monitoring.service
+             └─635 /usr/lib/globular/bin/monitoring_server
+
+Aug 27 07:51:28 node-1 monitoring_server[635]: time=2026-08-27T07:51:28.829Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=868
+Aug 27 07:51:28 node-1 monitoring_server[635]: 2026/08/27 07:51:28 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 27 07:53:32 node-1 monitoring_server[635]: {"level":"warn","ts":"2026-08-27T07:53:32.622227Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002754a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 07:53:32 node-1 monitoring_server[635]: {"level":"info","ts":"2026-08-27T07:53:32.622299Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 07:53:40 node-1 monitoring_server[635]: {"level":"warn","ts":"2026-08-27T07:53:40.333193Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001754a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 07:53:40 node-1 monitoring_server[635]: {"level":"info","ts":"2026-08-27T07:53:40.333253Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 07:54:07 node-1 monitoring_server[635]: {"level":"warn","ts":"2026-08-27T07:54:07.623731Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002754a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 07:54:07 node-1 monitoring_server[635]: {"level":"info","ts":"2026-08-27T07:54:07.623793Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 07:54:15 node-1 monitoring_server[635]: {"level":"warn","ts":"2026-08-27T07:54:15.33402Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001754a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 07:54:15 node-1 monitoring_server[635]: {"level":"info","ts":"2026-08-27T07:54:15.334089Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

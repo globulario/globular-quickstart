@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "scenario": "residue-negative-control",
+  "suite": "patterns",
+  "start_time": "2026-08-05T18:06:22.968391Z",
+  "end_time": "2026-08-05T18:06:33.672549Z",
+  "passed": true,
+  "item_count": 4,
+  "items": [
+    {
+      "id": "node5_running_before",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T18:06:23.019047Z"
+    },
+    {
+      "id": "stop_node5_and_abandon_it",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-5",
+        "exit_code": 0,
+        "stdout": "globular-node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T18:06:33.364811Z"
+    },
+    {
+      "id": "node5_is_stopped",
+      "section": "assertions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "running": false
+      },
+      "result": {
+        "running": false,
+        "node": "node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T18:06:33.391537Z"
+    },
+    {
+      "id": "enforce_restoration",
+      "section": "restoration",
+      "probe": "restoration",
+      "params": {},
+      "expect": {
+        "residue_free": true
+      },
+      "result": {
+        "outstanding_at_teardown": [
+          {
+            "kind": "node_stopped",
+            "node": "node-5"
+          }
+        ],
+        "reversed": [
+          {
+            "kind": "node_stopped",
+            "node": "node-5"
+          }
+        ],
+        "failed": [],
+        "unrestorable": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T18:06:33.672423Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

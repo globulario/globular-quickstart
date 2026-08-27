@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 06:03:18 UTC; 5min ago
+    Process: 52 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 70 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 90 (event_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 25.5M (peak: 27.5M)
+        CPU: 2.431s
+     CGroup: /system.slice/docker-0ec183cf98216386a761950989a5649979754c0fb823897d5cde60eeda1205e5.scope/system.slice/globular-event.service
+             └─90 /usr/lib/globular/bin/event_server
+
+Aug 17 06:03:20 node-5 event_server[90]: 2026/08/17 06:03:20 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 17 06:03:20 node-5 event_server[90]: 2026/08/17 06:03:20 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 17 06:03:20 node-5 event_server[90]: time=2026-08-17T06:03:20.282Z level=INFO msg="Subscribe: ok" channel=create_account_evt uuid=4ea3ec85-1f22-4e65-be9f-0417ed8ada17
+Aug 17 06:03:20 node-5 event_server[90]: time=2026-08-17T06:03:20.282Z level=INFO msg=subscribed channel=create_account_evt uuid=4ea3ec85-1f22-4e65-be9f-0417ed8ada17 subscribers=1
+Aug 17 06:03:29 node-5 event_server[90]: 2026/08/17 06:03:29 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 17 06:05:52 node-5 event_server[90]: 2026/08/17 06:05:52 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 17 06:05:52 node-5 event_server[90]: 2026/08/17 06:05:52 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 17 06:08:17 node-5 event_server[90]: time=2026-08-17T06:08:17.670Z level=INFO msg="Subscribe: ok" channel=desired.* uuid=93bc95c9-0987-4fd5-b433-8b9a58b73e8d
+Aug 17 06:08:17 node-5 event_server[90]: time=2026-08-17T06:08:17.670Z level=INFO msg=subscribed channel=desired.* uuid=93bc95c9-0987-4fd5-b433-8b9a58b73e8d subscribers=1
+Aug 17 06:08:19 node-5 event_server[90]: 2026/08/17 06:08:19 INFO acc: warmup complete baseline_rtt_ms=20 samples=276 elapsed=5m0s

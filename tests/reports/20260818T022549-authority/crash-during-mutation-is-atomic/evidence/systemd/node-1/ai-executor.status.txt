@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 02:28:57 UTC; 6min ago
+    Process: 32014 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 32018 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 32022 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 34.7M (peak: 35.5M)
+        CPU: 1.405s
+     CGroup: /system.slice/docker-3b22802084095214e2de1ab84233a6baa8f2b2728c78150c3159a4c437966e27.scope/system.slice/globular-ai-executor.service
+             └─32022 /usr/lib/globular/bin/ai_executor_server
+
+Aug 18 02:32:02 node-1 ai_executor_server[32022]: time=2026-08-18T02:32:02.261Z level=ERROR msg="REMEDIATION FAILED" incident_id=fcd01d34-9aac-11f1-b546-02420a0a000c summary="service-crash triggered by service.exited on cluster-controller (1 events in batch)" proposed_action=restart_service:globular-cluster-controller.service
+Aug 18 02:33:57 node-1 ai_executor_server[32022]: time=2026-08-18T02:33:57.637Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Aug 18 02:33:57 node-1 ai_executor_server[32022]: time=2026-08-18T02:33:57.644Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 18 02:33:57 node-1 ai_executor_server[32022]: time=2026-08-18T02:33:57.656Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Aug 18 02:33:57 node-1 ai_executor_server[32022]: time=2026-08-18T02:33:57.661Z level=INFO msg="codex: no credentials found"
+Aug 18 02:34:50 node-1 ai_executor_server[32022]: 2026/08/18 02:34:50 INFO acc: warmup complete baseline_rtt_ms=20 samples=229 elapsed=5m53s
+Aug 18 02:34:50 node-1 ai_executor_server[32022]: time=2026-08-18T02:34:50.814Z level=INFO msg="processing incident" incident_id=63198d30-9aad-11f1-b548-02420a0a000c rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=1
+Aug 18 02:34:50 node-1 ai_executor_server[32022]: time=2026-08-18T02:34:50.890Z level=INFO msg="diagnosis complete" incident_id=63198d30-9aad-11f1-b548-02420a0a000c root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 18 02:34:50 node-1 ai_executor_server[32022]: time=2026-08-18T02:34:50.890Z level=INFO msg="INCIDENT RESOLVED" incident_id=63198d30-9aad-11f1-b548-02420a0a000c summary="doctor-finding triggered by cluster.finding.created (1 events in batch)" root_cause=unknown_anomaly
+Aug 18 02:34:50 node-1 ai_executor_server[32022]: 2026/08/18 02:34:50 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=86 baseline_ms=20 window=100 new_window=90

@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 19:05:51 UTC; 3min 51s ago
+    Process: 4714 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 4718 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 4721 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 4727 (workflow_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 22.7M (peak: 26.9M)
+        CPU: 1.114s
+     CGroup: /system.slice/docker-49f7e8b2ce755f52de58c2e9fd6715ec938ed7f9a2232c355cc99b761f532025.scope/system.slice/globular-workflow.service
+             └─4727 /usr/lib/globular/bin/workflow_server
+
+Aug 10 19:05:51 node-3 workflow_server[4727]: 2026/08/10 19:05:51 INFO policy: loaded permissions from file service=workflow path=/var/lib/globular/policy/services/workflow/permissions.generated.json count=40
+Aug 10 19:05:51 node-3 workflow_server[4727]: time=2026-08-10T19:05:51.380Z level=INFO msg="authz: permission mappings loaded" service=workflow count=40 action_mappings=40
+Aug 10 19:05:51 node-3 workflow_server[4727]: time=2026-08-10T19:05:51.380Z level=INFO msg="service started successfully" name=workflow.WorkflowService id=7736017d-40a4-4a79-91a1-c0aef0880631 port=10220
+Aug 10 19:05:51 node-3 workflow_server[4727]: 2026/08/10 19:05:51 INFO metrics listening service=workflow.WorkflowService addr=[::]:10221
+Aug 10 19:06:01 node-3 workflow_server[4727]: 2026/08/10 19:06:01 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 10 19:06:01 node-3 workflow_server[4727]: 2026/08/10 19:06:01 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 10 19:06:21 node-3 workflow_server[4727]: time=2026-08-10T19:06:21.353Z level=INFO msg="retention: startup delay elapsed, running first prune"
+Aug 10 19:06:21 node-3 workflow_server[4727]: time=2026-08-10T19:06:21.353Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 10 19:08:21 node-3 workflow_server[4727]: time=2026-08-10T19:08:21.386Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+Aug 10 19:09:21 node-3 workflow_server[4727]: time=2026-08-10T19:09:21.386Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = context deadline exceeded"

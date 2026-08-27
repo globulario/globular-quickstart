@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-26T05:23:16.403786Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "service-crash-autostart",
+  "suite": "recovery",
+  "result": "PASS",
+  "source_revision": "18e2d1202d390302d87b5d293fa69bb9239f8459",
+  "proof": {
+    "claim": "Verify that systemd's Restart=on-failure policy automatically recovers\nservices after a hard crash (SIGKILL) on a control-plane node.\n\nThe Globular service model relies on systemd as the process supervisor.\nAll services have Restart=on-failure configured, which means:\n- On clean exit (code 0): no restart (intentional stop)\n- On failure (non-zero exit, signal): restart after RestartSec\n\nSIGKILL (signal 9) cannot be caught by the process \u2014 it's an unconditional\nkernel-level kill. systemd receives the SIGCHLD, sees the abnormal exit,\nand schedules a restart. This simulates: OOM kill, kernel panic on peer,\n`kill -9` by an admin, or hardware-triggered watchdog.\n\nServices tested:\n- workflow (node-1): critical service, must auto-restart\n- dns (node-1): DNS queries blocked during crash, must auto-restart\n\nFailure modes caught:\n- Restart=on-failure not configured in the unit file\n- RestartSec too long (service stays down for minutes)\n- Service restart loop (crashes immediately after restart \u2014 caught by\n  StartLimitIntervalSec / StartLimitBurst)\n- Service leaves lock files or sockets preventing restart\n- Service fails to reconnect to etcd after restart (auth issue)\n\nIndustry known problem: \"restart storm\" \u2014 a service that crashes immediately\nafter restart triggers the systemd StartLimitBurst, causing systemd to\ngive up restarting. Setting StartLimitIntervalSec=300 and StartLimitBurst=5\ngives 5 attempts in 5 minutes, which is sufficient for transient failures\nwithout allowing infinite loops.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

@@ -1,0 +1,196 @@
+version: 1
+name: controller-leadership-vacuum
+description: |
+  Simultaneously SIGKILL the cluster_controller process on ALL three control-plane
+  nodes, creating a complete leadership vacuum — no instance holds the etcd lease,
+  no controller loop is running, and the cluster is temporarily ungoverned.
+
+  Unlike a single-controller crash (covered in controller-service-crash.yaml),
+  this test removes every leader and every standby at once. There is no warm
+  standby to immediately take over; a full election cycle must complete from
+  scratch.
+
+  What this stresses:
+    - Raft-backed lease expiry: the dead leader's etcd lease expires after its
+      TTL (typically 5-15s). Only after expiry can a new leader acquire it.
+    - Race-free election: all three nodes compete to acquire the leadership
+      lease simultaneously. Only one should win; others must recognize the
+      winner and park as standbys.
+    - systemd restart: each SIGKILL triggers Restart=on-failure, so all three
+      binary instances restart ~5s after the kill.
+    - Re-registration: the winner must re-write its service config and leader
+      addr to etcd before the harness considers it registered.
+
+  Expected outcome (SELF-HEALING — this test should PASS):
+    - Within 60s of the kill: at least one controller acquires the lease.
+    - Within 90s: controller is re-registered in etcd, cluster health restores.
+    - etcd quorum is UNAFFECTED (we kill the controller process, not etcd).
+    - No data is lost — etcd durability is independent of controller liveness.
+
+  If this test FAILS it means the election mechanism is broken: no instance
+  can acquire the lease after simultaneous SIGKILL. That would be a critical
+  self-healing regression.
+
+  This is the boundary between "catastrophic" and "self-healing": the
+  controller vacuum is a catastrophe the system IS designed to recover from.
+
+suite: catastrophic
+tags:
+  - catastrophe
+  - controller
+  - leadership-vacuum
+  - election
+  - self-healing
+  - sigkill
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy_before
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - type: probe
+    id: controller_registered_before
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+  - type: probe
+    id: etcd_quorum_before
+    probe: cluster.etcd_members
+    expect:
+      healthy_gte: 3
+
+  - type: probe
+    id: etcd_writable_before
+    probe: etcd.write_test
+    expect:
+      success: true
+
+baseline:
+  - type: probe
+    id: baseline_health
+    probe: cluster.health
+
+  - type: probe
+    id: baseline_leader
+    probe: cluster.leader
+
+  - type: probe
+    id: baseline_service_count
+    probe: services.count
+
+steps:
+  # ── Vacuum step 1: SIGKILL controller on node-1 (likely the leader) ───────
+  - id: kill_controller_node1
+    action: chaos.sigkill_service
+    params:
+      node: node-1
+      service: cluster-controller
+
+  # ── Vacuum step 2: SIGKILL controller on node-2 (a standby) ──────────────
+  - id: kill_controller_node2
+    action: chaos.sigkill_service
+    params:
+      node: node-2
+      service: cluster-controller
+
+  # ── Vacuum step 3: SIGKILL controller on node-3 (the other standby) ──────
+  - id: kill_controller_node3
+    action: chaos.sigkill_service
+    params:
+      node: node-3
+      service: cluster-controller
+
+  # ── Brief gap: confirm all three are down before the election race ─────────
+  # systemd restarts with ~5s delay (RestartSec). We want to observe the gap
+  # where NO controller instance is running.
+  - id: observe_vacuum_gap
+    action: wait
+    params:
+      timeout: 8
+
+  # ── Wait for election to complete: a new leader should emerge ─────────────
+  # Budget: etcd lease TTL (~15s) + election race (~5s) + registration (~10s)
+  # = ~30s total. We give 90s to be safe.
+  - id: wait_for_leader_election
+    action: wait
+    params:
+      timeout: 90
+      poll_interval: 10
+      until:
+        probe: service.registered
+        params:
+          service: cluster_controller
+        expect:
+          registered: true
+
+assertions:
+  # ── etcd quorum is completely unaffected ──────────────────────────────────
+  - type: probe
+    id: etcd_quorum_intact
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  # ── etcd writes work throughout (controller is separate from etcd) ─────────
+  - type: probe
+    id: etcd_writes_unaffected
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  # ── A new leader has been elected and registered ──────────────────────────
+  - type: probe
+    id: controller_re_registered
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+  # ── Cluster health reports at least degraded or healthy ───────────────────
+  # (may be degraded briefly while controller finishes re-registration
+  #  of all service endpoints; healthy is the target state)
+  - type: probe
+    id: cluster_not_dead
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # ── workflow service: etcd-registered services survive controller vacuum ───
+  - type: probe
+    id: workflow_survived_vacuum
+    probe: service.registered
+    params:
+      service: workflow
+    expect:
+      registered: true
+
+cleanup:
+  # Give the cluster time to fully stabilize after the election
+  - id: stabilize
+    action: wait
+    params:
+      timeout: 30
+
+  - id: final_health
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - id: final_etcd_write
+    probe: etcd.write_test
+    expect:
+      success: true

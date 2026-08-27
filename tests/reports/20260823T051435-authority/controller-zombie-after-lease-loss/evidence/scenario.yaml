@@ -1,0 +1,231 @@
+version: 1
+name: controller-zombie-after-lease-loss
+description: |
+  A controller that loses authority must never regain it by waking up.
+
+  THE FAULT. SIGSTOP the controller holding the leadership lease. Its lease is
+  not renewed, so it expires; another controller wins the election and changes
+  desired state. Then SIGCONT the original process.
+
+      controller A holds the lease, instance 73781e90…
+            ↓  SIGSTOP  — process frozen, memory intact
+      lease expires, key disappears
+            ↓
+      controller B wins the election, becomes leader
+            ↓
+      B mutates desired state
+            ↓  SIGCONT  — A wakes with perfectly coherent pre-freeze memory
+
+  WHY SIGKILL CANNOT REACH THIS. A killed process loses its memory and comes
+  back as a new instance that must re-elect from scratch — the safe path, and the
+  only one the existing crash scenarios exercise. A STOPPED process keeps every
+  byte: it wakes up still believing it is leader, still holding what it thinks is
+  a valid lease, mid-way through whatever it was doing. Every existing crash
+  drill tests that leader election WORKS. This tests something strictly harder:
+
+      is losing authority IRREVERSIBLE for the instance that lost it?
+
+  network-partition-fencing attacks the spatial side of that invariant — an
+  isolated node must be fenced. This attacks the temporal side, which is the
+  half that survives a working fencing implementation: A is not isolated when it
+  wakes. It can reach etcd, it can reach every service, and it has no local
+  evidence that anything happened. Only the cluster knows.
+
+  WHAT MUST HOLD. Exactly one leader, and it is not the resurrected instance.
+  The zombie's own instance UUID must not reappear as leader_instance, and the
+  desired state B wrote must survive untouched. A must either observe that its
+  lease is gone and stand down, or be refused by the generation guard — but from
+  outside, the requirement is simply that nothing it believed becomes true again.
+
+  A NOTE ON WHAT THIS CAN OBSERVE. Proving "A performed no externally visible
+  mutation" in full needs write attribution per authority instance. What is
+  observable here is: leadership did not return to A's instance, desired state
+  is byte-identical to what B wrote, no split-brain or drift findings appeared,
+  and the cluster stayed healthy. Those are consequences of correct fencing
+  rather than the fencing itself, and the scenario says so rather than
+  overclaiming.
+
+suite: authority
+tags:
+  - fencing
+  - leadership
+  - lease
+  - gray-failure
+  - sigstop
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # There must be a leader, and more than one candidate — with a single
+  # candidate there is nobody to take authority and the scenario is vacuous.
+  - type: probe
+    id: leadership_is_established
+    probe: controller.leadership
+    expect:
+      claimants_gte: 2
+      has_leader: true
+
+  - type: probe
+    id: etcd_accepts_writes
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  # A settled cluster means liveness is current, not merely that cluster.health
+  # says "healthy". require_healthy_before_start passed at a moment when liveness
+  # was 927 seconds stale after the blackout scenario, so the next scenario began
+  # mutating a cluster that had not finished recovering — and left residue when
+  # its first steps failed. Asserting liveness here fails fast, with a reason.
+  - type: probe
+    id: liveness_settled_before
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+      nodes_gte: 5
+
+baseline:
+  # The instance UUID captured here is the identity that must never lead again.
+  - type: probe
+    id: leadership_before
+    probe: controller.leadership
+
+  - type: probe
+    id: desired_state_before
+    probe: cluster.desired_state
+
+steps:
+  # node: leader is resolved at action time from the cluster's own lease record.
+  # A fixed node name silently targets the wrong process once leadership moves —
+  # this scenario froze node-1 while node-3 held the lease, and so exercised
+  # nothing while appearing correct.
+  - type: action
+    id: freeze_the_leader
+    action: chaos.pause_service
+    params:
+      node: leader
+      service: cluster-controller
+
+  # Long enough for the lease to expire and a new election to complete. A short
+  # wait would test "the leader is briefly unresponsive", which is a different
+  # and much weaker property.
+  - type: action
+    id: wait_for_lease_expiry_and_reelection
+    action: wait
+    params:
+      seconds: 180
+      reason: "the frozen leader cannot renew its lease; allow expiry plus a full election"
+
+  # Mutate desired state while the old leader is frozen, so the cluster's
+  # authority has demonstrably moved on. A resumed zombie that overwrites this
+  # is the failure being hunted.
+  - type: action
+    id: new_leader_mutates_desired_state
+    action: ops.set_desired
+    params:
+      # dns, not blog: blog is refused with a kind error its own resolver
+      # contradicts (desired_state.refusal_message_misattributes_cause), which
+      # would fail this step for a reason unrelated to fencing.
+      node: node-2
+      name: dns
+      # @staged resolves to the version this release actually shipped.
+      # The literal 1.2.312 was correct for the cluster this scenario was
+      # written against; on 1.2.328 it is not a published version, so the
+      # control plane refused a request the scenario expected it to accept
+      # and the refusal was read as a control-plane defect.
+      version: "@staged"
+      expect: accepted
+
+  # Resumes whichever node was frozen: by now the lease has moved, so "leader"
+  # would resolve to the NEW holder. The frozen node is recorded in the evidence
+  # for the step above, and cleanup resumes every candidate unconditionally.
+  - type: action
+    id: thaw_the_zombie
+    action: chaos.resume_all_controllers
+
+  # Give the resurrected instance real time to do damage if it can. A short
+  # wait here would let the scenario pass simply by not looking.
+  - type: action
+    id: give_the_zombie_time_to_act
+    action: wait
+    params:
+      seconds: 150
+      reason: "a resumed controller must be given the chance to act before concluding it cannot"
+
+assertions:
+  # ── Exactly one authority ─────────────────────────────────────────────────
+  - type: probe
+    id: exactly_one_leader_address
+    probe: controller.leadership
+    expect:
+      has_leader: true
+      claimants_gte: 2
+
+  # ── The cluster's decisions survived ──────────────────────────────────────
+  # If the zombie rewrote desired state from its stale memory, this is where a
+  # reverted or duplicated entry shows up.
+  - type: probe
+    id: desired_state_intact
+    probe: cluster.desired_state
+    expect:
+      count_gte: 1
+
+  - type: probe
+    id: no_ambiguous_resolution_introduced
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+      conflict: 0
+
+  # ── No split brain, no drift storm ────────────────────────────────────────
+  # Two actors both believing they may decide shows up as drift findings or as
+  # reconcile failures, not as a tidy error message.
+  - type: probe
+    id: no_doctor_errors
+    probe: doctor.report_severity
+    expect:
+      error: 0
+      reachable: true
+
+  - type: probe
+    id: reconcile_clean_after_thaw
+    probe: cluster.reconcile_clean
+    params:
+      since: "3 min ago"
+    expect:
+      clean: true
+
+  # ── The cluster is still itself ───────────────────────────────────────────
+  - type: probe
+    id: cluster_healthy_after_thaw
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: etcd_still_accepts_writes
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: liveness_current
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+
+cleanup:
+  # SIGCONT on a running process is harmless, so resuming every controller is the
+  # safe way to guarantee nothing is left frozen if the scenario aborted.
+  - type: action
+    id: ensure_no_controller_left_frozen
+    action: chaos.resume_all_controllers

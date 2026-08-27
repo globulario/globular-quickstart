@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 15:15:06 UTC; 1h 29min ago
+    Process: 10408 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 10412 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 10415 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10421 (rbac_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 149.2M (peak: 300.3M)
+        CPU: 11.176s
+     CGroup: /system.slice/docker-f8aab85675a209b14dde86f8d35afd5ff5b9a0f99553505e73c479e4f2b63db5.scope/system.slice/globular-rbac.service
+             └─10421 /usr/lib/globular/bin/rbac_server
+
+Aug 22 16:32:31 node-2 rbac_server[10421]: 2026/08/22 16:32:31 WARN no path found  /users/sa The specified key does not exist.
+Aug 22 16:32:31 node-2 rbac_server[10421]: 2026/08/22 16:32:31 WARN fail to remove key  /users/sa :  Entry not found
+Aug 22 16:32:32 node-2 rbac_server[10421]: 2026/08/22 16:32:32 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 22 16:32:33 node-2 rbac_server[10421]: 2026/08/22 16:32:33 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 22 16:32:33 node-2 rbac_server[10421]: 2026/08/22 16:32:33 INFO acc: AIMD decrease method=/rbac.RbacService/AddResourceOwner rtt_ms=1230 baseline_ms=20 window=483 new_window=434
+Aug 22 16:32:33 node-2 rbac_server[10421]: 2026/08/22 16:32:33 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 22 16:36:49 node-2 rbac_server[10421]: 2026/08/22 16:36:49 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 22 16:36:54 node-2 rbac_server[10421]: 2026/08/22 16:36:54 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 22 16:41:49 node-2 rbac_server[10421]: 2026/08/22 16:41:49 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 22 16:41:54 node-2 rbac_server[10421]: 2026/08/22 16:41:54 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

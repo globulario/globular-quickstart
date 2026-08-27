@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:09:28 UTC; 1min 15s ago
+    Process: 276 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 433 (envoy)
+      Tasks: 40 (limit: 8641)
+     Memory: 27.1M (peak: 28.0M)
+        CPU: 471ms
+     CGroup: /system.slice/docker-46d3e9bf00c9e04118c1a14b2224ddcb115e85cb764bf2551f39a6475b534673.scope/system.slice/globular-envoy.service
+             └─433 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Aug 24 17:10:28 node-4 envoy[433]: [2026-08-24T17:10:22.363Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 689473 21 - "10.10.0.14" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 24 17:10:31 node-4 envoy[433]: [2026-08-24 17:10:31.906][433][info][upstream] [source/common/upstream/cluster_manager_impl.cc:248] cm init: all clusters initialized
+Aug 24 17:10:31 node-4 envoy[433]: [2026-08-24 17:10:31.906][433][info][main] [source/server/server.cc:1023] all clusters initialized. initializing init manager
+Aug 24 17:10:31 node-4 envoy[433]: [2026-08-24 17:10:31.913][433][info][upstream] [source/common/listener_manager/lds_api.cc:109] lds: add/update listener 'ingress_listener_443'
+Aug 24 17:10:31 node-4 envoy[433]: [2026-08-24 17:10:31.915][433][info][upstream] [source/common/listener_manager/lds_api.cc:109] lds: add/update listener 'ingress_listener_443_http_80'
+Aug 24 17:10:31 node-4 envoy[433]: [2026-08-24 17:10:31.923][433][info][config] [source/common/listener_manager/listener_manager_impl.cc:1003] all dependencies initialized. starting workers
+Aug 24 17:10:38 node-4 envoy[433]: [2026-08-24T17:10:29.416Z] "GET /ready HTTP/1.1" 503 - 0 17 0 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 24 17:10:38 node-4 envoy[433]: [2026-08-24T17:10:29.417Z] "GET /server_info HTTP/1.1" 200 - 0 98014 2 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 24 17:10:38 node-4 envoy[433]: [2026-08-24T17:10:29.420Z] "GET /stats?format=json HTTP/1.1" 200 - 0 493171 7 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 24 17:10:38 node-4 envoy[433]: [2026-08-24T17:10:37.363Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 756242 17 - "10.10.0.14" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"

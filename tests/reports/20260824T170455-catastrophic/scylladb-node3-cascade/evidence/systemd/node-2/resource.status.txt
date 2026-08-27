@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:09:31 UTC; 1min 7s ago
+    Process: 372 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 378 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 392 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 426 (resource_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 26.0M (peak: 27.0M)
+        CPU: 656ms
+     CGroup: /system.slice/docker-8b98724c89d7814ef3d4703a4c42e0cc7bef5b84406d2f3799206f7b685a6043.scope/system.slice/globular-resource.service
+             └─426 /usr/lib/globular/bin/resource_server
+
+Aug 24 17:09:32 node-2 resource_server[426]: time=2026-08-24T17:09:32.190Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042
+Aug 24 17:09:33 node-2 resource_server[426]: 2026/08/24 17:09:33 WARN scylla: Count fallback to scan; consider raw CQL with PK WHERE table=local_resource.accounts
+Aug 24 17:09:33 node-2 resource_server[426]: time=2026-08-24T17:09:33.621Z level=ERROR msg="fail to create account dir" error="failed to seed sa account: account with name sa already exist!"
+Aug 24 17:09:33 node-2 resource_server[426]: 2026/08/24 17:09:33 INFO metrics: proxy port conflict, using free port service=resource.ResourceService wanted=10011 actual=33133
+Aug 24 17:09:33 node-2 resource_server[426]: 2026/08/24 17:09:33 INFO metrics listening service=resource.ResourceService addr=[::]:33133
+Aug 24 17:09:34 node-2 resource_server[426]: 2026/08/24 17:09:34 WARN port/proxy change detected in desired; restart required to take effect service=resource.ResourceService id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 old_port=10011 new_port=10011 old_proxy=33133 new_proxy=10011
+Aug 24 17:09:35 node-2 resource_server[426]: 2026/08/24 17:09:35 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:09:41 node-2 resource_server[426]: 2026/08/24 17:09:41 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 24 17:10:21 node-2 resource_server[426]: 2026/08/24 17:10:21 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:10:23 node-2 resource_server[426]: 2026/08/24 17:10:23 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: no route to host

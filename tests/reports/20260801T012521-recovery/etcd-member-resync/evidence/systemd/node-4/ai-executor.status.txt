@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:25:39 UTC; 1min 28s ago
+    Process: 954 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 977 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 984 (ai_executor_ser)
+      Tasks: 17 (limit: 8641)
+     Memory: 24.1M (peak: 29.0M)
+        CPU: 593ms
+     CGroup: /system.slice/docker-9180d30e9d1ba804a7b09169efb4bbc01eb91329f628cb2e20c93a2f4151a900.scope/system.slice/globular-ai-executor.service
+             └─984 /usr/lib/globular/bin/ai_executor_server
+
+Aug 01 01:25:41 node-4 ai_executor_server[984]: time=2026-08-01T01:25:41.443Z level=WARN msg="authz: no permission mappings registered — RBAC will resolve raw method paths and deny role-based calls" service=ai_executor expected_path=/var/lib/globular/policy/services/ai_executor/permissions.generated.json
+Aug 01 01:25:41 node-4 ai_executor_server[984]: time=2026-08-01T01:25:41.443Z level=INFO msg="service started successfully" name=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd port=10010
+Aug 01 01:25:41 node-4 ai_executor_server[984]: time=2026-08-01T01:25:41.666Z level=INFO msg="job_store: connected to etcd"
+Aug 01 01:25:41 node-4 ai_executor_server[984]: 2026/08/01 01:25:41 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 01 01:25:41 node-4 ai_executor_server[984]: time=2026-08-01T01:25:41.989Z level=INFO msg="job_store: loaded jobs from etcd" count=42
+Aug 01 01:25:43 node-4 ai_executor_server[984]: time=2026-08-01T01:25:43.664Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts=[10.10.0.11]
+Aug 01 01:26:11 node-4 ai_executor_server[984]: time=2026-08-01T01:26:11.466Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 01 01:26:16 node-4 ai_executor_server[984]: time=2026-08-01T01:26:16.468Z level=WARN msg="peer: ping failed" endpoint=10.10.0.13:10010 err="rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"
+Aug 01 01:26:16 node-4 ai_executor_server[984]: time=2026-08-01T01:26:16.468Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010
+Aug 01 01:26:16 node-4 ai_executor_server[984]: time=2026-08-01T01:26:16.477Z level=INFO msg="peer: connected" node=node-5 endpoint=10.10.0.15:10010

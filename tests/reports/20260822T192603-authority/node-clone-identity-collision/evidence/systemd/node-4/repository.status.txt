@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:24:54 UTC; 10min ago
+    Process: 152 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 181 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 210 (repository_serv)
+      Tasks: 19 (limit: 8641)
+     Memory: 33.6M (peak: 37.9M)
+        CPU: 6.153s
+     CGroup: /system.slice/docker-b0ee96061132b593cfc49cfbc92e965d02de7fb7e6500a4382ff6f29bffc0497.scope/system.slice/globular-repository.service
+             └─210 /usr/lib/globular/bin/repository_server
+
+Aug 22 19:26:59 node-4 repository_server[210]: 2026/08/22 19:26:59 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 22 19:27:10 node-4 repository_server[210]: 2026/08/22 19:27:10 WARN acc: config watcher stopped, will retry err="etcdserver: mvcc: required revision has been compacted" backoff=5s
+Aug 22 19:29:56 node-4 repository_server[210]: time=2026-08-22T19:29:56.918Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 22 19:30:01 node-4 repository_server[210]: 2026/08/22 19:30:01 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 22 19:31:00 node-4 repository_server[210]: 2026/08/22 19:31:00 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=167 baseline_ms=20 window=295 new_window=265
+Aug 22 19:31:59 node-4 repository_server[210]: 2026/08/22 19:31:59 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 22 19:32:00 node-4 repository_server[210]: 2026/08/22 19:32:00 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=166 baseline_ms=20 window=596 new_window=536
+Aug 22 19:33:00 node-4 repository_server[210]: 2026/08/22 19:33:00 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=166 baseline_ms=20 window=871 new_window=783
+Aug 22 19:34:08 node-4 repository_server[210]: 2026/08/22 19:34:08 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=235 baseline_ms=20 window=1275 new_window=1147
+Aug 22 19:34:56 node-4 repository_server[210]: time=2026-08-22T19:34:56.918Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"

@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-12 14:13:32 UTC; 17min ago
+    Process: 52 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 69 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 93 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 25.8M (peak: 28.8M)
+        CPU: 2.460s
+     CGroup: /system.slice/docker-ba9fac652a3405e514249b33ab0346f14fc135e89814b53d3d37f427697e77f5.scope/system.slice/globular-event.service
+             └─93 /usr/lib/globular/bin/event_server
+
+Aug 12 14:30:47 node-5 event_server[93]: time=2026-08-12T14:30:47.290Z level=WARN msg="save cursor failed" err="gocql: no hosts available in the pool"
+Aug 12 14:30:47 node-5 event_server[93]: 2026/08/12 14:30:47 INFO log forwarding enabled address=10.10.0.11:10100
+Aug 12 14:30:47 node-5 event_server[93]: time=2026-08-12T14:30:47.489Z level=WARN msg="poll events error" bucket=2026-08-12T14:28 err="gocql: no hosts available in the pool"
+Aug 12 14:30:47 node-5 event_server[93]: time=2026-08-12T14:30:47.489Z level=WARN msg="poll events error" bucket=2026-08-12T14:29 err="gocql: no hosts available in the pool"
+Aug 12 14:30:47 node-5 event_server[93]: time=2026-08-12T14:30:47.489Z level=WARN msg="poll events error" bucket=2026-08-12T14:30 err="gocql: no hosts available in the pool"
+Aug 12 14:30:47 node-5 event_server[93]: time=2026-08-12T14:30:47.489Z level=WARN msg="save cursor failed" err="gocql: no hosts available in the pool"
+Aug 12 14:30:47 node-5 event_server[93]: 2026/08/12 14:30:47 ERROR rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (gocql: no hosts available in the pool) domain=10.10.0.15:8443 application=event.EventService user="" method=/event.EventService/OnEvent function=github.com/globulario/services/golang/interceptors.ServerStreamInterceptor file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:1731
+Aug 12 14:30:47 node-5 event_server[93]: 2026/08/12 14:30:47 INFO acc: warmup complete baseline_rtt_ms=20 samples=207 elapsed=17m14s
+Aug 12 14:30:47 node-5 event_server[93]: 2026/08/12 14:30:47 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: degraded (permissions store reconnect failed: scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.11:9142: i/o timeout)"
+Aug 12 14:30:48 node-5 event_server[93]: time=2026-08-12T14:30:48.092Z level=INFO msg="dependencies recovered — service is SERVING"

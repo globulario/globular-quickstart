@@ -1,0 +1,21 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:11 UTC; 5s ago
+    Process: 2126 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 2151 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2169 (monitoring_serv)
+      Tasks: 10 (limit: 8641)
+     Memory: 6.9M (peak: 7.2M)
+        CPU: 67ms
+     CGroup: /system.slice/docker-ca280363fa2453665805d4ffe29b667a4fb9760e5edf5d71628a9f162a1884b1.scope/system.slice/globular-monitoring.service
+             └─2169 /usr/lib/globular/bin/monitoring_server
+
+Aug 19 03:23:11 node-1 systemd[1]: globular-monitoring.service: Scheduled restart job, restart counter is at 2.
+Aug 19 03:23:11 node-1 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 19 03:23:11 node-1 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 19 03:23:11 node-1 monitoring_server[2169]: 2026/08/19 03:23:11 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 19 03:23:11 node-1 monitoring_server[2169]: 2026/08/19 03:23:11 INFO security: loaded cluster roles from external policy file roles=22
+Aug 19 03:23:11 node-1 monitoring_server[2169]: PortAllocator range: 10000 - 20000
+Aug 19 03:23:13 node-1 monitoring_server[2169]: {"level":"warn","ts":"2026-08-19T03:23:13.702724Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000fab40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:15 node-1 monitoring_server[2169]: {"level":"warn","ts":"2026-08-19T03:23:15.7042Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000fab40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:15 node-1 monitoring_server[2169]: 2026/08/19 03:23:15 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"

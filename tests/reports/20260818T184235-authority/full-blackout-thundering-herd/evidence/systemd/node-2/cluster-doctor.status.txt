@@ -1,0 +1,19 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:13:01 UTC; 10s ago
+    Process: 1855 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 1860 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1863 (cluster_doctor_)
+      Tasks: 10 (limit: 8641)
+     Memory: 28.4M (peak: 29.5M)
+        CPU: 230ms
+     CGroup: /system.slice/docker-b0762ab2a8bcd3a21dd0b30b300b2eb739623548a6218b32fd63454fbfbb2f99.scope/system.slice/globular-cluster-doctor.service
+             └─1863 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 18 19:12:59 node-2 systemd[1]: globular-cluster-doctor.service: Failed with result 'exit-code'.
+Aug 18 19:13:01 node-2 systemd[1]: globular-cluster-doctor.service: Scheduled restart job, restart counter is at 6.
+Aug 18 19:13:01 node-2 systemd[1]: Starting globular-cluster-doctor.service - Globular cluster_doctor...
+Aug 18 19:13:01 node-2 systemd[1]: Started globular-cluster-doctor.service - Globular cluster_doctor.
+Aug 18 19:13:01 node-2 cluster_doctor_server[1863]: 2026/08/18 19:13:01 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 18 19:13:01 node-2 cluster_doctor_server[1863]: 2026/08/18 19:13:01 INFO security: loaded cluster roles from external policy file roles=22
+Aug 18 19:13:11 node-2 cluster_doctor_server[1863]: {"level":"warn","ts":"2026-08-18T19:13:11.421611Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002794a0/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}

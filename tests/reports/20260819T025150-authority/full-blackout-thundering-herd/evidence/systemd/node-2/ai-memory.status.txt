@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:16 UTC; 4s ago
+    Process: 2119 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 2134 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 2139 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2156 (ai_memory_serve)
+      Tasks: 13 (limit: 8641)
+     Memory: 13.5M (peak: 13.7M)
+        CPU: 113ms
+     CGroup: /system.slice/docker-c9ec52239bf0c1a466e721d2fce1da845ffe2a6f535fdc6be88efc93c18b00de.scope/system.slice/globular-ai-memory.service
+             └─2156 /usr/lib/globular/bin/ai_memory_server
+
+Aug 19 03:23:16 node-2 systemd[1]: Started globular-ai-memory.service - Globular ai_memory.
+Aug 19 03:23:16 node-2 ai_memory_server[2156]: 2026/08/19 03:23:16 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 19 03:23:16 node-2 ai_memory_server[2156]: 2026/08/19 03:23:16 INFO security: loaded cluster roles from external policy file roles=22
+Aug 19 03:23:16 node-2 ai_memory_server[2156]: PortAllocator range: 10000 - 20000
+Aug 19 03:23:18 node-2 ai_memory_server[2156]: {"level":"warn","ts":"2026-08-19T03:23:18.595413Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004592c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:20 node-2 ai_memory_server[2156]: {"level":"warn","ts":"2026-08-19T03:23:20.597627Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004592c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:20 node-2 ai_memory_server[2156]: 2026/08/19 03:23:20 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"
+Aug 19 03:23:20 node-2 ai_memory_server[2156]: time=2026-08-19T03:23:20.598Z level=INFO msg="starting ai_memory service" service=ai_memory.AiMemoryService version=1.2.325 domain=globular.internal
+Aug 19 03:23:20 node-2 ai_memory_server[2156]: 2026/08/19 03:23:20 WARN InitService: etcd config lookup failed (etcd may be unavailable); will use compiled-in defaults service=ai_memory.AiMemoryService id_err="context deadline exceeded" name_err="context deadline exceeded"
+Aug 19 03:23:20 node-2 ai_memory_server[2156]: 2026/08/19 03:23:20 INFO InitService: loaded seed config from local file service=ai_memory.AiMemoryService id=10595db3-3e7b-343e-9f86-94a6e317585f

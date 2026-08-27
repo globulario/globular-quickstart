@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:45:17 UTC; 3min 34s ago
+    Process: 207 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 238 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 257 (cluster_doctor_)
+      Tasks: 19 (limit: 8641)
+     Memory: 25.5M (peak: 27.7M)
+        CPU: 728ms
+     CGroup: /system.slice/docker-7fac91a876a85840c60c302acf724a18f722fb5bd5d00f55ebb1b0ece4798c2c.scope/system.slice/globular-cluster-doctor.service
+             └─257 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 23 18:48:32 node-1 cluster_doctor_server[257]: 2026/08/23 18:48:32 INFO mesh: Envoy available, routing through mesh target=node-1.globular.internal:443
+Aug 23 18:48:32 node-1 cluster_doctor_server[257]: 2026/08/23 18:48:32 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 23 18:48:32 node-1 cluster_doctor_server[257]: time=2026-08-23T18:48:32.849Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.13:10050: connect: no route to host\""
+Aug 23 18:48:32 node-1 cluster_doctor_server[257]: time=2026-08-23T18:48:32.849Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 23 18:48:32 node-1 cluster_doctor_server[257]: time=2026-08-23T18:48:32.849Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 23 18:48:32 node-1 cluster_doctor_server[257]: time=2026-08-23T18:48:32.849Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 23 18:48:32 node-1 cluster_doctor_server[257]: time=2026-08-23T18:48:32.849Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 23 18:48:32 node-1 cluster_doctor_server[257]: time=2026-08-23T18:48:32.849Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 23 18:48:32 node-1 cluster_doctor_server[257]: time=2026-08-23T18:48:32.889Z level=WARN msg="learning: promotion candidate not queued; hint lost, cluster behavior unaffected" theme=remediation.cluster.desired_state.absent err="generate promotion candidate: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused"
+Aug 23 18:48:35 node-1 cluster_doctor_server[257]: time=2026-08-23T18:48:35.786Z level=WARN msg="learning: promotion candidate not queued; hint lost, cluster behavior unaffected" theme=remediation.node.systemd.units_running err="generate promotion candidate: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: No route to host"

@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "scenario": "release-failure-audit",
+  "suite": "recovery",
+  "start_time": "2026-08-22T18:31:08.868743Z",
+  "end_time": "2026-08-22T18:31:10.728885Z",
+  "passed": true,
+  "item_count": 4,
+  "items": [
+    {
+      "id": "cluster_reachable",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T18:31:09.818129Z"
+    },
+    {
+      "id": "release_records_exist",
+      "section": "assertions",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {
+        "total_gte": 15
+      },
+      "result": {
+        "total": 24,
+        "succeeded": 24,
+        "failed": 0,
+        "pending": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T18:31:09.942456Z"
+    },
+    {
+      "id": "releases_converge",
+      "section": "assertions",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {
+        "succeeded_gte": 1
+      },
+      "result": {
+        "total": 24,
+        "succeeded": 24,
+        "failed": 0,
+        "pending": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T18:31:10.072849Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-22T18:31:10.728783Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

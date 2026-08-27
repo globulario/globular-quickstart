@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:50:26 UTC; 19s ago
+    Process: 418 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 435 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 441 (repository_serv)
+      Tasks: 17 (limit: 8641)
+     Memory: 26.8M (peak: 28.5M)
+        CPU: 425ms
+     CGroup: /system.slice/docker-56d7015a866b54219120956bd676477ef39a32b1e00344e38afda3ff256ad80d.scope/system.slice/globular-repository.service
+             └─441 /usr/lib/globular/bin/repository_server
+
+Aug 05 16:50:27 node-2 repository_server[441]: time=2026-08-05T16:50:27.122Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=114 already_present=57 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 05 16:50:27 node-2 repository_server[441]: 2026/08/05 16:50:27 INFO release ledger migration complete entries=57
+Aug 05 16:50:27 node-2 repository_server[441]: 2026/08/05 16:50:27 INFO publish-reconciler: started interval=1m0s
+Aug 05 16:50:27 node-2 repository_server[441]: time=2026-08-05T16:50:27.203Z level=INFO msg="service ready" service=repository.PackageRepository port=10003 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=915
+Aug 05 16:50:27 node-2 repository_server[441]: time=2026-08-05T16:50:27.203Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 05 16:50:27 node-2 repository_server[441]: 2026/08/05 16:50:27 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 05 16:50:27 node-2 repository_server[441]: time=2026-08-05T16:50:27.204Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 05 16:50:27 node-2 repository_server[441]: time=2026-08-05T16:50:27.204Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 05 16:50:27 node-2 repository_server[441]: 2026/08/05 16:50:27 INFO metrics listening service=repository.PackageRepository addr=[::]:10001
+Aug 05 16:50:38 node-2 repository_server[441]: 2026/08/05 16:50:38 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:10002: connect: connection refused\""

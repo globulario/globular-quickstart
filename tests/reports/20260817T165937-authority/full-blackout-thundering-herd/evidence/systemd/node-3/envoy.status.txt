@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:19 UTC; 1min 11s ago
+    Process: 161 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 257 (envoy)
+      Tasks: 40 (limit: 8641)
+     Memory: 25.3M (peak: 26.1M)
+        CPU: 552ms
+     CGroup: /system.slice/docker-8f454c2373e807828ac154919ed7d095a53274b04530736be8114ed093686a0e.scope/system.slice/globular-envoy.service
+             └─257 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Aug 17 17:19:09 node-3 envoy[257]: [2026-08-17T17:19:03.434Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 562994 13 - "10.10.0.13" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 17 17:19:19 node-3 envoy[257]: [2026-08-17T17:19:18.434Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 562996 14 - "10.10.0.13" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 17 17:19:24 node-3 envoy[257]: [2026-08-17 17:19:24.248][257][info][upstream] [source/common/upstream/cluster_manager_impl.cc:248] cm init: all clusters initialized
+Aug 17 17:19:24 node-3 envoy[257]: [2026-08-17 17:19:24.248][257][info][main] [source/server/server.cc:1023] all clusters initialized. initializing init manager
+Aug 17 17:19:24 node-3 envoy[257]: [2026-08-17 17:19:24.258][257][info][upstream] [source/common/listener_manager/lds_api.cc:109] lds: add/update listener 'ingress_listener_443'
+Aug 17 17:19:24 node-3 envoy[257]: [2026-08-17 17:19:24.261][257][info][upstream] [source/common/listener_manager/lds_api.cc:109] lds: add/update listener 'ingress_listener_443_http_80'
+Aug 17 17:19:24 node-3 envoy[257]: [2026-08-17 17:19:24.267][257][info][config] [source/common/listener_manager/listener_manager_impl.cc:1003] all dependencies initialized. starting workers
+Aug 17 17:19:29 node-3 envoy[257]: [2026-08-17T17:19:22.764Z] "GET /ready HTTP/1.1" 503 - 0 17 0 - "10.10.0.13" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 17 17:19:29 node-3 envoy[257]: [2026-08-17T17:19:22.764Z] "GET /server_info HTTP/1.1" 200 - 0 98014 3 - "10.10.0.13" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 17 17:19:29 node-3 envoy[257]: [2026-08-17T17:19:22.770Z] "GET /stats?format=json HTTP/1.1" 200 - 0 390661 8 - "10.10.0.13" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"

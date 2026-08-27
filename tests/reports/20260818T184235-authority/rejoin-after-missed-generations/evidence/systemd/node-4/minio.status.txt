@@ -1,0 +1,25 @@
+○ globular-minio.service - Globular MinIO
+     Loaded: loaded (/etc/systemd/system/globular-minio.service; enabled; preset: enabled)
+     Active: inactive (dead) since Tue 2026-08-18 19:19:56 UTC; 6min ago
+   Duration: 7min 30.118s
+    Process: 48 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/minio /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 65 ExecStartPre=/usr/bin/chown -R globular:globular /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 80 ExecStartPre=/usr/bin/chown -R globular:globular /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 94 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 101 ExecStartPre=/usr/bin/chmod 0700 /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 125 ExecStartPre=/bin/sh -c chmod o+x "$(dirname /shared/minio/data)" "$(dirname "$(dirname /shared/minio/data)")" 2>/dev/null || true (code=exited, status=0/SUCCESS)
+    Process: 168 ExecStartPre=/usr/bin/test -w /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 194 ExecStart=/usr/lib/globular/bin/minio server /shared/minio/data --address 10.10.0.14:9000 --console-address 127.0.0.1:9001 (code=exited, status=0/SUCCESS)
+   Main PID: 194 (code=exited, status=0/SUCCESS)
+        CPU: 33.821s
+
+Aug 18 19:17:45 node-4 minio[194]: Error: Storage resources are insufficient for the write operation .minio.sys/buckets/.bloomcycle.bin, Object buckets/.bloomcycle.bin (*fmt.wrapError)
+Aug 18 19:17:45 node-4 minio[194]:        4: internal/logger/logger.go:271:logger.LogIf()
+Aug 18 19:17:45 node-4 minio[194]:        3: cmd/logging.go:136:cmd.scannerLogIf()
+Aug 18 19:17:45 node-4 minio[194]:        2: cmd/data-scanner.go:227:cmd.runDataScanner()
+Aug 18 19:17:45 node-4 minio[194]:        1: cmd/data-scanner.go:80:cmd.initDataScanner.func1()
+Aug 18 19:19:55 node-4 minio[194]: INFO: Exiting on signal: TERMINATED
+Aug 18 19:19:55 node-4 systemd[1]: Stopping globular-minio.service - Globular MinIO...
+Aug 18 19:19:56 node-4 systemd[1]: globular-minio.service: Deactivated successfully.
+Aug 18 19:19:56 node-4 systemd[1]: Stopped globular-minio.service - Globular MinIO.
+Aug 18 19:19:56 node-4 systemd[1]: globular-minio.service: Consumed 33.821s CPU time, 179.3M memory peak, 128.0K memory swap peak.

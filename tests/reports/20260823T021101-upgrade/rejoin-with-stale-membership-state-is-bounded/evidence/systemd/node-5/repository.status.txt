@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 03:13:04 UTC; 14min ago
+    Process: 5563 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 5567 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 5570 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 34.6M (peak: 40.5M)
+        CPU: 5.308s
+     CGroup: /system.slice/docker-cece4a588150577c20ab1b0a7c25446de036b35b2ad5a95b89c72437cae82c8e.scope/system.slice/globular-repository.service
+             └─5570 /usr/lib/globular/bin/repository_server
+
+Aug 23 03:13:14 node-5 repository_server[5570]: 2026/08/23 03:13:14 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 23 03:13:14 node-5 repository_server[5570]: 2026/08/23 03:13:14 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 23 03:13:43 node-5 repository_server[5570]: 2026/08/23 03:13:43 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10004 new_port=10004 old_proxy=36557 new_proxy=10001
+Aug 23 03:13:54 node-5 repository_server[5570]: 2026/08/23 03:13:54 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 23 03:18:04 node-5 repository_server[5570]: time=2026-08-23T03:18:04.804Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 23 03:18:05 node-5 repository_server[5570]: 2026/08/23 03:18:05 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 23 03:19:53 node-5 repository_server[5570]: 2026/08/23 03:19:53 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 23 03:23:04 node-5 repository_server[5570]: time=2026-08-23T03:23:04.803Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 23 03:24:53 node-5 repository_server[5570]: 2026/08/23 03:24:53 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 23 03:25:54 node-5 repository_server[5570]: 2026/08/23 03:25:54 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=164 baseline_ms=20 window=886 new_window=797

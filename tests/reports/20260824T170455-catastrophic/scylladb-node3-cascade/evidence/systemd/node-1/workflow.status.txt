@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:07:49 UTC; 2min 47s ago
+    Process: 1189 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 1193 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1196 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1202 (workflow_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 24.0M (peak: 26.9M)
+        CPU: 1.274s
+     CGroup: /system.slice/docker-132f316b761e19b341cb3599f86ce40d781792bff8b801029cd06da093b8fd9e.scope/system.slice/globular-workflow.service
+             └─1202 /usr/lib/globular/bin/workflow_server
+
+Aug 24 17:10:26 node-1 workflow_server[1202]: 2026/08/24 17:10:26 gocql: unable to connect to any ring node: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:10:26 node-1 workflow_server[1202]: 2026/08/24 17:10:26 gocql: control falling back to initial contact points.
+Aug 24 17:10:26 node-1 workflow_server[1202]: 2026/08/24 17:10:26 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:10:26 node-1 workflow_server[1202]: 2026/08/24 17:10:26 gocql: unable to reconnect control connection: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:10:27 node-1 workflow_server[1202]: 2026/08/24 17:10:27 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:10:27 node-1 workflow_server[1202]: 2026/08/24 17:10:27 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:10:27 node-1 workflow_server[1202]: 2026/08/24 17:10:27 gocql: unable to connect to any ring node: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:10:27 node-1 workflow_server[1202]: 2026/08/24 17:10:27 gocql: control falling back to initial contact points.
+Aug 24 17:10:27 node-1 workflow_server[1202]: 2026/08/24 17:10:27 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:10:27 node-1 workflow_server[1202]: 2026/08/24 17:10:27 gocql: unable to reconnect control connection: dial tcp 10.10.0.11:9042: connect: connection refused

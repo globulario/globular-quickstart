@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:23:10 UTC; 12min ago
+    Process: 738 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 775 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 792 (ai_executor_ser)
+      Tasks: 19 (limit: 8641)
+     Memory: 31.8M (peak: 33.1M)
+        CPU: 2.459s
+     CGroup: /system.slice/docker-fbd50be62ef8809d6e93c288dffbbd1077867e0e3f7fe69f97f12b29cb90c420.scope/system.slice/globular-ai-executor.service
+             └─792 /usr/lib/globular/bin/ai_executor_server
+
+Aug 22 19:32:28 node-1 ai_executor_server[792]: time=2026-08-22T19:32:28.199Z level=INFO msg="INCIDENT RESOLVED" incident_id=35be4781-9e60-11f1-8bd7-02420a0a000d summary="reconcile-item-failed triggered by cluster.reconcile.item_failed (1 events in batch)" root_cause=unknown_anomaly
+Aug 22 19:32:28 node-1 ai_executor_server[792]: 2026/08/22 19:32:28 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=93 baseline_ms=20 window=90 new_window=81
+Aug 22 19:33:12 node-1 ai_executor_server[792]: time=2026-08-22T19:33:12.304Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Aug 22 19:33:12 node-1 ai_executor_server[792]: time=2026-08-22T19:33:12.309Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 22 19:33:12 node-1 ai_executor_server[792]: time=2026-08-22T19:33:12.320Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Aug 22 19:33:12 node-1 ai_executor_server[792]: time=2026-08-22T19:33:12.328Z level=INFO msg="codex: no credentials found"
+Aug 22 19:33:53 node-1 ai_executor_server[792]: time=2026-08-22T19:33:53.517Z level=INFO msg="processing incident" incident_id=68a52a8e-9e60-11f1-8bd9-02420a0a000d rule_id=reconcile-item-failed tier=0 trigger=cluster.reconcile.item_failed batch_size=1
+Aug 22 19:33:53 node-1 ai_executor_server[792]: time=2026-08-22T19:33:53.594Z level=INFO msg="diagnosis complete" incident_id=68a52a8e-9e60-11f1-8bd9-02420a0a000d root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 22 19:33:53 node-1 ai_executor_server[792]: time=2026-08-22T19:33:53.594Z level=INFO msg="INCIDENT RESOLVED" incident_id=68a52a8e-9e60-11f1-8bd9-02420a0a000d summary="reconcile-item-failed triggered by cluster.reconcile.item_failed (1 events in batch)" root_cause=unknown_anomaly
+Aug 22 19:33:53 node-1 ai_executor_server[792]: 2026/08/22 19:33:53 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=83 baseline_ms=20 window=81 new_window=72

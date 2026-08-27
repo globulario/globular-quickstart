@@ -1,0 +1,407 @@
+{
+  "schema_version": 1,
+  "scenario": "package-upgrade-converges-on-all-nodes",
+  "suite": "upgrade",
+  "start_time": "2026-08-17T02:24:58.650664Z",
+  "end_time": "2026-08-17T02:25:23.593861Z",
+  "passed": true,
+  "item_count": 11,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 6
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T02:24:59.583681Z"
+    },
+    {
+      "id": "nodes_present",
+      "section": "preconditions",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {
+        "count_gte": 5
+      },
+      "result": {
+        "count": 6,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "35ac3821-6b90-52eb-a800-41130471770b",
+          "6400b443-cf38-52da-a683-de2fc5103c0b",
+          "a166b992-b66d-53cb-b7c7-61dfa4dd5a36",
+          "c777633e-6d07-5713-9c4c-deb3317eee25",
+          "c8a09d9e-3813-5357-ab58-93aa410f27fb"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T02:24:59.737618Z"
+    },
+    {
+      "id": "installed_versions_at_start",
+      "section": "baseline",
+      "probe": "cluster.installed_version_convergence",
+      "params": {
+        "package": "node-agent"
+      },
+      "expect": {},
+      "result": {
+        "nodes": 6,
+        "converged": 6,
+        "lagging": 0,
+        "versions": "1.2.317,1.2.317,1.2.317,1.2.317,1.2.317,1.2.317",
+        "unique": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T02:25:00.662257Z"
+    },
+    {
+      "id": "node_agent_single_version_cluster_wide",
+      "section": "assertions",
+      "probe": "cluster.installed_version_convergence",
+      "params": {
+        "package": "node-agent"
+      },
+      "expect": {
+        "unique_lte": 1,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 6,
+        "converged": 6,
+        "lagging": 0,
+        "versions": "1.2.317,1.2.317,1.2.317,1.2.317,1.2.317,1.2.317",
+        "unique": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T02:25:01.494197Z"
+    },
+    {
+      "id": "cluster_controller_single_version_cluster_wide",
+      "section": "assertions",
+      "probe": "cluster.installed_version_convergence",
+      "params": {
+        "package": "cluster-controller"
+      },
+      "expect": {
+        "unique_lte": 1
+      },
+      "result": {
+        "nodes": 4,
+        "converged": 4,
+        "lagging": 0,
+        "versions": "1.2.316,1.2.316,1.2.316,1.2.316",
+        "unique": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T02:25:02.004645Z"
+    },
+    {
+      "id": "no_drift_between_desired_and_installed",
+      "section": "assertions",
+      "probe": "cluster.reconcile_clean",
+      "params": {},
+      "expect": {
+        "clean": true
+      },
+      "result": {
+        "clean": true,
+        "error_count": 0,
+        "kinds": "",
+        "sample": "",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T02:25:02.116654Z"
+    },
+    {
+      "id": "service_registry_is_populated",
+      "section": "assertions",
+      "probe": "cluster.service_matrix",
+      "params": {},
+      "expect": {
+        "count_gte": 20
+      },
+      "result": {
+        "count": 26,
+        "services": [
+          {
+            "name": "ai_executor.AiExecutorService",
+            "port": 10008,
+            "address": "10.10.0.11:10008",
+            "version": "1.2.312"
+          },
+          {
+            "name": "ai_memory.AiMemoryService",
+            "port": 10004,
+            "address": "10.10.0.11:10004",
+            "version": "1.2.312"
+          },
+          {
+            "name": "ai_router.AiRouterService",
+            "port": 10012,
+            "address": "10.10.0.11:10012",
+            "version": "1.2.312"
+          },
+          {
+            "name": "ai_watcher.AiWatcherService",
+            "port": 10013,
+            "address": "10.10.0.11:10013",
+            "version": "1.2.312"
+          },
+          {
+            "name": "authentication.AuthenticationService",
+            "port": 10017,
+            "address": "10.10.0.11:10017",
+            "version": "1.2.312"
+          },
+          {
+            "name": "backup_manager.BackupManagerService",
+            "port": 10009,
+            "address": "10.10.0.11:10009",
+            "version": "1.2.312"
+          },
+          {
+            "name": "cluster_controller.ClusterControllerService",
+            "port": 12000,
+            "address": "10.10.0.12",
+            "version": "1.2.316"
+          },
+          {
+            "name": "cluster_doctor.ClusterDoctorService",
+            "port": 12005,
+            "address": "10.10.0.13",
+            "version": "1.2.317"
+          },
+          {
+            "name": "dns.DnsService",
+            "port": 10006,
+            "address": "10.10.0.11:10006",
+            "version": "1.2.312"
+          },
+          {
+            "name": "dns.DnsService",
+            "port": 10006,
+            "address": "10.10.0.15:10006",
+            "version": "1.2.312"
+          },
+          {
+            "name": "dns.DnsService",
+            "port": 10006,
+            "address": "10.10.0.12:10006",
+            "version": "1.2.312"
+          },
+          {
+            "name": "event.EventService",
+            "port": 10050,
+            "address": "10.10.0.11:10050",
+            "version": "1.2.312"
+          },
+          {
+            "name": "file.FileService",
+            "port": 10014,
+            "address": "10.10.0.11:10014",
+            "version": "1.2.312"
+          },
+          {
+            "name": "log.LogService",
+            "port": 10100,
+            "address": "10.10.0.11:10100",
+            "version": "1.2.312"
+          },
+          {
+            "name": "media.MediaService",
+            "port": 10029,
+            "address": "10.10.0.11:10029",
+            "version": "1.2.312"
+          },
+          {
+            "name": "monitoring.MonitoringService",
+            "port": 10005,
+            "address": "10.10.0.11:10005",
+            "version": "1.2.312"
+          },
+          {
+            "name": "node_agent.NodeAgentService",
+            "port": 11000,
+            "address": "10.10.0.12",
+            "version": ""
+          },
+          {
+            "name": "persistence.PersistenceService",
+            "port": 10010,
+            "address": "10.10.0.12:10010",
+            "version": "1.2.312"
+          },
+          {
+            "name": "rbac.RbacService",
+            "port": 10002,
+            "address": "10.10.0.11:10002",
+            "version": "1.2.312"
+          },
+          {
+            "name": "repository.PackageRepository",
+            "port": 10010,
+            "address": "10.10.0.11:10010",
+            "version": "1.2.312"
+          },
+          {
+            "name": "resource.ResourceService",
+            "port": 10016,
+            "address": "10.10.0.11:10016",
+            "version": "1.2.312"
+          },
+          {
+            "name": "search.SearchService",
+            "port": 10015,
+            "address": "10.10.0.11:10015",
+            "version": "1.2.312"
+          },
+          {
+            "name": "storage.StorageService",
+            "port": 10008,
+            "address": "10.10.0.12:10008",
+            "version": "1.2.312"
+          },
+          {
+            "name": "title.TitleService",
+            "port": 10016,
+            "address": "10.10.0.11:10016",
+            "version": "1.2.312"
+          },
+          {
+            "name": "torrent.TorrentService",
+            "port": 10017,
+            "address": "10.10.0.11:10017",
+            "version": "1.2.312"
+          },
+          {
+            "name": "workflow.WorkflowService",
+            "port": 10220,
+            "address": "10.10.0.11:10220",
+            "version": "1.2.312"
+          }
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T02:25:02.248506Z"
+    },
+    {
+      "id": "doctor_reports_no_errors",
+      "section": "assertions",
+      "probe": "doctor.report_severity",
+      "params": {},
+      "expect": {
+        "error": 0,
+        "reachable": true
+      },
+      "result": {
+        "reachable": true,
+        "info": 2,
+        "warn": 0,
+        "error": 0,
+        "total": 2,
+        "worst": "INFO",
+        "reduced_harvest": false
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T02:25:22.466752Z"
+    },
+    {
+      "id": "resolution_is_deterministic",
+      "section": "assertions",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {
+        "ambiguous": 0
+      },
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T02:25:22.861958Z"
+    },
+    {
+      "id": "liveness_is_current",
+      "section": "assertions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 23,
+        "stale_nodes": 0,
+        "oldest": "35ac3821-6b90-52eb-a800-41130471770b"
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T02:25:23.005011Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T02:25:23.593758Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

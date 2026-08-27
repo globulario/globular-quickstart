@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 22:34:52 UTC; 37s ago
+    Process: 2649 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 2653 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2656 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 24.3M (peak: 29.7M)
+        CPU: 469ms
+     CGroup: /system.slice/docker-9a63d2117b8538ee4c4f80a487a8a41ef68a018cdf573386eb01dd30a5d6455b.scope/system.slice/globular-ai-executor.service
+             └─2656 /usr/lib/globular/bin/ai_executor_server
+
+Aug 18 22:34:53 node-2 ai_executor_server[2656]: time=2026-08-18T22:34:53.248Z level=INFO msg="job_store: loaded jobs from etcd" count=32
+Aug 18 22:34:53 node-2 ai_executor_server[2656]: 2026/08/18 22:34:53 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 18 22:34:53 node-2 ai_executor_server[2656]: time=2026-08-18T22:34:53.271Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]"
+Aug 18 22:34:56 node-2 ai_executor_server[2656]: time=2026-08-18T22:34:56.409Z level=INFO msg="processing incident" incident_id=09c85448-9b55-11f1-b9e4-02420a0a000d rule_id=service-stopped tier=0 trigger=service.stopped batch_size=1
+Aug 18 22:34:56 node-2 ai_executor_server[2656]: time=2026-08-18T22:34:56.605Z level=INFO msg="diagnosis complete" incident_id=09c85448-9b55-11f1-b9e4-02420a0a000d root_cause="unknown_anomaly (rbac.RbacService)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 18 22:34:56 node-2 ai_executor_server[2656]: time=2026-08-18T22:34:56.605Z level=INFO msg="INCIDENT RESOLVED" incident_id=09c85448-9b55-11f1-b9e4-02420a0a000d summary="service-stopped triggered by service.stopped on rbac.RbacService (1 events in batch)" root_cause="unknown_anomaly (rbac.RbacService)"
+Aug 18 22:35:03 node-2 ai_executor_server[2656]: 2026/08/18 22:35:03 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 18 22:35:03 node-2 ai_executor_server[2656]: 2026/08/18 22:35:03 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 18 22:35:23 node-2 ai_executor_server[2656]: time=2026-08-18T22:35:23.254Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 18 22:35:23 node-2 ai_executor_server[2656]: time=2026-08-18T22:35:23.265Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010

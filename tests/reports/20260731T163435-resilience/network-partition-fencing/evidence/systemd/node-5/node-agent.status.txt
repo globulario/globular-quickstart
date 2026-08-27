@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 16:59:40 UTC; 11min ago
+    Process: 362 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 368 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 373 (node_agent_serv)
+      Tasks: 18 (limit: 8641)
+     Memory: 18.7M
+        CPU: 1.281s
+     CGroup: /system.slice/docker-3268ddda9a10330e4ec4242498abd74864b23ece1671b72108fec7d4010c506f.scope/system.slice/globular-node-agent.service
+             └─373 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 17:10:55 node-5 node_agent_server[373]: 2026/07/31 17:10:55 event-publisher: service.exited unit=globular-dns.service (activating/auto-restart → activating/auto-restart)
+Jul 31 17:10:55 node-5 node_agent_server[373]: 2026/07/31 17:10:55 minio-topology-gate: node 2da500c8-32d8-5ffc-8452-6d8af5c02038 (ip=10.10.0.15) not admitted — node not listed in approved objectstore topology (gen=0)
+Jul 31 17:10:55 node-5 node_agent_server[373]: 2026/07/31 17:10:55 nodeagent: scylla user not found — cannot set owner on /var/lib/globular/scylla-manager-agent/scylla-manager-agent.yaml: user: unknown user scylla
+Jul 31 17:10:55 node-5 node_agent_server[373]: 2026/07/31 17:10:55 ingress: watch error: etcdserver: mvcc: required revision has been compacted
+Jul 31 17:10:55 node-5 node_agent_server[373]: 2026/07/31 17:10:55 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-5.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-5.globular.internal:8443/get_ca_certificate\": dial tcp: lookup node-5.globular.internal on 127.0.0.11:53: no such host"
+Jul 31 17:10:55 node-5 node_agent_server[373]: 2026/07/31 17:10:55 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.12 base=/root/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-5.globular.internal:8443: Get \"http://node-5.globular.internal:8443/get_ca_certificate\": dial tcp: lookup node-5.globular.internal on 127.0.0.11:53: no such host"
+Jul 31 17:10:55 node-5 node_agent_server[373]: 2026/07/31 17:10:55 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.12:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-5.globular.internal:8443: Get \"http://node-5.globular.internal:8443/get_ca_certificate\": dial tcp: lookup node-5.globular.internal on 127.0.0.11:53: no such host"
+Jul 31 17:10:55 node-5 node_agent_server[373]: 2026/07/31 17:10:55 event-handler: event service not found in registry, retrying in 10s (repeated 7 times)
+Jul 31 17:10:55 node-5 node_agent_server[373]: 2026/07/31 17:10:55 node-agent: controller endpoint refreshed: 10.10.0.14:443 -> 10.10.0.13:443
+Jul 31 17:11:00 node-5 node_agent_server[373]: 2026/07/31 17:11:00 event-publisher: service.exited unit=globular-dns.service (activating/auto-restart → activating/auto-restart)

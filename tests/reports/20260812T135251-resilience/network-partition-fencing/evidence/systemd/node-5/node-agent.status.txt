@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-12 14:13:32 UTC; 17min ago
+    Process: 160 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 194 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 222 (node_agent_serv)
+      Tasks: 25 (limit: 8641)
+     Memory: 27.8M (peak: 35.7M)
+        CPU: 27.732s
+     CGroup: /system.slice/docker-ba9fac652a3405e514249b33ab0346f14fc135e89814b53d3d37f427697e77f5.scope/system.slice/globular-node-agent.service
+             └─222 /usr/lib/globular/bin/node_agent_server
+
+Aug 12 14:30:47 node-5 node_agent_server[222]: 2026/08/12 14:30:47 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 12 14:30:47 node-5 node_agent_server[222]: 2026/08/12 14:30:47 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 12 14:30:47 node-5 node_agent_server[222]: 2026/08/12 14:30:47 event-handler: recovered (prior="event service not found in registry, retrying in 10s" suppressed=12)
+Aug 12 14:30:47 node-5 node_agent_server[222]: 2026/08/12 14:30:47 event-handler: connected to event service
+Aug 12 14:30:47 node-5 node_agent_server[222]: 2026/08/12 14:30:47 event-handler: subscribed to operation.*
+Aug 12 14:30:47 node-5 node_agent_server[222]: 2026/08/12 14:30:47 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 12 14:30:48 node-5 node_agent_server[222]: 2026/08/12 14:30:48 nodeagent: reporting 29 installed services (hash=6ba8cd4603451f6728d8f514d76b21e73f8e74ae22508e5cd096ab2676bdfc3b, sample=[sha256sum authentication dns xds repository])
+Aug 12 14:30:49 node-5 node_agent_server[222]: 2026/08/12 14:30:49 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 12 14:30:49 node-5 node_agent_server[222]: 2026/08/12 14:30:49 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 12 14:30:53 node-5 node_agent_server[222]: 2026/08/12 14:30:53 event-publisher: service.started unit=globular-etcd.service (active/running → active/running)

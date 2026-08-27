@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 00:43:50 UTC; 40min ago
+    Process: 27927 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 27931 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 27934 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 30.4M (peak: 38.1M)
+        CPU: 5.237s
+     CGroup: /system.slice/docker-18b323bfa9beb153eb9d36bc94faef425c64f4b85468ea1b94a5f78650f213de.scope/system.slice/globular-ai-executor.service
+             └─27934 /usr/lib/globular/bin/ai_executor_server
+
+Aug 01 01:23:19 node-1 ai_executor_server[27934]: time=2026-08-01T01:23:19.890Z level=ERROR msg="remediation failed" incident=92a90d94-8d47-11f1-bcb9-02420a0a000d action_type=ACTION_RESTART_SERVICE err="verification failed: inconclusive: restart of restart_service:globular-scylla-manager.service dispatched via event bus; confirm via node-agent or cluster doctor"
+Aug 01 01:23:19 node-1 ai_executor_server[27934]: time=2026-08-01T01:23:19.890Z level=ERROR msg="REMEDIATION FAILED" incident_id=92a90d94-8d47-11f1-bcb9-02420a0a000d summary="service-crash triggered by service.exited on scylla-manager (1 events in batch)" proposed_action=restart_service:globular-scylla-manager.service
+Aug 01 01:23:19 node-1 ai_executor_server[27934]: 2026/08/01 01:23:19 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=3092 baseline_ms=20 window=40 new_window=36
+Aug 01 01:23:21 node-1 ai_executor_server[27934]: {"level":"warn","ts":"2026-08-01T01:23:21.891518Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000512960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 01 01:23:21 node-1 ai_executor_server[27934]: time=2026-08-01T01:23:21.891Z level=WARN msg="job_store: persist failed" incident_id=92a90d94-8d47-11f1-bcb9-02420a0a000d err="context deadline exceeded"
+Aug 01 01:23:52 node-1 ai_executor_server[27934]: time=2026-08-01T01:23:52.025Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Aug 01 01:23:52 node-1 ai_executor_server[27934]: time=2026-08-01T01:23:52.043Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 01 01:23:52 node-1 ai_executor_server[27934]: time=2026-08-01T01:23:52.059Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Aug 01 01:23:52 node-1 ai_executor_server[27934]: time=2026-08-01T01:23:52.067Z level=INFO msg="codex: no credentials found"
+Aug 01 01:24:08 node-1 ai_executor_server[27934]: 2026/08/01 01:24:08 WARN port/proxy change detected in desired; restart required to take effect service=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd old_port=10015 new_port=10010 old_proxy=10231 new_proxy=10231

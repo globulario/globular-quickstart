@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:45:25 UTC; 4min 1s ago
+    Process: 592 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 623 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 651 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 723 (ai_memory_serve)
+      Tasks: 19 (limit: 8641)
+     Memory: 26.0M (peak: 28.4M)
+        CPU: 1.116s
+     CGroup: /system.slice/docker-7fac91a876a85840c60c302acf724a18f722fb5bd5d00f55ebb1b0ece4798c2c.scope/system.slice/globular-ai-memory.service
+             └─723 /usr/lib/globular/bin/ai_memory_server
+
+Aug 23 18:47:05 node-1 ai_memory_server[723]: {"level":"info","ts":"2026-08-23T18:47:05.617174Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 18:47:08 node-1 ai_memory_server[723]: {"level":"warn","ts":"2026-08-23T18:47:08.649073Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004ab2c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = etcdserver: leader changed"}
+Aug 23 18:47:08 node-1 ai_memory_server[723]: 2026/08/23 18:47:08 ERROR rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0 domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/RecordSignal function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663
+Aug 23 18:47:09 node-1 ai_memory_server[723]: 2026/08/23 18:47:09 INFO mesh: Envoy available, routing through mesh target=node-1.globular.internal:443
+Aug 23 18:47:09 node-1 ai_memory_server[723]: 2026/08/23 18:47:09 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 23 18:47:09 node-1 ai_memory_server[723]: 2026/08/23 18:47:09 INFO log forwarding enabled address=10.10.0.11:10100
+Aug 23 18:47:17 node-1 ai_memory_server[723]: 2026/08/23 18:47:17 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 23 18:47:24 node-1 ai_memory_server[723]: 2026/08/23 18:47:24 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/ai_memory.AiMemoryService/Query
+Aug 23 18:47:38 node-1 ai_memory_server[723]: 2026/08/23 18:47:38 ERROR rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0 (repeated 2 times in 30s) domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/RecordSignal function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 23 18:48:39 node-1 ai_memory_server[723]: 2026/08/23 18:48:39 ERROR rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0 domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/RecordSignal function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663

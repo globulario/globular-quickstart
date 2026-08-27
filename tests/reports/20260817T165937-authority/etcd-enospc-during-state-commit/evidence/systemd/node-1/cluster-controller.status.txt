@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:02:36 UTC; 13min ago
+    Process: 51741 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 51745 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 51748 (cluster_control)
+      Tasks: 22 (limit: 8641)
+     Memory: 43.7M (peak: 48.1M)
+        CPU: 10.903s
+     CGroup: /system.slice/docker-70ccd6e45272a6d2c8368750449e51bc86b2d7ca3bfb1e89db6d0e6ca685f1e5.scope/system.slice/globular-cluster-controller.service
+             └─51748 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 17 17:16:14 node-1 cluster_controller_server[51748]: io.ReadFull(...)
+Aug 17 17:16:14 node-1 cluster_controller_server[51748]:         io/io.go:354
+Aug 17 17:16:14 node-1 cluster_controller_server[51748]: github.com/gocql/gocql.readHeader({0x16e1180, 0xc000b711a0}, {0xc00143e920, 0x9, 0x9})
+Aug 17 17:16:14 node-1 cluster_controller_server[51748]:         github.com/gocql/gocql@v1.6.0/frame.go:424 +0x89
+Aug 17 17:16:14 node-1 cluster_controller_server[51748]: github.com/gocql/gocql.(*Conn).recv(0xc00143e8c0, {0x16ee708, 0xc001b18500})
+Aug 17 17:16:14 node-1 cluster_controller_server[51748]:         github.com/gocql/gocql@v1.6.0/conn.go:653 +0xa7
+Aug 17 17:16:14 node-1 cluster_controller_server[51748]: github.com/gocql/gocql.(*Conn).serve(0xc00143e8c0, {0x16ee708, 0xc001b18500})
+Aug 17 17:16:14 node-1 cluster_controller_server[51748]:         github.com/gocql/gocql@v1.6.0/conn.go:570 +0x28
+Aug 17 17:16:14 node-1 cluster_controller_server[51748]: created by github.com/gocql/gocql.(*Conn).init in goroutine 10462
+Aug 17 17:16:14 node-1 cluster_controller_server[51748]:         github.com/gocql/gocql@v1.6.0/conn.go:314 +0x210

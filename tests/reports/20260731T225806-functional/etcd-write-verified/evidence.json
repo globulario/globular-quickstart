@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "scenario": "etcd-write-verified",
+  "suite": "functional",
+  "start_time": "2026-07-31T22:58:06.414387Z",
+  "end_time": "2026-07-31T22:58:11.549283Z",
+  "passed": true,
+  "item_count": 8,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T22:58:07.176170Z"
+    },
+    {
+      "id": "all_etcd_members_healthy",
+      "section": "preconditions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T22:58:07.989933Z"
+    },
+    {
+      "id": "initial_write_test",
+      "section": "baseline",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {},
+      "result": {
+        "success": true,
+        "latency_ms": 475
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T22:58:08.525945Z"
+    },
+    {
+      "id": "write_test_succeeds",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 656
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T22:58:09.233855Z"
+    },
+    {
+      "id": "write_latency_acceptable",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true,
+        "latency_ms_lte": 2000
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 571
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T22:58:09.853320Z"
+    },
+    {
+      "id": "all_members_healthy",
+      "section": "assertions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "total": 3,
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T22:58:10.533261Z"
+    },
+    {
+      "id": "cluster_still_healthy",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T22:58:11.032017Z"
+    },
+    {
+      "id": "final_write_test",
+      "section": "cleanup",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 471
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T22:58:11.549177Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

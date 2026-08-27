@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "scenario": "day1-join-second-node-awareness",
+  "suite": "training",
+  "start_time": "2026-05-07T16:43:32.540433Z",
+  "end_time": "2026-05-07T16:43:33.931592Z",
+  "passed": true,
+  "item_count": 8,
+  "items": [
+    {
+      "id": "node-1-running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:32.708130Z"
+    },
+    {
+      "id": "node-2-running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:32.736525Z"
+    },
+    {
+      "id": "cluster-healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:33.011776Z"
+    },
+    {
+      "id": "pre-check-node-count",
+      "section": "baseline",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:33.150977Z"
+    },
+    {
+      "id": "etcd-quorum-healthy",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "members_gte": 2
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:33.429894Z"
+    },
+    {
+      "id": "node-2-agent-active",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "node-agent"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-2",
+        "service": "node-agent"
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:33.528823Z"
+    },
+    {
+      "id": "node-2-registered",
+      "section": "assertions",
+      "probe": "node.etcd_registered",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "node": "node-2",
+        "uuid": "b68457f5-bfb6-5452-bccc-cc36f29d1bbc"
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:33.678637Z"
+    },
+    {
+      "id": "all-nodes-heartbeating",
+      "section": "assertions",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {
+        "count_gte": 2
+      },
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-05-07T16:43:33.817314Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_PASS"
+}

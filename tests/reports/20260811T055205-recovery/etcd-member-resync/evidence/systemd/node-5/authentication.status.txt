@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:52:15 UTC; 6min ago
+    Process: 322 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 344 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 355 (authentication_)
+      Tasks: 18 (limit: 8641)
+     Memory: 22.1M (peak: 29.7M)
+        CPU: 641ms
+     CGroup: /system.slice/docker-98c9f00371cba0d41174bc35433238892478111b3c35d44e70376c304ba640d9.scope/system.slice/globular-authentication.service
+             └─355 /usr/lib/globular/bin/authentication_server
+
+Aug 11 05:52:15 node-5 authentication_server[355]: time=2026-08-11T05:52:15.709Z level=INFO msg="InitGrpcServer: gRPC server initialized" service=authentication.AuthenticationService tls=true port=10003
+Aug 11 05:52:15 node-5 authentication_server[355]: time=2026-08-11T05:52:15.709Z level=INFO msg="service ready" service=authentication.AuthenticationService port=10003 proxy=10001 protocol=grpc domain=globular.internal startup_ms=272 version=1.2.289
+Aug 11 05:52:15 node-5 authentication_server[355]: time=2026-08-11T05:52:15.709Z level=INFO msg="starting service" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10003
+Aug 11 05:52:15 node-5 authentication_server[355]: time=2026-08-11T05:52:15.719Z level=INFO msg="policy: loaded permissions from file" service=authentication path=/var/lib/globular/policy/services/authentication/permissions.generated.json count=8
+Aug 11 05:52:15 node-5 authentication_server[355]: time=2026-08-11T05:52:15.719Z level=INFO msg="authz: permission mappings loaded" service=authentication count=8 action_mappings=8
+Aug 11 05:52:15 node-5 authentication_server[355]: time=2026-08-11T05:52:15.719Z level=INFO msg="service started successfully" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10003
+Aug 11 05:52:15 node-5 authentication_server[355]: time=2026-08-11T05:52:15.843Z level=INFO msg=setKey:generate mac=02:42:0a:0a:00:0f
+Aug 11 05:52:16 node-5 authentication_server[355]: time=2026-08-11T05:52:16.191Z level=INFO msg="metrics listening" service=authentication.AuthenticationService addr=[::]:10001
+Aug 11 05:53:50 node-5 authentication_server[355]: time=2026-08-11T05:53:50.709Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-5.globular.internal:443
+Aug 11 05:53:50 node-5 authentication_server[355]: time=2026-08-11T05:53:50.710Z level=INFO msg="mesh: gRPC connection established" target=node-5.globular.internal:443

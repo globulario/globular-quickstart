@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:12:10 UTC; 14s ago
+    Process: 48 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 60 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 84 (event_server)
+      Tasks: 11 (limit: 8641)
+     Memory: 22.4M (peak: 23.1M)
+        CPU: 256ms
+     CGroup: /system.slice/docker-9180d30e9d1ba804a7b09169efb4bbc01eb91329f628cb2e20c93a2f4151a900.scope/system.slice/globular-event.service
+             └─84 /usr/lib/globular/bin/event_server
+
+Aug 01 01:12:11 node-4 event_server[84]: time=2026-08-01T01:12:11.093Z level=INFO msg="service ready" service=event.EventService port=10050 proxy=10051 protocol=grpc domain=globular.internal startup_ms=71 version=1.2.288
+Aug 01 01:12:11 node-4 event_server[84]: time=2026-08-01T01:12:11.096Z level=INFO msg="starting service" name=event.EventService id=ae220301-9352-393b-be03-90707f486149 port=10050
+Aug 01 01:12:11 node-4 event_server[84]: 2026/08/01 01:12:11 INFO policy: loaded permissions from file service=event path=/var/lib/globular/policy/services/event/permissions.generated.json count=7
+Aug 01 01:12:11 node-4 event_server[84]: time=2026-08-01T01:12:11.106Z level=INFO msg="authz: permission mappings loaded" service=event count=7 action_mappings=7
+Aug 01 01:12:11 node-4 event_server[84]: time=2026-08-01T01:12:11.106Z level=INFO msg="service started successfully" name=event.EventService id=ae220301-9352-393b-be03-90707f486149 port=10050
+Aug 01 01:12:21 node-4 event_server[84]: time=2026-08-01T01:12:21.387Z level=WARN msg="ScyllaDB event bus unavailable, events will be local-only" err="create keyspace: gocql: no response received from cassandra within timeout period"
+Aug 01 01:12:21 node-4 event_server[84]: time=2026-08-01T01:12:21.389Z level=WARN msg="dependency health check failed" dep=scylladb err="scylladb bus not connected"
+Aug 01 01:12:21 node-4 event_server[84]: time=2026-08-01T01:12:21.389Z level=ERROR msg="dependencies UNHEALTHY — service is NOT_SERVING"
+Aug 01 01:12:21 node-4 event_server[84]: time=2026-08-01T01:12:21.389Z level=INFO msg="event loop started" service=event.EventService id=ae220301-9352-393b-be03-90707f486149
+Aug 01 01:12:21 node-4 event_server[84]: 2026/08/01 01:12:21 INFO metrics listening service=event.EventService addr=[::]:10051

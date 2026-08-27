@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:26:48 UTC; 18s ago
+    Process: 525 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 556 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 573 (repository_serv)
+      Tasks: 17 (limit: 8641)
+     Memory: 27.9M (peak: 29.8M)
+        CPU: 343ms
+     CGroup: /system.slice/docker-2206a9848d7057d723137cf808b7918b201d11357dec3e1e80cb2d0a702c0d6b.scope/system.slice/globular-repository.service
+             └─573 /usr/lib/globular/bin/repository_server
+
+Aug 01 01:26:49 node-3 repository_server[573]: 2026/08/01 01:26:49 INFO publish-reconciler: started interval=1m0s
+Aug 01 01:26:49 node-3 repository_server[573]: time=2026-08-01T01:26:49.732Z level=INFO msg="service ready" service=repository.PackageRepository port=10003 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=850
+Aug 01 01:26:49 node-3 repository_server[573]: time=2026-08-01T01:26:49.732Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 01 01:26:49 node-3 repository_server[573]: time=2026-08-01T01:26:49.734Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=114 already_present=57 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 01 01:26:49 node-3 repository_server[573]: 2026/08/01 01:26:49 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 01 01:26:49 node-3 repository_server[573]: time=2026-08-01T01:26:49.738Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 01 01:26:49 node-3 repository_server[573]: time=2026-08-01T01:26:49.738Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 01 01:26:49 node-3 repository_server[573]: 2026/08/01 01:26:49 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=39851
+Aug 01 01:26:49 node-3 repository_server[573]: 2026/08/01 01:26:49 INFO metrics listening service=repository.PackageRepository addr=[::]:39851
+Aug 01 01:27:01 node-3 repository_server[573]: 2026/08/01 01:27:01 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""

@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:20:50 UTC; 33min ago
+    Process: 10525 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 10528 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10532 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 40.5M (peak: 45.0M)
+        CPU: 39.620s
+     CGroup: /system.slice/docker-3564c5064ffb33643364e7ecc0470f65b9ba3d4c953a5a8ad793011efad31f6b.scope/system.slice/globular-cluster-controller.service
+             └─10532 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 21:54:16 node-2 cluster_controller_server[10532]: 2026/07/31 21:54:16 watch-service-release: event MODIFIED name=core@globular.io/dns phase=AVAILABLE
+Jul 31 21:54:16 node-2 cluster_controller_server[10532]: 2026/07/31 21:54:16 watch-service-release: event MODIFIED name=core@globular.io/authentication phase=FAILED
+Jul 31 21:54:16 node-2 cluster_controller_server[10532]: 2026/07/31 21:54:16 watch-service-release: event MODIFIED name=core@globular.io/monitoring phase=RESOLVED
+Jul 31 21:54:16 node-2 cluster_controller_server[10532]: 2026/07/31 21:54:16 watch-service-release: event MODIFIED name=core@globular.io/monitoring phase=AVAILABLE
+Jul 31 21:54:16 node-2 cluster_controller_server[10532]: 2026/07/31 21:54:16 watch-service-release: event MODIFIED name=core@globular.io/monitoring phase=AVAILABLE
+Jul 31 21:54:16 node-2 cluster_controller_server[10532]: 2026/07/31 21:54:16 watch-service-release: event MODIFIED name=core@globular.io/dns phase=FAILED
+Jul 31 21:54:17 node-2 cluster_controller_server[10532]: 2026/07/31 21:54:17 watch-service-release: event MODIFIED name=core@globular.io/monitoring phase=FAILED
+Jul 31 21:54:20 node-2 cluster_controller_server[10532]: 2026/07/31 21:54:20 minio-creds: read from /var/lib/globular/minio/credentials (user=globular)
+Jul 31 21:54:20 node-2 cluster_controller_server[10532]: 2026/07/31 21:54:20 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)
+Jul 31 21:54:25 node-2 cluster_controller_server[10532]: 2026/07/31 21:54:25 dns reconciler: endpoint node-4.globular.internal:10006 is now HEALTHY — forcing re-push

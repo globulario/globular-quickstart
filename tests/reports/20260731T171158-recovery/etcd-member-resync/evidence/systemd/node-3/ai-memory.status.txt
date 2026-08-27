@@ -1,0 +1,24 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 17:13:01 UTC; 27s ago
+    Process: 500 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 536 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 557 ExecStartPre=/bin/bash -c for i in $(seq 1 90); do echo > /dev/tcp/10.10.0.20/9042 2>/dev/null && exit 0; sleep 1; done; echo scylla not ready; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 578 ExecStartPre=/bin/bash -c for i in $(seq 1 90); do echo > /dev/tcp/10.10.0.20/9042 2>/dev/null && exit 0; sleep 1; done; echo scylla not ready; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 597 (ai_memory_serve)
+      Tasks: 16 (limit: 8641)
+     Memory: 15.9M
+        CPU: 377ms
+     CGroup: /system.slice/docker-a940c3d3d301ea460c6ef6d5072c25365503c7b1b37629387a254e2e32970eca.scope/system.slice/globular-ai-memory.service
+             └─597 /usr/lib/globular/bin/ai_memory_server
+
+Jul 31 17:13:02 node-3 ai_memory_server[597]: time=2026-07-31T17:13:02.207Z level=WARN msg="authz: no permission mappings registered — RBAC will resolve raw method paths and deny role-based calls" service=ai_memory expected_path=/var/lib/globular/policy/services/ai_memory/permissions.generated.json
+Jul 31 17:13:02 node-3 ai_memory_server[597]: time=2026-07-31T17:13:02.207Z level=INFO msg="service started successfully" name=ai_memory.AiMemoryService id=10595db3-3e7b-343e-9f86-94a6e317585f port=10007
+Jul 31 17:13:02 node-3 ai_memory_server[597]: 2026/07/31 17:13:02 INFO metrics listening service=ai_memory.AiMemoryService addr=[::]:10201
+Jul 31 17:13:09 node-3 ai_memory_server[597]: 2026/07/31 17:13:09 ERROR GetClient: constructor returned error function=NewRbacService_Client address=node-3.globular.internal: service=rbac.RbacService err="InitClient: invalid control address \"node-3.globular.internal:\" (missing port)"
+Jul 31 17:13:12 node-3 ai_memory_server[597]: 2026/07/31 17:13:12 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-3.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 17:13:12 node-3 ai_memory_server[597]: 2026/07/31 17:13:12 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.11 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-3.globular.internal:8443: Get \"http://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 17:13:12 node-3 ai_memory_server[597]: 2026/07/31 17:13:12 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.11:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-3.globular.internal:8443: Get \"http://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 17:13:22 node-3 ai_memory_server[597]: 2026/07/31 17:13:22 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-3.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 17:13:22 node-3 ai_memory_server[597]: 2026/07/31 17:13:22 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.14 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-3.globular.internal:8443: Get \"http://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 17:13:22 node-3 ai_memory_server[597]: 2026/07/31 17:13:22 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.14:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-3.globular.internal:8443: Get \"http://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"

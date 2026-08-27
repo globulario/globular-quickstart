@@ -1,0 +1,96 @@
+version: 1
+name: etcd-write-verified
+description: |
+  Verify that etcd write quorum is healthy by performing an actual write+read+delete.
+
+  etcd is the sole source of truth for the entire cluster. A cluster where etcd
+  is read-only (quorum lost but reads still work) looks superficially healthy but
+  cannot accept any state changes — no new desired state, no workflow dispatch,
+  no service registration. This test catches that failure mode.
+
+  The probe writes a test key, reads it back to verify consistency, then deletes
+  it. All three operations must succeed within a reasonable latency budget.
+
+  Distributed failure modes caught:
+  - Majority of etcd members unreachable (writes fail with "no leader")
+  - etcd disk full (writes fail with "etcdserver: mvcc: database space exceeded")
+  - etcd leader election in progress (writes time out briefly then succeed)
+  - WAL corruption causing write rejection
+  - Network partition leaving the primary node in a minority partition
+
+  Note: This test complements cluster.health which only checks if etcd responds
+  to health queries — not whether it can actually accept writes.
+suite: functional
+tags:
+  - etcd
+  - write-quorum
+  - consistency
+  - distributed-systems
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: all_etcd_members_healthy
+    probe: cluster.etcd_members
+    expect:
+      healthy_gte: 3
+
+baseline:
+  - type: probe
+    id: initial_write_test
+    probe: etcd.write_test
+
+steps: []
+
+assertions:
+  # ── Write quorum ──────────────────────────────────────────────────────────
+  - type: probe
+    id: write_test_succeeds
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  # ── Write latency ─────────────────────────────────────────────────────────
+  # A write that takes > 1000ms indicates a degraded cluster (leader re-election,
+  # member catching up, or disk I/O contention). 2000ms is the hard limit.
+  - type: probe
+    id: write_latency_acceptable
+    probe: etcd.write_test
+    expect:
+      success: true
+      latency_ms_lte: 2000
+
+  # ── All members individually reachable ────────────────────────────────────
+  # Per-member health check with short timeout. Catches the case where one
+  # member is unreachable but quorum is still maintained (2/3 healthy).
+  - type: probe
+    id: all_members_healthy
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  # ── Cluster health still good after writes ────────────────────────────────
+  - type: probe
+    id: cluster_still_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+cleanup:
+  - type: probe
+    id: final_write_test
+    probe: etcd.write_test
+    expect:
+      success: true

@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:40:39 UTC; 12min ago
+    Process: 153 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 173 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 194 (cluster_control)
+      Tasks: 18 (limit: 8641)
+     Memory: 37.9M (peak: 39.3M)
+        CPU: 24.368s
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-cluster-controller.service
+             └─194 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 21:52:36 node-4 cluster_controller_server[194]: 2026/07/31 21:52:36 workflow recorder: StartRun failed: rpc error: code = PermissionDenied desc = permission denied: workflow.admin — assign a role with 'globular rbac bind'
+Jul 31 21:52:36 node-4 cluster_controller_server[194]: 2026/07/31 21:52:36 remediation-consumer: workflow run started (run=, node=node-5, unit=globular-scylla-manager.service)
+Jul 31 21:52:37 node-4 cluster_controller_server[194]: 2026/07/31 21:52:37 remediation-consumer: restart command sent for globular-scylla-manager.service on node-5
+Jul 31 21:52:39 node-4 cluster_controller_server[194]: {"level":"warn","ts":"2026-07-31T21:52:39.168891Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004d6780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:42 node-4 cluster_controller_server[194]: 2026/07/31 21:52:42 remediation-consumer: globular-scylla-manager.service restart SUCCEEDED (verified=true: unit globular-scylla-manager.service is active)
+Jul 31 21:52:42 node-4 cluster_controller_server[194]: 2026/07/31 21:52:42 cluster-controller: publish "operation.restart_completed" failed, circuit breaker open for 30s: rpc error: code = Unknown desc = Cannot achieve consistency level for cl ONE. Requires 1, alive 0
+Jul 31 21:52:43 node-4 cluster_controller_server[194]: 2026/07/31 21:52:43 remediation-consumer: received restart request for globular-scylla-manager.service (incident=289e7e6b-8d2a-11f1-bae2-02420a0a000f, cause=service_crash: globular-scylla-manager.service)
+Jul 31 21:52:43 node-4 cluster_controller_server[194]: 2026/07/31 21:52:43 remediation-consumer: SKIPPED — globular-scylla-manager.service in cooldown (last restart 8s ago)
+Jul 31 21:52:45 node-4 cluster_controller_server[194]: {"level":"warn","ts":"2026-07-31T21:52:45.892726Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004d6780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:45 node-4 cluster_controller_server[194]: 2026/07/31 21:52:45 leader: failed to load state from etcd: context deadline exceeded — keeping local state

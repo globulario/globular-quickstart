@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 11:01:38 UTC; 3min 2s ago
+    Process: 2991 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 2996 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3002 (event_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 25.2M (peak: 30.5M)
+        CPU: 1.697s
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-event.service
+             └─3002 /usr/lib/globular/bin/event_server
+
+Aug 18 11:04:34 node-2 event_server[3002]: time=2026-08-18T11:04:34.404Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 18 11:04:34 node-2 event_server[3002]: time=2026-08-18T11:04:34.589Z level=WARN msg="poll events error" bucket=2026-08-18T11:02 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 18 11:04:34 node-2 event_server[3002]: time=2026-08-18T11:04:34.597Z level=WARN msg="poll events error" bucket=2026-08-18T11:04 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 18 11:04:34 node-2 event_server[3002]: time=2026-08-18T11:04:34.601Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 18 11:04:34 node-2 event_server[3002]: time=2026-08-18T11:04:34.788Z level=WARN msg="poll events error" bucket=2026-08-18T11:02 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 18 11:04:34 node-2 event_server[3002]: time=2026-08-18T11:04:34.793Z level=WARN msg="poll events error" bucket=2026-08-18T11:04 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 18 11:04:34 node-2 event_server[3002]: 2026/08/18 11:04:34 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 18 11:04:34 node-2 event_server[3002]: time=2026-08-18T11:04:34.952Z level=INFO msg="Subscribe: ok" channel=service.* uuid=85adf7d4-836a-44c8-9b7a-f9d5eb9d8d43
+Aug 18 11:04:34 node-2 event_server[3002]: time=2026-08-18T11:04:34.986Z level=INFO msg="Subscribe: ok" channel=alert.* uuid=85adf7d4-836a-44c8-9b7a-f9d5eb9d8d43
+Aug 18 11:04:34 node-2 event_server[3002]: time=2026-08-18T11:04:34.997Z level=INFO msg="subscriber cleanup" uuid=85adf7d4-836a-44c8-9b7a-f9d5eb9d8d43

@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:07:36 UTC; 3min 0s ago
+    Process: 209 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 235 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 251 (cluster_doctor_)
+      Tasks: 16 (limit: 8641)
+     Memory: 23.4M (peak: 25.8M)
+        CPU: 512ms
+     CGroup: /system.slice/docker-132f316b761e19b341cb3599f86ce40d781792bff8b801029cd06da093b8fd9e.scope/system.slice/globular-cluster-doctor.service
+             └─251 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 24 17:08:50 node-1 cluster_doctor_server[251]: {"level":"warn","ts":"2026-08-24T17:08:50.119909Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00059f0e0/10.10.0.11:2379","attempt":2,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:08:57 node-1 cluster_doctor_server[251]: {"level":"warn","ts":"2026-08-24T17:08:57.372118Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00059f0e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:09:04 node-1 cluster_doctor_server[251]: {"level":"warn","ts":"2026-08-24T17:09:04.373578Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00059f0e0/10.10.0.11:2379","attempt":1,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:09:11 node-1 cluster_doctor_server[251]: {"level":"warn","ts":"2026-08-24T17:09:11.375318Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00059f0e0/10.10.0.11:2379","attempt":2,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:09:16 node-1 cluster_doctor_server[251]: {"level":"warn","ts":"2026-08-24T17:09:16.718659Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00059f0e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:09:16 node-1 cluster_doctor_server[251]: {"level":"info","ts":"2026-08-24T17:09:16.71872Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 17:09:18 node-1 cluster_doctor_server[251]: {"level":"warn","ts":"2026-08-24T17:09:18.403963Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00059f0e0/10.10.0.11:2379","attempt":3,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:09:25 node-1 cluster_doctor_server[251]: {"level":"warn","ts":"2026-08-24T17:09:25.405317Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00059f0e0/10.10.0.11:2379","attempt":4,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:09:28 node-1 cluster_doctor_server[251]: time=2026-08-24T17:09:28.060Z level=INFO msg="doctor leader election: campaigning" candidate=doctor:node-1:251:22341584-4f4e-48f3-a701-fc5440e216a9
+Aug 24 17:09:44 node-1 cluster_doctor_server[251]: time=2026-08-24T17:09:44.523Z level=INFO msg="doctor leader election: became leader" candidate=doctor:node-1:251:22341584-4f4e-48f3-a701-fc5440e216a9

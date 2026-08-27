@@ -1,0 +1,55 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-22T19:26:34.804266Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "crash-during-mutation-is-atomic",
+  "suite": "authority",
+  "result": "FAIL",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "A mutation interrupted by a crash must end in one of exactly two states:\nit never happened, or it completed exactly once.\n\nTHE FAULT. Begin a real desired-state mutation, then SIGKILL the controller\nwhile it is in flight. Let it restart and settle.\n\n    desired-state write begins\n          \u2193  SIGKILL \u2014 no shutdown, no flush, no cleanup\n    controller restarts with no memory of what it was doing\n          \u2193\n    the cluster must resolve to one of two states, and no other\n\nTHE TWO ACCEPTABLE OUTCOMES:\n\n    the operation never happened\n    the operation eventually converged exactly once\n\nThere is no third state, and in particular there is no state called \"the\nworkflow says SUCCEEDED\". This suite has already established that a child\nworkflow reporting SUCCEEDED is dispatch acknowledgement rather than install\nproof, so \"it says it worked\" is not one of the permitted answers.\n\nWHAT MUST NOT HAPPEN. A desired-state record without its generation. An\nartifact published twice, or once under two build_ids. A reconcile loop that\nkeeps retrying a half-finished transition. A release marked converged on\nevidence written before the crash.\n\nSCOPE, STATED PLAINLY. This kills at ONE boundary \u2014 the controller during a\ndesired-state write. The full fault matrix wants a killpoint at every durable\ntransition:\n\n    publish \u2192 desired generation \u2192 dispatch \u2192 download \u2192\n    install \u2192 service start \u2192 installed receipt \u2192 converged\n\nand running the same scenario once per boundary, with only the two outcomes\nabove permitted at each. That needs deterministic failpoints inside the\nservices, because from outside the harness cannot reliably observe the moment\nbetween \"package installed\" and \"receipt written\" \u2014 the window is small and\nunobservable, and a timing-based approximation would test whichever boundary it\nhappened to hit rather than the one it named. Until those failpoints exist,\nthis scenario covers the boundary that IS reachable and says so, rather than\nclaiming a matrix it does not run.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "preconditions",
+        "id": "liveness_settled_before",
+        "probe_or_action": "state.liveness_freshness",
+        "result": {
+          "nodes": 5,
+          "max_age_s": 342,
+          "stale_nodes": 3,
+          "oldest": "c777633e-6d07-5713-9c4c-deb3317eee25"
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

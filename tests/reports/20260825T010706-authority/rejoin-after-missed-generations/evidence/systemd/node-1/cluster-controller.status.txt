@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 01:41:31 UTC; 46min ago
+    Process: 2637 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 2640 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2644 (cluster_control)
+      Tasks: 22 (limit: 8641)
+     Memory: 51.2M (peak: 57.6M)
+        CPU: 2min 12.479s
+     CGroup: /system.slice/docker-c842962688ff0f7bae4f6f82083b79940148f679414e9ef1d68e47d44b2ebe21.scope/system.slice/globular-cluster-controller.service
+             └─2644 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 25 02:27:37 node-1 cluster_controller_server[2644]: 2026/08/25 02:27:37 dns reconciler: applied to node-1.globular.internal:10006: A=18, AAAA=0, SRV=4 records
+Aug 25 02:27:37 node-1 cluster_controller_server[2644]: 2026/08/25 02:27:37 dns reconciler: applied to node-2.globular.internal:10006: A=18, AAAA=0, SRV=4 records
+Aug 25 02:27:37 node-1 cluster_controller_server[2644]: 2026/08/25 02:27:37 dns reconciler: SUCCESS - applied generation 3 to 1 domain(s)
+Aug 25 02:27:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:27:42 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10016 host=10.10.0.11 port=10016
+Aug 25 02:27:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:27:42 drift-reconciler: node=node-2 pkg=media — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 02:27:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:27:42 drift-reconciler: node=node-2 pkg=torrent — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 02:27:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:27:42 drift-reconciler: node=node-2 pkg=title — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 02:27:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:27:42 drift-reconciler: node=node-3 pkg=media — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 02:27:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:27:42 drift-reconciler: node=node-3 pkg=torrent — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 25 02:27:42 node-1 cluster_controller_server[2644]: 2026/08/25 02:27:42 drift-reconciler: node=node-3 pkg=title — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)

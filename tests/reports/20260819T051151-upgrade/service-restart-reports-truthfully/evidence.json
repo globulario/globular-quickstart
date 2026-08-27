@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "scenario": "service-restart-reports-truthfully",
+  "suite": "upgrade",
+  "start_time": "2026-08-19T05:37:00.529389Z",
+  "end_time": "2026-08-19T05:37:01.197477Z",
+  "passed": false,
+  "item_count": 3,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "unknown",
+        "error": "primary container not running",
+        "members": 0,
+        "nodes": 0
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:00.593908Z"
+    },
+    {
+      "id": "target_service_running_before",
+      "section": "preconditions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "ai-watcher"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "unknown",
+        "node": "node-2",
+        "service": "ai-watcher",
+        "error": "container not running"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:00.632194Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {},
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "unproven": "no baseline captured"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:00.632249Z"
+    }
+  ],
+  "result": "INFRA_ERROR",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

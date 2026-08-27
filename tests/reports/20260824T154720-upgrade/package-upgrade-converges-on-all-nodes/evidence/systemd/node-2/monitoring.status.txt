@@ -1,0 +1,21 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 15:41:55 UTC; 44min ago
+    Process: 501 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 527 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 556 (monitoring_serv)
+      Tasks: 18 (limit: 8641)
+     Memory: 19.6M (peak: 25.8M)
+        CPU: 1.459s
+     CGroup: /system.slice/docker-01deae67c0e35f2c015b1214529e52ba3b4037aa3d6d22f20e73daa81d120901.scope/system.slice/globular-monitoring.service
+             └─556 /usr/lib/globular/bin/monitoring_server
+
+Aug 24 15:41:55 node-2 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 24 15:41:55 node-2 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 24 15:41:55 node-2 monitoring_server[556]: 2026/08/24 15:41:55 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 24 15:41:55 node-2 monitoring_server[556]: 2026/08/24 15:41:55 INFO security: loaded cluster roles from external policy file roles=22
+Aug 24 15:41:55 node-2 monitoring_server[556]: PortAllocator range: 10000 - 20000
+Aug 24 15:41:55 node-2 monitoring_server[556]: 2026/08/24 15:41:55 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 24 15:41:55 node-2 monitoring_server[556]: time=2026-08-24T15:41:55.781Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=357
+Aug 24 15:41:55 node-2 monitoring_server[556]: 2026/08/24 15:41:55 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 24 16:12:32 node-2 monitoring_server[556]: 2026/08/24 16:12:32 INFO acc: warmup complete baseline_rtt_ms=20 samples=150 elapsed=30m0s

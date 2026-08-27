@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-25T17:15:24.225087Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/upgrade/first-join-from-clean-node.yaml",
+  "scenario": "first-join-from-clean-node",
+  "suite": "upgrade",
+  "source_revision": "07afa9e72caf0ffc533a3233aa20064d6425e91e",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "A node with no prior state must be able to join, install its services, and\nconverge \u2014 the Day-1 path, exercised as a FIRST join rather than a re-join.\n\nWHY THIS EXISTS. The suite already had node-join-convergence, but it asserts\ntarget_node_registered_before: it stops and restarts a node that is already a\ncluster member, so it exercises re-join and never the path a genuinely new\nmachine takes. The distinction is not academic \u2014 the bootstrap unit\nshort-circuits on an \"already bootstrapped\" marker in the node's state volume:\n\n    [bootstrap] already bootstrapped (day0 ...) \u2014 nothing to do\n\nso a node whose state survives never runs the join at all.\n\nOn 2026-08-17 that gap cost hours. A gateway carried forward from an older\nbase bundle still ran a join step installing libnss-resolve, a package the\nrelease deliberately no longer ships, and every joining node died:\n\n    FAIL: package libnss-resolve not found in /var/lib/globular/packages\n    [bootstrap] FATAL: join failed\n\nThe founding node bootstrapped normally, so the cluster reported HEALTHY at\none node while four could never join. Nothing in 74 scenarios would have\ncaught it; it was found by reading journals. That is the shape this scenario\ncloses \u2014 a join failure that presents as \"still converging\".\n\nWHAT IT PINS. Wipe a node's state completely, restart it, and require that it\ncomes back as a full member: registered in etcd, services installed, running,\nand the cluster healthy with every node accounted for. It asserts the OUTCOME\nof the join rather than any particular step, so it stays valid as the join\nprocedure changes \u2014 which it does, and which is how it broke.\n\nThis scenario is destructive by design and slow: a real first join installs\nthe full service set.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-25T17:30:44.061722Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

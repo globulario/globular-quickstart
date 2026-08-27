@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 18:53:50 UTC; 24min ago
+    Process: 155 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 183 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 226 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 27.7M (peak: 36.8M)
+        CPU: 45.775s
+     CGroup: /system.slice/docker-8f2c20fa44c525c5f9d44495f4696ab93e352f205e623d4a83e994a0a58a6e0d.scope/system.slice/globular-node-agent.service
+             └─226 /usr/lib/globular/bin/node_agent_server
+
+Aug 22 19:17:34 node-5 node_agent_server[226]: 2026/08/22 19:17:34 tls-convergence: derived cluster network spec from config (domain=globular.internal protocol=https) — controller never pushed one
+Aug 22 19:17:35 node-5 node_agent_server[226]: 2026/08/22 19:17:35 nodeagent: reporting 28 installed services (hash=d8281a1cb90968c832645fa1a95f7e2bb91790ed1abd095fbbbd3444b7540393, sample=[sha256sum etcdctl ai-router rclone prometheus])
+Aug 22 19:17:36 node-5 node_agent_server[226]: 2026/08/22 19:17:36 event-publisher: service.stopped unit=globular-minio.service (active/running → inactive/dead)
+Aug 22 19:17:41 node-5 node_agent_server[226]: 2026/08/22 19:17:41 event-handler: recovered (prior="event service not found in registry, retrying in 10s" suppressed=0)
+Aug 22 19:17:41 node-5 node_agent_server[226]: 2026/08/22 19:17:41 event-handler: connected to event service
+Aug 22 19:17:41 node-5 node_agent_server[226]: 2026/08/22 19:17:41 event-handler: subscribed to operation.*
+Aug 22 19:17:51 node-5 node_agent_server[226]: 2026/08/22 19:17:51 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 22 19:17:56 node-5 node_agent_server[226]: 2026/08/22 19:17:56 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 22 19:17:56 node-5 node_agent_server[226]: 2026/08/22 19:17:56 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 22 19:18:06 node-5 node_agent_server[226]: 2026/08/22 19:18:06 nodeagent: reporting 28 installed services (hash=d8281a1cb90968c832645fa1a95f7e2bb91790ed1abd095fbbbd3444b7540393, sample=[log restic mc minio xds])

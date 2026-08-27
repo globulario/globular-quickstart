@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:02 UTC; 22s ago
+    Process: 890 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 895 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 902 (event_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 19.1M (peak: 19.9M swap: 32.0K swap peak: 32.0K)
+        CPU: 315ms
+     CGroup: /system.slice/docker-385981ec9bab5109e8a8585b8d7070b5708eef8209ed44d8f8789bedfa13bd12.scope/system.slice/globular-event.service
+             └─902 /usr/lib/globular/bin/event_server
+
+Aug 19 03:23:17 node-4 event_server[902]: 2026/08/19 03:23:17 INFO policy: loaded permissions from file service=event path=/var/lib/globular/policy/services/event/permissions.generated.json count=7
+Aug 19 03:23:17 node-4 event_server[902]: time=2026-08-19T03:23:17.573Z level=INFO msg="authz: permission mappings loaded" service=event count=7 action_mappings=7
+Aug 19 03:23:17 node-4 event_server[902]: time=2026-08-19T03:23:17.573Z level=INFO msg="service started successfully" name=event.EventService id=ae220301-9352-393b-be03-90707f486149 port=10000
+Aug 19 03:23:17 node-4 event_server[902]: time=2026-08-19T03:23:17.667Z level=INFO msg="resumed from durable cursor" instance=event-node-4.globular.internal cursor_time=2026-08-19T03:15:00Z
+Aug 19 03:23:17 node-4 event_server[902]: time=2026-08-19T03:23:17.667Z level=INFO msg="scylla event bus connected" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=globular_events
+Aug 19 03:23:17 node-4 event_server[902]: time=2026-08-19T03:23:17.667Z level=INFO msg="event loop started" service=event.EventService id=ae220301-9352-393b-be03-90707f486149
+Aug 19 03:23:17 node-4 event_server[902]: 2026/08/19 03:23:17 WARN port conflict detected - attempting reallocation service=event.EventService conflicting_port=10000 attempt=1 max_attempts=5
+Aug 19 03:23:17 node-4 event_server[902]: 2026/08/19 03:23:17 INFO port reallocated successfully service=event.EventService old_port=10000 new_port=10002
+Aug 19 03:23:17 node-4 event_server[902]: 2026/08/19 03:23:17 INFO metrics listening service=event.EventService addr=[::]:10051
+Aug 19 03:23:17 node-4 event_server[902]: time=2026-08-19T03:23:17.868Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=4

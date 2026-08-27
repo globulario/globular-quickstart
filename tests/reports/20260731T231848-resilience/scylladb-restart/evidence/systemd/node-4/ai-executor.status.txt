@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:41:24 UTC; 12min ago
+    Process: 760 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 774 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 781 (ai_executor_ser)
+      Tasks: 18 (limit: 8641)
+     Memory: 35.8M (peak: 36.3M)
+        CPU: 3.335s
+     CGroup: /system.slice/docker-928b88015d720a8f11737bd2e4cef31a0f068e077aace4373fcff00bacea7705.scope/system.slice/globular-ai-executor.service
+             └─781 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 23:53:16 node-4 ai_executor_server[781]: time=2026-07-31T23:53:16.071Z level=INFO msg="processing incident" incident_id=ff838cef-8d3a-11f1-bd59-02420a0a000b rule_id=workflow-run-failed tier=0 trigger=workflow.run.failed batch_size=51
+Jul 31 23:53:20 node-4 ai_executor_server[781]: {"level":"warn","ts":"2026-07-31T23:53:20.073089Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002c0960/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:53:20 node-4 ai_executor_server[781]: time=2026-07-31T23:53:20.253Z level=INFO msg="diagnosis complete" incident_id=ff838cef-8d3a-11f1-bd59-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Jul 31 23:53:20 node-4 ai_executor_server[781]: time=2026-07-31T23:53:20.253Z level=INFO msg="INCIDENT RESOLVED" incident_id=ff838cef-8d3a-11f1-bd59-02420a0a000b summary="workflow-run-failed triggered by workflow.run.failed (51 events in batch)" root_cause=unknown_anomaly
+Jul 31 23:53:20 node-4 ai_executor_server[781]: 2026/07/31 23:53:20 WARN event client: publish circuit breaker closed dropped_during_window=2
+Jul 31 23:53:20 node-4 ai_executor_server[781]: 2026/07/31 23:53:20 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=4212 baseline_ms=20 window=58 new_window=52
+Jul 31 23:53:22 node-4 ai_executor_server[781]: {"level":"warn","ts":"2026-07-31T23:53:22.254956Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006fe5a0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:53:22 node-4 ai_executor_server[781]: time=2026-07-31T23:53:22.255Z level=WARN msg="job_store: persist failed" incident_id=ff838cef-8d3a-11f1-bd59-02420a0a000b err="context deadline exceeded"
+Jul 31 23:53:34 node-4 ai_executor_server[781]: {"level":"warn","ts":"2026-07-31T23:53:34.59864Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002c0960/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:53:34 node-4 ai_executor_server[781]: {"level":"info","ts":"2026-07-31T23:53:34.598862Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

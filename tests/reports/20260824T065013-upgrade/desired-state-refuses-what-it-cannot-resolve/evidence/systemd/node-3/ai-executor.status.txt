@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 06:45:04 UTC; 7min ago
+    Process: 690 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 702 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 707 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 31.4M (peak: 36.9M)
+        CPU: 1.351s
+     CGroup: /system.slice/docker-21d9b721864172ac3e65918a526d4a3f27ef8cf5d53cd86bd8ab30adc4b8941d.scope/system.slice/globular-ai-executor.service
+             └─707 /usr/lib/globular/bin/ai_executor_server
+
+Aug 24 06:50:50 node-3 ai_executor_server[707]: time=2026-08-24T06:50:50.172Z level=INFO msg="diagnosis complete" incident_id=24693740-9f88-11f1-997f-02420a0a000c root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 24 06:50:50 node-3 ai_executor_server[707]: time=2026-08-24T06:50:50.172Z level=INFO msg="INCIDENT RESOLVED" incident_id=24693740-9f88-11f1-997f-02420a0a000c summary="auth-denial triggered by alert.auth.denied on repository.PackageRepository (10 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)"
+Aug 24 06:50:50 node-3 ai_executor_server[707]: time=2026-08-24T06:50:50.230Z level=INFO msg="processing incident" incident_id=24819799-9f88-11f1-947f-02420a0a000d rule_id=auth-denial tier=0 trigger=alert.auth.denied batch_size=10
+Aug 24 06:50:50 node-3 ai_executor_server[707]: time=2026-08-24T06:50:50.276Z level=INFO msg="diagnosis complete" incident_id=24819799-9f88-11f1-947f-02420a0a000d root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 24 06:50:50 node-3 ai_executor_server[707]: time=2026-08-24T06:50:50.276Z level=INFO msg="INCIDENT RESOLVED" incident_id=24819799-9f88-11f1-947f-02420a0a000d summary="auth-denial triggered by alert.auth.denied on repository.PackageRepository (10 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)"
+Aug 24 06:51:33 node-3 ai_executor_server[707]: 2026/08/24 06:51:33 INFO acc: warmup complete baseline_rtt_ms=20 samples=210 elapsed=6m24s
+Aug 24 06:51:33 node-3 ai_executor_server[707]: time=2026-08-24T06:51:33.997Z level=INFO msg="processing incident" incident_id=3e98c14d-9f88-11f1-ad8c-02420a0a000b rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=1
+Aug 24 06:51:34 node-3 ai_executor_server[707]: time=2026-08-24T06:51:34.064Z level=INFO msg="diagnosis complete" incident_id=3e98c14d-9f88-11f1-ad8c-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 24 06:51:34 node-3 ai_executor_server[707]: time=2026-08-24T06:51:34.064Z level=INFO msg="INCIDENT RESOLVED" incident_id=3e98c14d-9f88-11f1-ad8c-02420a0a000b summary="doctor-finding triggered by cluster.finding.created (1 events in batch)" root_cause=unknown_anomaly
+Aug 24 06:51:34 node-3 ai_executor_server[707]: 2026/08/24 06:51:34 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=72 baseline_ms=20 window=100 new_window=90

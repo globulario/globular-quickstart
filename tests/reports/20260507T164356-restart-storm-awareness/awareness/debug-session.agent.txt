@@ -1,0 +1,23 @@
+AGENT DEBUG SESSION
+
+Task:
+node failure and restart storm — quorum maintenance and node recovery
+
+Classification:
+RESTART_STORM | CONVERGENCE_RISK | ARCHITECTURE_SENSITIVE | UNKNOWN_IMPACT
+
+Confidence: UNKNOWN
+
+Investigation plan:
+1. Verify the failing layer: walk Repository → Desired → Installed → Runtime in order. The symptom layer is rarely the root-cause layer.
+2. Restart storm: verify the singleflight gate prevents concurrent restarts per service per convergence tick. Check for stale SIGTERM and start-limit-hit in the systemd journal.
+3. Convergence risk: inspect the convergence committer that stamps CONVERGED. Verify the desired→installed→runtime progression is not short-circuited.
+4. UNKNOWN_IMPACT: no awareness facts matched this task. Query the graph before editing: 'globular awareness node-context --node <service>'
+5. Review runtime evidence: doctor findings, state deltas, and workflow receipts in runtime_evidence.
+
+If this is new:
+- Architecture-sensitive task with no prior fix record. After resolving, add a fix case to docs/awareness/fix_cases.yaml.
+
+Warnings:
+! NO_AWARENESS_MATCH: no awareness facts matched this task. This does not prove the task is safe.
+! fix-ledger: UNKNOWN — No matching fix cases found. Consider creating a fix case in docs/awareness/fix_cases.yaml.

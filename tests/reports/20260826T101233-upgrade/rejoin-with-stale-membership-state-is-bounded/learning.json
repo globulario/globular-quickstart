@@ -1,0 +1,53 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-26T11:21:47.647951Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "rejoin-with-stale-membership-state-is-bounded",
+  "suite": "upgrade",
+  "result": "PARTIAL",
+  "source_revision": "b7d7bb017648ed8100610ce5f9975f94df4ca4dc",
+  "proof": {
+    "claim": "A node re-entering a cluster while still holding state from a PREVIOUS\nmembership must reach a terminal outcome inside the install budget \u2014 joined,\nor failed with a diagnosis. It must never wait forever.\n\nWHY THIS EXISTS. On 2026-08-19 a Day-0 install was run on a machine whose\nScyllaDB data directory still held the previous cluster's Raft group0: five\nvoters, four of them long gone. The install reached\n\n  \"Waiting for ScyllaDB write readiness (DDL probe) on 10.0.0.63:9042...\"\n\nand stopped there. CREATE KEYSPACE is a schema change, schema changes take a\ngroup0 read barrier, and a barrier needs 3 of 5 voters. One was alive. The\nprobe could never succeed, and nothing bounded it: install-day0.sh advertises\na 120s budget as `for _i in $(seq 1 60)` with `sleep 2`, but invokes cqlsh\nwith no client-side timeout, so a single attempt blocks indefinitely and the\nloop never reaches iteration 2. The operator saw one line and no error, for\nas long as they were willing to wait.\n\nThe four peers were reachable by ICMP but had 9042 and 7000 closed \u2014 already\ncleaned \u2014 so quorum was unrecoverable by restarting them. The install could\nnot have succeeded; it simply never said so.\n\nTHE PROPERTY. Bounded failure, not success. This scenario does not assert\nthat a dirty node rejoins \u2014 that may legitimately be refused. It asserts that\nthe attempt CONCLUDES, and that the rest of the cluster is not degraded while\nit runs. A hang is caught structurally: the bounded wait below expires, the\nnode has not registered, and the scenario fails on that.\n\nWHY THIS SHAPE OF DIRTY. The node is removed from the cluster and then\nrestarted WITHOUT wiping its state volume, so its persisted identity and\nmembership refer to a cluster that no longer lists it. That is the same class\nof state as the incident \u2014 local evidence of a membership the cluster has\nmoved past \u2014 reachable with existing primitives.\n\nRELATIONSHIP TO first-join-from-clean-node. That scenario proves the CLEAN\npath works: detach, remove, WIPE, restart, rejoin. This one is deliberately\nthe same sequence with the wipe removed, so a diff between the two isolates\nexactly one variable: whether prior state was cleared. Passing clean while\nhanging dirty is the defect, and only the pair can show it.\n\nNOT COVERED HERE: the cqlsh timeout itself. Reproducing the original hang\nneeds a ScyllaDB whose group0 cannot reach quorum, which a healthy sim\ncluster does not offer without building a foreign ring first. This pins the\nboundedness property that the missing timeout violated, at the layer the\nharness can actually drive.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "steps",
+        "id": "remove_node5_from_cluster",
+        "probe_or_action": "ops.remove_node",
+        "result": {
+          "action": "ops.remove_node",
+          "error": "could not resolve a node_id for node-5"
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

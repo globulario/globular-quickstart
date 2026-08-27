@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 21:14:05 UTC; 15min ago
+    Process: 127 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 154 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 188 (cluster_control)
+      Tasks: 23 (limit: 8641)
+     Memory: 53.7M (peak: 68.4M)
+        CPU: 27.746s
+     CGroup: /system.slice/docker-dae82d356e76e6016996f999716cccadf9a25ac7e9d047300b9f7e21e912cd83.scope/system.slice/globular-cluster-controller.service
+             └─188 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 23 21:29:00 node-1 cluster_controller_server[188]: 2026/08/23 21:29:00 watch-service-release: event MODIFIED name=core@globular.io/ai-watcher phase=AVAILABLE
+Aug 23 21:29:00 node-1 cluster_controller_server[188]: 2026/08/23 21:29:00 watch-service-release: event MODIFIED name=core@globular.io/authentication phase=RESOLVED
+Aug 23 21:29:00 node-1 cluster_controller_server[188]: 2026/08/23 21:29:00 watch-service-release: event MODIFIED name=core@globular.io/ai-watcher phase=AVAILABLE
+Aug 23 21:29:00 node-1 cluster_controller_server[188]: 2026/08/23 21:29:00 watch-service-release: event MODIFIED name=core@globular.io/authentication phase=AVAILABLE
+Aug 23 21:29:00 node-1 cluster_controller_server[188]: 2026/08/23 21:29:00 watch-service-release: event MODIFIED name=core@globular.io/authentication phase=AVAILABLE
+Aug 23 21:29:06 node-1 cluster_controller_server[188]: 2026/08/23 21:29:06 minio-creds: read from /var/lib/globular/minio/credentials (user=globular)
+Aug 23 21:29:06 node-1 cluster_controller_server[188]: 2026/08/23 21:29:06 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)
+Aug 23 21:29:11 node-1 cluster_controller_server[188]: 2026/08/23 21:29:11 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 23 21:29:11 node-1 cluster_controller_server[188]: 2026/08/23 21:29:11 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 23 21:29:17 node-1 systemd[1]: globular-cluster-controller.service: Sent signal SIGCONT to main process 188 (cluster_control) on client request.

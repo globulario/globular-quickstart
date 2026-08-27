@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:05:45 UTC; 3min 13s ago
+    Process: 7860 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 7881 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 7906 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 7979 (ai_memory_serve)
+      Tasks: 17 (limit: 8641)
+     Memory: 26.4M (peak: 27.4M)
+        CPU: 1.546s
+     CGroup: /system.slice/docker-fac1d0fd94bea9a0d7ffcda0c0edf931a4d141c04f8b3de9361d6d7a1ebcb85f.scope/system.slice/globular-ai-memory.service
+             └─7979 /usr/lib/globular/bin/ai_memory_server
+
+Jul 31 20:06:00 node-5 ai_memory_server[7979]: time=2026-07-31T20:06:00.850Z level=INFO msg="service started successfully" name=ai_memory.AiMemoryService id=10595db3-3e7b-343e-9f86-94a6e317585f port=10013
+Jul 31 20:06:00 node-5 ai_memory_server[7979]: 2026/07/31 20:06:00 INFO metrics listening service=ai_memory.AiMemoryService addr=[::]:10201
+Jul 31 20:06:30 node-5 ai_memory_server[7979]: time=2026-07-31T20:06:30.039Z level=INFO msg="memory updated" id=5ea3d03c-8d13-11f1-bf4d-02420a0a000b project=globular-services
+Jul 31 20:06:48 node-5 ai_memory_server[7979]: time=2026-07-31T20:06:48.322Z level=INFO msg="memory stored" id=5ca44d8a-8d1b-11f1-a968-02420a0a000f project=globular-services type=debug title="incident-signature: service_overload_or_cascade_failure (workflow.WorkflowService)"
+Jul 31 20:07:32 node-5 ai_memory_server[7979]: 2026/07/31 20:07:32 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/ai_memory.AiMemoryService/Query
+Jul 31 20:07:41 node-5 ai_memory_server[7979]: time=2026-07-31T20:07:41.000Z level=INFO msg="memory stored" id=7c0a36a8-8d1b-11f1-a969-02420a0a000f project=globular-services type=debug title="incident: service_crash: globular-ai-executor.service → ACTION_RESTART_SERVICE (ACTION_FAILED)"
+Jul 31 20:07:44 node-5 ai_memory_server[7979]: time=2026-07-31T20:07:44.676Z level=INFO msg="memory updated" id=3c6f0f59-8d13-11f1-bf4a-02420a0a000b project=globular-services
+Jul 31 20:07:45 node-5 ai_memory_server[7979]: 2026/07/31 20:07:45 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Jul 31 20:07:45 node-5 ai_memory_server[7979]: 2026/07/31 20:07:45 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Jul 31 20:07:48 node-5 ai_memory_server[7979]: time=2026-07-31T20:07:48.031Z level=INFO msg="memory updated" id=7f974fe9-8d18-11f1-b3f5-02420a0a000b project=globular-services

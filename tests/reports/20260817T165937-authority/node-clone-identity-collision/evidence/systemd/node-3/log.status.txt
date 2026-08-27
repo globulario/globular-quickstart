@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:22:18 UTC; 1min 27s ago
+    Process: 3161 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 3168 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3173 (log_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 21.4M (peak: 28.7M)
+        CPU: 476ms
+     CGroup: /system.slice/docker-8f454c2373e807828ac154919ed7d095a53274b04530736be8114ed093686a0e.scope/system.slice/globular-log.service
+             └─3173 /usr/lib/globular/bin/log_server
+
+Aug 17 17:22:18 node-3 log_server[3173]: time=2026-08-17T17:22:18.523Z level=INFO msg="starting service" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 17 17:22:18 node-3 log_server[3173]: 2026/08/17 17:22:18 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 17 17:22:18 node-3 log_server[3173]: time=2026-08-17T17:22:18.524Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 17 17:22:18 node-3 log_server[3173]: time=2026-08-17T17:22:18.524Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 17 17:22:18 node-3 log_server[3173]: 2026/08/17 17:22:18 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 17 17:22:29 node-3 log_server[3173]: 2026/08/17 17:22:29 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 17 17:22:29 node-3 log_server[3173]: 2026/08/17 17:22:29 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 17 17:23:39 node-3 log_server[3173]: 2026/08/17 17:23:39 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 17 17:23:39 node-3 log_server[3173]: time=2026-08-17T17:23:39.361Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 17 17:23:39 node-3 log_server[3173]: time=2026-08-17T17:23:39.379Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB

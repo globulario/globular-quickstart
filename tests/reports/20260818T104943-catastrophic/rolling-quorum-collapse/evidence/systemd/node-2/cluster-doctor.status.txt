@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 11:02:06 UTC; 12s ago
+    Process: 3490 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 3494 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3496 (cluster_doctor_)
+      Tasks: 13 (limit: 8641)
+     Memory: 21.5M (peak: 22.4M)
+        CPU: 195ms
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-cluster-doctor.service
+             └─3496 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 18 11:02:06 node-2 cluster_doctor_server[3496]: 2026/08/18 11:02:06 INFO security: loaded cluster roles from external policy file roles=22
+Aug 18 11:02:08 node-2 cluster_doctor_server[3496]: {"level":"warn","ts":"2026-08-18T11:02:08.159837Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004e1680/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:02:09 node-2 cluster_doctor_server[3496]: {"level":"warn","ts":"2026-08-18T11:02:09.567266Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004e1680/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = etcdserver: leader changed"}
+Aug 18 11:02:10 node-2 cluster_doctor_server[3496]: 2026/08/18 11:02:10 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 18 11:02:10 node-2 cluster_doctor_server[3496]: 2026/08/18 11:02:10 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 18 11:02:10 node-2 cluster_doctor_server[3496]: time=2026-08-18T11:02:10.852Z level=INFO msg="TLS enabled" cert=/var/lib/globular/pki/issued/services/service.crt key=/var/lib/globular/pki/issued/services/service.key ca=/var/lib/globular/pki/ca.crt
+Aug 18 11:02:11 node-2 cluster_doctor_server[3496]: time=2026-08-18T11:02:11.567Z level=INFO msg="metrics/pprof listening" addr=[::]:33627
+Aug 18 11:02:11 node-2 cluster_doctor_server[3496]: time=2026-08-18T11:02:11.732Z level=INFO msg="healer: background loop starting" mode=observe interval=1m0s max_actions=10
+Aug 18 11:02:11 node-2 cluster_doctor_server[3496]: time=2026-08-18T11:02:11.768Z level=INFO msg="doctor leader election: campaigning" candidate=doctor:node-2:3496:be175629-6f41-4ddb-a584-5ade82e49140
+Aug 18 11:02:11 node-2 cluster_doctor_server[3496]: time=2026-08-18T11:02:11.804Z level=INFO msg="cluster doctor ready" address=:12005 controller=10.10.0.13:443 version=1.2.320

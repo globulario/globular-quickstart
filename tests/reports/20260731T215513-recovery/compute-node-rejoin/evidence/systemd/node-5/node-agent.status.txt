@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:41:16 UTC; 14min ago
+    Process: 204 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 228 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 248 (node_agent_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 161.9M (peak: 169.8M)
+        CPU: 1min 21.807s
+     CGroup: /system.slice/docker-4908e77bbf99ff3f7b177f626a29d247c8f9ef6a704b5c704dbea822ab1ca85b.scope/system.slice/globular-node-agent.service
+             └─248 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 21:54:38 node-5 node_agent_server[248]: 2026/07/31 21:54:38 nodeagent: refreshed etcd endpoint list from /globular/system/etcd_endpoints (3 endpoint(s))
+Jul 31 21:54:38 node-5 node_agent_server[248]: 2026/07/31 21:54:38 node heartbeat failed (state=unreachable): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs
+Jul 31 21:54:47 node-5 node_agent_server[248]: 2026/07/31 21:54:47 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Jul 31 21:54:48 node-5 node_agent_server[248]: 2026/07/31 21:54:48 behavioral observation: infra_probe skipped component=scylladb node=35ac3821-6b90-52eb-a800-41130471770b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:54:48 node-5 node_agent_server[248]: 2026/07/31 21:54:48 behavioral observation: infra_probe skipped component=envoy node=35ac3821-6b90-52eb-a800-41130471770b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:55:10 node-5 node_agent_server[248]: 2026/07/31 21:55:10 nodeagent: reporting 41 installed services (hash=0850d5d5c9405c3f43d36c9d06676c74e34ebdd391dc4bac490c2d006e9759b7, sample=[etcd ai-watcher node-exporter minio mc])
+Jul 31 21:55:10 node-5 node_agent_server[248]: 2026/07/31 21:55:10 nodeagent: refreshed etcd endpoint list from /globular/system/etcd_endpoints (3 endpoint(s))
+Jul 31 21:55:10 node-5 node_agent_server[248]: 2026/07/31 21:55:10 node heartbeat failed (state=unreachable): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs
+Jul 31 21:55:17 node-5 node_agent_server[248]: 2026/07/31 21:55:17 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Jul 31 21:55:18 node-5 node_agent_server[248]: 2026/07/31 21:55:18 behavioral observation: infra_probe skipped component=etcd node=35ac3821-6b90-52eb-a800-41130471770b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: connect: connection refused"

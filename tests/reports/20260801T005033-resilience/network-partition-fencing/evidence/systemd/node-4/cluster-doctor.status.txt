@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:12:11 UTC; 12min ago
+    Process: 192 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 212 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 225 (cluster_doctor_)
+      Tasks: 21 (limit: 8641)
+     Memory: 28.8M (peak: 34.8M)
+        CPU: 3.862s
+     CGroup: /system.slice/docker-9180d30e9d1ba804a7b09169efb4bbc01eb91329f628cb2e20c93a2f4151a900.scope/system.slice/globular-cluster-doctor.service
+             └─225 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 01 01:24:09 node-4 cluster_doctor_server[225]: 2026/08/01 01:24:09 collector: data-source fetch failed (reduced harvest) service=etcd rpc=LoadCAMetadata: pki ca metadata: etcd get: context canceled
+Aug 01 01:24:13 node-4 cluster_doctor_server[225]: {"level":"warn","ts":"2026-08-01T01:24:13.063763Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002d34a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 01 01:24:13 node-4 cluster_doctor_server[225]: {"level":"warn","ts":"2026-08-01T01:24:13.063875Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002d34a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Canceled desc = context canceled"}
+Aug 01 01:24:13 node-4 cluster_doctor_server[225]: 2026/08/01 01:24:13 collector: data-source fetch failed (reduced harvest) service=etcd rpc=Get(/globular/ingress/v1/spec): context canceled
+Aug 01 01:24:13 node-4 cluster_doctor_server[225]: {"level":"warn","ts":"2026-08-01T01:24:13.063918Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002d34a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Canceled desc = context canceled"}
+Aug 01 01:24:13 node-4 cluster_doctor_server[225]: 2026/08/01 01:24:13 collector: data-source fetch failed (reduced harvest) service=etcd rpc=Get(/globular/ingress/v1/status/): context canceled
+Aug 01 01:24:13 node-4 cluster_doctor_server[225]: {"level":"warn","ts":"2026-08-01T01:24:13.071918Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002d34a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Canceled desc = context canceled"}
+Aug 01 01:24:13 node-4 cluster_doctor_server[225]: 2026/08/01 01:24:13 collector: data-source fetch failed (reduced harvest) service=etcd rpc=LoadAdmittedDisks: admitted disks: etcd get: context canceled
+Aug 01 01:24:13 node-4 cluster_doctor_server[225]: {"level":"warn","ts":"2026-08-01T01:24:13.083706Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002d34a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Canceled desc = context canceled"}
+Aug 01 01:24:13 node-4 cluster_doctor_server[225]: 2026/08/01 01:24:13 collector: data-source fetch failed (reduced harvest) service=etcd rpc=LoadAllDiskCandidates: disk candidates: etcd list nodes: context canceled

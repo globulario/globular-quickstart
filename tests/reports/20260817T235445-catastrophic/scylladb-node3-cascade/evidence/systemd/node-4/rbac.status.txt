@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:19:02 UTC; 41min ago
+    Process: 161 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 189 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 221 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 308 (rbac_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 166.6M (peak: 190.9M)
+        CPU: 5.386s
+     CGroup: /system.slice/docker-b20775b8a2a560480b2efa5ecaabe93ae56dc7289499604fd316260a4deb88b6.scope/system.slice/globular-rbac.service
+             └─308 /usr/lib/globular/bin/rbac_server
+
+Aug 17 23:59:08 node-4 rbac_server[308]: 2026/08/17 23:59:08 error: failed to connect to "[HostInfo hostname=\"10.10.0.13\" connectAddress=\"10.10.0.13\" peer=\"10.10.0.13\" rpc_address=\"10.10.0.13\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.13\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"331df43d-b7f0-419a-b5f1-df262bdc2d1c\" version=\"v3.0.8\" state=DOWN num_tokens=1]" due to error: tls: first record does not look like a TLS handshake
+Aug 17 23:59:11 node-4 rbac_server[308]: 2026/08/17 23:59:11 error: failed to connect to "[HostInfo hostname=\"10.10.0.12\" connectAddress=\"10.10.0.12\" peer=\"10.10.0.12\" rpc_address=\"10.10.0.12\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.12\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"6df933e7-2f7e-4f3a-bf3f-5fe1a204663a\" version=\"v3.0.8\" state=DOWN num_tokens=1]" due to error: tls: first record does not look like a TLS handshake
+Aug 17 23:59:11 node-4 rbac_server[308]: 2026/08/17 23:59:11 ERROR rpc error: code = Internal desc = {"ErrorMsg":"gocql: no hosts available in the pool","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193","FunctionName":"main.(*server).GetRoleBinding"} domain=10.10.0.14:8443 application=rbac.RbacService user="" method=/rbac.RbacService/GetRoleBinding function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632
+Aug 17 23:59:11 node-4 rbac_server[308]: 2026/08/17 23:59:11 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 17 23:59:11 node-4 rbac_server[308]: 2026/08/17 23:59:11 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 17 23:59:11 node-4 rbac_server[308]: 2026/08/17 23:59:11 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 17 23:59:15 node-4 rbac_server[308]: 2026/08/17 23:59:15 error: failed to connect to "[HostInfo hostname=\"10.10.0.13\" connectAddress=\"10.10.0.13\" peer=\"10.10.0.13\" rpc_address=\"10.10.0.13\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.13\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"331df43d-b7f0-419a-b5f1-df262bdc2d1c\" version=\"v3.0.8\" state=DOWN num_tokens=1]" due to error: tls: first record does not look like a TLS handshake
+Aug 17 23:59:18 node-4 rbac_server[308]: time=2026-08-17T23:59:18.483Z level=WARN msg="permissions store unreachable; reconnecting with fresh host probe" err="gocql: no hosts available in the pool"
+Aug 17 23:59:18 node-4 rbac_server[308]: time=2026-08-17T23:59:18.536Z level=INFO msg="permissions store (re)connected" backend=scylla
+Aug 18 00:00:07 node-4 rbac_server[308]: 2026/08/18 00:00:07 INFO rbac: flushed permission cache on cross-instance RBAC change

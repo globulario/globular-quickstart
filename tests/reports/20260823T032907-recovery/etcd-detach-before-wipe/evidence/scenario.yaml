@@ -1,0 +1,175 @@
+version: 1
+name: etcd-detach-before-wipe
+description: |
+  A node removed from the cluster must take its etcd MEMBERSHIP with it.
+
+  SCAR — 2026-07-30, twice in one session, on the physical cluster.
+
+  globule-nuc was added to etcd during a Day-1 join and promoted to voter. Its
+  join then failed at a later phase (ScyllaDB), so the node was wiped. The wipe
+  did NOT remove its etcd member. The survivor was left with 2 registered voters
+  and only 1 alive:
+
+      IS LEADER=false   ERRORS="etcdserver: no leader"
+      raft index frozen; every etcd write hung
+
+  The whole control plane stalled behind it — 13.7s page loads, cluster-doctor
+  timing out — because gateway, controller and doctor all resolve config from
+  etcd. MemberRemove could not repair it either: that call itself needs quorum.
+  Recovery required restarting etcd with --force-new-cluster.
+
+  Two separate defects had to be fixed before the detach could work at all:
+
+    1. step 0.3 of clean-node.sh was gated on `systemctl is-active
+       globular-etcd`, and addressed only the LOCAL endpoint. A node is wiped
+       after a FAILED join, and the join's own preflight stops etcd — so the
+       guard was false in exactly the case the step exists for, and a dead local
+       etcd cannot serve its own removal anyway.   (services ba418f39)
+
+    2. it authenticated only with pki/issued/etcd/client.{crt,key}, which is
+       materialised LATER in the join than the phase-2 service cert. A node that
+       failed partway does not have it, so the step reported "TLS certs missing"
+       and skipped.                                 (services b82bcbf9)
+
+  WHAT THIS ASSERTS — and why it is not the same as the existing
+  etcd-quorum-resilience scenario:
+
+    stopping a member  → quorum requirement UNCHANGED (it is expected back)
+    detaching a member → member list SHRINKS, so quorum requirement DROPS
+
+  That difference is the entire property. Here two of three etcd members are
+  decommissioned. Under correct behaviour the list shrinks 3 → 1 and the single
+  survivor still elects itself leader and accepts writes. With the pre-fix
+  clean-node the list would stay at 3 with 1 alive — quorum 2 unreachable, no
+  leader, writes hung.
+
+  The load-bearing assertion is etcd.write_test. Membership arithmetic can look
+  plausible while the cluster is actually wedged; a completed write is the only
+  proof that quorum is real.
+
+suite: recovery
+tags:
+  - etcd
+  - quorum
+  - decommission
+  - scar
+  - regression
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  # This scenario permanently removes two etcd members. Reset afterwards so it
+  # cannot leave a 1-member cluster behind for whatever runs next.
+  reset_before: false
+  reset_after: true
+
+awareness:
+  enabled: true
+  task: "etcd member detach must precede node wipe or survivors lose quorum"
+  phase: recovery
+  expected_failure_modes:
+    - etcd.phantom_member_survives_node_wipe
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  # Writes must work BEFORE we touch anything, otherwise a pass at the end
+  # proves nothing about what this scenario did.
+  - type: probe
+    id: etcd_writable_at_start
+    probe: etcd.write_test
+    expect:
+      success: true
+
+baseline:
+  - type: probe
+    id: baseline_etcd_members
+    probe: cluster.etcd_members
+
+steps:
+  # ── decommission node-3: detach its member, THEN stop it ──────────────────
+  # Order matters and mirrors clean-node.sh: detach first, while the node can
+  # still reach a peer. Detaching after the wipe is what leaves a phantom.
+  - id: detach_node3
+    action: chaos.detach_node_etcd
+    params:
+      node: node-3
+      self_ip: "10.10.0.13"
+      peer_ip: "10.10.0.11"
+
+  - id: stop_node3
+    action: chaos.stop_node
+    params:
+      node: node-3
+
+  - id: settle_after_node3
+    action: wait
+    params:
+      timeout: 15
+
+  # After ONE detach: 2 members, both alive → quorum 2 → still writable.
+  - id: writable_after_first_detach
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  # ── decommission node-2 as well ───────────────────────────────────────────
+  # This is the step that separates a correct detach from a phantom member.
+  # Correct: list shrinks to 1, quorum 1, node-1 alone stays writable.
+  # Broken:  list still says 3, only node-1 alive, quorum 2 → NO LEADER.
+  - id: detach_node2
+    action: chaos.detach_node_etcd
+    params:
+      node: node-2
+      self_ip: "10.10.0.12"
+      peer_ip: "10.10.0.11"
+
+  - id: stop_node2
+    action: chaos.stop_node
+    params:
+      node: node-2
+
+  - id: settle_after_node2
+    action: wait
+    params:
+      timeout: 20
+
+assertions:
+  # THE assertion. A hung write is precisely the symptom the operator saw.
+  - type: probe
+    id: sole_survivor_still_accepts_writes
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  # A cluster with no leader cannot serve this either.
+  - type: probe
+    id: leader_still_elected
+    probe: cluster.leader
+    expect:
+      is_leader: true
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-1
+      service: etcd
+
+cleanup:
+  # Bring the decommissioned nodes back so reset_after starts from a sane place.
+  - type: action
+    id: restart_node2
+    action: chaos.start_node
+    params:
+      node: node-2
+
+  - type: action
+    id: restart_node3
+    action: chaos.start_node
+    params:
+      node: node-3

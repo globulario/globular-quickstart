@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:14:19 UTC; 2min 14s ago
+    Process: 52 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 70 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 89 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 25.0M (peak: 27.6M)
+        CPU: 1.322s
+     CGroup: /system.slice/docker-ad320a543adf0b98247f049770f1ddbb44e8f5a2f3712c4db491b6a85ccf76cf.scope/system.slice/globular-event.service
+             └─89 /usr/lib/globular/bin/event_server
+
+Aug 05 16:14:34 node-4 event_server[89]: time=2026-08-05T16:14:34.661Z level=INFO msg="stream registered" uuid=51ee28a4-4459-47a1-938d-375c1b4caa36
+Aug 05 16:15:12 node-4 event_server[89]: 2026/08/05 16:15:12 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.14:10002: connect: connection refused\""
+Aug 05 16:15:12 node-4 event_server[89]: 2026/08/05 16:15:12 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.14:10002: connect: connection refused\""
+Aug 05 16:15:49 node-4 event_server[89]: 2026/08/05 16:15:49 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 05 16:15:49 node-4 event_server[89]: 2026/08/05 16:15:49 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 05 16:15:52 node-4 event_server[89]: time=2026-08-05T16:15:52.507Z level=INFO msg="OnEvent: registered" uuid=64242db7-4ddc-4600-bacb-49fcbbeec51a
+Aug 05 16:15:52 node-4 event_server[89]: time=2026-08-05T16:15:52.507Z level=INFO msg="stream registered" uuid=64242db7-4ddc-4600-bacb-49fcbbeec51a
+Aug 05 16:16:06 node-4 event_server[89]: time=2026-08-05T16:16:06.431Z level=INFO msg="Subscribe: ok" channel=cluster.* uuid=1dcd4c28-c34f-4a27-9b2d-26f9f01dce1f
+Aug 05 16:16:06 node-4 event_server[89]: time=2026-08-05T16:16:06.431Z level=INFO msg=subscribed channel=cluster.* uuid=1dcd4c28-c34f-4a27-9b2d-26f9f01dce1f subscribers=1
+Aug 05 16:16:16 node-4 event_server[89]: time=2026-08-05T16:16:16.646Z level=INFO msg="subscriber cleanup" uuid=1dcd4c28-c34f-4a27-9b2d-26f9f01dce1f

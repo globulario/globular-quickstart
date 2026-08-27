@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 15:16:48 UTC; 24min ago
+    Process: 158 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 192 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 215 (log_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 22.6M (peak: 25.0M)
+        CPU: 806ms
+     CGroup: /system.slice/docker-fc3370877ddffa814bdba4fa8349b78cd8af40773b6e1301274777b8655f6f94.scope/system.slice/globular-log.service
+             └─215 /usr/lib/globular/bin/log_server
+
+Aug 24 15:38:59 node-5 log_server[215]: {"level":"info","ts":"2026-08-24T15:38:59.111196Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 15:39:00 node-5 log_server[215]: {"level":"warn","ts":"2026-08-24T15:39:00.190088Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00029fc20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 24 15:39:00 node-5 log_server[215]: {"level":"info","ts":"2026-08-24T15:39:00.190165Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 15:39:35 node-5 log_server[215]: {"level":"warn","ts":"2026-08-24T15:39:35.193014Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00029fc20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 24 15:39:35 node-5 log_server[215]: {"level":"info","ts":"2026-08-24T15:39:35.193091Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 15:40:10 node-5 log_server[215]: {"level":"warn","ts":"2026-08-24T15:40:10.194895Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00029fc20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 24 15:40:10 node-5 log_server[215]: {"level":"info","ts":"2026-08-24T15:40:10.194994Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 15:40:31 node-5 log_server[215]: 2026/08/24 15:40:31 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 24 15:40:31 node-5 log_server[215]: 2026/08/24 15:40:31 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 24 15:40:31 node-5 log_server[215]: 2026/08/24 15:40:31 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

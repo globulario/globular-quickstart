@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:57:38 UTC; 10min ago
+    Process: 621 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 662 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 702 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 34.7M (peak: 38.8M)
+        CPU: 5.533s
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-repository.service
+             └─702 /usr/lib/globular/bin/repository_server
+
+Aug 18 00:05:33 node-1 repository_server[702]: 2026/08/18 00:05:33 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 18 00:05:33 node-1 repository_server[702]: 2026/08/18 00:05:33 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%etcd%v3.5.14%linux_amd64 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0" finding=service.silent_fallback_active
+Aug 18 00:05:33 node-1 repository_server[702]: 2026/08/18 00:05:33 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 18 00:05:33 node-1 repository_server[702]: 2026/08/18 00:05:33 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 18 00:06:03 node-1 repository_server[702]: 2026/08/18 00:06:03 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 18 00:06:05 node-1 repository_server[702]: 2026/08/18 00:06:05 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=186 baseline_ms=20 window=820 new_window=738
+Aug 18 00:06:51 node-1 repository_server[702]: 2026/08/18 00:06:51 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 18 00:06:51 node-1 repository_server[702]: 2026/08/18 00:06:51 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=195 baseline_ms=20 window=937 new_window=843
+Aug 18 00:06:52 node-1 repository_server[702]: 2026/08/18 00:06:52 WARN authz_decision audit="{\"timestamp\":\"2026-08-18T00:06:52.691292528Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 18 00:07:51 node-1 repository_server[702]: 2026/08/18 00:07:51 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=181 baseline_ms=20 window=1149 new_window=1034

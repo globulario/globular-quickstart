@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 12:30:17 UTC; 40min ago
+    Process: 618 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 658 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 676 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 761 (rbac_server)
+      Tasks: 16 (limit: 8641)
+     Memory: 92.8M (peak: 93.8M)
+        CPU: 4.302s
+     CGroup: /system.slice/docker-e6bbcb8ab02f4ef5e2f38de5b6c5294acb2c046186bebc7eaf605a6510179aac.scope/system.slice/globular-rbac.service
+             └─761 /usr/lib/globular/bin/rbac_server
+
+Aug 11 13:03:53 node-3 rbac_server[761]: {"level":"warn","ts":"2026-08-11T13:03:53.586225Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc027b663c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 13:03:53 node-3 rbac_server[761]: {"level":"info","ts":"2026-08-11T13:03:53.586301Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 13:05:13 node-3 rbac_server[761]: {"level":"warn","ts":"2026-08-11T13:05:13.004908Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002b6960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 13:05:13 node-3 rbac_server[761]: {"level":"info","ts":"2026-08-11T13:05:13.004991Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 13:06:17 node-3 rbac_server[761]: {"level":"warn","ts":"2026-08-11T13:06:17.468436Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00044e960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 13:06:17 node-3 rbac_server[761]: {"level":"info","ts":"2026-08-11T13:06:17.468498Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 13:07:18 node-3 rbac_server[761]: {"level":"warn","ts":"2026-08-11T13:07:18.013726Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002b6960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 13:07:18 node-3 rbac_server[761]: {"level":"info","ts":"2026-08-11T13:07:18.013818Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 13:08:59 node-3 rbac_server[761]: 2026/08/11 13:08:59 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 11 13:09:34 node-3 rbac_server[761]: 2026/08/11 13:09:34 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

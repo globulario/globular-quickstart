@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 00:17:41 UTC; 1min 43s ago
+    Process: 627 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 673 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 704 (log_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 21.2M (peak: 28.8M)
+        CPU: 534ms
+     CGroup: /system.slice/docker-32c39823ab65a7aca959c1030d0fd13e19284d18ea3ba28b626a92a6a30be339.scope/system.slice/globular-log.service
+             └─704 /usr/lib/globular/bin/log_server
+
+Aug 11 00:17:41 node-3 log_server[704]: 2026/08/11 00:17:41 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 11 00:17:41 node-3 log_server[704]: time=2026-08-11T00:17:41.740Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 11 00:17:41 node-3 log_server[704]: time=2026-08-11T00:17:41.740Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 11 00:17:41 node-3 log_server[704]: time=2026-08-11T00:17:41.740Z level=INFO msg="starting metrics server" address=0.0.0.0:9092
+Aug 11 00:17:41 node-3 log_server[704]: 2026/08/11 00:17:41 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 11 00:17:52 node-3 log_server[704]: 2026/08/11 00:17:52 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 11 00:17:52 node-3 log_server[704]: time=2026-08-11T00:17:52.793Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 11 00:17:52 node-3 log_server[704]: time=2026-08-11T00:17:52.809Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 11 00:18:31 node-3 log_server[704]: 2026/08/11 00:18:31 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 11 00:18:31 node-3 log_server[704]: 2026/08/11 00:18:31 INFO mesh: gRPC connection established target=node-3.globular.internal:443

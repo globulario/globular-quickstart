@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 21:14:13 UTC; 3min 24s ago
+    Process: 742 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 771 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 807 (authentication_)
+      Tasks: 16 (limit: 8641)
+     Memory: 20.7M (peak: 22.3M)
+        CPU: 454ms
+     CGroup: /system.slice/docker-dae82d356e76e6016996f999716cccadf9a25ac7e9d047300b9f7e21e912cd83.scope/system.slice/globular-authentication.service
+             └─807 /usr/lib/globular/bin/authentication_server
+
+Aug 23 21:15:30 node-1 authentication_server[807]: {"level":"warn","ts":"2026-08-23T21:15:30.793453Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003b9680/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 21:15:30 node-1 authentication_server[807]: time=2026-08-23T21:15:30.793Z level=ERROR msg="InitClient: failed to fetch configuration" id=resource.ResourceService address=10.10.0.11:10004 err="context deadline exceeded"
+Aug 23 21:15:30 node-1 authentication_server[807]: fail to create resource client with error:  InitClient: failed to fetch configuration id=resource.ResourceService from 10.10.0.11:10004: context deadline exceeded
+Aug 23 21:15:30 node-1 authentication_server[807]: time=2026-08-23T21:15:30.793Z level=ERROR msg="GetClient: constructor returned error" function=NewResourceService_Client address=10.10.0.11:10004 service=resource.ResourceService err="InitClient: failed to fetch configuration id=resource.ResourceService from 10.10.0.11:10004: context deadline exceeded"
+Aug 23 21:15:30 node-1 authentication_server[807]: time=2026-08-23T21:15:30.793Z level=WARN msg="sessions list failed" err="InitClient: failed to fetch configuration id=resource.ResourceService from 10.10.0.11:10004: context deadline exceeded"
+Aug 23 21:15:53 node-1 authentication_server[807]: {"level":"warn","ts":"2026-08-23T21:15:53.06512Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003b9680/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 21:15:53 node-1 authentication_server[807]: {"level":"info","ts":"2026-08-23T21:15:53.065186Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 21:15:56 node-1 authentication_server[807]: time=2026-08-23T21:15:56.104Z level=WARN msg="port/proxy change detected in desired; restart required to take effect" service=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f old_port=10004 new_port=10004 old_proxy=38363 new_proxy=10001
+Aug 23 21:16:13 node-1 authentication_server[807]: time=2026-08-23T21:16:13.819Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-1.globular.internal:443
+Aug 23 21:16:13 node-1 authentication_server[807]: time=2026-08-23T21:16:13.819Z level=INFO msg="mesh: gRPC connection established" target=node-1.globular.internal:443

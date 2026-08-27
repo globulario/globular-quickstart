@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:09:27 UTC; 1min 11s ago
+    Process: 48 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 74 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 96 (event_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 22.3M (peak: 27.8M)
+        CPU: 1.105s
+     CGroup: /system.slice/docker-8b98724c89d7814ef3d4703a4c42e0cc7bef5b84406d2f3799206f7b685a6043.scope/system.slice/globular-event.service
+             └─96 /usr/lib/globular/bin/event_server
+
+Aug 24 17:09:48 node-2 event_server[96]: time=2026-08-24T17:09:48.511Z level=INFO msg=subscribed channel=cluster.* uuid=4a134db4-dfa9-4655-828f-2d39cb279dce subscribers=2
+Aug 24 17:09:48 node-2 event_server[96]: time=2026-08-24T17:09:48.513Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=4a134db4-dfa9-4655-828f-2d39cb279dce
+Aug 24 17:09:48 node-2 event_server[96]: time=2026-08-24T17:09:48.513Z level=INFO msg=subscribed channel=operation.* uuid=4a134db4-dfa9-4655-828f-2d39cb279dce subscribers=2
+Aug 24 17:10:09 node-2 event_server[96]: 2026/08/24 17:10:09 ERROR Cannot achieve consistency level for cl ONE. Requires 1, alive 0 (repeated 2 times in 30s) domain=10.10.0.12:8443 application=event.EventService user="" method=/event.EventService/Publish function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 24 17:10:30 node-2 event_server[96]: time=2026-08-24T17:10:30.403Z level=INFO msg="OnEvent: registered" uuid=52126578-2626-4e1d-8f09-0f5530d340c2
+Aug 24 17:10:30 node-2 event_server[96]: time=2026-08-24T17:10:30.403Z level=INFO msg="stream registered" uuid=52126578-2626-4e1d-8f09-0f5530d340c2
+Aug 24 17:10:30 node-2 event_server[96]: time=2026-08-24T17:10:30.778Z level=INFO msg="OnEvent: registered" uuid=26022a68-4778-4cf6-be1b-787d27a7553b
+Aug 24 17:10:30 node-2 event_server[96]: time=2026-08-24T17:10:30.778Z level=INFO msg="stream registered" uuid=26022a68-4778-4cf6-be1b-787d27a7553b
+Aug 24 17:10:30 node-2 event_server[96]: time=2026-08-24T17:10:30.928Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=52126578-2626-4e1d-8f09-0f5530d340c2
+Aug 24 17:10:30 node-2 event_server[96]: time=2026-08-24T17:10:30.928Z level=INFO msg=subscribed channel=operation.* uuid=52126578-2626-4e1d-8f09-0f5530d340c2 subscribers=3

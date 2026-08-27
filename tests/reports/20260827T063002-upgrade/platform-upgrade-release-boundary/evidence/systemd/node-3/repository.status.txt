@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 06:27:44 UTC; 51min ago
+    Process: 518 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 552 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 573 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 42.3M (peak: 70.8M)
+        CPU: 50.316s
+     CGroup: /system.slice/docker-4de9d2bf682a9e9b991e719dee0c19bf432f702a87154c4adad01ee75616c36e.scope/system.slice/globular-repository.service
+             └─573 /usr/lib/globular/bin/repository_server
+
+Aug 27 07:16:26 node-3 repository_server[573]: 2026/08/27 07:16:26 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=41 baseline_ms=20 window=1649 new_window=1484
+Aug 27 07:16:26 node-3 repository_server[573]: 2026/08/27 07:16:26 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=47 baseline_ms=20 window=1485 new_window=1336
+Aug 27 07:16:47 node-3 repository_server[573]: 2026/08/27 07:16:47 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=168 baseline_ms=20 window=1537 new_window=1383
+Aug 27 07:17:45 node-3 repository_server[573]: time=2026-08-27T07:17:45.689Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 27 07:17:47 node-3 repository_server[573]: 2026/08/27 07:17:47 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=182 baseline_ms=20 window=1837 new_window=1653
+Aug 27 07:18:01 node-3 repository_server[573]: 2026/08/27 07:18:01 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=161 baseline_ms=20 window=1813 new_window=1631
+Aug 27 07:18:45 node-3 repository_server[573]: 2026/08/27 07:18:45 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 27 07:19:01 node-3 repository_server[573]: 2026/08/27 07:19:01 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=162 baseline_ms=20 window=2000 new_window=1800
+Aug 27 07:19:30 node-3 repository_server[573]: 2026/08/27 07:19:30 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 27 07:19:30 node-3 repository_server[573]: 2026/08/27 07:19:30 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=170 baseline_ms=20 window=2000 new_window=1800

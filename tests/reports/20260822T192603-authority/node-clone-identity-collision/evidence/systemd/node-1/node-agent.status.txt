@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:23:01 UTC; 11min ago
+    Process: 224 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 241 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 258 (node_agent_serv)
+      Tasks: 27 (limit: 8641)
+     Memory: 217.5M (peak: 258.0M)
+        CPU: 12min 49.619s
+     CGroup: /system.slice/docker-fbd50be62ef8809d6e93c288dffbbd1077867e0e3f7fe69f97f12b29cb90c420.scope/system.slice/globular-node-agent.service
+             └─258 /usr/lib/globular/bin/node_agent_server
+
+Aug 22 19:33:49 node-1 node_agent_server[258]: 2026/08/22 19:33:49 join: v1 legacy path: RequestJoin failed: rpc error: code = FailedPrecondition desc = join preflight blocked: node identity conflict: hostname already present — retry in 1m20s
+Aug 22 19:34:03 node-1 node_agent_server[258]: 2026/08/22 19:34:03 ingress: keepalived disabled on node c777633e-6d07-5713-9c4c-deb3317eee25
+Aug 22 19:34:05 node-1 node_agent_server[258]: 2026/08/22 19:34:05 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 22 19:34:08 node-1 node_agent_server[258]: 2026/08/22 19:34:08 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 22 19:34:33 node-1 node_agent_server[258]: 2026/08/22 19:34:33 ingress: keepalived disabled on node c777633e-6d07-5713-9c4c-deb3317eee25
+Aug 22 19:34:34 node-1 node_agent_server[258]: 2026/08/22 19:34:34 nodeagent: reporting 47 installed services (hash=e40c6dbd0c1e459f7adb16dc2b2c8397fc7cec063884d56fd21b085d01136fd8, sample=[search scylladb mcp scylla-manager ai-router])
+Aug 22 19:34:34 node-1 node_agent_server[258]: 2026/08/22 19:34:34 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 22 19:34:34 node-1 node_agent_server[258]: 2026/08/22 19:34:34 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 22 19:34:35 node-1 node_agent_server[258]: 2026/08/22 19:34:35 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 22 19:34:37 node-1 node_agent_server[258]: 2026/08/22 19:34:37 probe-scylla-health: [mode=NORMAL bootstrap=100%]

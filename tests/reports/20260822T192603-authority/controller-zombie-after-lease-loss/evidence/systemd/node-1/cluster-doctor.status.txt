@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:23:01 UTC; 3min 8s ago
+    Process: 222 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 242 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 271 (cluster_doctor_)
+      Tasks: 18 (limit: 8641)
+     Memory: 23.7M (peak: 25.3M)
+        CPU: 637ms
+     CGroup: /system.slice/docker-fbd50be62ef8809d6e93c288dffbbd1077867e0e3f7fe69f97f12b29cb90c420.scope/system.slice/globular-cluster-doctor.service
+             └─271 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 22 19:24:51 node-1 cluster_doctor_server[271]: {"level":"warn","ts":"2026-08-22T19:24:51.165061Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000118d20/10.10.0.11:2379","attempt":4,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 22 19:24:54 node-1 cluster_doctor_server[271]: time=2026-08-22T19:24:54.846Z level=INFO msg="doctor leader election: campaigning" candidate=doctor:node-1:271:f045e45d-295d-4e70-b103-b89cfe670739
+Aug 22 19:25:11 node-1 cluster_doctor_server[271]: time=2026-08-22T19:25:11.329Z level=INFO msg="doctor leader election: became leader" candidate=doctor:node-1:271:f045e45d-295d-4e70-b103-b89cfe670739
+Aug 22 19:26:03 node-1 cluster_doctor_server[271]: 2026/08/22 19:26:03 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListNodes: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 22 19:26:03 node-1 cluster_doctor_server[271]: 2026/08/22 19:26:03 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=GetClusterHealthV1: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 22 19:26:03 node-1 cluster_doctor_server[271]: 2026/08/22 19:26:03 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListDesiredBuildIDs: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 22 19:26:03 node-1 cluster_doctor_server[271]: 2026/08/22 19:26:03 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=GetDesiredState: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 22 19:26:04 node-1 cluster_doctor_server[271]: 2026/08/22 19:26:04 collector: data-source fetch failed (reduced harvest) service=ai_memory rpc=Query(seed): rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: no route to host"
+Aug 22 19:26:04 node-1 cluster_doctor_server[271]: 2026/08/22 19:26:04 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListServiceReleasesJson: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 22 19:26:04 node-1 cluster_doctor_server[271]: 2026/08/22 19:26:04 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListInfrastructureReleasesJson: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"

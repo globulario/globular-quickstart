@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:18 UTC; 1min 14s ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 66 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 89 (event_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 23.5M (peak: 26.3M)
+        CPU: 1.092s
+     CGroup: /system.slice/docker-dab92beb975aa2797386e297c00d0bcba2ce8ae5ebc37c549fdba7e1f57d8454.scope/system.slice/globular-event.service
+             └─89 /usr/lib/globular/bin/event_server
+
+Aug 17 17:18:32 node-5 event_server[89]: time=2026-08-17T17:18:32.893Z level=INFO msg="ScyllaDB event bus reconnected"
+Aug 17 17:18:34 node-5 event_server[89]: 2026/08/17 17:18:34 ERROR rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: starting (scylladb bus not connected) domain=10.10.0.15:8443 application=event.EventService user="" method=/event.EventService/OnEvent function=github.com/globulario/services/golang/interceptors.ServerStreamInterceptor file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:1731
+Aug 17 17:18:36 node-5 event_server[89]: 2026/08/17 17:18:36 ERROR rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: starting (scylladb bus not connected) domain=10.10.0.15:8443 application=event.EventService user="" method=/event.EventService/OnEvent function=github.com/globulario/services/golang/interceptors.ServerStreamInterceptor file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:1731
+Aug 17 17:18:37 node-5 event_server[89]: time=2026-08-17T17:18:37.873Z level=INFO msg="dependencies recovered — service is SERVING"
+Aug 17 17:18:38 node-5 event_server[89]: time=2026-08-17T17:18:38.292Z level=INFO msg="Subscribe: ok" channel=index_file_event uuid=36797ff1-fef7-4baa-aec1-304b8f031740
+Aug 17 17:18:38 node-5 event_server[89]: time=2026-08-17T17:18:38.292Z level=INFO msg=subscribed channel=index_file_event uuid=36797ff1-fef7-4baa-aec1-304b8f031740 subscribers=1
+Aug 17 17:18:38 node-5 event_server[89]: time=2026-08-17T17:18:38.294Z level=INFO msg="OnEvent: registered" uuid=36797ff1-fef7-4baa-aec1-304b8f031740
+Aug 17 17:18:38 node-5 event_server[89]: time=2026-08-17T17:18:38.294Z level=INFO msg="stream registered" uuid=36797ff1-fef7-4baa-aec1-304b8f031740
+Aug 17 17:18:38 node-5 event_server[89]: time=2026-08-17T17:18:38.296Z level=INFO msg="Subscribe: ok" channel=create_account_evt uuid=36797ff1-fef7-4baa-aec1-304b8f031740
+Aug 17 17:18:38 node-5 event_server[89]: time=2026-08-17T17:18:38.296Z level=INFO msg=subscribed channel=create_account_evt uuid=36797ff1-fef7-4baa-aec1-304b8f031740 subscribers=1

@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 00:50:59 UTC; 8min ago
+    Process: 496 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 520 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 547 (log_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 26.8M (peak: 32.2M)
+        CPU: 1.197s
+     CGroup: /system.slice/docker-9222800d3a47ca13f196913e2ca4b66dc75c10e92e0db6dc29b6567ac0cd909e.scope/system.slice/globular-log.service
+             └─547 /usr/lib/globular/bin/log_server
+
+Aug 18 00:51:00 node-2 log_server[547]: time=2026-08-18T00:51:00.020Z level=INFO msg="starting service" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 18 00:51:00 node-2 log_server[547]: time=2026-08-18T00:51:00.020Z level=INFO msg="starting metrics server" address=0.0.0.0:9092
+Aug 18 00:51:00 node-2 log_server[547]: 2026/08/18 00:51:00 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 18 00:51:00 node-2 log_server[547]: time=2026-08-18T00:51:00.020Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 18 00:51:00 node-2 log_server[547]: time=2026-08-18T00:51:00.020Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 18 00:51:00 node-2 log_server[547]: 2026/08/18 00:51:00 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 18 00:51:40 node-2 log_server[547]: 2026/08/18 00:51:40 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 18 00:51:40 node-2 log_server[547]: time=2026-08-18T00:51:40.973Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 18 00:51:41 node-2 log_server[547]: time=2026-08-18T00:51:41.002Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 18 00:56:47 node-2 log_server[547]: 2026/08/18 00:56:47 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

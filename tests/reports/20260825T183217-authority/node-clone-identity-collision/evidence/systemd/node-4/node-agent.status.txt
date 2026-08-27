@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 19:04:51 UTC; 28min ago
+    Process: 165 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 205 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 238 (node_agent_serv)
+      Tasks: 30 (limit: 8641)
+     Memory: 1.8G (peak: 1.8G)
+        CPU: 5min 57.661s
+     CGroup: /system.slice/docker-493cddaa5a66d4b71f3ae34df7d1328b538798dc85b5595b7b9921056f921f89.scope/system.slice/globular-node-agent.service
+             └─238 /usr/lib/globular/bin/node_agent_server
+
+Aug 25 19:31:23 node-4 node_agent_server[238]: 2026/08/25 19:31:23 nodeagent: reporting 28 installed services (hash=d8281a1cb90968c832645fa1a95f7e2bb91790ed1abd095fbbbd3444b7540393, sample=[authentication mc node-agent monitoring restic])
+Aug 25 19:31:24 node-4 node_agent_server[238]: 2026/08/25 19:31:24 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 25 19:31:24 node-4 node_agent_server[238]: 2026/08/25 19:31:24 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 25 19:31:54 node-4 node_agent_server[238]: 2026/08/25 19:31:54 nodeagent: reporting 28 installed services (hash=d8281a1cb90968c832645fa1a95f7e2bb91790ed1abd095fbbbd3444b7540393, sample=[minio repository mc envoy etcdctl])
+Aug 25 19:32:00 node-4 node_agent_server[238]: {"level":"warn","ts":"2026-08-25T19:32:00.396365Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003ff680/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.14:2379: connect: connection refused\""}
+Aug 25 19:32:00 node-4 node_agent_server[238]: 2026/08/25 19:32:00 WARN etcd.maintenance_pass_failed err="etcd maintenance: status 10.10.0.14:2379: context deadline exceeded"
+Aug 25 19:32:26 node-4 node_agent_server[238]: 2026/08/25 19:32:26 nodeagent: reporting 28 installed services (hash=d8281a1cb90968c832645fa1a95f7e2bb91790ed1abd095fbbbd3444b7540393, sample=[restic globular-cli authentication event dns])
+Aug 25 19:32:57 node-4 node_agent_server[238]: 2026/08/25 19:32:57 nodeagent: reporting 28 installed services (hash=d8281a1cb90968c832645fa1a95f7e2bb91790ed1abd095fbbbd3444b7540393, sample=[dns repository envoy authentication persistence])
+Aug 25 19:33:00 node-4 node_agent_server[238]: {"level":"warn","ts":"2026-08-25T19:33:00.397662Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000e00780/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.14:2379: connect: connection refused\""}
+Aug 25 19:33:00 node-4 node_agent_server[238]: 2026/08/25 19:33:00 WARN etcd.maintenance_pass_failed err="etcd maintenance: status 10.10.0.14:2379: context deadline exceeded"

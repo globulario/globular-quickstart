@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 11:24:12 UTC; 11min ago
+    Process: 122 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 154 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 173 (node_agent_serv)
+      Tasks: 25 (limit: 8641)
+     Memory: 1.6G (peak: 1.6G)
+        CPU: 11min 48.393s
+     CGroup: /system.slice/docker-2279873d5c93474fbbe353f981a29c729dd71a4b4d6733c94885b44fb3f636b0.scope/system.slice/globular-node-agent.service
+             └─173 /usr/lib/globular/bin/node_agent_server
+
+Aug 25 11:34:46 node-5 node_agent_server[173]: 2026/08/25 11:34:46 nodeagent: reporting 28 installed services (hash=d8281a1cb90968c832645fa1a95f7e2bb91790ed1abd095fbbbd3444b7540393, sample=[sha256sum alertmanager globular-cli node-exporter gateway])
+Aug 25 11:34:56 node-5 node_agent_server[173]: 2026/08/25 11:34:56 nodeagent: refreshed etcd endpoint list from /globular/system/etcd_endpoints (5 endpoint(s))
+Aug 25 11:34:56 node-5 node_agent_server[173]: 2026/08/25 11:34:56 node heartbeat failed (state=unreachable): rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote reset
+Aug 25 11:35:13 node-5 node_agent_server[173]: 2026/08/25 11:35:13 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 25 11:35:33 node-5 node_agent_server[173]: 2026/08/25 11:35:33 nodeagent: self-hosted runtime proof skipped cluster-controller: process_not_running
+Aug 25 11:35:33 node-5 node_agent_server[173]: 2026/08/25 11:35:33 nodeagent: self-hosted runtime proof skipped cluster-doctor: process_not_running
+Aug 25 11:35:33 node-5 node_agent_server[173]: 2026/08/25 11:35:33 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 25 11:35:33 node-5 node_agent_server[173]: 2026/08/25 11:35:33 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 25 11:35:36 node-5 node_agent_server[173]: 2026/08/25 11:35:36 minio-topology-gate: node 35ac3821-6b90-52eb-a800-41130471770b (ip=10.10.0.15) not admitted — node not listed in approved objectstore topology (gen=1)
+Aug 25 11:35:37 node-5 node_agent_server[173]: 2026/08/25 11:35:37 nodeagent: reporting 28 installed services (hash=d8281a1cb90968c832645fa1a95f7e2bb91790ed1abd095fbbbd3444b7540393, sample=[search codex rclone claude event])

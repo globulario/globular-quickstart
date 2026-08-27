@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:26:00 UTC; 28s ago
+    Process: 213 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 238 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 245 (node_agent_serv)
+      Tasks: 23 (limit: 8641)
+     Memory: 24.7M (peak: 35.9M)
+        CPU: 28.940s
+     CGroup: /system.slice/docker-8e2076f4c40178dcdd9bcfeee512d2325132b3b746cdcd1fa2bc1708e47cfdb0.scope/system.slice/globular-node-agent.service
+             └─245 /usr/lib/globular/bin/node_agent_server
+
+Aug 22 19:26:08 node-3 node_agent_server[245]: 2026/08/22 19:26:08 grpc-workflow: runtime-proof: file running PID=682 binary checksum matches expected
+Aug 22 19:26:08 node-3 node_agent_server[245]: 2026/08/22 19:26:08 install-skip-restamp: re-stamped canonical receipt for SERVICE/log @ 1.2.317 (legacy_sidecar superseded if present)
+Aug 22 19:26:08 node-3 node_agent_server[245]: 2026/08/22 19:26:08 grpc-workflow: runtime-proof: log running PID=544 binary checksum matches expected
+Aug 22 19:26:08 node-3 node_agent_server[245]: 2026/08/22 19:26:08 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 22 19:26:15 node-3 node_agent_server[245]: 2026/08/22 19:26:15 event-publisher: connected to event service
+Aug 22 19:26:15 node-3 node_agent_server[245]: 2026/08/22 19:26:15 event-handler: connected to event service
+Aug 22 19:26:20 node-3 node_agent_server[245]: 2026/08/22 19:26:20 event-publisher: service.started unit=globular-event.service (deactivating/stop-sigterm → active/running)
+Aug 22 19:26:20 node-3 node_agent_server[245]: 2026/08/22 19:26:20 event-publisher: service.started unit=globular-file.service (inactive/dead → active/running)
+Aug 22 19:26:20 node-3 node_agent_server[245]: 2026/08/22 19:26:20 event-publisher: service.started unit=globular-log.service (inactive/dead → active/running)
+Aug 22 19:26:22 node-3 node_agent_server[245]: 2026/08/22 19:26:22 event-handler: subscribed to operation.*

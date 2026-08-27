@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:59:01 UTC; 5min ago
+    Process: 210 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 240 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 255 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 27.0M (peak: 38.7M)
+        CPU: 26.402s
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-node-agent.service
+             └─255 /usr/lib/globular/bin/node_agent_server
+
+Aug 18 11:04:31 node-2 node_agent_server[255]: {"level":"warn","ts":"2026-08-18T11:04:31.751603Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000325a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:04:31 node-2 node_agent_server[255]: {"level":"warn","ts":"2026-08-18T11:04:31.890265Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000325a0/10.10.0.11:2379","attempt":12,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:04:32 node-2 node_agent_server[255]: 2026/08/18 11:04:32 node-agent: controller endpoint refreshed: 10.10.0.15:443 -> 10.10.0.13:443
+Aug 18 11:04:32 node-2 node_agent_server[255]: 2026/08/18 11:04:32 behavioral observation: infra_probe skipped component=etcd node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused"
+Aug 18 11:04:32 node-2 node_agent_server[255]: 2026/08/18 11:04:32 behavioral observation: infra_probe skipped component=scylladb node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record signal: rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1
+Aug 18 11:04:32 node-2 node_agent_server[255]: 2026/08/18 11:04:32 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Aug 18 11:04:32 node-2 node_agent_server[255]: 2026/08/18 11:04:32 behavioral observation: infra_probe skipped component=envoy node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record signal: rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1
+Aug 18 11:04:32 node-2 node_agent_server[255]: 2026/08/18 11:04:32 behavioral observation: infra_probe skipped component=minio node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record evidence signal.probe.b7b5eb86d09a5d00.evidence.0: rpc error: code = Internal desc = BehavioralMemoryService.RecordEvidence: record evidence: put evidence: Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1
+Aug 18 11:04:34 node-2 node_agent_server[255]: 2026/08/18 11:04:34 nodeagent: reporting 42 installed services (hash=8a3c401233a3eb8b5ef99cdbb2ca2d1c8d24e82c516336d78a8f414e788ea1f4, sample=[ai-executor codex repository authentication sctool])
+Aug 18 11:04:34 node-2 node_agent_server[255]: 2026/08/18 11:04:34 node heartbeat failed (state=degraded): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: connection refused

@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 10:06:25 UTC; 17min ago
+    Process: 54 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 78 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 100 (event_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 23.3M (peak: 24.9M)
+        CPU: 1.206s
+     CGroup: /system.slice/docker-d8efe1082b541d0e450667ec1e5e138e924a0a8b77e12befdddf7d2d09f06f59.scope/system.slice/globular-event.service
+             └─100 /usr/lib/globular/bin/event_server
+
+Aug 11 10:23:40 node-5 event_server[100]: 2026/08/11 10:23:40 INFO putRuntimeRunning succeeded after retries service=ae220301-9352-393b-be03-90707f486149 attempts=11
+Aug 11 10:23:41 node-5 event_server[100]: 2026/08/11 10:23:41 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 11 10:23:41 node-5 event_server[100]: 2026/08/11 10:23:41 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 11 10:23:41 node-5 event_server[100]: 2026/08/11 10:23:41 INFO log forwarding enabled address=10.10.0.11:10100
+Aug 11 10:23:48 node-5 event_server[100]: 2026/08/11 10:23:48 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl ONE. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 11 10:23:48 node-5 event_server[100]: 2026/08/11 10:23:48 ERROR rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (scylladb bus not connected) domain=10.10.0.15:8443 application=event.EventService user="" method=/event.EventService/OnEvent function=github.com/globulario/services/golang/interceptors.ServerStreamInterceptor file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:1731
+Aug 11 10:23:55 node-5 event_server[100]: time=2026-08-11T10:23:55.391Z level=WARN msg="dependency health check failed" dep=scylladb err="scylladb bus not connected"
+Aug 11 10:23:55 node-5 event_server[100]: 2026/08/11 10:23:55 ERROR rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (scylladb bus not connected) domain=10.10.0.15:8443 application=event.EventService user="" method=/event.EventService/OnEvent function=github.com/globulario/services/golang/interceptors.ServerStreamInterceptor file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:1731
+Aug 11 10:23:57 node-5 event_server[100]: 2026/08/11 10:23:57 ERROR rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (scylladb bus not connected) domain=10.10.0.15:8443 application=event.EventService user="" method=/event.EventService/OnEvent function=github.com/globulario/services/golang/interceptors.ServerStreamInterceptor file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:1731
+Aug 11 10:23:57 node-5 event_server[100]: 2026/08/11 10:23:57 INFO acc: warmup complete baseline_rtt_ms=20 samples=202 elapsed=15m31s

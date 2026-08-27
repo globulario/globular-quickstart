@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:24:54 UTC; 1min 53s ago
+    Process: 142 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 178 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 203 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 30.1M (peak: 38.5M)
+        CPU: 39.261s
+     CGroup: /system.slice/docker-b0ee96061132b593cfc49cfbc92e965d02de7fb7e6500a4382ff6f29bffc0497.scope/system.slice/globular-node-agent.service
+             └─203 /usr/lib/globular/bin/node_agent_server
+
+Aug 22 19:25:58 node-4 node_agent_server[203]: 2026/08/22 19:25:58 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 22 19:25:58 node-4 node_agent_server[203]: 2026/08/22 19:25:58 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 22 19:25:59 node-4 node_agent_server[203]: 2026/08/22 19:25:59 event-handler: subscribed to operation.*
+Aug 22 19:26:05 node-4 node_agent_server[203]: 2026/08/22 19:26:05 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 22 19:26:05 node-4 node_agent_server[203]: 2026/08/22 19:26:05 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 22 19:26:06 node-4 node_agent_server[203]: 2026/08/22 19:26:06 nodeagent: reporting 35 installed services (hash=af04d7876ce45f22a664cf8b721e68a67490c048087209e7cc175336de4ef868, sample=[echo globular-cli xds sql etcd])
+Aug 22 19:26:25 node-4 node_agent_server[203]: 2026/08/22 19:26:25 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 22 19:26:35 node-4 node_agent_server[203]: 2026/08/22 19:26:35 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 22 19:26:35 node-4 node_agent_server[203]: 2026/08/22 19:26:35 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 22 19:26:38 node-4 node_agent_server[203]: 2026/08/22 19:26:38 nodeagent: reporting 35 installed services (hash=af04d7876ce45f22a664cf8b721e68a67490c048087209e7cc175336de4ef868, sample=[file codex prometheus rclone etcdctl])

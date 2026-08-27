@@ -1,0 +1,15 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 19:21:20 UTC; 13ms ago
+    Process: 16844 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 16855 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 16858 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 16864 (ai_memory_serve)
+      Tasks: 7 (limit: 8641)
+     Memory: 3.4M (peak: 3.4M)
+        CPU: 66ms
+     CGroup: /system.slice/docker-12d6f543c45c152a0f4bf2b55e300662123bd9230dd461f6140c864164aa12db.scope/system.slice/globular-ai-memory.service
+             └─16864 /usr/lib/globular/bin/ai_memory_server
+
+Aug 10 19:21:20 node-1 systemd[1]: Starting globular-ai-memory.service - Globular ai_memory...
+Aug 10 19:21:20 node-1 systemd[1]: Started globular-ai-memory.service - Globular ai_memory.

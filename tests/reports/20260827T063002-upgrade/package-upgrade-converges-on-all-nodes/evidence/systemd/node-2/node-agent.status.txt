@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 06:27:20 UTC; 41min ago
+    Process: 203 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 231 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 246 (node_agent_serv)
+      Tasks: 29 (limit: 8641)
+     Memory: 702.8M (peak: 720.0M)
+        CPU: 12min 43.514s
+     CGroup: /system.slice/docker-129bd60a8bfde4eb1bb424fc8beb6203816b01b2246d716234f5631f8e11a391.scope/system.slice/globular-node-agent.service
+             └─246 /usr/lib/globular/bin/node_agent_server
+
+Aug 27 07:08:23 node-2 node_agent_server[246]: 2026/08/27 07:08:23 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 27 07:08:40 node-2 node_agent_server[246]: 2026/08/27 07:08:40 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 27 07:08:40 node-2 node_agent_server[246]: 2026/08/27 07:08:40 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 27 07:08:40 node-2 node_agent_server[246]: 2026/08/27 07:08:40 nodeagent: reporting 43 installed services (hash=47d0c7e71d1febdddb0fe5a46dc120d79404d71d9b96be99f8c25ff55bbaa913, sample=[claude cluster-controller file gateway scylla-manager-agent])
+Aug 27 07:08:50 node-2 node_agent_server[246]: 2026/08/27 07:08:50 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Aug 27 07:08:52 node-2 node_agent_server[246]: 2026/08/27 07:08:52 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 27 07:08:52 node-2 node_agent_server[246]: 2026/08/27 07:08:52 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Aug 27 07:08:52 node-2 node_agent_server[246]: 2026/08/27 07:08:52 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 27 07:08:53 node-2 node_agent_server[246]: 2026/08/27 07:08:53 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 27 07:09:12 node-2 node_agent_server[246]: 2026/08/27 07:09:12 nodeagent: reporting 43 installed services (hash=47d0c7e71d1febdddb0fe5a46dc120d79404d71d9b96be99f8c25ff55bbaa913, sample=[backup-manager monitoring event envoy storage])

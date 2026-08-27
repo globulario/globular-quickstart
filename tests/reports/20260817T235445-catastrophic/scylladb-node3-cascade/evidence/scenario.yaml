@@ -1,0 +1,290 @@
+version: 1
+name: scylladb-node3-cascade
+description: |
+  Simultaneous failure of ScyllaDB (the storage infrastructure) and node-3
+  (the AI services host + one etcd member). This is a cascading infrastructure
+  failure that crosses two failure domains.
+
+  Failure domain map:
+    ScyllaDB:  stores AI Memory data, DNS zone records, audit log
+    node-3:    runs ai_memory, ai_executor, ai_router, ai_watcher services,
+               one instance of etcd, one controller standby, one workflow standby
+
+  What this tests:
+    1. Failure domain isolation: can the control plane (nodes 1+2) survive when
+       both the storage layer AND one etcd member go down simultaneously?
+    2. etcd quorum maintenance: with node-3 down, 2/3 members remain (nodes 1+2).
+       Quorum is maintained and writes must continue uninterrupted.
+    3. Service degradation reporting: services that depend on ScyllaDB should
+       become unavailable, while etcd-only services should survive.
+    4. Recovery ordering: ScyllaDB must come back before node-3's AI services
+       attempt to reconnect. Node-3 rejoins Raft automatically.
+
+  Expected during failure:
+    - etcd: 2/3 members, writes succeed (quorum maintained) ✓
+    - cluster_controller: still registered on node-1 or node-2 ✓
+    - workflow: still registered on node-1 or node-2 ✓
+    - AI services (memory, executor, watcher, router): UNAVAILABLE — node-3 is down
+    - DNS zone records: unavailable (ScyllaDB is down)
+    - ScyllaDB: container stopped
+
+  Expected after recovery:
+    - All 3 etcd members rejoined via Raft resync
+    - AI services re-register once node-3 restarts
+    - ScyllaDB data is intact (persistent volume)
+    - Full cluster health restored
+
+  Integrity verdict: PROTECTED within the etcd failure domain.
+  ScyllaDB data: protected by ScyllaDB's own durability (persistence volume).
+  AI in-flight operations: may be lost if not durably queued.
+
+suite: catastrophic
+tags:
+  - catastrophe
+  - cascade
+  - scylladb
+  - failure-domain-isolation
+  - ai-services
+  - storage
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy_before
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - type: probe
+    id: all_etcd_members_healthy
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  - type: probe
+    id: etcd_writable_before
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: scylladb_container_running
+    probe: node.container_running
+    params:
+      node: scylladb
+    expect:
+      running: true
+
+  - type: probe
+    id: node3_running_before
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: true
+
+  - type: probe
+    id: node1_running_before
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: true
+
+  - type: probe
+    id: node2_running_before
+    probe: node.container_running
+    params:
+      node: node-2
+    expect:
+      running: true
+
+baseline:
+  - type: probe
+    id: baseline_cluster_health
+    probe: cluster.health
+
+  - type: probe
+    id: baseline_etcd_members
+    probe: cluster.etcd_members
+
+  - type: probe
+    id: baseline_services
+    probe: services.count
+
+steps:
+  # ── Inject cascade: stop ScyllaDB first ───────────────────────────────────
+  # ScyllaDB goes down first. Services using ScyllaDB (AI memory, DNS zones,
+  # audit log) will start failing their ScyllaDB connections.
+  - id: stop_scylladb
+    action: chaos.stop_node
+    params:
+      node: scylladb
+
+  # ── Then stop node-3 (AI services + 1 etcd member) ─────────────────────────
+  # Stopping node-3 removes: ai_memory, ai_executor, ai_router, ai_watcher,
+  # one etcd member, one controller standby, and one workflow standby.
+  # This brings the Raft quorum to 2/3 — still above threshold.
+  - id: stop_node3
+    action: chaos.stop_node
+    params:
+      node: node-3
+
+  # ── Wait for etcd to detect node-3's departure ────────────────────────────
+  # etcd leader election timeout is ~5s. After that, nodes 1+2 form the
+  # majority and continue accepting writes.
+  - id: wait_for_detection
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: node-3
+        expect:
+          running: false
+
+  # ── Confirm etcd writes still work with 2/3 members ──────────────────────
+  # This is the critical isolation check: ScyllaDB and node-3 are both down,
+  # but etcd on nodes 1+2 must still accept writes.
+  - id: verify_etcd_survives_cascade
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: etcd.write_test
+        expect:
+          success: true
+
+  # ── Observe the degraded state ─────────────────────────────────────────────
+  - id: observe_cascade_degradation
+    action: wait
+    params:
+      timeout: 30
+
+assertions:
+  # ── ScyllaDB is stopped ────────────────────────────────────────────────────
+  - type: probe
+    id: scylladb_stopped
+    probe: node.container_running
+    params:
+      node: scylladb
+    expect:
+      running: false
+
+  # ── node-3 is stopped ─────────────────────────────────────────────────────
+  - type: probe
+    id: node3_stopped
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: false
+
+  # ── CRITICAL: etcd quorum is still maintained on nodes 1+2 ───────────────
+  - type: probe
+    id: etcd_quorum_maintained
+    probe: cluster.etcd_members
+    expect:
+      healthy_gte: 2
+
+  # ── CRITICAL: etcd writes are NOT blocked by ScyllaDB loss ───────────────
+  # This is the failure domain isolation proof: ScyllaDB's failure must NOT
+  # cascade into etcd write failures.
+  - type: probe
+    id: etcd_isolated_from_scylladb
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  # ── Core services survive the cascade ─────────────────────────────────────
+  - type: probe
+    id: controller_survives_cascade
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+  - type: probe
+    id: workflow_survives_cascade
+    probe: service.registered
+    params:
+      service: workflow
+    expect:
+      registered: true
+
+  # ── Nodes 1, 2, 4, 5 remain running ──────────────────────────────────────
+  - type: probe
+    id: node1_still_running
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: true
+
+  - type: probe
+    id: node2_still_running
+    probe: node.container_running
+    params:
+      node: node-2
+    expect:
+      running: true
+
+cleanup:
+  # ── Recovery order: ScyllaDB first, then node-3 ───────────────────────────
+  # ScyllaDB must be online before node-3's AI services attempt to reconnect.
+
+  - id: start_scylladb
+    action: chaos.start_node
+    params:
+      node: scylladb
+
+  # Wait for ScyllaDB to become ready (it needs ~30-60s to initialize)
+  - id: wait_scylladb_ready
+    action: wait
+    params:
+      timeout: 90
+      poll_interval: 10
+      until:
+        probe: node.container_running
+        params:
+          node: scylladb
+        expect:
+          running: true
+
+  # Now restart node-3
+  - id: start_node3
+    action: chaos.start_node
+    params:
+      node: node-3
+
+  # Wait for full quorum to restore (Raft resync)
+  - id: wait_full_quorum_restored
+    action: wait
+    params:
+      timeout: 180
+      poll_interval: 15
+      until:
+        probe: cluster.etcd_members
+        expect:
+          healthy_gte: 3
+
+  - id: final_cluster_health
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - id: final_etcd_write
+    probe: etcd.write_test
+    expect:
+      success: true

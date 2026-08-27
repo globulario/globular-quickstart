@@ -1,0 +1,16 @@
+× globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; disabled; vendor preset: enabled)
+     Active: failed (Result: exit-code) since Fri 2026-07-31 17:07:30 UTC; 3min 26s ago
+    Process: 26374 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 26378 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 26380 ExecStartPre=/bin/bash -c for i in $(seq 1 90); do echo > /dev/tcp/10.10.0.20/9042 2>/dev/null && exit 0; sleep 1; done; echo scylla not ready; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 26382 ExecStartPre=/bin/bash -c for i in $(seq 1 90); do echo > /dev/tcp/10.10.0.20/9042 2>/dev/null && exit 0; sleep 1; done; echo scylla not ready; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 26384 ExecStart=/usr/lib/globular/bin/dns_server (code=exited, status=1/FAILURE)
+   Main PID: 26384 (code=exited, status=1/FAILURE)
+        CPU: 99ms
+
+Jul 31 17:07:30 node-2 systemd[1]: globular-dns.service: Scheduled restart job, restart counter is at 273.
+Jul 31 17:07:30 node-2 systemd[1]: Stopped Globular dns.
+Jul 31 17:07:30 node-2 systemd[1]: globular-dns.service: Start request repeated too quickly.
+Jul 31 17:07:30 node-2 systemd[1]: globular-dns.service: Failed with result 'exit-code'.
+Jul 31 17:07:30 node-2 systemd[1]: Failed to start Globular dns.

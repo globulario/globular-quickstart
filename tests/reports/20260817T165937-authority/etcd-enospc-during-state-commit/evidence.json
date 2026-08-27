@@ -1,0 +1,385 @@
+{
+  "schema_version": 1,
+  "scenario": "etcd-enospc-during-state-commit",
+  "suite": "authority",
+  "start_time": "2026-08-17T17:03:37.602315Z",
+  "end_time": "2026-08-17T17:16:43.047716Z",
+  "passed": false,
+  "item_count": 17,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:03:38.848460Z"
+    },
+    {
+      "id": "no_standing_alarms",
+      "section": "preconditions",
+      "probe": "etcd.backend_growth",
+      "params": {},
+      "expect": {
+        "alarms": 0
+      },
+      "result": {
+        "max_db_bytes": 95924224,
+        "quota_bytes": 2147483648,
+        "pct_of_quota": 4,
+        "defrag_scheduled": true,
+        "compaction_configured": true,
+        "alarms": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:03:39.300579Z"
+    },
+    {
+      "id": "writes_work_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 269
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:03:39.606593Z"
+    },
+    {
+      "id": "desired_state_before",
+      "section": "baseline",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 24,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "dns",
+          "event",
+          "file",
+          "log",
+          "mcp",
+          "media",
+          "monitoring",
+          "node-agent",
+          "persistence",
+          "rbac",
+          "repository",
+          "resource",
+          "search",
+          "title",
+          "torrent",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:03:39.767269Z"
+    },
+    {
+      "id": "identity_findings_before",
+      "section": "baseline",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:03:40.210720Z"
+    },
+    {
+      "id": "exhaust_the_etcd_filesystem",
+      "section": "steps",
+      "probe": "chaos.fill_etcd_volume",
+      "params": {
+        "node": "node-1",
+        "leave_free_mb": 2
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.fill_etcd_volume",
+        "error": "timed out after 30s"
+      },
+      "passed": false,
+      "timestamp": "2026-08-17T17:13:40.314902Z"
+    },
+    {
+      "id": "attempt_mutation_while_full",
+      "section": "steps",
+      "probe": "ops.set_desired",
+      "params": {
+        "node": "node-1",
+        "name": "dns",
+        "version": "1.2.312",
+        "expect": "any"
+      },
+      "expect": {},
+      "result": {
+        "action": "ops.set_desired",
+        "service": "dns",
+        "version": "1.2.312",
+        "expect": "any",
+        "accepted": false,
+        "exit_code": 1,
+        "attempts": 1,
+        "error": "Error: UpsertDesiredService: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote reset | Usage: |   globular services desired set <service> <version> [flags]",
+        "output": "  --output string       Output format (table|json|yaml) (default \"table\")\n      --timeout duration    Request timeout (default 5s)\n      --token string        Authorization token for the control plane"
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:14:50.336467Z"
+    },
+    {
+      "id": "release_the_space",
+      "section": "steps",
+      "probe": "chaos.clear_etcd_volume_fill",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.clear_etcd_volume_fill",
+        "container": "globular-node-1",
+        "exit_code": 0,
+        "df": "avail_mb=14867"
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:14:50.609679Z"
+    },
+    {
+      "id": "no_half_published_artifacts",
+      "section": "assertions",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {
+        "ambiguous": 0,
+        "conflict": 0,
+        "missing_blob": 0
+      },
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:15:53.827720Z"
+    },
+    {
+      "id": "desired_state_coherent",
+      "section": "assertions",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {
+        "count_gte": 1
+      },
+      "result": {
+        "count": 24,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "dns",
+          "event",
+          "file",
+          "log",
+          "mcp",
+          "media",
+          "monitoring",
+          "node-agent",
+          "persistence",
+          "rbac",
+          "repository",
+          "resource",
+          "search",
+          "title",
+          "torrent",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:15:54.088005Z"
+    },
+    {
+      "id": "alarms_cleared",
+      "section": "assertions",
+      "probe": "etcd.backend_growth",
+      "params": {},
+      "expect": {
+        "alarms": 0
+      },
+      "result": {
+        "max_db_bytes": 100225024,
+        "quota_bytes": 2147483648,
+        "pct_of_quota": 4,
+        "defrag_scheduled": true,
+        "compaction_configured": true,
+        "alarms": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:15:54.960663Z"
+    },
+    {
+      "id": "writes_work_again",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 905
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:15:55.978434Z"
+    },
+    {
+      "id": "cluster_healthy_after",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:15:57.766743Z"
+    },
+    {
+      "id": "etcd_members_healthy",
+      "section": "assertions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "unhealthy": 0
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:15:59.873800Z"
+    },
+    {
+      "id": "liveness_current",
+      "section": "assertions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 726,
+        "stale_nodes": 5,
+        "oldest": "c777633e-6d07-5713-9c4c-deb3317eee25"
+      },
+      "passed": false,
+      "timestamp": "2026-08-17T17:16:00.465772Z"
+    },
+    {
+      "id": "ensure_space_released",
+      "section": "cleanup",
+      "probe": "chaos.clear_etcd_volume_fill",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.clear_etcd_volume_fill",
+        "container": "globular-node-1",
+        "exit_code": 0,
+        "df": "avail_mb=11040"
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:16:00.533171Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-17T17:16:02.801744Z"
+    }
+  ],
+  "result": "PARTIAL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

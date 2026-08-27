@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 12:48:20 UTC; 22min ago
+    Process: 158 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 196 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 223 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 40.7M (peak: 44.6M)
+        CPU: 9.393s
+     CGroup: /system.slice/docker-46afffe534c9357b064c7a97c63cb63c4536b4baf676f28e0ecac077301817e8.scope/system.slice/globular-repository.service
+             └─223 /usr/lib/globular/bin/repository_server
+
+Aug 11 13:08:18 node-4 repository_server[223]: 2026/08/11 13:08:18 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 11 13:08:31 node-4 repository_server[223]: 2026/08/11 13:08:31 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=166 baseline_ms=20 window=576 new_window=518
+Aug 11 13:08:35 node-4 repository_server[223]: {"level":"warn","ts":"2026-08-11T13:08:35.764866Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00048ed20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 13:08:35 node-4 repository_server[223]: {"level":"info","ts":"2026-08-11T13:08:35.764944Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 13:09:14 node-4 repository_server[223]: {"level":"warn","ts":"2026-08-11T13:09:14.128652Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00048fa40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 13:09:14 node-4 repository_server[223]: {"level":"info","ts":"2026-08-11T13:09:14.12872Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 13:09:29 node-4 repository_server[223]: 2026/08/11 13:09:29 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=177 baseline_ms=20 window=696 new_window=626
+Aug 11 13:09:30 node-4 repository_server[223]: 2026/08/11 13:09:30 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=182 baseline_ms=20 window=686 new_window=617
+Aug 11 13:10:19 node-4 repository_server[223]: {"level":"warn","ts":"2026-08-11T13:10:19.131029Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00048fa40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 13:10:19 node-4 repository_server[223]: {"level":"info","ts":"2026-08-11T13:10:19.131124Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

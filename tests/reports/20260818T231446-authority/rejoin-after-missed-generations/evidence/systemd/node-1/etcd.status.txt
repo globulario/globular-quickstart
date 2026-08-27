@@ -1,0 +1,24 @@
+● globular-etcd.service - Globular etcd
+     Loaded: loaded (/etc/systemd/system/globular-etcd.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 23:47:39 UTC; 42min ago
+    Process: 47 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 72 ExecStartPre=/usr/bin/chown globular:globular /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 90 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 107 ExecStartPre=/bin/sh -c chown globular:globular /var/lib/globular/pki/issued/services/service.key /var/lib/globular/pki/issued/services/service.crt 2>/dev/null || true (code=exited, status=0/SUCCESS)
+   Main PID: 137 (etcd)
+      Tasks: 36 (limit: 8641)
+     Memory: 450.7M (peak: 457.2M)
+        CPU: 9min 13.531s
+     CGroup: /system.slice/docker-6be2f05afa9da902e341dec6b196b4f1b50b2f94ee26c239477f629ab570e05b.scope/system.slice/globular-etcd.service
+             └─137 /usr/lib/globular/bin/etcd --config-file /var/lib/globular/config/etcd.yaml
+
+Aug 19 00:30:09 node-1 etcd[137]: {"level":"info","ts":"2026-08-19T00:30:09.444262Z","caller":"traceutil/trace.go:171","msg":"trace[21835481] range","detail":"{range_begin:/globular/services/; range_end:/globular/services0; response_count:183; response_revision:50378; }","duration":"106.454855ms","start":"2026-08-19T00:30:09.337792Z","end":"2026-08-19T00:30:09.444247Z","steps":["trace[21835481] 'agreement among raft nodes before linearized reading'  (duration: 105.490841ms)"],"step_count":1}
+Aug 19 00:30:09 node-1 etcd[137]: {"level":"warn","ts":"2026-08-19T00:30:09.65937Z","caller":"etcdserver/raft.go:416","msg":"leader failed to send out heartbeat on time; took too long, leader is overloaded likely from slow disk","to":"6fa4dd2e4bb3f484","heartbeat-interval":"100ms","expected-duration":"200ms","exceeded-duration":"15.180756ms"}
+Aug 19 00:30:09 node-1 etcd[137]: {"level":"warn","ts":"2026-08-19T00:30:09.659435Z","caller":"etcdserver/raft.go:416","msg":"leader failed to send out heartbeat on time; took too long, leader is overloaded likely from slow disk","to":"61a6dce8d3db87e2","heartbeat-interval":"100ms","expected-duration":"200ms","exceeded-duration":"15.252069ms"}
+Aug 19 00:30:09 node-1 etcd[137]: {"level":"warn","ts":"2026-08-19T00:30:09.659453Z","caller":"etcdserver/raft.go:416","msg":"leader failed to send out heartbeat on time; took too long, leader is overloaded likely from slow disk","to":"2ced7666785b488f","heartbeat-interval":"100ms","expected-duration":"200ms","exceeded-duration":"15.269712ms"}
+Aug 19 00:30:09 node-1 etcd[137]: {"level":"info","ts":"2026-08-19T00:30:09.735202Z","caller":"traceutil/trace.go:171","msg":"trace[1340862601] linearizableReadLoop","detail":"{readStateIndex:462467; appliedIndex:462468; }","duration":"202.805179ms","start":"2026-08-19T00:30:09.532377Z","end":"2026-08-19T00:30:09.735182Z","steps":["trace[1340862601] 'read index received'  (duration: 202.798416ms)","trace[1340862601] 'applied index is now lower than readState.Index'  (duration: 5.791µs)"],"step_count":2}
+Aug 19 00:30:09 node-1 etcd[137]: {"level":"warn","ts":"2026-08-19T00:30:09.73589Z","caller":"etcdserver/util.go:170","msg":"apply request took too long","took":"203.495884ms","expected-duration":"100ms","prefix":"read-only range ","request":"key:\"/globular/nodes/\" range_end:\"/globular/nodes0\" keys_only:true ","response":"range_response_count:256 size:23822"}
+Aug 19 00:30:09 node-1 etcd[137]: {"level":"info","ts":"2026-08-19T00:30:09.735938Z","caller":"traceutil/trace.go:171","msg":"trace[830884768] range","detail":"{range_begin:/globular/nodes/; range_end:/globular/nodes0; response_count:256; response_revision:50378; }","duration":"203.558229ms","start":"2026-08-19T00:30:09.532369Z","end":"2026-08-19T00:30:09.735927Z","steps":["trace[830884768] 'agreement among raft nodes before linearized reading'  (duration: 202.881991ms)"],"step_count":1}
+Aug 19 00:30:10 node-1 etcd[137]: {"level":"warn","ts":"2026-08-19T00:30:10.128092Z","caller":"etcdserver/cluster_util.go:294","msg":"failed to reach the peer URL","address":"https://10.10.0.14:2380/version","remote-member-id":"6fa4dd2e4bb3f484","error":"Get \"https://10.10.0.14:2380/version\": dial tcp 10.10.0.14:2380: connect: connection refused"}
+Aug 19 00:30:10 node-1 etcd[137]: {"level":"warn","ts":"2026-08-19T00:30:10.128148Z","caller":"etcdserver/cluster_util.go:158","msg":"failed to get version","remote-member-id":"6fa4dd2e4bb3f484","error":"Get \"https://10.10.0.14:2380/version\": dial tcp 10.10.0.14:2380: connect: connection refused"}
+Aug 19 00:30:10 node-1 etcd[137]: {"level":"warn","ts":"2026-08-19T00:30:10.573848Z","caller":"embed/config_logging.go:169","msg":"rejected connection","remote-addr":"10.10.0.15:48566","server-name":"","error":"EOF"}

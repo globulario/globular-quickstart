@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 13:23:25 UTC; 44min ago
+    Process: 137 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 176 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 198 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 39.7M (peak: 50.5M)
+        CPU: 27.044s
+     CGroup: /system.slice/docker-156e583edb9bcb59992ce20066ba918f752fd2b2d1b9d0e78d3547d9f6cfbaaf.scope/system.slice/globular-repository.service
+             └─198 /usr/lib/globular/bin/repository_server
+
+Aug 23 14:03:26 node-5 repository_server[198]: time=2026-08-23T14:03:26.722Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 23 14:05:06 node-5 repository_server[198]: 2026/08/23 14:05:06 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 23 14:05:08 node-5 repository_server[198]: 2026/08/23 14:05:08 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=176 baseline_ms=20 window=2000 new_window=1800
+Aug 23 14:06:15 node-5 repository_server[198]: 2026/08/23 14:06:15 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 23 14:06:15 node-5 repository_server[198]: 2026/08/23 14:06:15 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=186 baseline_ms=20 window=1984 new_window=1785
+Aug 23 14:06:30 node-5 repository_server[198]: 2026/08/23 14:06:30 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 23 14:06:30 node-5 repository_server[198]: 2026/08/23 14:06:30 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=168 baseline_ms=20 window=1852 new_window=1666
+Aug 23 14:06:31 node-5 repository_server[198]: 2026/08/23 14:06:31 WARN authz_decision audit="{\"timestamp\":\"2026-08-23T14:06:31.013404551Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 23 14:06:31 node-5 repository_server[198]: 2026/08/23 14:06:31 WARN authz_decision audit="{\"timestamp\":\"2026-08-23T14:06:31.147578616Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 23 14:07:23 node-5 repository_server[198]: 2026/08/23 14:07:23 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=186 baseline_ms=20 window=1865 new_window=1678

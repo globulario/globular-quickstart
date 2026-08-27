@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-27T05:34:12.668463Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "controller-service-crash",
+  "suite": "resilience",
+  "result": "PASS",
+  "source_revision": "661b8e66966476e1055ec07b50891dc3d3818e5b",
+  "proof": {
+    "claim": "Verify that the cluster controller recovers after a service crash.\n\nThe cluster_controller holds the leadership lease in etcd. When it crashes:\n1. SIGKILL terminates the process immediately (non-zero exit)\n2. Restart=on-failure triggers systemd to restart the controller\n3. etcd lease expires or is released; a standby controller on another node\n   acquires the lease within the TTL window\n4. The restarted instance starts as a follower (lease already taken)\n5. The controller re-registers in etcd to confirm functional recovery\n\nThis test simulates a controller crash via SIGKILL (hard kill of the process,\nas in an OOM kill or kernel fault). SIGKILL produces a non-zero exit code,\ntriggering systemd's Restart=on-failure policy.\n\nIMPORTANT: The cluster_controller unit uses Type=notify with WatchdogSec.\nThis means systemd waits for sd_notify(READY=1) before marking the unit\nas 'active'. If the binary does not call sd_notify, the unit stays in\n'activating' state indefinitely \u2014 a known issue in the current build.\nFor this reason, assertions check etcd registration (functional state)\nrather than unit_state (systemd protocol state).\n\nWhat this validates:\n- Leader election resilience: cluster does not stall on controller crash\n- State recovery: new leader reads desired state from etcd correctly\n- systemd restart policy: Restart=on-failure brings the service back after SIGKILL\n- etcd lease protection: only one leader holds the lease at a time (no split-brain)\n- Service re-registration: after restart, controller re-registers in etcd\n\nIndustry known problem: \"zombie leader\" \u2014 a controller that holds a lease\nbut is not actually processing. Globular's liveness watchdog monitors actual\nprocessing and forces lease expiry if stuck. This test validates the normal\ncrash path (watchdog not needed here, SIGKILL is immediate).\n\nNote: The test ensures node-2's controller is running before killing it by\nrestarting it as a setup step. This makes the test idempotent regardless of\nwhat previous chaos tests left behind.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

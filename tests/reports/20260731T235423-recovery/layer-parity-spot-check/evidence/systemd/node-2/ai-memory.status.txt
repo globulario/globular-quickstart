@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:56:09 UTC; 17s ago
+    Process: 692 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 739 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 767 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 844 (ai_memory_serve)
+      Tasks: 16 (limit: 8641)
+     Memory: 21.5M (peak: 27.7M)
+        CPU: 565ms
+     CGroup: /system.slice/docker-9d4b8e2a20ac1e6d6bf99864bf71926d1af05ff60dfd285e1db1bf7a32bc2282.scope/system.slice/globular-ai-memory.service
+             └─844 /usr/lib/globular/bin/ai_memory_server
+
+Jul 31 23:56:10 node-2 ai_memory_server[844]: 2026/07/31 23:56:10 INFO InitGrpcServer: gRPC server initialized service=ai_memory.AiMemoryService tls=true port=10013
+Jul 31 23:56:10 node-2 ai_memory_server[844]: time=2026-07-31T23:56:10.983Z level=INFO msg="ScyllaDB connected" hosts="[10.10.0.14 10.10.0.15]" keyspace=ai_memory
+Jul 31 23:56:10 node-2 ai_memory_server[844]: time=2026-07-31T23:56:10.983Z level=INFO msg="service initialized" duration_ms=920
+Jul 31 23:56:12 node-2 ai_memory_server[844]: time=2026-07-31T23:56:12.211Z level=INFO msg="behavioral seed: cluster_operator loaded" authorities=20 conditions=27 principles_seeded=9 principles_skipped=0
+Jul 31 23:56:12 node-2 ai_memory_server[844]: time=2026-07-31T23:56:12.738Z level=INFO msg="ops-knowledge recall seed loaded" stored=0 skipped=162 failed=0 duplicates_removed=0 total=162
+Jul 31 23:56:12 node-2 ai_memory_server[844]: time=2026-07-31T23:56:12.738Z level=INFO msg="service ready" service=ai_memory.AiMemoryService version=1.2.288 port=10013 domain=globular.internal startup_ms=2674
+Jul 31 23:56:12 node-2 ai_memory_server[844]: time=2026-07-31T23:56:12.738Z level=INFO msg="starting service" name=ai_memory.AiMemoryService id=10595db3-3e7b-343e-9f86-94a6e317585f port=10013
+Jul 31 23:56:12 node-2 ai_memory_server[844]: time=2026-07-31T23:56:12.738Z level=WARN msg="authz: no permission mappings registered — RBAC will resolve raw method paths and deny role-based calls" service=ai_memory expected_path=/var/lib/globular/policy/services/ai_memory/permissions.generated.json
+Jul 31 23:56:12 node-2 ai_memory_server[844]: time=2026-07-31T23:56:12.738Z level=INFO msg="service started successfully" name=ai_memory.AiMemoryService id=10595db3-3e7b-343e-9f86-94a6e317585f port=10013
+Jul 31 23:56:12 node-2 ai_memory_server[844]: 2026/07/31 23:56:12 INFO metrics listening service=ai_memory.AiMemoryService addr=[::]:10201

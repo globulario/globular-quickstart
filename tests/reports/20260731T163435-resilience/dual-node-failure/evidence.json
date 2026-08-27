@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "scenario": "dual-node-failure",
+  "suite": "resilience",
+  "start_time": "2026-07-31T16:39:13.266738Z",
+  "end_time": "2026-07-31T16:59:22.690768Z",
+  "passed": false,
+  "item_count": 17,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "members_gte": 3
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:39:13.648935Z"
+    },
+    {
+      "id": "node4_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-4"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:39:13.675603Z"
+    },
+    {
+      "id": "node5_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:39:13.703197Z"
+    },
+    {
+      "id": "no_prior_alert",
+      "section": "preconditions",
+      "probe": "cluster.quorum_loss_alert",
+      "params": {},
+      "expect": {
+        "alert_present": false
+      },
+      "result": {
+        "alert_present": false
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:39:13.787141Z"
+    },
+    {
+      "id": "cluster_health_before",
+      "section": "baseline",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {},
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:39:14.594141Z"
+    },
+    {
+      "id": "node_count_before",
+      "section": "baseline",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:39:14.760810Z"
+    },
+    {
+      "id": "stop_node4",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-4",
+        "exit_code": 0,
+        "stdout": "globular-node-4"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:39:26.928994Z"
+    },
+    {
+      "id": "stop_node5",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-5",
+        "exit_code": 0,
+        "stdout": "globular-node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:39:37.326336Z"
+    },
+    {
+      "id": "quorum_loss_alert_present",
+      "section": "assertions",
+      "probe": "cluster.quorum_loss_alert",
+      "params": {},
+      "expect": {
+        "alert_present": true
+      },
+      "result": {
+        "alert_present": false
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T16:57:07.406840Z"
+    },
+    {
+      "id": "node4_fenced",
+      "section": "assertions",
+      "probe": "node.partition_fenced",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {
+        "fenced": true
+      },
+      "result": {
+        "fenced": false,
+        "node_id": "node-4"
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T16:57:07.490242Z"
+    },
+    {
+      "id": "node5_fenced",
+      "section": "assertions",
+      "probe": "node.partition_fenced",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "fenced": true
+      },
+      "result": {
+        "fenced": false,
+        "node_id": "node-5"
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T16:57:07.567784Z"
+    },
+    {
+      "id": "etcd_quorum_intact",
+      "section": "assertions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_count_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T16:57:07.824247Z"
+    },
+    {
+      "id": "etcd_writable",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 228
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:57:08.083909Z"
+    },
+    {
+      "id": "start_node4",
+      "section": "cleanup",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-4",
+        "exit_code": 0,
+        "stdout": "globular-node-4"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:57:08.365318Z"
+    },
+    {
+      "id": "start_node5",
+      "section": "cleanup",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-5",
+        "exit_code": 0,
+        "stdout": "globular-node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:57:08.642800Z"
+    },
+    {
+      "id": "clear_alert_key",
+      "section": "cleanup",
+      "probe": "cluster.quorum_loss_alert",
+      "params": {},
+      "expect": {
+        "alert_present": false
+      },
+      "result": {
+        "alert_present": false
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T16:57:08.727214Z"
+    },
+    {
+      "id": "wait_fences_cleared",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "members_gte": 5
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T16:59:11.201192Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

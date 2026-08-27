@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 00:02:26 UTC; 12min ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 66 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 80 (event_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 27.7M (peak: 29.6M)
+        CPU: 5.596s
+     CGroup: /system.slice/docker-fe7117840b2f3192d80650fc8418396926e5c2341e7121ea224bf2326939da3c.scope/system.slice/globular-event.service
+             └─80 /usr/lib/globular/bin/event_server
+
+Aug 11 00:12:15 node-4 event_server[80]: time=2026-08-11T00:12:15.440Z level=INFO msg="Subscribe: ok" channel=node.* uuid=d98846ad-d186-4d36-a32f-de3d2f032d13
+Aug 11 00:12:15 node-4 event_server[80]: time=2026-08-11T00:12:15.450Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=d98846ad-d186-4d36-a32f-de3d2f032d13
+Aug 11 00:13:52 node-4 event_server[80]: {"level":"warn","ts":"2026-08-11T00:13:52.404729Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002d4f00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 00:13:52 node-4 event_server[80]: {"level":"info","ts":"2026-08-11T00:13:52.404836Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 00:14:46 node-4 event_server[80]: {"level":"warn","ts":"2026-08-11T00:14:46.260579Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000176b40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 00:14:46 node-4 event_server[80]: {"level":"info","ts":"2026-08-11T00:14:46.260657Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 00:15:00 node-4 event_server[80]: time=2026-08-11T00:15:00.414Z level=INFO msg="OnEvent: registered" uuid=69136abf-17f7-4d29-99ef-b51f4df2c744
+Aug 11 00:15:00 node-4 event_server[80]: time=2026-08-11T00:15:00.414Z level=INFO msg="stream registered" uuid=69136abf-17f7-4d29-99ef-b51f4df2c744
+Aug 11 00:15:00 node-4 event_server[80]: time=2026-08-11T00:15:00.421Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=69136abf-17f7-4d29-99ef-b51f4df2c744
+Aug 11 00:15:00 node-4 event_server[80]: time=2026-08-11T00:15:00.421Z level=INFO msg=subscribed channel=operation.* uuid=69136abf-17f7-4d29-99ef-b51f4df2c744 subscribers=3

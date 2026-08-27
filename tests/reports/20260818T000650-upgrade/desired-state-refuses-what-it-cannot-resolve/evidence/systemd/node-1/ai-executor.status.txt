@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:57:38 UTC; 10min ago
+    Process: 771 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 790 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 805 (ai_executor_ser)
+      Tasks: 20 (limit: 8641)
+     Memory: 32.0M (peak: 34.1M)
+        CPU: 1.851s
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-ai-executor.service
+             └─805 /usr/lib/globular/bin/ai_executor_server
+
+Aug 18 00:04:55 node-1 ai_executor_server[805]: time=2026-08-18T00:04:55.684Z level=INFO msg="INCIDENT RESOLVED" incident_id=718d7ccb-9a98-11f1-8beb-02420a0a000b summary="service-stopped triggered by service.stopped on ai_router.AiRouterService (10 events in batch)" root_cause="unknown_anomaly (ai_router.AiRouterService)"
+Aug 18 00:04:55 node-1 ai_executor_server[805]: time=2026-08-18T00:04:55.694Z level=WARN msg="behavioral feed signal record failed" incident=718d7ccb-9a98-11f1-8beb-02420a0a000b err="rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 18 00:06:10 node-1 ai_executor_server[805]: time=2026-08-18T00:06:10.626Z level=INFO msg="processing incident" incident_id=9e41a7f6-9a98-11f1-8bec-02420a0a000b rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=70
+Aug 18 00:06:10 node-1 ai_executor_server[805]: time=2026-08-18T00:06:10.690Z level=INFO msg="diagnosis complete" incident_id=9e41a7f6-9a98-11f1-8bec-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 18 00:06:10 node-1 ai_executor_server[805]: time=2026-08-18T00:06:10.690Z level=INFO msg="INCIDENT RESOLVED" incident_id=9e41a7f6-9a98-11f1-8bec-02420a0a000b summary="doctor-finding triggered by cluster.finding.created (70 events in batch)" root_cause=unknown_anomaly
+Aug 18 00:06:10 node-1 ai_executor_server[805]: time=2026-08-18T00:06:10.728Z level=INFO msg="processing incident" incident_id=9e5213bd-9a98-11f1-b1cd-02420a0a000c rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=70
+Aug 18 00:06:10 node-1 ai_executor_server[805]: time=2026-08-18T00:06:10.769Z level=INFO msg="diagnosis complete" incident_id=9e5213bd-9a98-11f1-b1cd-02420a0a000c root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 18 00:06:10 node-1 ai_executor_server[805]: time=2026-08-18T00:06:10.769Z level=INFO msg="INCIDENT RESOLVED" incident_id=9e5213bd-9a98-11f1-b1cd-02420a0a000c summary="doctor-finding triggered by cluster.finding.created (70 events in batch)" root_cause=unknown_anomaly
+Aug 18 00:07:41 node-1 ai_executor_server[805]: time=2026-08-18T00:07:41.607Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 18 00:07:41 node-1 ai_executor_server[805]: time=2026-08-18T00:07:41.648Z level=INFO msg="codex: no credentials found"

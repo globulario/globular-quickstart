@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 08:36:21 UTC; 44min ago
+    Process: 1976 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 1988 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1993 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 31.4M (peak: 39.8M)
+        CPU: 6.487s
+     CGroup: /system.slice/docker-cef6ed79bbeff9e64be0590fdde03d11a70e19fdd36359ebd96753c2c7d2b8b8.scope/system.slice/globular-ai-executor.service
+             └─1993 /usr/lib/globular/bin/ai_executor_server
+
+Aug 26 09:19:01 node-1 ai_executor_server[1993]: time=2026-08-26T09:19:01.463Z level=INFO msg="diagnosis complete" incident_id=2cdf4295-a12f-11f1-926b-02420a0a000c root_cause="service_crash: globular-scylla-manager-agent.service" confidence=0.6000000238418579 proposed_action=restart_service:globular-scylla-manager-agent.service job_state=JOB_DIAGNOSED
+Aug 26 09:19:01 node-1 ai_executor_server[1993]: time=2026-08-26T09:19:01.463Z level=INFO msg="executing remediation" incident=2cdf4295-a12f-11f1-926b-02420a0a000c action_type=ACTION_RESTART_SERVICE target=restart_service:globular-scylla-manager-agent.service
+Aug 26 09:19:01 node-1 ai_executor_server[1993]: time=2026-08-26T09:19:01.469Z level=INFO msg="restart_service: request published" target=restart_service:globular-scylla-manager-agent.service
+Aug 26 09:19:04 node-1 ai_executor_server[1993]: time=2026-08-26T09:19:04.469Z level=ERROR msg="remediation failed" incident=2cdf4295-a12f-11f1-926b-02420a0a000c action_type=ACTION_RESTART_SERVICE err="verification failed: inconclusive: restart of restart_service:globular-scylla-manager-agent.service dispatched via event bus; confirm via node-agent or cluster doctor"
+Aug 26 09:19:04 node-1 ai_executor_server[1993]: time=2026-08-26T09:19:04.469Z level=ERROR msg="REMEDIATION FAILED" incident_id=2cdf4295-a12f-11f1-926b-02420a0a000c summary="service-crash triggered by service.exited on scylla-manager-agent (3 events in batch)" proposed_action=restart_service:globular-scylla-manager-agent.service
+Aug 26 09:19:04 node-1 ai_executor_server[1993]: 2026/08/26 09:19:04 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=3098 baseline_ms=20 window=10 new_window=10
+Aug 26 09:19:30 node-1 ai_executor_server[1993]: time=2026-08-26T09:19:30.732Z level=INFO msg="processing incident" incident_id=3e5e2e68-a12f-11f1-b22d-02420a0a000b rule_id=service-stopped tier=0 trigger=service.stopped batch_size=1
+Aug 26 09:19:30 node-1 ai_executor_server[1993]: time=2026-08-26T09:19:30.799Z level=INFO msg="diagnosis complete" incident_id=3e5e2e68-a12f-11f1-b22d-02420a0a000b root_cause="unknown_anomaly (globular-scylla-manager-agent.service)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 26 09:19:30 node-1 ai_executor_server[1993]: time=2026-08-26T09:19:30.799Z level=INFO msg="INCIDENT RESOLVED" incident_id=3e5e2e68-a12f-11f1-b22d-02420a0a000b summary="service-stopped triggered by service.stopped on globular-scylla-manager-agent.service (1 events in batch)" root_cause="unknown_anomaly (globular-scylla-manager-agent.service)"
+Aug 26 09:19:30 node-1 ai_executor_server[1993]: 2026/08/26 09:19:30 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=73 baseline_ms=20 window=10 new_window=10

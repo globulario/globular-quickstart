@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:53:57 UTC; 1min 41s ago
+    Process: 685 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 697 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 712 (ai_executor_ser)
+      Tasks: 20 (limit: 8641)
+     Memory: 26.8M (peak: 30.4M)
+        CPU: 588ms
+     CGroup: /system.slice/docker-6e5bc4d77400581f103d67b94812dab7611412457ec3496f96f69356e4c17bcf.scope/system.slice/globular-ai-executor.service
+             └─712 /usr/lib/globular/bin/ai_executor_server
+
+Aug 11 05:53:58 node-3 ai_executor_server[712]: time=2026-08-11T05:53:58.669Z level=INFO msg="job_store: connected to etcd"
+Aug 11 05:53:58 node-3 ai_executor_server[712]: 2026/08/11 05:53:58 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 11 05:53:58 node-3 ai_executor_server[712]: time=2026-08-11T05:53:58.791Z level=INFO msg="job_store: loaded jobs from etcd" count=92
+Aug 11 05:53:59 node-3 ai_executor_server[712]: time=2026-08-11T05:53:59.757Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.12]"
+Aug 11 05:54:17 node-3 ai_executor_server[712]: time=2026-08-11T05:54:17.536Z level=INFO msg="processing incident" incident_id=16ef913a-9549-11f1-aaf2-02420a0a000b rule_id=service-stopped tier=0 trigger=service.stopped batch_size=2
+Aug 11 05:54:17 node-3 ai_executor_server[712]: time=2026-08-11T05:54:17.572Z level=INFO msg="diagnosis complete" incident_id=16ef913a-9549-11f1-aaf2-02420a0a000b root_cause="unknown_anomaly (minio)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 11 05:54:17 node-3 ai_executor_server[712]: time=2026-08-11T05:54:17.572Z level=INFO msg="INCIDENT RESOLVED" incident_id=16ef913a-9549-11f1-aaf2-02420a0a000b summary="service-stopped triggered by service.stopped on minio (2 events in batch)" root_cause="unknown_anomaly (minio)"
+Aug 11 05:54:28 node-3 ai_executor_server[712]: time=2026-08-11T05:54:28.646Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 11 05:54:28 node-3 ai_executor_server[712]: time=2026-08-11T05:54:28.647Z level=WARN msg="peer: ping failed" endpoint=10.10.0.12:10010 err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:10010: connect: connection refused\""
+Aug 11 05:54:28 node-3 ai_executor_server[712]: time=2026-08-11T05:54:28.648Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10010

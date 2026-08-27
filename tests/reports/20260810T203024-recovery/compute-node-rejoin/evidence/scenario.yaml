@@ -1,0 +1,198 @@
+version: 1
+name: compute-node-rejoin
+description: |
+  Verify that a stopped compute node fully rejoins the cluster after restart.
+
+  "Rejoin" means more than just the container coming back up — the node agent
+  must restart, re-read its config from etcd, and re-register its heartbeat.
+  This test specifically validates the rejoin protocol, not just container
+  lifecycle.
+
+  Rejoin sequence:
+  1. Container stops → node agent process killed by Docker
+  2. Container restarts → systemd starts, entrypoint.sh runs (PKI already done)
+  3. systemd starts node-agent.service
+  4. Node agent reads config.json → connects to etcd endpoints
+  5. Node agent writes node_agent_metrics_port key to etcd → heartbeat
+  6. Controller sees new heartbeat, node is back in the pool
+  7. Convergence: controller compares installed packages vs desired state
+
+  This differs from compute-node-stop-restart in its assertion focus:
+  - That test verifies cluster health during the outage
+  - This test verifies the REJOIN PROTOCOL works correctly
+
+  Failure modes caught:
+  - Node agent starts but cannot connect to etcd (TLS cert mismatch after restart)
+  - Node agent connects but fails to write heartbeat (RBAC permission missing)
+  - etcd key written but controller doesn't detect it (watch subscription issue)
+  - Node agent starts in a bad state (stale tokens from previous session)
+  - Convergence doesn't trigger after rejoin (AppliedServicesHash not reported)
+
+  Note: Token clearing — entrypoint.sh clears stale tokens on each boot:
+  "rm -f $STATE/tokens/*_token" — this prevents auth failures from stale JWTs.
+suite: recovery
+tags:
+  - recovery
+  - compute-node
+  - rejoin
+  - heartbeat
+  - convergence
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: node5_running
+    probe: node.container_running
+    params:
+      node: node-5
+    expect:
+      running: true
+
+  - type: probe
+    id: node5_registered
+    probe: node.etcd_registered
+    params:
+      node: node-5
+    expect:
+      registered: true
+
+  - type: probe
+    id: all_5_nodes_before
+    probe: cluster.nodes
+    expect:
+      count_gte: 5
+
+baseline:
+  - type: probe
+    id: initial_node_count
+    probe: cluster.nodes
+
+  - type: probe
+    id: initial_installed_packages
+    probe: cluster.installed_packages
+
+steps:
+  # ── Step 1: Stop node-5 ───────────────────────────────────────────────────
+  - id: stop_node5
+    action: chaos.stop_node
+    params:
+      node: node-5
+
+  # ── Step 2: Confirm container stopped ────────────────────────────────────
+  - id: wait_for_stop
+    action: wait
+    params:
+      timeout: 20
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: node-5
+        expect:
+          running: false
+
+  # ── Step 3: Restart node-5 ────────────────────────────────────────────────
+  - id: start_node5
+    action: chaos.start_node
+    params:
+      node: node-5
+
+  # ── Step 4: Wait for node agent to start ─────────────────────────────────
+  # entrypoint.sh runs first (PKI already done from volume, fast),
+  # then systemd starts, then node-agent.service starts.
+  # Allow up to 90 seconds for full rejoin.
+  - id: wait_for_agent_active
+    action: wait
+    params:
+      timeout: 90
+      poll_interval: 10
+      until:
+        probe: service.status
+        params:
+          node: node-5
+          service: node-agent
+        expect:
+          unit_state: active
+
+  # ── Step 5: Wait for heartbeat registration in etcd ──────────────────────
+  # The node agent writes to etcd after starting. This is the definitive
+  # proof of rejoin — not just "the process is running" but "etcd accepted
+  # the heartbeat registration".
+  - id: wait_for_heartbeat_registration
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 10
+      until:
+        probe: node.etcd_registered
+        params:
+          node: node-5
+        expect:
+          registered: true
+
+assertions:
+  # ── Rejoin assertions ──────────────────────────────────────────────────────
+  - type: probe
+    id: node5_container_running
+    probe: node.container_running
+    params:
+      node: node-5
+    expect:
+      running: true
+
+  - type: probe
+    id: node5_agent_active
+    probe: service.status
+    params:
+      node: node-5
+      service: node-agent
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: node5_heartbeat_registered
+    probe: node.etcd_registered
+    params:
+      node: node-5
+    expect:
+      registered: true
+
+  - type: probe
+    id: all_5_nodes_after
+    probe: cluster.nodes
+    expect:
+      count_gte: 5
+
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: write_quorum_after
+    probe: etcd.write_test
+    expect:
+      success: true
+
+cleanup:
+  - type: probe
+    id: final_node_count
+    probe: cluster.nodes
+
+  - type: probe
+    id: final_health
+    probe: cluster.health
+    expect:
+      status: healthy

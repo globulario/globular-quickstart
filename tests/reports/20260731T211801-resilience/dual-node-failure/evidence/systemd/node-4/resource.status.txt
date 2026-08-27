@@ -1,0 +1,20 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:40:51 UTC; 168ms ago
+    Process: 359 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 366 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 377 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 489 (resource_server)
+      Tasks: 8 (limit: 8641)
+     Memory: 7.0M (peak: 7.3M)
+        CPU: 207ms
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-resource.service
+             └─489 /usr/lib/globular/bin/resource_server
+
+Jul 31 21:40:49 node-4 systemd[1]: Starting globular-resource.service - Globular resource...
+Jul 31 21:40:51 node-4 systemd[1]: Started globular-resource.service - Globular resource.
+Jul 31 21:40:51 node-4 resource_server[489]: 2026/07/31 21:40:51 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Jul 31 21:40:51 node-4 resource_server[489]: 2026/07/31 21:40:51 INFO security: loaded cluster roles from external policy file roles=22
+Jul 31 21:40:51 node-4 resource_server[489]: time=2026-07-31T21:40:51.980Z level=INFO msg="startup: RBAC failures will be non-fatal during initialization"
+Jul 31 21:40:51 node-4 resource_server[489]: 2026/07/31 21:40:51 INFO policy: loaded permissions from file service=resource path=/var/lib/globular/policy/services/resource/permissions.generated.json count=74
+Jul 31 21:40:51 node-4 resource_server[489]: PortAllocator range: 10000 - 20000

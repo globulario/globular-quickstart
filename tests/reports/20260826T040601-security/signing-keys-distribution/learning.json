@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-26T04:07:59.082219Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "signing-keys-distribution",
+  "suite": "security",
+  "result": "PASS",
+  "source_revision": "18e2d1202d390302d87b5d293fa69bb9239f8459",
+  "proof": {
+    "claim": "Verify that Ed25519 signing keys are correctly generated and distributed\nacross all nodes.\n\nGlobular uses Ed25519 asymmetric cryptography for JWT signing and service\nidentity. Every node generates:\n1. A node-name key: ${node_name}_private / ${node_name}_public\n   (e.g., node-1_private \u2014 used for deterministic testing)\n2. A MAC-based key: ${mac_normalized}_private / ${mac_normalized}_public\n   (e.g., 02_42_0a_0a_00_0b_private \u2014 the actual JWT signing key)\n\nFor cross-node JWT verification, each node needs all peer PUBLIC keys.\nKeys are exchanged via the /shared-pki/keys/ volume during boot.\n\nFailure modes caught:\n- Node private key not generated (JWT issuance fails silently)\n- Peer public keys not distributed (cross-node auth fails with \"invalid signature\")\n- Key directory missing entirely (services fall back to unsigned tokens)\n- Key count too low (some peers' keys missing \u2014 partial auth failure)\n\nIndustry known problem: \"key rotation breaks cross-node auth\" \u2014 after a\nnode restart with a new MAC address (Docker assigns random MACs unless\npinned), all other nodes still have the OLD MAC's public key. The new node\nsigns with its NEW key, but peers reject it as unknown. The docker-compose.yml\nuses static mac_address assignments to prevent this.\n\nNote: This test checks presence and count, not cryptographic validity.\nA full key validation (sign + verify round-trip) requires a running\nJWT issuer, which is tested in the security suite's authz scenarios.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:11 UTC; 5s ago
+    Process: 2122 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 2142 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2163 (authentication_)
+      Tasks: 9 (limit: 8641)
+     Memory: 7.3M (peak: 8.0M)
+        CPU: 67ms
+     CGroup: /system.slice/docker-ca280363fa2453665805d4ffe29b667a4fb9760e5edf5d71628a9f162a1884b1.scope/system.slice/globular-authentication.service
+             └─2163 /usr/lib/globular/bin/authentication_server
+
+Aug 19 03:23:11 node-1 systemd[1]: globular-authentication.service: Scheduled restart job, restart counter is at 2.
+Aug 19 03:23:11 node-1 systemd[1]: Starting globular-authentication.service - Globular authentication...
+Aug 19 03:23:11 node-1 systemd[1]: Started globular-authentication.service - Globular authentication.
+Aug 19 03:23:11 node-1 authentication_server[2163]: 2026/08/19 03:23:11 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 19 03:23:11 node-1 authentication_server[2163]: 2026/08/19 03:23:11 INFO security: loaded cluster roles from external policy file roles=22
+Aug 19 03:23:11 node-1 authentication_server[2163]: PortAllocator range: 10000 - 20000
+Aug 19 03:23:13 node-1 authentication_server[2163]: {"level":"warn","ts":"2026-08-19T03:23:13.703016Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00064e5a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:15 node-1 authentication_server[2163]: {"level":"warn","ts":"2026-08-19T03:23:15.703268Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00064e5a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:15 node-1 authentication_server[2163]: time=2026-08-19T03:23:15.703Z level=WARN msg="NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide)" err="context deadline exceeded"
+Aug 19 03:23:15 node-1 authentication_server[2163]: time=2026-08-19T03:23:15.703Z level=INFO msg="starting authentication service" service=authentication.AuthenticationService version=1.2.312 domain=globular.internal address=10.10.0.11:8443 port=10000 session_timeout=15

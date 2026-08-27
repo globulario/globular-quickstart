@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:54 UTC; 12s ago
+    Process: 1643 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 1662 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1675 (authentication_)
+      Tasks: 9 (limit: 8641)
+     Memory: 18.5M (peak: 18.7M)
+        CPU: 163ms
+     CGroup: /system.slice/docker-9a67632422a5502a1d64625e1932bb8e76fae6f90cdee0187c70d84ee68d0231.scope/system.slice/globular-authentication.service
+             └─1675 /usr/lib/globular/bin/authentication_server
+
+Aug 18 19:12:58 node-1 authentication_server[1675]: time=2026-08-18T19:12:58.229Z level=WARN msg="NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide)" err="context deadline exceeded"
+Aug 18 19:12:58 node-1 authentication_server[1675]: time=2026-08-18T19:12:58.229Z level=INFO msg="starting authentication service" service=authentication.AuthenticationService version=1.2.312 domain=globular.internal address=10.10.0.11:8443 port=10000 session_timeout=15
+Aug 18 19:12:59 node-1 authentication_server[1675]: time=2026-08-18T19:12:59.721Z level=INFO msg="InitGrpcServer: gRPC server initialized" service=authentication.AuthenticationService tls=true port=10008
+Aug 18 19:12:59 node-1 authentication_server[1675]: time=2026-08-18T19:12:59.721Z level=INFO msg="service ready" service=authentication.AuthenticationService port=10008 proxy=10001 protocol=grpc domain=globular.internal startup_ms=1491 version=1.2.312
+Aug 18 19:12:59 node-1 authentication_server[1675]: time=2026-08-18T19:12:59.721Z level=INFO msg="starting service" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10008
+Aug 18 19:12:59 node-1 authentication_server[1675]: time=2026-08-18T19:12:59.724Z level=INFO msg="policy: loaded permissions from file" service=authentication path=/var/lib/globular/policy/services/authentication/permissions.generated.json count=8
+Aug 18 19:12:59 node-1 authentication_server[1675]: time=2026-08-18T19:12:59.724Z level=INFO msg="authz: permission mappings loaded" service=authentication count=8 action_mappings=8
+Aug 18 19:12:59 node-1 authentication_server[1675]: time=2026-08-18T19:12:59.725Z level=INFO msg="service started successfully" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10008
+Aug 18 19:13:00 node-1 authentication_server[1675]: time=2026-08-18T19:13:00.074Z level=INFO msg=setKey:generate mac=02:42:0a:0a:00:0b
+Aug 18 19:13:02 node-1 authentication_server[1675]: time=2026-08-18T19:13:02.017Z level=INFO msg="metrics listening" service=authentication.AuthenticationService addr=[::]:10001

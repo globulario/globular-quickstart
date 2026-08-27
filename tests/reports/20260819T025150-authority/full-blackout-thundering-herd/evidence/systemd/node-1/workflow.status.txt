@@ -1,0 +1,19 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:14 UTC; 1s ago
+    Process: 2315 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 2323 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 2329 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2340 (workflow_server)
+      Tasks: 11 (limit: 8641)
+     Memory: 10.4M (peak: 11.1M)
+        CPU: 113ms
+     CGroup: /system.slice/docker-ca280363fa2453665805d4ffe29b667a4fb9760e5edf5d71628a9f162a1884b1.scope/system.slice/globular-workflow.service
+             └─2340 /usr/lib/globular/bin/workflow_server
+
+Aug 19 03:23:14 node-1 systemd[1]: globular-workflow.service: Scheduled restart job, restart counter is at 7.
+Aug 19 03:23:14 node-1 systemd[1]: Starting globular-workflow.service - Globular workflow...
+Aug 19 03:23:14 node-1 systemd[1]: Started globular-workflow.service - Globular workflow.
+Aug 19 03:23:14 node-1 workflow_server[2340]: 2026/08/19 03:23:14 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 19 03:23:14 node-1 workflow_server[2340]: 2026/08/19 03:23:14 INFO security: loaded cluster roles from external policy file roles=22
+Aug 19 03:23:14 node-1 workflow_server[2340]: time=2026-08-19T03:23:14.761Z level=INFO msg="starting workflow service" service=workflow.WorkflowService version=1.2.326 domain=globular.internal

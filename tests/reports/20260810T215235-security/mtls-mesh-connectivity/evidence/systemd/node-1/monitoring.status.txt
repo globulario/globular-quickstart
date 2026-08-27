@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 21:48:53 UTC; 21min ago
+    Process: 35328 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 35332 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 35335 (monitoring_serv)
+      Tasks: 18 (limit: 8641)
+     Memory: 17.5M (peak: 23.0M)
+        CPU: 897ms
+     CGroup: /system.slice/docker-c61544729caebd07461606de1b304e501bd692a8db1ad058fb5e8af8b9c3fa40.scope/system.slice/globular-monitoring.service
+             └─35335 /usr/lib/globular/bin/monitoring_server
+
+Aug 10 21:48:53 node-1 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 10 21:48:53 node-1 monitoring_server[35335]: 2026/08/10 21:48:53 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 10 21:48:53 node-1 monitoring_server[35335]: 2026/08/10 21:48:53 INFO security: loaded cluster roles from external policy file roles=22
+Aug 10 21:48:53 node-1 monitoring_server[35335]: PortAllocator range: 10000 - 20000
+Aug 10 21:48:53 node-1 monitoring_server[35335]: 2026/08/10 21:48:53 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 10 21:48:53 node-1 monitoring_server[35335]: time=2026-08-10T21:48:53.532Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=54
+Aug 10 21:48:53 node-1 monitoring_server[35335]: 2026/08/10 21:48:53 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 10 21:49:07 node-1 monitoring_server[35335]: {"level":"warn","ts":"2026-08-10T21:49:07.568568Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000176f00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = etcdserver: request timed out"}
+Aug 10 21:49:12 node-1 monitoring_server[35335]: 2026/08/10 21:49:12 INFO mesh: Envoy available, routing through mesh target=node-1.globular.internal:443
+Aug 10 21:49:12 node-1 monitoring_server[35335]: 2026/08/10 21:49:12 INFO mesh: gRPC connection established target=node-1.globular.internal:443

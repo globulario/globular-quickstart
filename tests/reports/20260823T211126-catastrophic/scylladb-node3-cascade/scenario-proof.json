@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-23T21:15:59.916175Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/catastrophic/scylladb-node3-cascade.yaml",
+  "scenario": "scylladb-node3-cascade",
+  "suite": "catastrophic",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Simultaneous failure of ScyllaDB (the storage infrastructure) and node-3\n(the AI services host + one etcd member). This is a cascading infrastructure\nfailure that crosses two failure domains.\n\nFailure domain map:\n  ScyllaDB:  stores AI Memory data, DNS zone records, audit log\n  node-3:    runs ai_memory, ai_executor, ai_router, ai_watcher services,\n             one instance of etcd, one controller standby, one workflow standby\n\nWhat this tests:\n  1. Failure domain isolation: can the control plane (nodes 1+2) survive when\n     both the storage layer AND one etcd member go down simultaneously?\n  2. etcd quorum maintenance: with node-3 down, 2/3 members remain (nodes 1+2).\n     Quorum is maintained and writes must continue uninterrupted.\n  3. Service degradation reporting: services that depend on ScyllaDB should\n     become unavailable, while etcd-only services should survive.\n  4. Recovery ordering: ScyllaDB must come back before node-3's AI services\n     attempt to reconnect. Node-3 rejoins Raft automatically.\n\nExpected during failure:\n  - etcd: 2/3 members, writes succeed (quorum maintained) \u2713\n  - cluster_controller: still registered on node-1 or node-2 \u2713\n  - workflow: still registered on node-1 or node-2 \u2713\n  - AI services (memory, executor, watcher, router): UNAVAILABLE \u2014 node-3 is down\n  - DNS zone records: unavailable (ScyllaDB is down)\n  - ScyllaDB: container stopped\n\nExpected after recovery:\n  - All 3 etcd members rejoined via Raft resync\n  - AI services re-register once node-3 restarts\n  - ScyllaDB data is intact (persistent volume)\n  - Full cluster health restored\n\nIntegrity verdict: PROTECTED within the etcd failure domain.\nScyllaDB data: protected by ScyllaDB's own durability (persistence volume).\nAI in-flight operations: may be lost if not durably queued.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-23T21:17:47.921967Z",
+    "result": "PARTIAL",
+    "executor_exit": 1,
+    "proof_eligible": false
+  }
+}

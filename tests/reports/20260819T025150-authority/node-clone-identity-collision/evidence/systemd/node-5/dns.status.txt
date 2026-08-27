@@ -1,0 +1,21 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:29:55 UTC; 9s ago
+    Process: 3932 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 3935 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 3939 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3941 (dns_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 18.8M (peak: 19.8M)
+        CPU: 183ms
+     CGroup: /system.slice/docker-d1f5b8be4d5e8a538660e463859f4b15e96ad466285c4e0d1073a4ae4c36e0a3.scope/system.slice/globular-dns.service
+             └─3941 /usr/lib/globular/bin/dns_server
+
+Aug 19 03:29:55 node-5 systemd[1]: globular-dns.service: Scheduled restart job, restart counter is at 14.
+Aug 19 03:29:55 node-5 systemd[1]: Starting globular-dns.service - Globular dns...
+Aug 19 03:29:55 node-5 sh[3939]: no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate
+Aug 19 03:29:55 node-5 systemd[1]: Started globular-dns.service - Globular dns.
+Aug 19 03:29:57 node-5 dns_server[3941]: {"level":"warn","ts":"2026-08-19T03:29:57.983222Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00057e5a0/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:29:59 node-5 dns_server[3941]: {"level":"warn","ts":"2026-08-19T03:29:59.984262Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00057e5a0/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:30:01 node-5 dns_server[3941]: {"level":"warn","ts":"2026-08-19T03:30:01.986268Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00057f0e0/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:30:03 node-5 dns_server[3941]: {"level":"warn","ts":"2026-08-19T03:30:03.987255Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00057f0e0/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}

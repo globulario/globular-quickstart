@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 18:15:27 UTC; 44min ago
+    Process: 624 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 645 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 656 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 36.1M (peak: 38.2M)
+        CPU: 6.750s
+     CGroup: /system.slice/docker-e925f8e3bc6a9d4c506cb1c7e36d0f61cf24256f8244f6a492a8be578aa7d4f3.scope/system.slice/globular-ai-executor.service
+             └─656 /usr/lib/globular/bin/ai_executor_server
+
+Aug 26 18:53:57 node-3 ai_executor_server[656]: time=2026-08-26T18:53:57.975Z level=INFO msg="processing incident" incident_id=7e71781a-a17f-11f1-a7bc-02420a0a000f rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=17
+Aug 26 18:53:58 node-3 ai_executor_server[656]: time=2026-08-26T18:53:58.063Z level=INFO msg="diagnosis complete" incident_id=7e71781a-a17f-11f1-a7bc-02420a0a000f root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 26 18:53:58 node-3 ai_executor_server[656]: time=2026-08-26T18:53:58.063Z level=INFO msg="INCIDENT RESOLVED" incident_id=7e71781a-a17f-11f1-a7bc-02420a0a000f summary="doctor-finding triggered by cluster.finding.created (17 events in batch)" root_cause=unknown_anomaly
+Aug 26 18:53:58 node-3 ai_executor_server[656]: 2026/08/26 18:53:58 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=96 baseline_ms=20 window=10 new_window=10
+Aug 26 18:54:59 node-3 ai_executor_server[656]: time=2026-08-26T18:54:59.361Z level=INFO msg="processing incident" incident_id=a3075195-a17f-11f1-8757-02420a0a000c rule_id=auth-denial tier=0 trigger=alert.auth.denied batch_size=3
+Aug 26 18:54:59 node-3 ai_executor_server[656]: time=2026-08-26T18:54:59.478Z level=INFO msg="diagnosis complete" incident_id=a3075195-a17f-11f1-8757-02420a0a000c root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 26 18:54:59 node-3 ai_executor_server[656]: time=2026-08-26T18:54:59.478Z level=INFO msg="INCIDENT RESOLVED" incident_id=a3075195-a17f-11f1-8757-02420a0a000c summary="auth-denial triggered by alert.auth.denied on workflow.WorkflowService (3 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)"
+Aug 26 18:54:59 node-3 ai_executor_server[656]: 2026/08/26 18:54:59 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=126 baseline_ms=20 window=10 new_window=10
+Aug 26 18:55:30 node-3 ai_executor_server[656]: time=2026-08-26T18:55:30.051Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 26 18:55:30 node-3 ai_executor_server[656]: time=2026-08-26T18:55:30.234Z level=INFO msg="codex: CLI not found"

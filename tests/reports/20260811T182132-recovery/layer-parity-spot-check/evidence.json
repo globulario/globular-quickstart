@@ -1,0 +1,228 @@
+{
+  "schema_version": 1,
+  "scenario": "layer-parity-spot-check",
+  "suite": "recovery",
+  "start_time": "2026-08-11T18:41:01.680536Z",
+  "end_time": "2026-08-11T18:41:04.238188Z",
+  "passed": true,
+  "item_count": 10,
+  "items": [
+    {
+      "id": "cluster_reachable",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T18:41:02.678604Z"
+    },
+    {
+      "id": "node_agent_active_node1",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "node-agent"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-1",
+        "service": "node-agent"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T18:41:02.772000Z"
+    },
+    {
+      "id": "node_agent_active_node2",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "node-agent"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-2",
+        "service": "node-agent"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T18:41:02.859812Z"
+    },
+    {
+      "id": "node_agent_active_node3",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-3",
+        "service": "node-agent"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-3",
+        "service": "node-agent"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T18:41:02.949171Z"
+    },
+    {
+      "id": "node_agent_active_node4",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-4",
+        "service": "node-agent"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-4",
+        "service": "node-agent"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T18:41:03.040335Z"
+    },
+    {
+      "id": "node_agent_active_node5",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-5",
+        "service": "node-agent"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-5",
+        "service": "node-agent"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T18:41:03.140285Z"
+    },
+    {
+      "id": "dns_active_after_resilience",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-3",
+        "service": "dns"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-3",
+        "service": "dns"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T18:41:03.226733Z"
+    },
+    {
+      "id": "dns_registered_post_chaos",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "dns"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 42
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T18:41:03.327821Z"
+    },
+    {
+      "id": "service_count_stable",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T18:41:03.617572Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T18:41:04.222102Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

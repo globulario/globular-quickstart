@@ -1,0 +1,71 @@
+version: 1
+name: release-failure-audit
+description: |
+  Surface the current release pipeline state as known, documented cluster state.
+
+  This scenario does NOT assert that releases succeed — the cluster's MinIO
+  authentication is broken (all ServiceRelease records are in FAILED phase),
+  which is a known pre-condition for V1 that will be fixed in a subsequent
+  operational step.
+
+  What this scenario DOES assert:
+    - The release audit probe works and returns a parseable result
+    - Total ServiceRelease count is above a minimum (proves records exist)
+    - The failed count matches the total (proves the known failure mode)
+    - No phantom "succeeded" releases exist that could mask a real problem
+
+  This converts a cluster anomaly into documented, measurable state rather
+  than letting it be an invisible unknown. Once MinIO auth is repaired, this
+  scenario can be updated to assert succeeded_gte instead.
+
+  Known root cause: MinIO access key on worker nodes is stale — does not match
+  the key stored in MinIO's internal database. All artifact publish operations
+  fail with "The Access Key Id you provided does not exist in this server".
+
+suite: recovery
+tags:
+  - release-pipeline
+  - minio
+  - audit
+  - known-failure
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: false
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_reachable
+    probe: cluster.health
+    expect:
+      status: healthy
+
+assertions:
+  # ── release record existence ───────────────────────────────────────────────
+  - type: probe
+    id: release_records_exist
+    probe: release.audit
+    expect:
+      total_gte: 15   # 22 observed; floor guards against silent key deletion
+
+  # ── known failure state ────────────────────────────────────────────────────
+  # All releases are in FAILED state due to MinIO auth breakage.
+  # This assertion documents the known state. Update to succeeded_gte once fixed.
+  - type: probe
+    id: release_failure_state_known
+    probe: release.audit
+    expect:
+      failed_gte: 15   # matches total — MinIO auth broken across all releases
+
+  # ── no phantom successes ───────────────────────────────────────────────────
+  # If any succeeded, it would be surprising and worth investigating.
+  # Remove this assertion once the pipeline is repaired.
+  - type: probe
+    id: no_phantom_successes
+    probe: release.audit
+    expect:
+      succeeded: 0
+
+cleanup: []

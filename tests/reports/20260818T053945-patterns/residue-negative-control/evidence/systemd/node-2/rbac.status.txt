@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 05:34:55 UTC; 5min ago
+    Process: 27952 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 27955 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 27959 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 27965 (rbac_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 76.0M (peak: 76.8M)
+        CPU: 966ms
+     CGroup: /system.slice/docker-5a389c47d9a860b8ea6ce5778d861dab3b961385ab0a0f2a39732c51f8019a4e.scope/system.slice/globular-rbac.service
+             └─27965 /usr/lib/globular/bin/rbac_server
+
+Aug 18 05:34:55 node-2 rbac_server[27965]: 2026/08/18 05:34:55 INFO metrics listening service=rbac.RbacService addr=[::]:40067
+Aug 18 05:35:05 node-2 rbac_server[27965]: 2026/08/18 05:35:05 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 18 05:35:05 node-2 rbac_server[27965]: 2026/08/18 05:35:05 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 18 05:35:36 node-2 rbac_server[27965]: 2026/08/18 05:35:36 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 05:36:42 node-2 rbac_server[27965]: 2026/08/18 05:36:42 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 05:36:50 node-2 rbac_server[27965]: 2026/08/18 05:36:50 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 05:38:41 node-2 rbac_server[27965]: 2026/08/18 05:38:41 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 05:39:50 node-2 rbac_server[27965]: 2026/08/18 05:39:50 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 05:39:56 node-2 rbac_server[27965]: 2026/08/18 05:39:56 INFO acc: warmup complete baseline_rtt_ms=20 samples=331 elapsed=5m0s
+Aug 18 05:40:08 node-2 rbac_server[27965]: 2026/08/18 05:40:08 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10004 new_port=10004 old_proxy=40067 new_proxy=10001

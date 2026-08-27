@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "scenario": "liveness-survives-state-writes",
+  "suite": "upgrade",
+  "start_time": "2026-08-19T05:36:56.313706Z",
+  "end_time": "2026-08-19T05:36:56.985429Z",
+  "passed": false,
+  "item_count": 3,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "unknown",
+        "error": "primary container not running",
+        "members": 0,
+        "nodes": 0
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:36:56.381507Z"
+    },
+    {
+      "id": "all_nodes_report_liveness",
+      "section": "preconditions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 0,
+        "max_age_s": -1,
+        "stale_nodes": 0,
+        "error": "etcd container not running"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:36:56.419993Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {},
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "unproven": "no baseline captured"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:36:56.420069Z"
+    }
+  ],
+  "result": "INFRA_ERROR",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

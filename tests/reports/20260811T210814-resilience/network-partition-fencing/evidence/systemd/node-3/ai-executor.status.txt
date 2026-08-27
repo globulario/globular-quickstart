@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 21:45:34 UTC; 1min 46s ago
+    Process: 10835 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 10839 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10842 (ai_executor_ser)
+      Tasks: 18 (limit: 8641)
+     Memory: 27.2M (peak: 27.9M)
+        CPU: 490ms
+     CGroup: /system.slice/docker-a7b77f0972b99277fbc2955c697f3a9511ae6251d31f3c78cb9459a028768f82.scope/system.slice/globular-ai-executor.service
+             └─10842 /usr/lib/globular/bin/ai_executor_server
+
+Aug 11 21:45:34 node-3 ai_executor_server[10842]: time=2026-08-11T21:45:34.903Z level=WARN msg="authz: no permission mappings registered — RBAC will resolve raw method paths and deny role-based calls" service=ai_executor expected_path=/var/lib/globular/policy/services/ai_executor/permissions.generated.json
+Aug 11 21:45:34 node-3 ai_executor_server[10842]: time=2026-08-11T21:45:34.903Z level=INFO msg="service started successfully" name=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd port=10010
+Aug 11 21:45:34 node-3 ai_executor_server[10842]: time=2026-08-11T21:45:34.915Z level=INFO msg="job_store: connected to etcd"
+Aug 11 21:45:34 node-3 ai_executor_server[10842]: time=2026-08-11T21:45:34.920Z level=INFO msg="job_store: loaded jobs from etcd" count=51
+Aug 11 21:45:34 node-3 ai_executor_server[10842]: 2026/08/11 21:45:34 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 11 21:45:34 node-3 ai_executor_server[10842]: time=2026-08-11T21:45:34.938Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]"
+Aug 11 21:45:44 node-3 ai_executor_server[10842]: 2026/08/11 21:45:44 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 11 21:45:44 node-3 ai_executor_server[10842]: 2026/08/11 21:45:44 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 11 21:46:04 node-3 ai_executor_server[10842]: time=2026-08-11T21:46:04.965Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 11 21:46:04 node-3 ai_executor_server[10842]: time=2026-08-11T21:46:04.974Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10010

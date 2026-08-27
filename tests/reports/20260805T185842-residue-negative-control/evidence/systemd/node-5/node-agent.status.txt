@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 18:58:49 UTC; 11s ago
+    Process: 94 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 119 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 142 (node_agent_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 23.6M (peak: 29.2M)
+        CPU: 13.700s
+     CGroup: /system.slice/docker-cfdb302755e666ec2712c471dbf2598cd6102cf549dfe8e08bc087c67c2b9b59.scope/system.slice/globular-node-agent.service
+             └─142 /usr/lib/globular/bin/node_agent_server
+
+Aug 05 18:58:49 node-5 systemd[1]: Starting globular-node-agent.service - Globular node_agent...
+Aug 05 18:58:49 node-5 systemd[1]: Started globular-node-agent.service - Globular node_agent.
+Aug 05 18:58:49 node-5 node_agent_server[142]: 2026/08/05 18:58:49 etcd bootstrap skipped; globular-etcd.service should be managed by systemd
+Aug 05 18:58:49 node-5 node_agent_server[142]: 2026/08/05 18:58:49 TLS enabled: cert=/var/lib/globular/pki/issued/services/service.crt key=/var/lib/globular/pki/issued/services/service.key ca=/var/lib/globular/pki/ca.crt
+Aug 05 18:58:49 node-5 node_agent_server[142]: 2026/08/05 18:58:49 ca-key-sync: DISABLED by default (CA private key must stay on signer authority; enable with EnableCAKeySync())
+Aug 05 18:58:49 node-5 node_agent_server[142]: 2026/08/05 18:58:49 ingress: starting reconciliation loop (interval: 30s)
+Aug 05 18:58:49 node-5 node_agent_server[142]: 2026/08/05 18:58:49 node agent listening on 0.0.0.0:11000
+Aug 05 18:58:49 node-5 node_agent_server[142]: 2026/08/05 18:58:49 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 05 18:58:50 node-5 node_agent_server[142]: 2026/08/05 18:58:50 metrics listening on 0.0.0.0:11001 (saved=11001, default=11001)
+Aug 05 18:58:51 node-5 node_agent_server[142]: {"level":"warn","ts":"2026-08-05T18:58:51.110618Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000cb23c0/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}

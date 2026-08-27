@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:45:25 UTC; 4min 39s ago
+    Process: 728 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 772 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 788 (ai_executor_ser)
+      Tasks: 19 (limit: 8641)
+     Memory: 28.1M (peak: 28.9M)
+        CPU: 957ms
+     CGroup: /system.slice/docker-7fac91a876a85840c60c302acf724a18f722fb5bd5d00f55ebb1b0ece4798c2c.scope/system.slice/globular-ai-executor.service
+             └─788 /usr/lib/globular/bin/ai_executor_server
+
+Aug 23 18:47:05 node-1 ai_executor_server[788]: {"level":"warn","ts":"2026-08-23T18:47:05.843084Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002fbc20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 18:47:05 node-1 ai_executor_server[788]: {"level":"info","ts":"2026-08-23T18:47:05.843144Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 18:47:07 node-1 ai_executor_server[788]: {"level":"warn","ts":"2026-08-23T18:47:07.833853Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004b0b40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 18:47:07 node-1 ai_executor_server[788]: {"level":"info","ts":"2026-08-23T18:47:07.833921Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 18:47:08 node-1 ai_executor_server[788]: {"level":"warn","ts":"2026-08-23T18:47:08.651393Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004b12c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = etcdserver: leader changed"}
+Aug 23 18:47:17 node-1 ai_executor_server[788]: 2026/08/23 18:47:17 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 23 18:49:46 node-1 ai_executor_server[788]: time=2026-08-23T18:49:46.218Z level=INFO msg="processing incident" incident_id=69201cff-9f23-11f1-b191-02420a0a000b rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=3
+Aug 23 18:49:46 node-1 ai_executor_server[788]: time=2026-08-23T18:49:46.408Z level=INFO msg="diagnosis complete" incident_id=69201cff-9f23-11f1-b191-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 23 18:49:46 node-1 ai_executor_server[788]: time=2026-08-23T18:49:46.408Z level=INFO msg="INCIDENT RESOLVED" incident_id=69201cff-9f23-11f1-b191-02420a0a000b summary="doctor-finding triggered by cluster.finding.created (3 events in batch)" root_cause=unknown_anomaly
+Aug 23 18:49:46 node-1 ai_executor_server[788]: time=2026-08-23T18:49:46.417Z level=WARN msg="behavioral feed signal record failed" incident=69201cff-9f23-11f1-b191-02420a0a000b err="rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused"

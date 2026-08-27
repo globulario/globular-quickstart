@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-27T04:16:00.175410Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/security/authz-scope-unavailable.yaml",
+  "scenario": "authz-scope-unavailable",
+  "suite": "security",
+  "source_revision": "661b8e66966476e1055ec07b50891dc3d3818e5b",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify the cluster's behaviour when the RBAC service \u2014 and therefore the\nresource-info lookup that scopes authorization \u2014 is unavailable.\n\nWHY THIS EXISTS\n\nUntil 2026-08-14 the gRPC interceptor handled a failed resource-info lookup by\nlogging a warning, substituting an empty resource-info slice, and CONTINUING\ninto authorization:\n\n    resource lookup fails -> warning -> resources = [] -> action check runs\n                          -> request may proceed WITHOUT resource scope\n\nThe action-level permission check still ran, so this was never a total bypass.\nWhat was silently dropped was the per-resource binding: a caller was evaluated\nas though the method touched no resources at all, precisely when authorization\ndata was least trustworthy (RBAC restarting, slow, or partitioned).\n\nCommit 01bc3e9c changed it to deny:\n\n    resource lookup fails -> authorization scope unknown -> DENY\n\nThat is the correct security direction, and it creates a specific operational\nrisk worth testing rather than assuming: a latent RBAC reliability problem that\nused to be invisible now becomes visible as denied RPCs. The interceptor is\nreached through the shared globular_service lifecycle by most services, so this\nis a platform-wide semantic change, not a single-service one.\n\nWHAT THIS SCENARIO CAN AND CANNOT ASSERT \u2014 read before trusting a green run\n\nCAN:\n  - the cluster survives RBAC being unavailable without cascading failure\n  - RBAC re-registers and the cluster returns to healthy afterwards\n  - no ERROR-severity doctor findings persist once RBAC is back\n  - service logs are collected so the denial signature can be inspected\n\nCANNOT (harness limitation, not a design choice):\n  - assert an allow/deny VERDICT. The authz.check probe currently proves only\n    that the authz layer is reachable \u2014 smoke/authz-basic states this plainly:\n    \"proves the authz infrastructure is present, not that it makes the right\n    decisions\". Asserting a verdict needs the gRPC-level ValidateAccess check\n    the security suite has declared as future work.\n\nUntil that exists, the canary predicate below must be checked BY A HUMAN in\nthe collected logs. Write it down here so the check is not reinvented:\n\n    expected during normal operation:   no occurrences\n    expected while RBAC is down:        resource-info lookup failed for <method>\n                                        (authorization scope unknown)\n\nZero unexpected occurrences of that signature during NORMAL operation is the\nstrong evidence. General cluster health staying green is the weak evidence \u2014\nhealth can stay green while scoped authorization quietly denies a minority of\ncalls.\n\nTHE ASSERTION THAT MATTERS MOST IS THE NEGATIVE ONE\n\nAn unmapped method must still pass through. getActionResourceInfos converts a\n\"not found\" into an empty result with a NIL error, so only genuine failures\nreach the deny path. If that classification is ever removed, denying on error\nwould start rejecting every unmapped method and take the platform down. The\nunit-level guard for this lives in\nservices/golang/interceptors/resource_scope_failclosed_test.go; this scenario\nis the cluster-level companion, and it is the reason the fix is safe to ship\nat all.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-27T04:16:20.632659Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

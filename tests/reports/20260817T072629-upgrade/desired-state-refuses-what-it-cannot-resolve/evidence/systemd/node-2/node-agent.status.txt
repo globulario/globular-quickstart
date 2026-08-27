@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 07:26:01 UTC; 1min 34s ago
+    Process: 167 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 194 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 205 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 28.8M (peak: 37.0M)
+        CPU: 31.255s
+     CGroup: /system.slice/docker-b984d7a1d8b9cce6ae32410395547b52d24763e7f6151f83e88c57e12ee42ffa.scope/system.slice/globular-node-agent.service
+             └─205 /usr/lib/globular/bin/node_agent_server
+
+Aug 17 07:26:46 node-2 node_agent_server[205]: 2026/08/17 07:26:46 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 17 07:26:55 node-2 node_agent_server[205]: 2026/08/17 07:26:55 nodeagent: reporting 43 installed services (hash=f84140a1cf74e6a242905b6eca4e4a235fc3c91f9880518cd0c65acf4e6bed02, sample=[node-exporter envoy search persistence ai-executor])
+Aug 17 07:26:55 node-2 node_agent_server[205]: 2026/08/17 07:26:55 node heartbeat failed (state=degraded): TLS probe to 10.10.0.12:443 (ServerName=10.10.0.12): dial tcp 10.10.0.12:443: connect: connection refused
+Aug 17 07:27:01 node-2 node_agent_server[205]: 2026/08/17 07:27:01 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Aug 17 07:27:15 node-2 node_agent_server[205]: 2026/08/17 07:27:15 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 17 07:27:15 node-2 node_agent_server[205]: 2026/08/17 07:27:15 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Aug 17 07:27:16 node-2 node_agent_server[205]: 2026/08/17 07:27:16 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 17 07:27:19 node-2 node_agent_server[205]: 2026/08/17 07:27:19 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 17 07:27:27 node-2 node_agent_server[205]: 2026/08/17 07:27:27 nodeagent: reporting 43 installed services (hash=f84140a1cf74e6a242905b6eca4e4a235fc3c91f9880518cd0c65acf4e6bed02, sample=[restic minio rbac mc prometheus])
+Aug 17 07:27:31 node-2 node_agent_server[205]: 2026/08/17 07:27:31 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb

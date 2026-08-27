@@ -1,0 +1,20 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:54:13 UTC; 58min ago
+   Main PID: 23700 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 30.4M (peak: 38.1M)
+        CPU: 7.587s
+     CGroup: /system.slice/docker-5d15dbcb588f4faf87874f91ec9ae53b5875b1b57ddf375544f5d8f24c40a261.scope/system.slice/globular-ai-executor.service
+             └─23700 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 21:52:36 node-1 ai_executor_server[23700]: time=2026-07-31T21:52:36.097Z level=INFO msg="processing incident" incident_id=242ec0da-8d2a-11f1-bbad-02420a0a000b rule_id=service-crash tier=1 trigger=service.exited batch_size=3
+Jul 31 21:52:36 node-1 ai_executor_server[23700]: time=2026-07-31T21:52:36.194Z level=INFO msg="diagnosis complete" incident_id=242ec0da-8d2a-11f1-bbad-02420a0a000b root_cause="service_crash: globular-scylla-manager.service" confidence=0.6000000238418579 proposed_action=restart_service:globular-scylla-manager.service job_state=JOB_DIAGNOSED
+Jul 31 21:52:36 node-1 ai_executor_server[23700]: time=2026-07-31T21:52:36.194Z level=INFO msg="executing remediation" incident=242ec0da-8d2a-11f1-bbad-02420a0a000b action_type=ACTION_RESTART_SERVICE target=restart_service:globular-scylla-manager.service
+Jul 31 21:52:36 node-1 ai_executor_server[23700]: time=2026-07-31T21:52:36.208Z level=INFO msg="restart_service: request published" target=restart_service:globular-scylla-manager.service
+Jul 31 21:52:38 node-1 ai_executor_server[23700]: {"level":"warn","ts":"2026-07-31T21:52:38.195452Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002f6960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:38 node-1 ai_executor_server[23700]: time=2026-07-31T21:52:38.195Z level=WARN msg="job_store: persist failed" incident_id=242ec0da-8d2a-11f1-bbad-02420a0a000b err="context deadline exceeded"
+Jul 31 21:52:39 node-1 ai_executor_server[23700]: time=2026-07-31T21:52:39.209Z level=ERROR msg="remediation failed" incident=242ec0da-8d2a-11f1-bbad-02420a0a000b action_type=ACTION_RESTART_SERVICE err="verification failed: inconclusive: restart of restart_service:globular-scylla-manager.service dispatched via event bus; confirm via node-agent or cluster doctor"
+Jul 31 21:52:39 node-1 ai_executor_server[23700]: time=2026-07-31T21:52:39.209Z level=ERROR msg="REMEDIATION FAILED" incident_id=242ec0da-8d2a-11f1-bbad-02420a0a000b summary="service-crash triggered by service.exited on scylla-manager (3 events in batch)" proposed_action=restart_service:globular-scylla-manager.service
+Jul 31 21:52:39 node-1 ai_executor_server[23700]: 2026/07/31 21:52:39 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=3142 baseline_ms=20 window=28 new_window=25
+Jul 31 21:52:39 node-1 ai_executor_server[23700]: time=2026-07-31T21:52:39.243Z level=WARN msg="behavioral feed action check failed" incident=242ec0da-8d2a-11f1-bbad-02420a0a000b action=restart_service err="rpc error: code = Internal desc = BehavioralMemoryService.CheckAction: check action: list principles by condition: Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"

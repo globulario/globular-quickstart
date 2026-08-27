@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 19:40:27 UTC; 25min ago
+    Process: 572 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 606 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 626 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 706 (rbac_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 225.0M (peak: 226.0M)
+        CPU: 1.962s
+     CGroup: /system.slice/docker-ac702e6376ce15191244fb9c8e5b39e6ea04c7946de9a760ec53b393b742ec1e.scope/system.slice/globular-rbac.service
+             └─706 /usr/lib/globular/bin/rbac_server
+
+Aug 27 20:06:18 node-5 rbac_server[706]: 2026/08/27 20:06:18 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 27 20:06:18 node-5 rbac_server[706]: 2026/08/27 20:06:18 error: failed to connect to "[HostInfo hostname=\"10.10.0.13\" connectAddress=\"10.10.0.13\" peer=\"10.10.0.13\" rpc_address=\"10.10.0.13\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.13\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"d1f77ae8-7d85-4e59-849c-c89801a0628c\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: tls: first record does not look like a TLS handshake
+Aug 27 20:06:19 node-5 rbac_server[706]: 2026/08/27 20:06:19 INFO addResourceOwner call path=/users/sa resourceType=file subject=sa subjectType=ACCOUNT
+Aug 27 20:06:19 node-5 rbac_server[706]: 2026/08/27 20:06:19 WARN no path found  /users/sa The specified key does not exist.
+Aug 27 20:06:19 node-5 rbac_server[706]: 2026/08/27 20:06:19 WARN fail to remove key  /users/sa :  Entry not found
+Aug 27 20:06:19 node-5 rbac_server[706]: 2026/08/27 20:06:19 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 27 20:06:19 node-5 rbac_server[706]: 2026/08/27 20:06:19 INFO acc: warmup complete baseline_rtt_ms=20 samples=200 elapsed=25m50s
+Aug 27 20:06:19 node-5 rbac_server[706]: 2026/08/27 20:06:19 INFO acc: AIMD decrease method=/rbac.RbacService/AddResourceOwner rtt_ms=238 baseline_ms=20 window=100 new_window=90
+Aug 27 20:06:19 node-5 rbac_server[706]: 2026/08/27 20:06:19 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 27 20:06:19 node-5 rbac_server[706]: 2026/08/27 20:06:19 INFO rbac: flushed permission cache on cross-instance RBAC change

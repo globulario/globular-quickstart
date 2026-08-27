@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:52:32 UTC; 1min 4s ago
+    Process: 9341 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 9354 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 9364 (ai_executor_ser)
+      Tasks: 15 (limit: 8641)
+     Memory: 25.8M (peak: 26.8M)
+        CPU: 702ms
+     CGroup: /system.slice/docker-b8fa6aca9bb82e631ce89b654ed458dabe59ec9fe67bf982b77e3cf43dab10a6.scope/system.slice/globular-ai-executor.service
+             └─9364 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 23:52:39 node-5 ai_executor_server[9364]: time=2026-07-31T23:52:39.767Z level=INFO msg="job_store: loaded jobs from etcd" count=79
+Jul 31 23:52:39 node-5 ai_executor_server[9364]: 2026/07/31 23:52:39 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Jul 31 23:53:00 node-5 ai_executor_server[9364]: time=2026-07-31T23:53:00.820Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.12]"
+Jul 31 23:53:09 node-5 ai_executor_server[9364]: time=2026-07-31T23:53:09.763Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Jul 31 23:53:09 node-5 ai_executor_server[9364]: time=2026-07-31T23:53:09.775Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10010
+Jul 31 23:53:09 node-5 ai_executor_server[9364]: time=2026-07-31T23:53:09.791Z level=INFO msg="peer: connected" node=node-4 endpoint=10.10.0.14:10010
+Jul 31 23:53:16 node-5 ai_executor_server[9364]: time=2026-07-31T23:53:16.059Z level=INFO msg="processing incident" incident_id=ff80f4ef-8d3a-11f1-9718-02420a0a000f rule_id=workflow-run-failed tier=0 trigger=workflow.run.failed batch_size=51
+Jul 31 23:53:16 node-5 ai_executor_server[9364]: time=2026-07-31T23:53:16.153Z level=INFO msg="diagnosis complete" incident_id=ff80f4ef-8d3a-11f1-9718-02420a0a000f root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Jul 31 23:53:16 node-5 ai_executor_server[9364]: time=2026-07-31T23:53:16.153Z level=INFO msg="INCIDENT RESOLVED" incident_id=ff80f4ef-8d3a-11f1-9718-02420a0a000f summary="workflow-run-failed triggered by workflow.run.failed (51 events in batch)" root_cause=unknown_anomaly
+Jul 31 23:53:16 node-5 ai_executor_server[9364]: time=2026-07-31T23:53:16.155Z level=WARN msg="behavioral feed signal record failed" incident=ff80f4ef-8d3a-11f1-9718-02420a0a000f err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused\""

@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 11:02:06 UTC; 2min 34s ago
+    Process: 3510 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 3513 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 3516 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3523 (resource_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 19.4M (peak: 23.7M)
+        CPU: 470ms
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-resource.service
+             └─3523 /usr/lib/globular/bin/resource_server
+
+Aug 18 11:04:26 node-2 resource_server[3523]: {"level":"warn","ts":"2026-08-18T11:04:26.600196Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00013cf00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:04:26 node-2 resource_server[3523]: {"level":"warn","ts":"2026-08-18T11:04:26.705017Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00013cf00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:04:26 node-2 resource_server[3523]: {"level":"info","ts":"2026-08-18T11:04:26.705074Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 18 11:04:28 node-2 resource_server[3523]: {"level":"warn","ts":"2026-08-18T11:04:28.59605Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000a923c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:04:28 node-2 resource_server[3523]: {"level":"info","ts":"2026-08-18T11:04:28.59611Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 18 11:04:30 node-2 resource_server[3523]: {"level":"warn","ts":"2026-08-18T11:04:30.601653Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00013cf00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:04:31 node-2 resource_server[3523]: {"level":"warn","ts":"2026-08-18T11:04:31.600519Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00013cf00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:04:31 node-2 resource_server[3523]: 2026/08/18 11:04:31 ERROR GetClient: constructor returned error function=NewEventService_Client address="" service=event.EventService err="InitClient: no address provided (id=event.EventService)"
+Aug 18 11:04:32 node-2 resource_server[3523]: 2026/08/18 11:04:32 INFO putRuntimeRunning succeeded after retries service=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 attempts=2
+Aug 18 11:04:35 node-2 resource_server[3523]: 2026/08/18 11:04:35 WARN port/proxy change detected in desired; restart required to take effect service=resource.ResourceService id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 old_port=10013 new_port=10013 old_proxy=43049 new_proxy=10011

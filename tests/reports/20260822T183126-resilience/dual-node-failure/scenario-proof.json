@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-22T18:34:02.300498Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/resilience/dual-node-failure.yaml",
+  "scenario": "dual-node-failure",
+  "suite": "resilience",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify Globular's response to simultaneous failure of two founding nodes.\n\nThis test stops node-4 and node-5 (worker nodes in the 5-node quickstart cluster).\nIn a production 3-node cluster, losing 2 of 3 founding nodes would risk etcd quorum.\nIn the 5-node quickstart, nodes 1-3 run etcd; nodes 4-5 are workers.\n\nWe use this to verify:\n  1. The cluster controller detects both heartbeats going stale within 5 minutes\n  2. After 15 minutes of critical staleness for 2+ nodes, quorum_at_risk=true fires\n  3. The emergency backup alert key is written to etcd\n  4. The controller emits a quorum_loss_imminent event\n  5. Both nodes are fenced (partition_fenced_since set)\n  6. The cluster continues to function with the remaining 3 nodes\n  7. Both fences auto-clear when nodes are restored\n\nWhat Globular does automatically:\n  - Dual-node critical detection (\u22652 nodes stale >15min \u2192 quorum_at_risk=true)\n  - Writes /globular/cluster/alerts/quorum_loss to etcd (for Alertmanager to trigger backup)\n  - Emits controller.invariant.quorum_loss_imminent event\n  - Fences both nodes (release pipeline skips them)\n  - Auto-clears fences and emits node_partition_healed when heartbeats resume\n\nWhat requires operator action:\n  - Physical investigation of failed hardware\n  - Manual backup initiation if Alertmanager is not configured\n  - Full node recovery workflow if nodes cannot be restarted\n\nProduction note: In a 3-node cluster, losing 2 founding nodes means etcd loses\nquorum and the cluster goes read-only. This scenario uses worker nodes to test\nthe detection and alerting path without actually breaking etcd.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-22T18:53:32.553715Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:05:56 UTC; 1min 4s ago
+    Process: 2178 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 2181 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2185 (repository_serv)
+      Tasks: 18 (limit: 8641)
+     Memory: 25.6M (peak: 26.7M)
+        CPU: 400ms
+     CGroup: /system.slice/docker-c0adeb54c3e856286dee91181b663fe0332b2e8184e7e300172c1db2276e7b0b.scope/system.slice/globular-repository.service
+             └─2185 /usr/lib/globular/bin/repository_server
+
+Jul 31 20:06:10 node-4 repository_server[2185]: time=2026-07-31T20:06:10.058Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Jul 31 20:06:10 node-4 repository_server[2185]: time=2026-07-31T20:06:10.058Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Jul 31 20:06:10 node-4 repository_server[2185]: 2026/07/31 20:06:10 INFO metrics listening service=repository.PackageRepository addr=[::]:10001
+Jul 31 20:06:14 node-4 repository_server[2185]: 2026/07/31 20:06:14 INFO scylladb connected hosts=[10.10.0.11] keyspace=repository rf=1
+Jul 31 20:06:14 node-4 repository_server[2185]: time=2026-07-31T20:06:14.154Z level=INFO msg="scylladb late connect succeeded — service recovering"
+Jul 31 20:06:14 node-4 repository_server[2185]: time=2026-07-31T20:06:14.155Z level=INFO msg="repository metadata recovered — service is SERVING"
+Jul 31 20:06:15 node-4 repository_server[2185]: 2026/07/31 20:06:15 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10003 new_port=10006 old_proxy=10001 new_proxy=10001
+Jul 31 20:06:20 node-4 repository_server[2185]: 2026/07/31 20:06:20 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Jul 31 20:06:20 node-4 repository_server[2185]: 2026/07/31 20:06:20 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Jul 31 20:06:25 node-4 repository_server[2185]: time=2026-07-31T20:06:25.066Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=114 already_present=57 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"

@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:23:01 UTC; 3min 55s ago
+    Process: 224 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 241 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 258 (node_agent_serv)
+      Tasks: 25 (limit: 8641)
+     Memory: 25.7M (peak: 38.6M)
+        CPU: 2min 17.055s
+     CGroup: /system.slice/docker-fbd50be62ef8809d6e93c288dffbbd1077867e0e3f7fe69f97f12b29cb90c420.scope/system.slice/globular-node-agent.service
+             └─258 /usr/lib/globular/bin/node_agent_server
+
+Aug 22 19:26:08 node-1 node_agent_server[258]: 2026/08/22 19:26:08 event-publisher: service.started unit=globular-scylla-manager.service (activating/auto-restart → active/running)
+Aug 22 19:26:09 node-1 node_agent_server[258]: 2026/08/22 19:26:09 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 22 19:26:16 node-1 node_agent_server[258]: 2026/08/22 19:26:16 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 22 19:26:16 node-1 node_agent_server[258]: 2026/08/22 19:26:16 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 22 19:26:33 node-1 node_agent_server[258]: 2026/08/22 19:26:33 ingress: keepalived disabled on node c777633e-6d07-5713-9c4c-deb3317eee25
+Aug 22 19:26:35 node-1 node_agent_server[258]: 2026/08/22 19:26:35 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 22 19:26:35 node-1 node_agent_server[258]: 2026/08/22 19:26:35 nodeagent: reporting 47 installed services (hash=e40c6dbd0c1e459f7adb16dc2b2c8397fc7cec063884d56fd21b085d01136fd8, sample=[ai-router etcd etcdctl node-agent envoy])
+Aug 22 19:26:35 node-1 node_agent_server[258]: 2026/08/22 19:26:35 nodeagent: refreshed etcd endpoint list from /globular/system/etcd_endpoints (5 endpoint(s))
+Aug 22 19:26:35 node-1 node_agent_server[258]: 2026/08/22 19:26:35 node heartbeat failed (state=unreachable): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: connection refused
+Aug 22 19:26:36 node-1 node_agent_server[258]: 2026/08/22 19:26:36 probe-scylla-health: [mode=NORMAL bootstrap=100%]

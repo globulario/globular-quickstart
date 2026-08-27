@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-12 14:13:32 UTC; 10h ago
+    Process: 52 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 69 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 93 (event_server)
+      Tasks: 22 (limit: 8641)
+     Memory: 28.8M (peak: 34.5M)
+        CPU: 3min 32.882s
+     CGroup: /system.slice/docker-ba9fac652a3405e514249b33ab0346f14fc135e89814b53d3d37f427697e77f5.scope/system.slice/globular-event.service
+             └─93 /usr/lib/globular/bin/event_server
+
+Aug 13 00:09:11 node-5 event_server[93]: {"level":"warn","ts":"2026-08-13T00:09:11.859337Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00015af00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unknown desc = etcdserver: too many requests"}
+Aug 13 00:09:34 node-5 event_server[93]: time=2026-08-13T00:09:34.415Z level=INFO msg="OnEvent: registered" uuid=0d45eddd-e3ee-4193-a2af-0318b65a38bb
+Aug 13 00:09:34 node-5 event_server[93]: time=2026-08-13T00:09:34.415Z level=INFO msg="stream registered" uuid=0d45eddd-e3ee-4193-a2af-0318b65a38bb
+Aug 13 00:14:03 node-5 event_server[93]: time=2026-08-13T00:14:03.096Z level=WARN msg="keepalive send failed; will drop stream" uuid=0d45eddd-e3ee-4193-a2af-0318b65a38bb err="rpc error: code = Canceled desc = context canceled"
+Aug 13 00:14:03 node-5 event_server[93]: time=2026-08-13T00:14:03.096Z level=INFO msg="subscriber cleanup" uuid=0d45eddd-e3ee-4193-a2af-0318b65a38bb
+Aug 13 00:14:03 node-5 event_server[93]: time=2026-08-13T00:14:03.096Z level=INFO msg="OnEvent: stream ended" uuid=0d45eddd-e3ee-4193-a2af-0318b65a38bb
+Aug 13 00:18:24 node-5 event_server[93]: 2026/08/13 00:18:24 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (permissions store reconnect failed: scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: failed to resolve any of the provided hostnames)"
+Aug 13 00:29:26 node-5 event_server[93]: 2026/08/13 00:29:26 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (permissions store reconnect failed: scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: failed to resolve any of the provided hostnames)"
+Aug 13 00:30:56 node-5 event_server[93]: time=2026-08-13T00:30:56.178Z level=INFO msg="OnEvent: registered" uuid=6632011c-fde5-4ae8-83cf-47d263fb2423
+Aug 13 00:30:56 node-5 event_server[93]: time=2026-08-13T00:30:56.178Z level=INFO msg="stream registered" uuid=6632011c-fde5-4ae8-83cf-47d263fb2423

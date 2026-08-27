@@ -1,0 +1,24 @@
+● globular-etcd.service - Globular etcd
+     Loaded: loaded (/etc/systemd/system/globular-etcd.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 06:44:40 UTC; 43min ago
+    Process: 47 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 70 ExecStartPre=/usr/bin/chown globular:globular /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 85 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 105 ExecStartPre=/bin/sh -c chown globular:globular /var/lib/globular/pki/issued/services/service.key /var/lib/globular/pki/issued/services/service.crt 2>/dev/null || true (code=exited, status=0/SUCCESS)
+   Main PID: 137 (etcd)
+      Tasks: 33 (limit: 8641)
+     Memory: 487.0M (peak: 1.7G)
+        CPU: 4min 51.158s
+     CGroup: /system.slice/docker-68c9df6406a20dbcc998b92c745cb45d72fad4944896271f0621b9345590a548.scope/system.slice/globular-etcd.service
+             └─137 /usr/lib/globular/bin/etcd --config-file /var/lib/globular/config/etcd.yaml
+
+Aug 24 07:21:02 node-2 etcd[137]: {"level":"info","ts":"2026-08-24T07:21:02.494108Z","caller":"etcdserver/server.go:2470","msg":"saved snapshot","snapshot-index":313006}
+Aug 24 07:21:02 node-2 etcd[137]: {"level":"info","ts":"2026-08-24T07:21:02.494194Z","caller":"etcdserver/server.go:2500","msg":"compacted Raft logs","compact-index":308006}
+Aug 24 07:21:12 node-2 etcd[137]: {"level":"info","ts":"2026-08-24T07:21:12.320321Z","caller":"fileutil/purge.go:96","msg":"purged","path":"/var/lib/globular/etcd/member/wal/0000000000000001-0000000000028512.wal"}
+Aug 24 07:21:12 node-2 etcd[137]: {"level":"info","ts":"2026-08-24T07:21:12.324708Z","caller":"fileutil/purge.go:96","msg":"purged","path":"/var/lib/globular/etcd/member/wal/0000000000000002-0000000000035933.wal"}
+Aug 24 07:21:12 node-2 etcd[137]: {"level":"info","ts":"2026-08-24T07:21:12.34363Z","caller":"fileutil/purge.go:96","msg":"purged","path":"/var/lib/globular/etcd/member/wal/0000000000000003-0000000000035fab.wal"}
+Aug 24 07:24:09 node-2 etcd[137]: {"level":"warn","ts":"2026-08-24T07:24:09.834366Z","caller":"embed/config_logging.go:169","msg":"rejected connection","remote-addr":"10.10.0.11:33496","server-name":"","error":"EOF"}
+Aug 24 07:24:21 node-2 etcd[137]: {"level":"warn","ts":"2026-08-24T07:24:21.928129Z","caller":"embed/config_logging.go:169","msg":"rejected connection","remote-addr":"10.10.0.11:58178","server-name":"","error":"EOF"}
+Aug 24 07:24:49 node-2 etcd[137]: {"level":"info","ts":"2026-08-24T07:24:49.630411Z","caller":"traceutil/trace.go:171","msg":"trace[140750128] linearizableReadLoop","detail":"{readStateIndex:324735; appliedIndex:324736; }","duration":"131.080035ms","start":"2026-08-24T07:24:49.499314Z","end":"2026-08-24T07:24:49.630394Z","steps":["trace[140750128] 'read index received'  (duration: 131.073423ms)","trace[140750128] 'applied index is now lower than readState.Index'  (duration: 5.47µs)"],"step_count":2}
+Aug 24 07:24:49 node-2 etcd[137]: {"level":"warn","ts":"2026-08-24T07:24:49.630678Z","caller":"etcdserver/util.go:170","msg":"apply request took too long","took":"131.34075ms","expected-duration":"100ms","prefix":"read-only range ","request":"key:\"/globular/resources/ServiceDesiredVersion/\" range_end:\"/globular/resources/ServiceDesiredVersion0\" ","response":"range_response_count:24 size:5868"}
+Aug 24 07:24:49 node-2 etcd[137]: {"level":"info","ts":"2026-08-24T07:24:49.630721Z","caller":"traceutil/trace.go:171","msg":"trace[336371899] range","detail":"{range_begin:/globular/resources/ServiceDesiredVersion/; range_end:/globular/resources/ServiceDesiredVersion0; response_count:24; response_revision:39845; }","duration":"131.405262ms","start":"2026-08-24T07:24:49.499305Z","end":"2026-08-24T07:24:49.630711Z","steps":["trace[336371899] 'agreement among raft nodes before linearized reading'  (duration: 131.153855ms)"],"step_count":1}

@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 07:45:23 UTC; 15s ago
+    Process: 45 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 66 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 74 (event_server)
+      Tasks: 16 (limit: 8641)
+     Memory: 22.5M (peak: 27.7M)
+        CPU: 481ms
+     CGroup: /system.slice/docker-be1295d58506c7859fb4204b9005a34c087adb018b6a5ee54f2a654b5ce16432.scope/system.slice/globular-event.service
+             └─74 /usr/lib/globular/bin/event_server
+
+Aug 11 07:45:25 node-5 event_server[74]: time=2026-08-11T07:45:25.849Z level=INFO msg="scylla event bus connected" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=globular_events
+Aug 11 07:45:25 node-5 event_server[74]: time=2026-08-11T07:45:25.849Z level=INFO msg="event loop started" service=event.EventService id=ae220301-9352-393b-be03-90707f486149
+Aug 11 07:45:26 node-5 event_server[74]: time=2026-08-11T07:45:26.050Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=14
+Aug 11 07:45:26 node-5 event_server[74]: 2026/08/11 07:45:26 INFO metrics listening service=event.EventService addr=[::]:10051
+Aug 11 07:45:26 node-5 event_server[74]: time=2026-08-11T07:45:26.250Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=10
+Aug 11 07:45:26 node-5 event_server[74]: time=2026-08-11T07:45:26.450Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=6
+Aug 11 07:45:26 node-5 event_server[74]: time=2026-08-11T07:45:26.650Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=2
+Aug 11 07:45:36 node-5 event_server[74]: 2026/08/11 07:45:36 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.15:10001: connect: connection refused\""
+Aug 11 07:45:36 node-5 event_server[74]: 2026/08/11 07:45:36 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.15:10001: connect: connection refused\""
+Aug 11 07:45:36 node-5 event_server[74]: 2026/08/11 07:45:36 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.15:10001: connect: connection refused\""

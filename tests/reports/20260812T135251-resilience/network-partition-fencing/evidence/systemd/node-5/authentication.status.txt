@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-12 14:13:32 UTC; 17min ago
+    Process: 325 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 339 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 355 (authentication_)
+      Tasks: 20 (limit: 8641)
+     Memory: 19.1M (peak: 30.8M)
+        CPU: 605ms
+     CGroup: /system.slice/docker-ba9fac652a3405e514249b33ab0346f14fc135e89814b53d3d37f427697e77f5.scope/system.slice/globular-authentication.service
+             └─355 /usr/lib/globular/bin/authentication_server
+
+Aug 12 14:30:25 node-5 authentication_server[355]: {"level":"warn","ts":"2026-08-12T14:30:25.310219Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0005b2960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 12 14:30:25 node-5 authentication_server[355]: time=2026-08-12T14:30:25.310Z level=WARN msg="acc: config watcher stopped, will retry" err="context deadline exceeded" backoff=5m0s
+Aug 12 14:30:28 node-5 authentication_server[355]: {"level":"warn","ts":"2026-08-12T14:30:28.123276Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001201e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 12 14:30:28 node-5 authentication_server[355]: {"level":"info","ts":"2026-08-12T14:30:28.123359Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 12 14:30:37 node-5 authentication_server[355]: {"level":"warn","ts":"2026-08-12T14:30:37.4082Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001201e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 12 14:30:41 node-5 authentication_server[355]: {"level":"warn","ts":"2026-08-12T14:30:41.411192Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001201e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 12 14:30:45 node-5 authentication_server[355]: {"level":"warn","ts":"2026-08-12T14:30:45.413195Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001201e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 12 14:30:47 node-5 authentication_server[355]: time=2026-08-12T14:30:47.659Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-5.globular.internal:443
+Aug 12 14:30:47 node-5 authentication_server[355]: time=2026-08-12T14:30:47.659Z level=INFO msg="mesh: gRPC connection established" target=node-5.globular.internal:443
+Aug 12 14:30:47 node-5 authentication_server[355]: time=2026-08-12T14:30:47.666Z level=WARN msg="port/proxy change detected in desired; restart required to take effect" service=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f old_port=10002 new_port=10002 old_proxy=40667 new_proxy=10001

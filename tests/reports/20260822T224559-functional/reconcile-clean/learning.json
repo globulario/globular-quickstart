@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-22T22:55:28.272640Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "reconcile-clean",
+  "suite": "functional",
+  "result": "PASS",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "The controller's reconcile loop must actually converge, not merely run.\n\nWHY THIS EXISTS\n\nOn 2026-07-31 the cluster reported healthy by every existing probe \u2014 five\nnodes heartbeating, services registered, etcd quorate \u2014 while the reconcile\nloop failed on every single pass and converged nothing. `cluster.health`\nsaid \"healthy\" the whole time. Nothing in the suite contradicted it, so a\n48-minute run produced 18 failures whose shared root cause was invisible.\n\nA liveness signal is not a convergence signal. This scenario asserts the\ndifference.\n\nWHAT IT CATCHES\n\n  - workflow definition \"cluster.reconcile\" not found\n    (Day-0 did not deploy /var/lib/globular/workflows \u2014 the whole 2026-07-31\n    cascade started here)\n  - reconcile circuit breaker stuck OPEN\n  - intent resolution failed: unknown profile: \"ai\"\n    (cluster_controller/handlers_status.go derives profiles[\"ai\"] from\n    installed AI packages, but component_catalog/profilemap.go defines only\n    compute/control-plane/core/database/dns/gateway/media-server/scylla/\n    storage \u2014 so the node's intent never resolves)\n  - INVARIANT VIOLATION: MinioPoolNodes[N] is not a valid IP\n    (join flow writing hostnames where the contract requires IPs)\n\nWHAT IT DELIBERATELY IGNORES\n\n\"handled by release pipeline workflow\" and \"materialize-infra: skipping \u2026\"\nare normal delegation, not errors.\n\nNOTE ON TIMING: bootstrap legitimately logs transient reconcile failures\nwhile services are still coming up. The settle wait below exists so this\nmeasures steady state, not Day-0 noise.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

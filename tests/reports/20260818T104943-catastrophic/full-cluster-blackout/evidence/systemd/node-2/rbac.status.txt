@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:54:18 UTC; 2min 24s ago
+    Process: 495 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 527 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 546 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 629 (rbac_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 100.7M (peak: 100.8M)
+        CPU: 563ms
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-rbac.service
+             └─629 /usr/lib/globular/bin/rbac_server
+
+Aug 18 10:56:35 node-2 rbac_server[629]: time=2026-08-18T10:56:35.955Z level=INFO msg="dependency health watchdog started" deps=1
+Aug 18 10:56:35 node-2 rbac_server[629]: time=2026-08-18T10:56:35.955Z level=INFO msg="rbac permission-cache invalidation watcher started"
+Aug 18 10:56:35 node-2 rbac_server[629]: time=2026-08-18T10:56:35.967Z level=INFO msg="rbac service ready" id=8b384839-8473-3b00-9ccc-7cb36fe97836 version=1.2.312 port=10003 proxy=10001 protocol=grpc domain=globular.internal address=10.10.0.11:10003 startup_ms=1345
+Aug 18 10:56:35 node-2 rbac_server[629]: time=2026-08-18T10:56:35.967Z level=INFO msg="starting grpc server" port=10003
+Aug 18 10:56:36 node-2 rbac_server[629]: 2026/08/18 10:56:36 INFO metrics: proxy port conflict, using free port service=rbac.RbacService wanted=10001 actual=45289
+Aug 18 10:56:36 node-2 rbac_server[629]: 2026/08/18 10:56:36 INFO metrics listening service=rbac.RbacService addr=[::]:45289
+Aug 18 10:56:36 node-2 rbac_server[629]: 2026/08/18 10:56:36 ERROR rpc error: code = Internal desc = {"ErrorMsg":"Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193","FunctionName":"main.(*server).GetRoleBinding"} domain=10.10.0.12:8443 application=rbac.RbacService user="" method=/rbac.RbacService/GetRoleBinding function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632
+Aug 18 10:56:36 node-2 rbac_server[629]: 2026/08/18 10:56:36 INFO log forwarding enabled address=10.10.0.11:10100
+Aug 18 10:56:39 node-2 rbac_server[629]: 2026/08/18 10:56:39 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10003 new_port=10003 old_proxy=45289 new_proxy=10001
+Aug 18 10:56:39 node-2 rbac_server[629]: 2026/08/18 10:56:39 INFO rbac: flushed permission cache on cross-instance RBAC change

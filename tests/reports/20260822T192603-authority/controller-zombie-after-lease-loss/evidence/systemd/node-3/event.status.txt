@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: deactivating (stop-sigterm) since Sat 2026-08-22 19:26:08 UTC; 6s ago
+    Process: 48 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 72 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 91 (event_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 23.3M (peak: 28.8M)
+        CPU: 511ms
+     CGroup: /system.slice/docker-8e2076f4c40178dcdd9bcfeee512d2325132b3b746cdcd1fa2bc1708e47cfdb0.scope/system.slice/globular-event.service
+             └─91 /usr/lib/globular/bin/event_server
+
+Aug 22 19:26:03 node-3 event_server[91]: time=2026-08-22T19:26:03.316Z level=WARN msg="poll events error" bucket=2026-08-22T19:18 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 22 19:26:03 node-3 event_server[91]: time=2026-08-22T19:26:03.323Z level=WARN msg="poll events error" bucket=2026-08-22T19:20 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 22 19:26:03 node-3 event_server[91]: time=2026-08-22T19:26:03.514Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=1
+Aug 22 19:26:05 node-3 event_server[91]: time=2026-08-22T19:26:05.859Z level=INFO msg="Subscribe: ok" channel=index_file_event uuid=ea6889c9-abba-44b1-98dc-fb3ca11c3b1d
+Aug 22 19:26:05 node-3 event_server[91]: time=2026-08-22T19:26:05.859Z level=INFO msg=subscribed channel=index_file_event uuid=ea6889c9-abba-44b1-98dc-fb3ca11c3b1d subscribers=1
+Aug 22 19:26:05 node-3 event_server[91]: time=2026-08-22T19:26:05.864Z level=INFO msg="OnEvent: registered" uuid=ea6889c9-abba-44b1-98dc-fb3ca11c3b1d
+Aug 22 19:26:05 node-3 event_server[91]: time=2026-08-22T19:26:05.864Z level=INFO msg="stream registered" uuid=ea6889c9-abba-44b1-98dc-fb3ca11c3b1d
+Aug 22 19:26:05 node-3 event_server[91]: time=2026-08-22T19:26:05.869Z level=INFO msg="Subscribe: ok" channel=create_account_evt uuid=ea6889c9-abba-44b1-98dc-fb3ca11c3b1d
+Aug 22 19:26:05 node-3 event_server[91]: time=2026-08-22T19:26:05.870Z level=INFO msg=subscribed channel=create_account_evt uuid=ea6889c9-abba-44b1-98dc-fb3ca11c3b1d subscribers=1
+Aug 22 19:26:08 node-3 systemd[1]: Stopping globular-event.service - Globular event...

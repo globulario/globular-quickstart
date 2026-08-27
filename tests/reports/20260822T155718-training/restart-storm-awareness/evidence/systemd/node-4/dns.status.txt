@@ -1,0 +1,23 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 15:58:16 UTC; 14s ago
+    Process: 310 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 335 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 349 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 372 (dns_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 22.8M (peak: 27.4M)
+        CPU: 653ms
+     CGroup: /system.slice/docker-ece11a49be9718b76dfed82fbd4875cd4d94d066b24af0601dfafcf5a10fd300.scope/system.slice/globular-dns.service
+             └─372 /usr/lib/globular/bin/dns_server
+
+Aug 22 15:58:18 node-4 dns_server[372]: time=2026-08-22T15:58:18.950Z level=INFO msg="A record set" domain=dns.globular.internal. uuid=4f54ab5e-8681-370f-8d0f-ea0043a85335 ipv4=10.10.0.11 ttl=60
+Aug 22 15:58:18 node-4 dns_server[372]: 2026/08/22 15:58:18 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=dns.record.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 22 15:58:18 node-4 dns_server[372]: 2026/08/22 15:58:18 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=dns.record.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 22 15:58:18 node-4 dns_server[372]: time=2026-08-22T15:58:18.967Z level=INFO msg="A record set" domain=dns.globular.internal. uuid=4f54ab5e-8681-370f-8d0f-ea0043a85335 ipv4=10.10.0.12 ttl=60
+Aug 22 15:58:18 node-4 dns_server[372]: 2026/08/22 15:58:18 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=dns.record.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 22 15:58:18 node-4 dns_server[372]: time=2026-08-22T15:58:18.981Z level=INFO msg="SRV set" id=_cluster-controller._tcp.globular.internal. uuid=1eb4e1d5-3fa2-3cf8-936e-44ea7b645a88 target=node-3.globular.internal. port=12000 priority=10 weight=100 ttl=60
+Aug 22 15:58:18 node-4 dns_server[372]: 2026/08/22 15:58:18 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=dns.record.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 22 15:58:18 node-4 dns_server[372]: time=2026-08-22T15:58:18.994Z level=INFO msg="SRV set" id=_cluster-controller._tcp.globular.internal. uuid=1eb4e1d5-3fa2-3cf8-936e-44ea7b645a88 target=node-1.globular.internal. port=12000 priority=10 weight=100 ttl=60
+Aug 22 15:58:18 node-4 dns_server[372]: 2026/08/22 15:58:18 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=dns.record.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 22 15:58:19 node-4 dns_server[372]: time=2026-08-22T15:58:19.007Z level=INFO msg="SRV set" id=_cluster-controller._tcp.globular.internal. uuid=1eb4e1d5-3fa2-3cf8-936e-44ea7b645a88 target=node-2.globular.internal. port=12000 priority=10 weight=100 ttl=60

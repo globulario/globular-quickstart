@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 18:49:32 UTC; 17min ago
+    Process: 25753 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 25757 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 25760 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 25766 (workflow_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 24.8M (peak: 28.2M)
+        CPU: 4.519s
+     CGroup: /system.slice/docker-3fe64a145aed20b37790639a250b6edbc6d1cb2334bc4e727b5e12e406bd9bab.scope/system.slice/globular-workflow.service
+             └─25766 /usr/lib/globular/bin/workflow_server
+
+Aug 10 19:06:18 node-2 workflow_server[25766]: 2026/08/10 19:06:18 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 10 19:06:18 node-2 workflow_server[25766]: 2026/08/10 19:06:18 workflow: step mark_applying skipped (condition not met)
+Aug 10 19:06:18 node-2 workflow_server[25766]: 2026/08/10 19:06:18 workflow: step short_circuit_if_no_targets SUCCEEDED (attempt 1)
+Aug 10 19:06:18 node-2 workflow_server[25766]: 2026/08/10 19:06:18 workflow: step apply_per_node skipped (condition not met)
+Aug 10 19:06:18 node-2 workflow_server[25766]: 2026/08/10 19:06:18 workflow: step aggregate_outcome skipped (condition not met)
+Aug 10 19:06:18 node-2 workflow_server[25766]: 2026/08/10 19:06:18 workflow: step finalize_release skipped (condition not met)
+Aug 10 19:06:18 node-2 workflow_server[25766]: 2026/08/10 19:06:18 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 10 19:06:18 node-2 workflow_server[25766]: time=2026-08-10T19:06:18.231Z level=INFO msg="executor: engine.Execute completed" run_id=ServiceRelease/core@globular.io/repository
+Aug 10 19:06:18 node-2 workflow_server[25766]: time=2026-08-10T19:06:18.250Z level=INFO msg="executor: workflow finished" workflow=release.apply.package run_id=ServiceRelease/core@globular.io/repository status=RUN_STATUS_SUCCEEDED
+Aug 10 19:06:31 node-2 workflow_server[25766]: 2026/08/10 19:06:31 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=97 baseline_ms=20 window=97 new_window=87

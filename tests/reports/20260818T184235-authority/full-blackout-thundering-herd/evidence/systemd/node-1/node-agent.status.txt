@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:24 UTC; 41s ago
+    Process: 177 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 195 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 213 (node_agent_serv)
+      Tasks: 19 (limit: 8641)
+     Memory: 43.0M (peak: 1.2G)
+        CPU: 16.513s
+     CGroup: /system.slice/docker-9a67632422a5502a1d64625e1932bb8e76fae6f90cdee0187c70d84ee68d0231.scope/system.slice/globular-node-agent.service
+             └─213 /usr/lib/globular/bin/node_agent_server
+
+Aug 18 19:12:59 node-1 node_agent_server[213]: 2026/08/18 19:12:59 event-publisher: connected to event service
+Aug 18 19:12:59 node-1 node_agent_server[213]: 2026/08/18 19:12:59 ERROR InitClient: failed to fetch configuration id=event.EventService address=10.10.0.15:443 err="context deadline exceeded"
+Aug 18 19:12:59 node-1 node_agent_server[213]: 2026/08/18 19:12:59 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.15:443 service=event.EventService err="InitClient: failed to fetch configuration id=event.EventService from 10.10.0.15:443: context deadline exceeded"
+Aug 18 19:12:59 node-1 node_agent_server[213]: 2026/08/18 19:12:59 event-handler: event service unavailable, retrying in 10s: InitClient: failed to fetch configuration id=event.EventService from 10.10.0.15:443: context deadline exceeded
+Aug 18 19:13:01 node-1 node_agent_server[213]: 2026/08/18 19:13:01 behavioral observation: infra_probe skipped component=scylladb node=c777633e-6d07-5713-9c4c-deb3317eee25: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused"
+Aug 18 19:13:01 node-1 node_agent_server[213]: 2026/08/18 19:13:01 behavioral observation: infra_probe skipped component=etcd node=c777633e-6d07-5713-9c4c-deb3317eee25: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused"
+Aug 18 19:13:01 node-1 node_agent_server[213]: 2026/08/18 19:13:01 behavioral observation: infra_probe skipped component=minio node=c777633e-6d07-5713-9c4c-deb3317eee25: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused"
+Aug 18 19:13:01 node-1 node_agent_server[213]: 2026/08/18 19:13:01 behavioral observation: infra_probe skipped component=envoy node=c777633e-6d07-5713-9c4c-deb3317eee25: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused"
+Aug 18 19:13:03 node-1 node_agent_server[213]: 2026/08/18 19:13:03 join: v1 legacy path: controller unreachable: TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: connection refused — retry in 40s
+Aug 18 19:13:04 node-1 node_agent_server[213]: 2026/08/18 19:13:04 event-publisher: publish service.exited failed: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused" (will reconnect)

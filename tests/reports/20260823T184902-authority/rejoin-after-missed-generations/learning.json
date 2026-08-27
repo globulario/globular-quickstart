@@ -1,0 +1,55 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-23T19:04:52.108925Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "rejoin-after-missed-generations",
+  "suite": "authority",
+  "result": "FAIL",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "A node that missed several generations must converge FORWARD, and must never\nbe treated as evidence that its old generation should be restored.\n\nTHE FAULT. Stop a node. While it is down, advance the cluster through several\ndesired-state changes. Restart it.\n\n    node-5 down, holding a complete and internally consistent view of\n    generation N\n          \u2193\n    cluster advances: N \u2192 N+1 \u2192 N+2 \u2192 N+3\n          \u2193\n    node-5 returns, still coherent, still wrong\n\nWHY THIS IS NOT ORDINARY REJOIN. etcd-member-resync already covers a member\ncatching up on writes it missed, and compute-node-rejoin covers a node coming\nback. Both return a node to a cluster whose desired state it merely lags.\nThis returns a node holding an ALTERNATE HISTORY: locally complete, internally\nconsistent, and contradicted by the cluster.\n\nThe law under test is the one that makes local state safe to keep at all:\n\n    local persisted state is evidence of what happened,\n    never authority over what should happen.\n\nA node that returns with generation N must be read as an observer of the\ncurrent generation, not as a witness that N should be reconstructed. The\nfailure mode this hunts is a returning node whose stale local records win a\nmerge, or whose reappearance makes the controller re-derive an older desired\nstate from installed evidence.\n\nWHAT MUST HOLD. The returning node ends on the cluster's current generation,\nthe desired state written while it was away is unchanged, no drift storm\nfollows, and the cluster is healthy with every node accounted for.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "preconditions",
+        "id": "liveness_settled_before",
+        "probe_or_action": "state.liveness_freshness",
+        "result": {
+          "nodes": 5,
+          "max_age_s": 101,
+          "stale_nodes": 1,
+          "oldest": "c8a09d9e-3813-5357-ab58-93aa410f27fb"
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

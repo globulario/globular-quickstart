@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 17:31:06 UTC; 2min 17s ago
+    Process: 641 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 663 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 681 (ai_executor_ser)
+      Tasks: 18 (limit: 8641)
+     Memory: 29.9M (peak: 31.0M)
+        CPU: 803ms
+     CGroup: /system.slice/docker-69025280349b196b081d33f2dd6f3c546bf2bf86ec60e97ca9d44389bf4681a5.scope/system.slice/globular-ai-executor.service
+             └─681 /usr/lib/globular/bin/ai_executor_server
+
+Aug 23 17:31:38 node-2 ai_executor_server[681]: time=2026-08-23T17:31:38.130Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010
+Aug 23 17:32:05 node-2 ai_executor_server[681]: time=2026-08-23T17:32:05.622Z level=INFO msg="processing incident" incident_id=8f36b1db-9f18-11f1-a041-02420a0a000b rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=67
+Aug 23 17:32:05 node-2 ai_executor_server[681]: time=2026-08-23T17:32:05.680Z level=INFO msg="diagnosis complete" incident_id=8f36b1db-9f18-11f1-a041-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 23 17:32:05 node-2 ai_executor_server[681]: time=2026-08-23T17:32:05.680Z level=INFO msg="INCIDENT RESOLVED" incident_id=8f36b1db-9f18-11f1-a041-02420a0a000b summary="doctor-finding triggered by cluster.finding.created (67 events in batch)" root_cause=unknown_anomaly
+Aug 23 17:33:00 node-2 ai_executor_server[681]: time=2026-08-23T17:33:00.818Z level=INFO msg="processing incident" incident_id=b01da381-9f18-11f1-a044-02420a0a000b rule_id=auth-denial tier=0 trigger=alert.auth.denied batch_size=7
+Aug 23 17:33:00 node-2 ai_executor_server[681]: time=2026-08-23T17:33:00.843Z level=INFO msg="processing incident" incident_id=b021af68-9f18-11f1-88cc-02420a0a000d rule_id=auth-denial tier=0 trigger=alert.auth.denied batch_size=7
+Aug 23 17:33:00 node-2 ai_executor_server[681]: time=2026-08-23T17:33:00.884Z level=INFO msg="diagnosis complete" incident_id=b01da381-9f18-11f1-a044-02420a0a000b root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 23 17:33:00 node-2 ai_executor_server[681]: time=2026-08-23T17:33:00.884Z level=INFO msg="INCIDENT RESOLVED" incident_id=b01da381-9f18-11f1-a044-02420a0a000b summary="auth-denial triggered by alert.auth.denied on workflow.WorkflowService (7 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)"
+Aug 23 17:33:00 node-2 ai_executor_server[681]: time=2026-08-23T17:33:00.892Z level=INFO msg="diagnosis complete" incident_id=b021af68-9f18-11f1-88cc-02420a0a000d root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 23 17:33:00 node-2 ai_executor_server[681]: time=2026-08-23T17:33:00.892Z level=INFO msg="INCIDENT RESOLVED" incident_id=b021af68-9f18-11f1-88cc-02420a0a000d summary="auth-denial triggered by alert.auth.denied on workflow.WorkflowService (7 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)"

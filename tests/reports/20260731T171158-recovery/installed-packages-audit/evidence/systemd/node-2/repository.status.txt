@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 17:13:00 UTC; 39s ago
+    Process: 557 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 590 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 628 (repository_serv)
+      Tasks: 13 (limit: 8641)
+     Memory: 14.2M
+        CPU: 224ms
+     CGroup: /system.slice/docker-af2aadfb3c39485ee1072795441d42f00e2bc57a822f9ef3189ee70b8a240413.scope/system.slice/globular-repository.service
+             └─628 /usr/lib/globular/bin/repository_server
+
+Jul 31 17:13:00 node-2 repository_server[628]: 2026/07/31 17:13:00 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=38721
+Jul 31 17:13:00 node-2 repository_server[628]: 2026/07/31 17:13:00 INFO metrics listening service=repository.PackageRepository addr=[::]:38721
+Jul 31 17:13:01 node-2 repository_server[628]: 2026/07/31 17:13:01 ERROR GetClient: constructor returned error function=NewRbacService_Client address=node-2.globular.internal: service=rbac.RbacService err="InitClient: invalid control address \"node-2.globular.internal:\" (missing port)"
+Jul 31 17:13:01 node-2 repository_server[628]: 2026/07/31 17:13:01 WARN rbac fallback: RBAC client unavailable, using local-roles fallback (permissive) subject=node-1 method=/repository.PackageRepository/GetRepositoryStatus reason=client_construct_failed error="InitClient: invalid control address \"node-2.globular.internal:\" (missing port)"
+Jul 31 17:13:01 node-2 repository_server[628]: 2026/07/31 17:13:01 ERROR GetClient: constructor returned error function=NewRbacService_Client address=node-2.globular.internal: service=rbac.RbacService err="InitClient: invalid control address \"node-2.globular.internal:\" (missing port)"
+Jul 31 17:13:01 node-2 repository_server[628]: 2026/07/31 17:13:01 WARN rbac fallback: RBAC client unavailable, using local-roles fallback (permissive) subject=node-1 method=/repository.PackageRepository/ListRepositoryFindings reason=client_construct_failed error="InitClient: invalid control address \"node-2.globular.internal:\" (missing port)"
+Jul 31 17:13:01 node-2 repository_server[628]: 2026/07/31 17:13:01 ERROR GetClient: constructor returned error function=NewRbacService_Client address=node-2.globular.internal: service=rbac.RbacService err="InitClient: invalid control address \"node-2.globular.internal:\" (missing port)"
+Jul 31 17:13:01 node-2 repository_server[628]: 2026/07/31 17:13:01 WARN rbac fallback: RBAC client unavailable, using local-roles fallback (permissive) subject=node-1 method=repository.read reason=client_construct_failed error="InitClient: invalid control address \"node-2.globular.internal:\" (missing port)"
+Jul 31 17:13:01 node-2 repository_server[628]: 2026/07/31 17:13:01 ERROR GetClient: constructor returned error function=NewRbacService_Client address=node-2.globular.internal: service=rbac.RbacService err="InitClient: invalid control address \"node-2.globular.internal:\" (missing port)"
+Jul 31 17:13:01 node-2 repository_server[628]: 2026/07/31 17:13:01 WARN rbac fallback: RBAC client unavailable, using local-roles fallback (permissive) subject=sa method=repository.read reason=client_construct_failed error="InitClient: invalid control address \"node-2.globular.internal:\" (missing port)"

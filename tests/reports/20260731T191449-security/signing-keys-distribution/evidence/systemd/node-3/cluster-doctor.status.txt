@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 19:24:22 UTC; 7min ago
+    Process: 6692 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 6696 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 6698 (cluster_doctor_)
+      Tasks: 14 (limit: 8641)
+     Memory: 20.6M (peak: 25.9M)
+        CPU: 660ms
+     CGroup: /system.slice/docker-9491f541aeef78eb6b96ae7a9b032a5a25bad0e3a3056b4c1b7d5ef8fc87a820.scope/system.slice/globular-cluster-doctor.service
+             └─6698 /usr/lib/globular/bin/cluster_doctor_server
+
+Jul 31 19:24:22 node-3 systemd[1]: Started globular-cluster-doctor.service - Globular cluster_doctor.
+Jul 31 19:24:22 node-3 cluster_doctor_server[6698]: 2026/07/31 19:24:22 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Jul 31 19:24:22 node-3 cluster_doctor_server[6698]: 2026/07/31 19:24:22 INFO security: loaded cluster roles from external policy file roles=22
+Jul 31 19:24:42 node-3 cluster_doctor_server[6698]: 2026/07/31 19:24:42 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.15 base=/var/lib/globular/.config/globular/tls err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"
+Jul 31 19:24:42 node-3 cluster_doctor_server[6698]: time=2026-07-31T19:24:42.556Z level=WARN msg="event client init failed (finding events disabled)" err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"
+Jul 31 19:24:42 node-3 cluster_doctor_server[6698]: time=2026-07-31T19:24:42.556Z level=INFO msg="TLS enabled" cert=/var/lib/globular/pki/issued/services/service.crt key=/var/lib/globular/pki/issued/services/service.key ca=/var/lib/globular/pki/ca.crt
+Jul 31 19:24:42 node-3 cluster_doctor_server[6698]: time=2026-07-31T19:24:42.573Z level=INFO msg="metrics/pprof listening" addr=[::]:39927
+Jul 31 19:24:42 node-3 cluster_doctor_server[6698]: time=2026-07-31T19:24:42.577Z level=INFO msg="healer: background loop starting" mode=observe interval=1m0s max_actions=10
+Jul 31 19:24:42 node-3 cluster_doctor_server[6698]: time=2026-07-31T19:24:42.581Z level=INFO msg="doctor leader election: campaigning" candidate=doctor:node-3:6698:eb74469d-adb1-4054-9491-7dece7e32959
+Jul 31 19:24:42 node-3 cluster_doctor_server[6698]: time=2026-07-31T19:24:42.587Z level=INFO msg="cluster doctor ready" address=:12005 controller=10.10.0.11:443 version=1.2.288

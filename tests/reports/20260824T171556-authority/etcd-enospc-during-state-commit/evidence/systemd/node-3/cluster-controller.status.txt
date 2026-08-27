@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:22:08 UTC; 37min ago
+    Process: 7705 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 7709 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 7712 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 70.5M (peak: 77.1M)
+        CPU: 26.341s
+     CGroup: /system.slice/docker-6f38dd5868b32f8c73560c018d1b5b4fb18c03c1906b1b8cb7c5af00314a9196.scope/system.slice/globular-cluster-controller.service
+             └─7712 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 24 17:59:42 node-3 cluster_controller_server[7712]: 2026/08/24 17:59:42 node c777633e-6d07-5713-9c4c-deb3317eee25 marked unreachable: no contact for 5m11s
+Aug 24 17:59:42 node-3 cluster_controller_server[7712]: 2026/08/24 17:59:42 attempting recovery for node c777633e-6d07-5713-9c4c-deb3317eee25 (attempt 1/3)
+Aug 24 17:59:43 node-3 cluster_controller_server[7712]: 2026/08/24 17:59:43 buildPlanActions: unknown profile "media-server" — skipping (no managed units)
+Aug 24 17:59:43 node-3 cluster_controller_server[7712]: 2026/08/24 17:59:43 dispatchPlan: skipped (plan system removed) node=c777633e-6d07-5713-9c4c-deb3317eee25 op=1e445e32-a568-47a1-8bbb-5e7900b88124
+Aug 24 17:59:43 node-3 cluster_controller_server[7712]: 2026/08/24 17:59:43 recovery attempt for node c777633e-6d07-5713-9c4c-deb3317eee25 initiated successfully
+Aug 24 17:59:43 node-3 cluster_controller_server[7712]: 2026/08/24 17:59:43 attempting recovery for node c8a09d9e-3813-5357-ab58-93aa410f27fb (attempt 3/3)
+Aug 24 17:59:44 node-3 cluster_controller_server[7712]: 2026/08/24 17:59:44 dispatchPlan: skipped (plan system removed) node=c8a09d9e-3813-5357-ab58-93aa410f27fb op=aeb1b841-5bcc-48c9-b273-4b6b436e097c
+Aug 24 17:59:44 node-3 cluster_controller_server[7712]: 2026/08/24 17:59:44 recovery attempt for node c8a09d9e-3813-5357-ab58-93aa410f27fb initiated successfully
+Aug 24 17:59:45 node-3 cluster_controller_server[7712]: 2026/08/24 17:59:45 reconcile-workflow: skipping etcd stale-member prune (safety gate): node 35ac3821-6b90-52eb-a800-41130471770b last seen 30m5s ago
+Aug 24 17:59:46 node-3 cluster_controller_server[7712]: 2026/08/24 17:59:46 reconcile-workflow: advance_infra_joins completed for 5 nodes

@@ -1,0 +1,20 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:25:39 UTC; 1min 44s ago
+    Process: 1036 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 1039 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1047 (monitoring_serv)
+      Tasks: 14 (limit: 8641)
+     Memory: 25.0M (peak: 25.8M)
+        CPU: 327ms
+     CGroup: /system.slice/docker-9180d30e9d1ba804a7b09169efb4bbc01eb91329f628cb2e20c93a2f4151a900.scope/system.slice/globular-monitoring.service
+             └─1047 /usr/lib/globular/bin/monitoring_server
+
+Aug 01 01:25:39 node-4 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 01 01:25:39 node-4 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 01 01:25:39 node-4 monitoring_server[1047]: 2026/08/01 01:25:39 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 01 01:25:39 node-4 monitoring_server[1047]: 2026/08/01 01:25:39 INFO security: loaded cluster roles from external policy file roles=22
+Aug 01 01:25:39 node-4 monitoring_server[1047]: PortAllocator range: 10000 - 20000
+Aug 01 01:25:41 node-4 monitoring_server[1047]: 2026/08/01 01:25:41 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 01 01:25:41 node-4 monitoring_server[1047]: time=2026-08-01T01:25:41.661Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=1326
+Aug 01 01:25:41 node-4 monitoring_server[1047]: 2026/08/01 01:25:41 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020

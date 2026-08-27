@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:26:00 UTC; 28s ago
+    Process: 211 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 234 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 246 (cluster_doctor_)
+      Tasks: 13 (limit: 8641)
+     Memory: 21.8M (peak: 22.8M)
+        CPU: 282ms
+     CGroup: /system.slice/docker-8e2076f4c40178dcdd9bcfeee512d2325132b3b746cdcd1fa2bc1708e47cfdb0.scope/system.slice/globular-cluster-doctor.service
+             └─246 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 22 19:26:00 node-3 systemd[1]: Starting globular-cluster-doctor.service - Globular cluster_doctor...
+Aug 22 19:26:00 node-3 systemd[1]: Started globular-cluster-doctor.service - Globular cluster_doctor.
+Aug 22 19:26:00 node-3 cluster_doctor_server[246]: 2026/08/22 19:26:00 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 22 19:26:00 node-3 cluster_doctor_server[246]: 2026/08/22 19:26:00 INFO security: loaded cluster roles from external policy file roles=22
+Aug 22 19:26:00 node-3 cluster_doctor_server[246]: time=2026-08-22T19:26:00.780Z level=INFO msg="TLS enabled" cert=/var/lib/globular/pki/issued/services/service.crt key=/var/lib/globular/pki/issued/services/service.key ca=/var/lib/globular/pki/ca.crt
+Aug 22 19:26:01 node-3 cluster_doctor_server[246]: time=2026-08-22T19:26:01.080Z level=INFO msg="metrics/pprof listening" addr=[::]:43433
+Aug 22 19:26:01 node-3 cluster_doctor_server[246]: time=2026-08-22T19:26:01.085Z level=INFO msg="healer: background loop starting" mode=observe interval=1m0s max_actions=10
+Aug 22 19:26:01 node-3 cluster_doctor_server[246]: time=2026-08-22T19:26:01.086Z level=INFO msg="behavioral recorder: delivery health changed" health=no_delivery_attempted scope="node-local recorder; not a cluster health verdict" enqueued=0 persisted=0 retried=0 dropped=0 failed=0 queue_depth=0
+Aug 22 19:26:01 node-3 cluster_doctor_server[246]: time=2026-08-22T19:26:01.094Z level=INFO msg="doctor leader election: campaigning" candidate=doctor:node-3:246:a8c13645-3181-4fa6-a9b8-bfcb25098db3
+Aug 22 19:26:01 node-3 cluster_doctor_server[246]: time=2026-08-22T19:26:01.116Z level=INFO msg="cluster doctor ready" address=:12005 controller=10.10.0.13:443 version=1.2.325

@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 00:43:50 UTC; 43min ago
+    Process: 27927 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 27931 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 27934 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 32.2M (peak: 38.1M)
+        CPU: 5.822s
+     CGroup: /system.slice/docker-18b323bfa9beb153eb9d36bc94faef425c64f4b85468ea1b94a5f78650f213de.scope/system.slice/globular-ai-executor.service
+             └─27934 /usr/lib/globular/bin/ai_executor_server
+
+Aug 01 01:23:52 node-1 ai_executor_server[27934]: time=2026-08-01T01:23:52.067Z level=INFO msg="codex: no credentials found"
+Aug 01 01:24:08 node-1 ai_executor_server[27934]: 2026/08/01 01:24:08 WARN port/proxy change detected in desired; restart required to take effect service=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd old_port=10015 new_port=10010 old_proxy=10231 new_proxy=10231
+Aug 01 01:24:22 node-1 ai_executor_server[27934]: time=2026-08-01T01:24:22.123Z level=INFO msg="peer: connected" node=node-5 endpoint=10.10.0.15:10010
+Aug 01 01:25:22 node-1 ai_executor_server[27934]: time=2026-08-01T01:25:22.147Z level=WARN msg="peer: ping failed" endpoint=10.10.0.14:10010 err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.14:10010: connect: connection refused\""
+Aug 01 01:25:22 node-1 ai_executor_server[27934]: time=2026-08-01T01:25:22.148Z level=INFO msg="peer: connected" node=node-4 endpoint=10.10.0.14:10010
+Aug 01 01:25:22 node-1 ai_executor_server[27934]: time=2026-08-01T01:25:22.148Z level=INFO msg="peer: removed stale" node=node-4
+Aug 01 01:25:52 node-1 ai_executor_server[27934]: time=2026-08-01T01:25:52.133Z level=WARN msg="peer: ping failed" endpoint=10.10.0.13:10010 err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.13:10010: connect: connection refused\""
+Aug 01 01:25:52 node-1 ai_executor_server[27934]: time=2026-08-01T01:25:52.133Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010
+Aug 01 01:25:52 node-1 ai_executor_server[27934]: time=2026-08-01T01:25:52.133Z level=INFO msg="peer: removed stale" node=node-3
+Aug 01 01:25:52 node-1 ai_executor_server[27934]: 2026/08/01 01:25:52 gocql: unable to dial control conn 10.10.0.13:9042: read tcp 10.10.0.11:41312->10.10.0.13:9042: read: connection reset by peer

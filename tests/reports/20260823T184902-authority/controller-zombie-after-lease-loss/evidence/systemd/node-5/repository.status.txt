@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:36:21 UTC; 12min ago
+    Process: 6230 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 6234 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 6237 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 31.4M (peak: 42.2M)
+        CPU: 6.959s
+     CGroup: /system.slice/docker-c062e81b61a677cb7dc6d48b8ad6e600ee7ef4e27637645956f4d0b0c1de1534.scope/system.slice/globular-repository.service
+             └─6237 /usr/lib/globular/bin/repository_server
+
+Aug 23 18:45:32 node-5 repository_server[6237]: 2026/08/23 18:45:32 gocql: unable to dial control conn 10.10.0.12:9042: dial tcp 10.10.0.12:9042: connect: connection refused
+Aug 23 18:46:21 node-5 repository_server[6237]: time=2026-08-23T18:46:21.673Z level=WARN msg="blob-seed: ListManifests failed — seeding skipped" err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 23 18:46:31 node-5 repository_server[6237]: {"level":"warn","ts":"2026-08-23T18:46:31.360333Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000592780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 18:46:31 node-5 repository_server[6237]: {"level":"info","ts":"2026-08-23T18:46:31.360395Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 18:46:33 node-5 repository_server[6237]: {"level":"warn","ts":"2026-08-23T18:46:33.901406Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000592d20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 18:46:33 node-5 repository_server[6237]: {"level":"info","ts":"2026-08-23T18:46:33.901469Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 18:47:06 node-5 repository_server[6237]: {"level":"warn","ts":"2026-08-23T18:47:06.361784Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000592780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 23 18:47:06 node-5 repository_server[6237]: {"level":"info","ts":"2026-08-23T18:47:06.361869Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 23 18:47:08 node-5 repository_server[6237]: {"level":"warn","ts":"2026-08-23T18:47:08.651485Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000592d20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = etcdserver: leader changed"}
+Aug 23 18:47:17 node-5 repository_server[6237]: 2026/08/23 18:47:17 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused

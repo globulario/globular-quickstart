@@ -1,0 +1,20 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:19 UTC; 2s ago
+    Process: 1006 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 1010 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1012 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1019 (workflow_server)
+      Tasks: 10 (limit: 8641)
+     Memory: 7.0M (peak: 7.4M)
+        CPU: 122ms
+     CGroup: /system.slice/docker-eaf603c2f39593e684a79b489943b17e4093c415bcd1a02da0f3503cb1e1f052.scope/system.slice/globular-workflow.service
+             └─1019 /usr/lib/globular/bin/workflow_server
+
+Aug 19 03:23:19 node-3 systemd[1]: globular-workflow.service: Scheduled restart job, restart counter is at 8.
+Aug 19 03:23:19 node-3 systemd[1]: Starting globular-workflow.service - Globular workflow...
+Aug 19 03:23:19 node-3 systemd[1]: Started globular-workflow.service - Globular workflow.
+Aug 19 03:23:19 node-3 workflow_server[1019]: 2026/08/19 03:23:19 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 19 03:23:19 node-3 workflow_server[1019]: 2026/08/19 03:23:19 INFO security: loaded cluster roles from external policy file roles=22
+Aug 19 03:23:19 node-3 workflow_server[1019]: time=2026-08-19T03:23:19.293Z level=INFO msg="starting workflow service" service=workflow.WorkflowService version=1.2.326 domain=globular.internal
+Aug 19 03:23:21 node-3 workflow_server[1019]: {"level":"warn","ts":"2026-08-19T03:23:21.301228Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003fb860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}

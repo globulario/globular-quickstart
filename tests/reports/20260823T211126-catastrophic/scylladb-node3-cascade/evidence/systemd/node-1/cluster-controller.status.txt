@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 21:14:05 UTC; 3min 32s ago
+    Process: 127 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 154 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 188 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 42.1M (peak: 44.0M)
+        CPU: 7.071s
+     CGroup: /system.slice/docker-dae82d356e76e6016996f999716cccadf9a25ac7e9d047300b9f7e21e912cd83.scope/system.slice/globular-cluster-controller.service
+             └─188 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 23 21:17:12 node-1 cluster_controller_server[188]: 2026/08/23 21:17:12 external dns: DISABLED
+Aug 23 21:17:12 node-1 cluster_controller_server[188]: 2026/08/23 21:17:12 dns reconciler: gated record=dns.globular.internal desired=5 installed=5 runtime=4 published=4 (filtered=[{node-2.globular.internal service installed but runtime unhealthy}])
+Aug 23 21:17:12 node-1 cluster_controller_server[188]: 2026/08/23 21:17:12 dns reconciler: reconciliation error: apply dns state for domain globular.internal: no healthy DNS endpoints available (will retry in 30s)
+Aug 23 21:17:12 node-1 cluster_controller_server[188]: 2026/08/23 21:17:12 convergence-committer: node=35ac3821-6b90-52eb-a800-41130471770b COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 23 21:17:12 node-1 cluster_controller_server[188]: 2026/08/23 21:17:12 convergence-committer: node=6400b443-cf38-52da-a683-de2fc5103c0b COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 23 21:17:24 node-1 cluster_controller_server[188]: 2026/08/23 21:17:24 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10008 host=10.10.0.11 port=10008
+Aug 23 21:17:26 node-1 cluster_controller_server[188]: 2026/08/23 21:17:26 convergence-committer: node=35ac3821-6b90-52eb-a800-41130471770b COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 23 21:17:27 node-1 cluster_controller_server[188]: 2026/08/23 21:17:27 convergence-committer: node=6400b443-cf38-52da-a683-de2fc5103c0b COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 23 21:17:27 node-1 cluster_controller_server[188]: 2026/08/23 21:17:27 convergence-committer: node=c777633e-6d07-5713-9c4c-deb3317eee25 COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 23 21:17:35 node-1 cluster_controller_server[188]: 2026/08/23 21:17:35 buildPlanActions: unknown profile "media-server" — skipping (no managed units)

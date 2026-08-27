@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 06:03:18 UTC; 8min ago
+    Process: 145 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 178 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 203 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 38.8M (peak: 43.7M)
+        CPU: 6.089s
+     CGroup: /system.slice/docker-0ec183cf98216386a761950989a5649979754c0fb823897d5cde60eeda1205e5.scope/system.slice/globular-repository.service
+             └─203 /usr/lib/globular/bin/repository_server
+
+Aug 17 06:03:19 node-5 repository_server[203]: time=2026-08-17T06:03:19.526Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 17 06:03:19 node-5 repository_server[203]: 2026/08/17 06:03:19 INFO metrics listening service=repository.PackageRepository addr=[::]:10001
+Aug 17 06:03:36 node-5 repository_server[203]: 2026/08/17 06:03:36 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 17 06:03:38 node-5 repository_server[203]: 2026/08/17 06:03:38 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 17 06:04:37 node-5 repository_server[203]: 2026/08/17 06:04:37 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 17 06:04:37 node-5 repository_server[203]: 2026/08/17 06:04:37 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 17 06:08:21 node-5 repository_server[203]: 2026/08/17 06:08:21 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 17 06:08:27 node-5 repository_server[203]: 2026/08/17 06:08:27 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=181 baseline_ms=20 window=210 new_window=189
+Aug 17 06:08:38 node-5 repository_server[203]: 2026/08/17 06:08:38 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 17 06:09:08 node-5 repository_server[203]: 2026/08/17 06:09:08 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=182 baseline_ms=20 window=522 new_window=469

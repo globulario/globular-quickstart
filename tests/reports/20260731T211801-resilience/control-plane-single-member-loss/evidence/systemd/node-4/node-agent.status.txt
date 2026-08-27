@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:18:26 UTC; 2min 58s ago
+    Process: 212 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 232 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 248 (node_agent_serv)
+      Tasks: 24 (limit: 8641)
+     Memory: 117.6M (peak: 124.8M)
+        CPU: 42.320s
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-node-agent.service
+             └─248 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 21:20:52 node-4 node_agent_server[248]: 2026/07/31 21:20:52 grpc-workflow: install-package monitoring: installed_state matches but globular-monitoring.service is inactive; attempting repair
+Jul 31 21:20:52 node-4 node_agent_server[248]: 2026/07/31 21:20:52 grpc-workflow: install-package monitoring: repair via Start succeeded
+Jul 31 21:20:56 node-4 node_agent_server[248]: 2026/07/31 21:20:56 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Jul 31 21:20:58 node-4 node_agent_server[248]: 2026/07/31 21:20:58 event-handler: ignoring operation.restart_requested (handled by cluster controller)
+Jul 31 21:20:59 node-4 node_agent_server[248]: 2026/07/31 21:20:59 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:21:01 node-4 node_agent_server[248]: 2026/07/31 21:21:01 nodeagent: reporting 41 installed services (hash=0850d5d5c9405c3f43d36c9d06676c74e34ebdd391dc4bac490c2d006e9759b7, sample=[claude mc scylla-manager persistence resource])
+Jul 31 21:21:01 node-4 node_agent_server[248]: 2026/07/31 21:21:01 event-publisher: service.started unit=globular-cluster-controller.service (active/running → active/running)
+Jul 31 21:21:14 node-4 node_agent_server[248]: 2026/07/31 21:21:14 ingress: spec changed (type: PUT), triggering reconciliation
+Jul 31 21:21:14 node-4 node_agent_server[248]: 2026/07/31 21:21:14 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Jul 31 21:21:14 node-4 node_agent_server[248]: 2026/07/31 21:21:14 probe-scylla-health: [mode=NORMAL bootstrap=100%]

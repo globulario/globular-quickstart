@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 05:11:24 UTC; 1min 33s ago
+    Process: 168 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 191 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 205 (node_agent_serv)
+      Tasks: 24 (limit: 8641)
+     Memory: 27.8M (peak: 36.5M)
+        CPU: 28.199s
+     CGroup: /system.slice/docker-cba33e71c5ac369611bf04025060a82c7c15bb249baccc5e69596a0ad9894d1f.scope/system.slice/globular-node-agent.service
+             └─205 /usr/lib/globular/bin/node_agent_server
+
+Aug 19 05:12:17 node-2 node_agent_server[205]: 2026/08/19 05:12:17 nodeagent: reporting 43 installed services (hash=56b17f156ac9ff94aa7212bc750eae52b03610dad75052d10f35f8ad2b7b6240, sample=[repository node-agent cluster-doctor authentication node-exporter])
+Aug 19 05:12:17 node-2 node_agent_server[205]: 2026/08/19 05:12:17 node heartbeat failed (state=degraded): TLS probe to 10.10.0.12:443 (ServerName=10.10.0.12): dial tcp 10.10.0.12:443: connect: connection refused
+Aug 19 05:12:24 node-2 node_agent_server[205]: 2026/08/19 05:12:24 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Aug 19 05:12:25 node-2 node_agent_server[205]: 2026/08/19 05:12:25 behavioral observation: infra_probe skipped component=scylladb node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 19 05:12:34 node-2 node_agent_server[205]: 2026/08/19 05:12:34 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 19 05:12:34 node-2 node_agent_server[205]: 2026/08/19 05:12:34 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Aug 19 05:12:34 node-2 node_agent_server[205]: 2026/08/19 05:12:34 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 19 05:12:36 node-2 node_agent_server[205]: 2026/08/19 05:12:36 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 19 05:12:49 node-2 node_agent_server[205]: 2026/08/19 05:12:49 nodeagent: reporting 43 installed services (hash=56b17f156ac9ff94aa7212bc750eae52b03610dad75052d10f35f8ad2b7b6240, sample=[backup-manager claude prometheus scylladb globular-cli])
+Aug 19 05:12:54 node-2 node_agent_server[205]: 2026/08/19 05:12:54 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb

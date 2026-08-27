@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:37:29 UTC; 1min 11s ago
+    Process: 1489 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 1509 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1525 (authentication_)
+      Tasks: 18 (limit: 8641)
+     Memory: 17.5M (peak: 19.3M)
+        CPU: 270ms
+     CGroup: /system.slice/docker-d012767a1d6021169228274ad798b8ec3e83c467525376ed8e947638c31723b1.scope/system.slice/globular-authentication.service
+             └─1525 /usr/lib/globular/bin/authentication_server
+
+Aug 18 19:37:29 node-3 authentication_server[1525]: time=2026-08-18T19:37:29.858Z level=INFO msg="policy: loaded permissions from file" service=authentication path=/var/lib/globular/policy/services/authentication/permissions.generated.json count=8
+Aug 18 19:37:29 node-3 authentication_server[1525]: time=2026-08-18T19:37:29.858Z level=INFO msg="authz: permission mappings loaded" service=authentication count=8 action_mappings=8
+Aug 18 19:37:29 node-3 authentication_server[1525]: time=2026-08-18T19:37:29.858Z level=INFO msg="service started successfully" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10008
+Aug 18 19:37:30 node-3 authentication_server[1525]: time=2026-08-18T19:37:30.207Z level=INFO msg=setKey:generate mac=02:42:0a:0a:00:0d
+Aug 18 19:37:30 node-3 authentication_server[1525]: time=2026-08-18T19:37:30.295Z level=INFO msg="metrics: proxy port conflict, using free port" service=authentication.AuthenticationService wanted=10001 actual=36337
+Aug 18 19:37:30 node-3 authentication_server[1525]: time=2026-08-18T19:37:30.295Z level=INFO msg="metrics listening" service=authentication.AuthenticationService addr=[::]:36337
+Aug 18 19:37:39 node-3 authentication_server[1525]: {"level":"warn","ts":"2026-08-18T19:37:39.926517Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000141a40/10.10.0.13:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:37:40 node-3 authentication_server[1525]: {"level":"warn","ts":"2026-08-18T19:37:40.324961Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000141a40/10.10.0.13:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:37:40 node-3 authentication_server[1525]: time=2026-08-18T19:37:40.432Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-3.globular.internal:443
+Aug 18 19:37:40 node-3 authentication_server[1525]: time=2026-08-18T19:37:40.433Z level=INFO msg="mesh: gRPC connection established" target=node-3.globular.internal:443

@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "scenario": "node-clone-identity-collision",
+  "suite": "authority",
+  "start_time": "2026-08-18T19:19:24.153513Z",
+  "end_time": "2026-08-18T19:26:33.415902Z",
+  "passed": false,
+  "item_count": 9,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "nodes_gte": 5
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T19:19:26.716792Z"
+    },
+    {
+      "id": "source_node_registered",
+      "section": "preconditions",
+      "probe": "node.etcd_registered",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "node": "node-4",
+        "uuid": "6400b443-cf38-52da-a683-de2fc5103c0b"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T19:19:26.976129Z"
+    },
+    {
+      "id": "target_node_registered",
+      "section": "preconditions",
+      "probe": "node.etcd_registered",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": false,
+        "node": "node-5",
+        "uuid": "35ac3821-6b90-52eb-a800-41130471770b"
+      },
+      "passed": false,
+      "timestamp": "2026-08-18T19:19:27.163503Z"
+    },
+    {
+      "id": "liveness_settled_before",
+      "section": "preconditions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 1299,
+        "stale_nodes": 5,
+        "oldest": "a166b992-b66d-53cb-b7c7-61dfa4dd5a36"
+      },
+      "passed": false,
+      "timestamp": "2026-08-18T19:19:27.429800Z"
+    },
+    {
+      "id": "stop_the_impostor",
+      "section": "cleanup",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-5",
+        "exit_code": 0,
+        "stdout": "globular-node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T19:19:37.967816Z"
+    },
+    {
+      "id": "restore_the_victims_own_state",
+      "section": "cleanup",
+      "probe": "chaos.restore_node_state",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.restore_node_state",
+        "node": "node-5",
+        "volume": "globular-quickstart_node5-state",
+        "snapshot": "globular-quickstart_node5-snapshot",
+        "exit_code": 0,
+        "size_mb": "2393",
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T19:20:08.628330Z"
+    },
+    {
+      "id": "start_as_itself",
+      "section": "cleanup",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-5",
+        "exit_code": 0,
+        "stdout": "globular-node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T19:20:08.926396Z"
+    },
+    {
+      "id": "victim_restored_and_registered",
+      "section": "cleanup",
+      "probe": "node.etcd_registered",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": false,
+        "node": "node-5",
+        "uuid": "35ac3821-6b90-52eb-a800-41130471770b"
+      },
+      "passed": false,
+      "timestamp": "2026-08-18T19:24:09.089795Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 4,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": [
+          "etcd_healthy_endpoints: baseline=5 now=4"
+        ]
+      },
+      "passed": false,
+      "timestamp": "2026-08-18T19:26:20.414527Z"
+    }
+  ],
+  "result": "POSTCONDITION",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

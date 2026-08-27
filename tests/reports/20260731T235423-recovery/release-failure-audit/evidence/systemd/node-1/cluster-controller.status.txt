@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:21:43 UTC; 34min ago
+    Process: 41314 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 41318 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 41320 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 104.5M (peak: 1.4G)
+        CPU: 3min 54.711s
+     CGroup: /system.slice/docker-ddb7f5979908481032842d1e2d52648dae58a5329712936267ae999f06e3d67b.scope/system.slice/globular-cluster-controller.service
+             └─41320 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 23:56:33 node-1 cluster_controller_server[41320]: 2026/07/31 23:56:33 release core@globular.io/rclone: BLOCKED: invalid phase transition "DEFERRED" → "RESOLVED"
+Jul 31 23:56:33 node-1 cluster_controller_server[41320]: 2026/07/31 23:56:33 release core@globular.io/restic: BLOCKED: invalid phase transition "DEFERRED" → "RESOLVED"
+Jul 31 23:56:33 node-1 cluster_controller_server[41320]: 2026/07/31 23:56:33 release core@globular.io/mc: BLOCKED: invalid phase transition "DEFERRED" → "RESOLVED"
+Jul 31 23:56:33 node-1 cluster_controller_server[41320]: 2026/07/31 23:56:33 release core@globular.io/libnss-resolve: BLOCKED: invalid phase transition "DEFERRED" → "RESOLVED"
+Jul 31 23:56:33 node-1 cluster_controller_server[41320]: 2026/07/31 23:56:33 release core@globular.io/globular-cli: BLOCKED: invalid phase transition "DEFERRED" → "RESOLVED"
+Jul 31 23:56:33 node-1 cluster_controller_server[41320]: 2026/07/31 23:56:33 release core@globular.io/sha256sum: BLOCKED: invalid phase transition "DEFERRED" → "RESOLVED"
+Jul 31 23:56:33 node-1 cluster_controller_server[41320]: 2026/07/31 23:56:33 release core@globular.io/etcdctl: BLOCKED: invalid phase transition "DEFERRED" → "RESOLVED"
+Jul 31 23:56:33 node-1 cluster_controller_server[41320]: 2026/07/31 23:56:33 release core@globular.io/claude: BLOCKED: invalid phase transition "DEFERRED" → "RESOLVED"
+Jul 31 23:56:33 node-1 cluster_controller_server[41320]: 2026/07/31 23:56:33 hasUnservedNodes: release=core@globular.io/scylla-manager node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 skipped (blocked convergence outcome)
+Jul 31 23:56:33 node-1 cluster_controller_server[41320]: 2026/07/31 23:56:33 hasUnservedNodes: release=core@globular.io/sctool node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 skipped (blocked convergence outcome)

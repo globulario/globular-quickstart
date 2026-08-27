@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:47:08 UTC; 3min 3s ago
+    Process: 134 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 175 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 197 (repository_serv)
+      Tasks: 15 (limit: 8641)
+     Memory: 26.8M (peak: 27.3M)
+        CPU: 732ms
+     CGroup: /system.slice/docker-7e69e47bf0d813687d9ef0f9e68075561c53d70636a4160452595c23d81254bd.scope/system.slice/globular-repository.service
+             └─197 /usr/lib/globular/bin/repository_server
+
+Aug 23 18:47:14 node-4 repository_server[197]: time=2026-08-23T18:47:14.569Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 23 18:47:14 node-4 repository_server[197]: 2026/08/23 18:47:14 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 23 18:47:14 node-4 repository_server[197]: time=2026-08-23T18:47:14.571Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 23 18:47:14 node-4 repository_server[197]: time=2026-08-23T18:47:14.571Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 23 18:47:14 node-4 repository_server[197]: time=2026-08-23T18:47:14.574Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 23 18:47:14 node-4 repository_server[197]: 2026/08/23 18:47:14 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=33859
+Aug 23 18:47:14 node-4 repository_server[197]: 2026/08/23 18:47:14 INFO metrics listening service=repository.PackageRepository addr=[::]:33859
+Aug 23 18:47:15 node-4 repository_server[197]: 2026/08/23 18:47:15 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10004 new_port=10004 old_proxy=33859 new_proxy=10001
+Aug 23 18:47:23 node-4 repository_server[197]: 2026/08/23 18:47:23 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 23 18:49:22 node-4 repository_server[197]: 2026/08/23 18:49:22 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"

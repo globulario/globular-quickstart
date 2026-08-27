@@ -1,0 +1,18 @@
+● globular-scylla-manager.service - Globular Scylla Manager
+     Loaded: loaded (/etc/systemd/system/globular-scylla-manager.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 20:31:47 UTC; 180ms ago
+    Process: 45824 ExecStartPre=/bin/sh -c for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "scylla 9042 not ready"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 45835 ExecStartPre=/usr/lib/globular/bin/scylla-manager-configure (code=exited, status=0/SUCCESS)
+    Process: 45839 ExecStartPost=/usr/lib/globular/bin/scylla-manager-register-cluster (code=exited, status=7)
+   Main PID: 45838 (scylla-manager)
+      Tasks: 15 (limit: 8641)
+     Memory: 10.5M (peak: 11.8M)
+        CPU: 150ms
+     CGroup: /system.slice/docker-ee3334bee62c5a7cf2cf1308b1f2bf99dfc8dacd5999c1dfb26cbefc556eead6.scope/system.slice/globular-scylla-manager.service
+             └─45838 /usr/bin/scylla-manager --config-file /var/lib/globular/scylla-manager/scylla-manager.yaml
+
+Aug 10 20:31:47 node-1 systemd[1]: Starting globular-scylla-manager.service - Globular Scylla Manager...
+Aug 10 20:31:47 node-1 scylla-manager-register-cluster[45839]: scylla-manager-register-cluster: HTTPS not enabled; falling back to http://10.10.0.11:5080/api/v1 for read probes
+Aug 10 20:31:47 node-1 scylla_manager[45838]: {"L":"INFO","T":"2026-08-10T20:31:47.883Z","M":"Scylla Manager Server","version":"3.11.1-0.20260615.df0a1454f","pid":45838,"_trace_id":"x7sy0OqDSS69B1Xae59wtQ"}
+Aug 10 20:31:47 node-1 scylla-manager-register-cluster[45859]: curl: (7) Failed to connect to 10.10.0.11 port 5080 after 0 ms: Couldn't connect to server
+Aug 10 20:31:47 node-1 systemd[1]: Started globular-scylla-manager.service - Globular Scylla Manager.

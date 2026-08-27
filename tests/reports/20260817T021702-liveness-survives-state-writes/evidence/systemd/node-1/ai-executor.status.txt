@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-15 04:26:08 UTC; 1 day 21h ago
+    Process: 626 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 666 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 677 (ai_executor_ser)
+      Tasks: 22 (limit: 8641)
+     Memory: 54.3M (peak: 65.5M swap: 324.0K swap peak: 340.0K)
+        CPU: 2min 57.438s
+     CGroup: /system.slice/docker-6c45ce1ebdf3ec4dbb7a4e6e260985a9f6160932c9b4c2e1ebaf74a0f492e5d9.scope/system.slice/globular-ai-executor.service
+             └─677 /usr/lib/globular/bin/ai_executor_server
+
+Aug 17 02:03:59 node-1 ai_executor_server[677]: time=2026-08-17T02:03:59.191Z level=INFO msg="processing incident" incident_id=e9088653-99df-11f1-93f2-02420a0a000b rule_id=workflow-run-failed tier=0 trigger=workflow.run.failed batch_size=2
+Aug 17 02:03:59 node-1 ai_executor_server[677]: time=2026-08-17T02:03:59.458Z level=INFO msg="diagnosis complete" incident_id=e9088653-99df-11f1-93f2-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 17 02:03:59 node-1 ai_executor_server[677]: time=2026-08-17T02:03:59.458Z level=INFO msg="INCIDENT RESOLVED" incident_id=e9088653-99df-11f1-93f2-02420a0a000b summary="workflow-run-failed triggered by workflow.run.failed (2 events in batch)" root_cause=unknown_anomaly
+Aug 17 02:03:59 node-1 ai_executor_server[677]: 2026/08/17 02:03:59 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=279 baseline_ms=20 window=10 new_window=10
+Aug 17 02:08:00 node-1 ai_executor_server[677]: time=2026-08-17T02:08:00.584Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 17 02:08:00 node-1 ai_executor_server[677]: time=2026-08-17T02:08:00.700Z level=INFO msg="codex: no credentials found"
+Aug 17 02:13:00 node-1 ai_executor_server[677]: time=2026-08-17T02:13:00.527Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 17 02:13:00 node-1 ai_executor_server[677]: time=2026-08-17T02:13:00.634Z level=INFO msg="codex: no credentials found"
+Aug 17 02:18:00 node-1 ai_executor_server[677]: time=2026-08-17T02:18:00.568Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 17 02:18:00 node-1 ai_executor_server[677]: time=2026-08-17T02:18:00.640Z level=INFO msg="codex: no credentials found"

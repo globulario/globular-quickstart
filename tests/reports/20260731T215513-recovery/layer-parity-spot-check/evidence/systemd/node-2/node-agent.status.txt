@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:56:30 UTC; 54s ago
+    Process: 167 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 177 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 208 (node_agent_serv)
+      Tasks: 19 (limit: 8641)
+     Memory: 28.8M (peak: 35.5M)
+        CPU: 21.253s
+     CGroup: /system.slice/docker-3564c5064ffb33643364e7ecc0470f65b9ba3d4c953a5a8ad793011efad31f6b.scope/system.slice/globular-node-agent.service
+             └─208 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 21:57:00 node-2 node_agent_server[208]: 2026/07/31 21:57:00 event-publisher: service.started unit=globular-cluster-doctor.service (active/running → active/running)
+Jul 31 21:57:01 node-2 node_agent_server[208]: 2026/07/31 21:57:01 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Jul 31 21:57:03 node-2 node_agent_server[208]: 2026/07/31 21:57:03 webroot-sync: synced=0 skipped=0 removed=0 (0.2s)
+Jul 31 21:57:07 node-2 node_agent_server[208]: 2026/07/31 21:57:07 minio-topology-gate: node c8a09d9e-3813-5357-ab58-93aa410f27fb (ip=10.10.0.12) not admitted — node not listed in approved objectstore topology (gen=0)
+Jul 31 21:57:07 node-2 node_agent_server[208]: 2026/07/31 21:57:07 minio-topology-gate: node c8a09d9e-3813-5357-ab58-93aa410f27fb (ip=10.10.0.12) is NOT in ObjectStoreDesiredState.Nodes (gen=0) — stopping globular-minio.service to enforce topology contract (held_not_in_topology)
+Jul 31 21:57:07 node-2 node_agent_server[208]: 2026/07/31 21:57:07 minio-topology-gate: stopped globular-minio.service on non-member node c8a09d9e-3813-5357-ab58-93aa410f27fb (ip=10.10.0.12) — state=held_not_in_topology; MinIO will start only after apply-topology admits this node
+Jul 31 21:57:08 node-2 node_agent_server[208]: 2026/07/31 21:57:08 nodeagent: reporting 15 installed services (hash=713345b3f1599e79ec73ce654cfc79d249ace400295c8427170a080b8bea1644, sample=[cluster-doctor xds gateway envoy node-agent])
+Jul 31 21:57:10 node-2 node_agent_server[208]: 2026/07/31 21:57:10 event-publisher: service.stopped unit=globular-minio.service (active/running → inactive/dead)
+Jul 31 21:57:14 node-2 node_agent_server[208]: 2026/07/31 21:57:14 ingress: spec changed (type: PUT), triggering reconciliation
+Jul 31 21:57:14 node-2 node_agent_server[208]: 2026/07/31 21:57:14 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb

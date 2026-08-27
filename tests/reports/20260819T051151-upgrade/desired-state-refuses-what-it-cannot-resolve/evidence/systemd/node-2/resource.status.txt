@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 05:11:29 UTC; 1min 29s ago
+    Process: 353 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 360 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 373 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 458 (resource_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 26.4M (peak: 28.7M)
+        CPU: 561ms
+     CGroup: /system.slice/docker-cba33e71c5ac369611bf04025060a82c7c15bb249baccc5e69596a0ad9894d1f.scope/system.slice/globular-resource.service
+             └─458 /usr/lib/globular/bin/resource_server
+
+Aug 19 05:11:29 node-2 resource_server[458]: 2026/08/19 05:11:29 INFO InitGrpcServer: gRPC server initialized service=resource.ResourceService tls=true port=10011
+Aug 19 05:11:29 node-2 resource_server[458]: time=2026-08-19T05:11:29.416Z level=INFO msg="service ready" service=resource.ResourceService port=10011 proxy=10011 protocol=grpc domain=globular.internal startup_ms=81 pid=458 id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 version=1.2.312 store=SCYLLA
+Aug 19 05:11:29 node-2 resource_server[458]: 2026/08/19 05:11:29 INFO scylla: connected id=local_resource hosts=[10.10.0.11] port=9042 keyspace=local_resource
+Aug 19 05:11:29 node-2 resource_server[458]: time=2026-08-19T05:11:29.434Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042
+Aug 19 05:11:31 node-2 resource_server[458]: 2026/08/19 05:11:31 WARN scylla: Count fallback to scan; consider raw CQL with PK WHERE table=local_resource.accounts
+Aug 19 05:11:31 node-2 resource_server[458]: time=2026-08-19T05:11:31.457Z level=ERROR msg="fail to create account dir" error="failed to seed sa account: account with name sa already exist!"
+Aug 19 05:11:31 node-2 resource_server[458]: 2026/08/19 05:11:31 INFO metrics: proxy port conflict, using free port service=resource.ResourceService wanted=10011 actual=37713
+Aug 19 05:11:31 node-2 resource_server[458]: 2026/08/19 05:11:31 INFO metrics listening service=resource.ResourceService addr=[::]:37713
+Aug 19 05:12:39 node-2 resource_server[458]: 2026/08/19 05:12:39 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 19 05:12:39 node-2 resource_server[458]: 2026/08/19 05:12:39 INFO mesh: gRPC connection established target=node-2.globular.internal:443

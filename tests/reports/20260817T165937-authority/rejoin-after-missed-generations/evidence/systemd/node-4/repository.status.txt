@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:18 UTC; 8min ago
+    Process: 152 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 163 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 218 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 33.7M (peak: 38.6M)
+        CPU: 4.211s
+     CGroup: /system.slice/docker-cfd5ada68a3ca339623f6df7921f9fd5ffefba9fbd39d2998331bb23e8ac8901.scope/system.slice/globular-repository.service
+             └─218 /usr/lib/globular/bin/repository_server
+
+Aug 17 17:20:48 node-4 repository_server[218]: 2026/08/17 17:20:48 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 17 17:22:04 node-4 repository_server[218]: 2026/08/17 17:22:04 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 17 17:22:04 node-4 repository_server[218]: 2026/08/17 17:22:04 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 17 17:23:34 node-4 repository_server[218]: 2026/08/17 17:23:34 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 17 17:23:59 node-4 repository_server[218]: 2026/08/17 17:23:59 WARN authz_decision audit="{\"timestamp\":\"2026-08-17T17:23:59.431441497Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 17 17:24:09 node-4 repository_server[218]: 2026/08/17 17:24:09 WARN authz_decision audit="{\"timestamp\":\"2026-08-17T17:24:09.757183908Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/repository.PackageRepository/GetArtifactVersions\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/repository.PackageRepository/GetArtifactVersions allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 17 17:25:32 node-4 repository_server[218]: 2026/08/17 17:25:32 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=230 baseline_ms=20 window=529 new_window=476
+Aug 17 17:26:24 node-4 repository_server[218]: 2026/08/17 17:26:24 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 17 17:26:32 node-4 repository_server[218]: 2026/08/17 17:26:32 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 17 17:26:33 node-4 repository_server[218]: 2026/08/17 17:26:33 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=176 baseline_ms=20 window=761 new_window=684

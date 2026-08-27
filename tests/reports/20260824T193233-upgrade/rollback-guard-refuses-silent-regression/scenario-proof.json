@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-24T21:16:13.491261Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/upgrade/rollback-guard-refuses-silent-regression.yaml",
+  "scenario": "rollback-guard-refuses-silent-regression",
+  "suite": "upgrade",
+  "source_revision": "0ebfb24869929a4efe528be32759f80589ff0ba5",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Going backwards must be possible, deliberate, and audited \u2014 never accidental.\n\nWHY THIS EXISTS. On 2026-08-16 a bad controller shipped and the rollback was\nREFUSED:\n\n    desired-state: refusing to regress cluster-controller \u2014 desired floor is\n    1.2.317, attempted 1.2.316; pass --allow-regression to override (audited)\n\nThat refusal is correct behaviour and it was still a surprise, at the worst\npossible moment, on a degraded cluster. \"Can I get back?\" is the only question\nthat matters once something bad is running, and nothing in the suite answered\nit. An operator should learn how the guard behaves from a test, not from an\nincident.\n\nTHE TWO PROPERTIES, and they pull against each other:\n\n  1. A regression must not happen by accident. `services desired set` to an\n     older version is refused unless the operator explicitly asks, so a\n     mistyped version or a stale script cannot walk the cluster backwards.\n\n  2. A regression must remain POSSIBLE. A guard with no override is not a\n     safety feature, it is a trap: it converts \"we shipped a bad version\" into\n     \"we shipped a bad version and cannot leave\". The override exists, is\n     explicit, and is audited.\n\nWHAT THIS SCENARIO CAN AND CANNOT DO HERE. Exercising the floor needs two\npublished versions of one package, and a release bundle ships exactly one\nversion per package \u2014 so on a freshly built simulation the older artifact\nsimply does not exist to roll back to. What IS reachable, and is asserted\nhere, is that the control plane refuses to move desired state to a version it\ncannot resolve, and that a refusal leaves no residue behind.\n\nThe full floor test belongs on a cluster that has taken at least two releases\nof the same package. That is the real cluster, and it is the reason this\nscenario states its limit rather than quietly asserting less than its name\nclaims \u2014 a scenario whose name overpromises is how a suite loses its meaning.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-24T21:17:03.733817Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

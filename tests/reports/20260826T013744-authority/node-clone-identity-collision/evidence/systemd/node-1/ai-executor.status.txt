@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 02:22:06 UTC; 27min ago
+    Process: 661 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 687 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 704 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 28.4M (peak: 37.4M)
+        CPU: 4.278s
+     CGroup: /system.slice/docker-06e641380ccebeaf0e4edbf72d9d5837f80d5b64b34cd13adac2cc24c8cb20df.scope/system.slice/globular-ai-executor.service
+             └─704 /usr/lib/globular/bin/ai_executor_server
+
+Aug 26 02:49:36 node-1 ai_executor_server[704]: time=2026-08-26T02:49:36.606Z level=INFO msg="INCIDENT RESOLVED" incident_id=c652ff66-a0f8-11f1-8463-02420a0a000c summary="auth-denial triggered by alert.auth.denied on workflow.WorkflowService (4 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (workflow.WorkflowService)"
+Aug 26 02:49:36 node-1 ai_executor_server[704]: 2026/08/26 02:49:36 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=99 baseline_ms=20 window=11 new_window=10
+Aug 26 02:49:49 node-1 ai_executor_server[704]: time=2026-08-26T02:49:49.906Z level=INFO msg="processing incident" incident_id=ce4f996d-a0f8-11f1-8464-02420a0a000c rule_id=reconcile-failed tier=0 trigger=cluster.reconcile.failed batch_size=1
+Aug 26 02:49:49 node-1 ai_executor_server[704]: time=2026-08-26T02:49:49.981Z level=INFO msg="diagnosis complete" incident_id=ce4f996d-a0f8-11f1-8464-02420a0a000c root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 26 02:49:49 node-1 ai_executor_server[704]: time=2026-08-26T02:49:49.981Z level=INFO msg="INCIDENT RESOLVED" incident_id=ce4f996d-a0f8-11f1-8464-02420a0a000c summary="reconcile-failed triggered by cluster.reconcile.failed (1 events in batch)" root_cause=unknown_anomaly
+Aug 26 02:49:49 node-1 ai_executor_server[704]: 2026/08/26 02:49:49 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=81 baseline_ms=20 window=10 new_window=10
+Aug 26 02:49:58 node-1 ai_executor_server[704]: time=2026-08-26T02:49:58.104Z level=INFO msg="processing incident" incident_id=d332c71d-a0f8-11f1-8465-02420a0a000c rule_id=service-stopped tier=0 trigger=service.stopped batch_size=1
+Aug 26 02:49:58 node-1 ai_executor_server[704]: time=2026-08-26T02:49:58.176Z level=INFO msg="diagnosis complete" incident_id=d332c71d-a0f8-11f1-8465-02420a0a000c root_cause="unknown_anomaly (etcd)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 26 02:49:58 node-1 ai_executor_server[704]: time=2026-08-26T02:49:58.176Z level=INFO msg="INCIDENT RESOLVED" incident_id=d332c71d-a0f8-11f1-8465-02420a0a000c summary="service-stopped triggered by service.stopped on etcd (1 events in batch)" root_cause="unknown_anomaly (etcd)"
+Aug 26 02:49:58 node-1 ai_executor_server[704]: 2026/08/26 02:49:58 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=78 baseline_ms=20 window=10 new_window=10

@@ -1,0 +1,23 @@
+● globular-scylla-manager.service - Globular Scylla Manager
+     Loaded: loaded (/etc/systemd/system/globular-scylla-manager.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 08:36:03 UTC; 45min ago
+    Process: 377 ExecStartPre=/bin/sh -c for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "scylla 9042 not ready"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 424 ExecStartPre=/usr/lib/globular/bin/scylla-manager-configure (code=exited, status=0/SUCCESS)
+    Process: 448 ExecStartPost=/usr/lib/globular/bin/scylla-manager-register-cluster (code=exited, status=7)
+   Main PID: 447 (scylla-manager)
+      Tasks: 18 (limit: 8641)
+     Memory: 30.7M (peak: 32.5M)
+        CPU: 1.467s
+     CGroup: /system.slice/docker-a81469aba95e974c43c03adc9f019208d9a0de12ed86f6833826f955b46c07e5.scope/system.slice/globular-scylla-manager.service
+             └─447 /usr/bin/scylla-manager --config-file /var/lib/globular/scylla-manager/scylla-manager.yaml
+
+Aug 26 09:17:38 node-2 scylla_manager[447]: {"L":"INFO","T":"2026-08-26T09:17:38.559Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.12:36016","status":200,"bytes":247,"duration":"4ms","_trace_id":"MBjO8tSwQVmNZglwNwB1ug"}
+Aug 26 09:17:47 node-2 scylla_manager[447]: {"L":"INFO","T":"2026-08-26T09:17:47.442Z","N":"cluster.client","M":"HTTP retry backoff","operation":"NodeInfo","wait":"27.599985479s","error":"dial tcp 10.10.0.15:5612: connect: connection refused","_trace_id":"tm6Gn0c5SLi60-GRh0agEw"}
+Aug 26 09:18:00 node-2 scylla_manager[447]: {"L":"INFO","T":"2026-08-26T09:18:00.010Z","N":"cluster","M":"Creating new Scylla HTTP client","cluster_id":"7713c5fc-c966-4d9e-9a5e-93761669f9ba","_trace_id":"ZaJQX9D5QhuBhAHf0lBOyQ"}
+Aug 26 09:18:15 node-2 scylla_manager[447]: {"L":"INFO","T":"2026-08-26T09:18:15.043Z","N":"cluster.client","M":"HTTP retry backoff","operation":"NodeInfo","wait":"35.844203151s","error":"dial tcp 10.10.0.15:5612: connect: connection refused","_trace_id":"tm6Gn0c5SLi60-GRh0agEw"}
+Aug 26 09:18:36 node-2 scylla_manager[447]: {"L":"INFO","T":"2026-08-26T09:18:36.954Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.11:53770","status":200,"bytes":247,"duration":"4ms","_trace_id":"trsgKivTQKOZOGw334wBig"}
+Aug 26 09:18:50 node-2 scylla_manager[447]: {"L":"ERROR","T":"2026-08-26T09:18:50.888Z","N":"Cluster config update.Cluster host config update","M":"Couldn't read cluster host config","cluster":"7713c5fc-c966-4d9e-9a5e-93761669f9ba","host":"10.10.0.15","hostKey":"10.10.0.15","error":"retrieve cluster host configuration: node info: giving up after 10 attempts: dial tcp 10.10.0.15:5612: connect: connection refused","_trace_id":"tm6Gn0c5SLi60-GRh0agEw","errorStack":"github.com/scylladb/scylla-manager/v3/pkg/service/configcache.(*Service).retrieveNodeConfig\n\tgithub.com/scylladb/scylla-manager/v3/pkg/service/configcache/service.go:272\ngithub.com/scylladb/scylla-manager/v3/pkg/service/configcache.(*Service).updateSingle.func2\n\tgithub.com/scylladb/scylla-manager/v3/pkg/service/configcache/service.go:221\nruntime.goexit\n\truntime/asm_amd64.s:1771\n","S":"github.com/scylladb/go-log.Logger.log\n\tgithub.com/scylladb/go-log@v0.0.7/logger.go:101\ngithub.com/scylladb/go-log.Logger.Error\n\tgithub.com/scylladb/go-log@v0.0.7/logger.go:84\ngithub.com/scylladb/scylla-manager/v3/pkg/service/configcache.(*Service).updateSingle.func2\n\tgithub.com/scylladb/scylla-manager/v3/pkg/service/configcache/service.go:223"}
+Aug 26 09:20:35 node-2 scylla_manager[447]: {"L":"INFO","T":"2026-08-26T09:20:35.576Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.13:60120","status":200,"bytes":247,"duration":"4ms","_trace_id":"n1gaxweJRoOmE3pPQoCzBQ"}
+Aug 26 09:20:37 node-2 scylla_manager[447]: {"L":"INFO","T":"2026-08-26T09:20:37.516Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.11:41870","status":200,"bytes":247,"duration":"4ms","_trace_id":"aM4KevF7RMCFnU1TtcTjFA"}
+Aug 26 09:21:00 node-2 scylla_manager[447]: {"L":"INFO","T":"2026-08-26T09:21:00.548Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.15:37996","status":200,"bytes":247,"duration":"4ms","_trace_id":"3yBoLRLjQJuudGE-1XoMxg"}
+Aug 26 09:21:00 node-2 scylla_manager[447]: {"L":"INFO","T":"2026-08-26T09:21:00.555Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.15:38004","status":200,"bytes":247,"duration":"4ms","_trace_id":"i5RrFyHtRWO0W6feCfX-pg"}

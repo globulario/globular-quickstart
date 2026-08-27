@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:17 UTC; 1min 10s ago
+    Process: 48 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 69 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 90 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 23.9M (peak: 28.1M)
+        CPU: 1.623s
+     CGroup: /system.slice/docker-96f315821cd6b3ecf9ec15e622d6a2e90473ae5ce9526842e93e97f6edc677a2.scope/system.slice/globular-event.service
+             └─90 /usr/lib/globular/bin/event_server
+
+Aug 17 17:18:42 node-2 event_server[90]: time=2026-08-17T17:18:42.311Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=84d2c69a-0b26-4632-b0b9-abfd131fdc6e
+Aug 17 17:18:42 node-2 event_server[90]: time=2026-08-17T17:18:42.312Z level=INFO msg=subscribed channel=operation.* uuid=84d2c69a-0b26-4632-b0b9-abfd131fdc6e subscribers=2
+Aug 17 17:19:01 node-2 event_server[90]: 2026/08/17 17:19:01 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:10002: connect: connection refused\""
+Aug 17 17:19:01 node-2 event_server[90]: time=2026-08-17T17:19:01.716Z level=INFO msg="Subscribe: ok" channel=operation.restart_requested uuid=0cacd080-e894-45ca-bd8d-2bec4df108dd
+Aug 17 17:19:01 node-2 event_server[90]: time=2026-08-17T17:19:01.716Z level=INFO msg=subscribed channel=operation.restart_requested uuid=0cacd080-e894-45ca-bd8d-2bec4df108dd subscribers=2
+Aug 17 17:19:01 node-2 event_server[90]: time=2026-08-17T17:19:01.734Z level=INFO msg="OnEvent: registered" uuid=0cacd080-e894-45ca-bd8d-2bec4df108dd
+Aug 17 17:19:01 node-2 event_server[90]: time=2026-08-17T17:19:01.734Z level=INFO msg="stream registered" uuid=0cacd080-e894-45ca-bd8d-2bec4df108dd
+Aug 17 17:19:07 node-2 event_server[90]: time=2026-08-17T17:19:07.132Z level=WARN msg="keepalive send failed; will drop stream" uuid=10373dda-7d5c-4846-b645-fa651f075493 err="rpc error: code = Unavailable desc = transport is closing"
+Aug 17 17:19:07 node-2 event_server[90]: time=2026-08-17T17:19:07.132Z level=INFO msg="subscriber cleanup" uuid=10373dda-7d5c-4846-b645-fa651f075493
+Aug 17 17:19:07 node-2 event_server[90]: time=2026-08-17T17:19:07.132Z level=INFO msg="OnEvent: stream ended" uuid=10373dda-7d5c-4846-b645-fa651f075493

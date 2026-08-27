@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 06:27:25 UTC; 41min ago
+    Process: 557 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 587 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 604 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 43.1M (peak: 49.1M)
+        CPU: 41.278s
+     CGroup: /system.slice/docker-129bd60a8bfde4eb1bb424fc8beb6203816b01b2246d716234f5631f8e11a391.scope/system.slice/globular-repository.service
+             └─604 /usr/lib/globular/bin/repository_server
+
+Aug 27 07:03:45 node-2 repository_server[604]: 2026/08/27 07:03:45 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 27 07:04:25 node-2 repository_server[604]: 2026/08/27 07:04:25 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=41 baseline_ms=20 window=2000 new_window=1800
+Aug 27 07:05:01 node-2 repository_server[604]: 2026/08/27 07:05:01 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=171 baseline_ms=20 window=2000 new_window=1800
+Aug 27 07:05:25 node-2 repository_server[604]: 2026/08/27 07:05:25 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=44 baseline_ms=20 window=1890 new_window=1701
+Aug 27 07:05:28 node-2 repository_server[604]: 2026/08/27 07:05:28 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=172 baseline_ms=20 window=1864 new_window=1677
+Aug 27 07:06:27 node-2 repository_server[604]: 2026/08/27 07:06:27 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=196 baseline_ms=20 window=2000 new_window=1800
+Aug 27 07:06:45 node-2 repository_server[604]: 2026/08/27 07:06:45 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=43 baseline_ms=20 window=1890 new_window=1701
+Aug 27 07:07:26 node-2 repository_server[604]: time=2026-08-27T07:07:26.627Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 27 07:07:27 node-2 repository_server[604]: 2026/08/27 07:07:27 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=181 baseline_ms=20 window=2000 new_window=1800
+Aug 27 07:07:47 node-2 repository_server[604]: 2026/08/27 07:07:47 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=169 baseline_ms=20 window=1952 new_window=1756

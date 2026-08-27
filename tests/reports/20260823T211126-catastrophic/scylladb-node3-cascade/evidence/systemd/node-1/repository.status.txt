@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 21:14:12 UTC; 3min 25s ago
+    Process: 592 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 632 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 693 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 26.7M (peak: 32.5M)
+        CPU: 1.117s
+     CGroup: /system.slice/docker-dae82d356e76e6016996f999716cccadf9a25ac7e9d047300b9f7e21e912cd83.scope/system.slice/globular-repository.service
+             └─693 /usr/lib/globular/bin/repository_server
+
+Aug 23 21:17:11 node-1 repository_server[693]: 2026/08/23 21:17:11 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 23 21:17:11 node-1 repository_server[693]: 2026/08/23 21:17:11 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%ai-executor%v1.2.317%linux_amd64 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0" finding=service.silent_fallback_active
+Aug 23 21:17:18 node-1 repository_server[693]: 2026/08/23 21:17:18 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 23 21:17:18 node-1 repository_server[693]: 2026/08/23 21:17:18 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%xds%1.2.272%linux_amd64%1 err="Operation failed for repository.manifests - received 0 responses and 1 failures from 1 CL=QUORUM." finding=service.silent_fallback_active
+Aug 23 21:17:18 node-1 repository_server[693]: 2026/08/23 21:17:18 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%xds%1.2.272%linux_amd64%0 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0" finding=service.silent_fallback_active
+Aug 23 21:17:18 node-1 repository_server[693]: 2026/08/23 21:17:18 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%xds%1.2.272%linux_amd64 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0" finding=service.silent_fallback_active
+Aug 23 21:17:18 node-1 repository_server[693]: 2026/08/23 21:17:18 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 23 21:17:18 node-1 repository_server[693]: 2026/08/23 21:17:18 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%xds%v1.2.272%linux_amd64%0 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0" finding=service.silent_fallback_active
+Aug 23 21:17:18 node-1 repository_server[693]: 2026/08/23 21:17:18 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%monitoring%1.2.317%linux_amd64%1 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0" finding=service.silent_fallback_active
+Aug 23 21:17:33 node-1 repository_server[693]: 2026/08/23 21:17:33 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"

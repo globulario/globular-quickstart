@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 00:43:54 UTC; 40min ago
+    Process: 27980 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 27984 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 27987 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 27993 (ai_memory_serve)
+      Tasks: 21 (limit: 8641)
+     Memory: 34.0M (peak: 36.1M)
+        CPU: 15.722s
+     CGroup: /system.slice/docker-18b323bfa9beb153eb9d36bc94faef425c64f4b85468ea1b94a5f78650f213de.scope/system.slice/globular-ai-memory.service
+             └─27993 /usr/lib/globular/bin/ai_memory_server
+
+Aug 01 01:23:43 node-1 ai_memory_server[27993]: 2026/08/01 01:23:43 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=31 baseline_ms=7 window=15 new_window=13
+Aug 01 01:23:43 node-1 ai_memory_server[27993]: 2026/08/01 01:23:43 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=16 baseline_ms=7 window=13 new_window=11
+Aug 01 01:23:44 node-1 ai_memory_server[27993]: 2026/08/01 01:23:44 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=15 baseline_ms=7 window=14 new_window=12
+Aug 01 01:23:54 node-1 ai_memory_server[27993]: time=2026-08-01T01:23:54.506Z level=INFO msg="memory updated" id=6e935b9a-8d41-11f1-b857-02420a0a000b project=globular-services
+Aug 01 01:23:58 node-1 ai_memory_server[27993]: 2026/08/01 01:23:58 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=17 baseline_ms=6 window=15 new_window=13
+Aug 01 01:24:02 node-1 ai_memory_server[27993]: 2026/08/01 01:24:02 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=24 baseline_ms=6 window=13 new_window=11
+Aug 01 01:24:02 node-1 ai_memory_server[27993]: 2026/08/01 01:24:02 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=13 baseline_ms=6 window=13 new_window=11
+Aug 01 01:24:08 node-1 ai_memory_server[27993]: {"level":"warn","ts":"2026-08-01T01:24:08.568024Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000516960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = error reading from server: read tcp 10.10.0.11:52020->10.10.0.15:2379: read: connection reset by peer"}
+Aug 01 01:24:08 node-1 ai_memory_server[27993]: {"level":"warn","ts":"2026-08-01T01:24:08.568142Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000516960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = error reading from server: read tcp 10.10.0.11:52020->10.10.0.15:2379: read: connection reset by peer"}
+Aug 01 01:24:23 node-1 ai_memory_server[27993]: 2026/08/01 01:24:23 ERROR rpc error: code = Internal desc = BehavioralMemoryService.RecordEvidence: record evidence: put evidence: Cannot achieve consistency level for cl ONE. Requires 1, alive 0 domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/RecordEvidence function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632

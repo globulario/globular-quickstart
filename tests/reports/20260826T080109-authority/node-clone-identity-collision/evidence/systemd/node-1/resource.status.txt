@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 08:36:21 UTC; 27min ago
+    Process: 1752 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 1767 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1775 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1814 (resource_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 27.5M (peak: 30.4M)
+        CPU: 2.976s
+     CGroup: /system.slice/docker-cef6ed79bbeff9e64be0590fdde03d11a70e19fdd36359ebd96753c2c7d2b8b8.scope/system.slice/globular-resource.service
+             └─1814 /usr/lib/globular/bin/resource_server
+
+Aug 26 08:36:22 node-1 resource_server[1814]: time=2026-08-26T08:36:22.515Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042
+Aug 26 08:36:24 node-1 resource_server[1814]: 2026/08/26 08:36:24 WARN scylla: Count fallback to scan; consider raw CQL with PK WHERE table=local_resource.accounts
+Aug 26 08:36:24 node-1 resource_server[1814]: time=2026-08-26T08:36:24.417Z level=ERROR msg="fail to create account dir" error="failed to seed sa account: account with name sa already exist!"
+Aug 26 08:36:24 node-1 resource_server[1814]: 2026/08/26 08:36:24 INFO metrics: proxy port conflict, using free port service=resource.ResourceService wanted=10011 actual=45903
+Aug 26 08:36:24 node-1 resource_server[1814]: 2026/08/26 08:36:24 INFO metrics listening service=resource.ResourceService addr=[::]:45903
+Aug 26 08:36:35 node-1 resource_server[1814]: 2026/08/26 08:36:35 INFO mesh: Envoy available, routing through mesh target=node-1.globular.internal:443
+Aug 26 08:36:35 node-1 resource_server[1814]: 2026/08/26 08:36:35 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 26 08:42:24 node-1 resource_server[1814]: 2026/08/26 08:42:24 INFO acc: warmup complete baseline_rtt_ms=20 samples=220 elapsed=5m0s
+Aug 26 08:51:25 node-1 resource_server[1814]: 2026/08/26 08:51:25 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=resource.session.read reason=get_role_binding_failed error="rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+Aug 26 09:01:54 node-1 resource_server[1814]: 2026/08/26 09:01:54 WARN port/proxy change detected in desired; restart required to take effect service=resource.ResourceService id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 old_port=10011 new_port=10011 old_proxy=45903 new_proxy=10011

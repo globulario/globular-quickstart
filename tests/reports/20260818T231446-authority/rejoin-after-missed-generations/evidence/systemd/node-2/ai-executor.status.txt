@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 23:47:47 UTC; 42min ago
+    Process: 608 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 622 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 637 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 34.7M (peak: 38.6M)
+        CPU: 6.280s
+     CGroup: /system.slice/docker-9a63d2117b8538ee4c4f80a487a8a41ef68a018cdf573386eb01dd30a5d6455b.scope/system.slice/globular-ai-executor.service
+             └─637 /usr/lib/globular/bin/ai_executor_server
+
+Aug 19 00:26:33 node-2 ai_executor_server[637]: time=2026-08-19T00:26:33.389Z level=INFO msg="processing incident" incident_id=a17e9b0e-9b64-11f1-8735-02420a0a000b rule_id=drift-detected tier=0 trigger=cluster.drift_detected batch_size=2
+Aug 19 00:26:33 node-2 ai_executor_server[637]: time=2026-08-19T00:26:33.443Z level=INFO msg="diagnosis complete" incident_id=a17e9b0e-9b64-11f1-8735-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 19 00:26:33 node-2 ai_executor_server[637]: time=2026-08-19T00:26:33.443Z level=INFO msg="INCIDENT RESOLVED" incident_id=a17e9b0e-9b64-11f1-8735-02420a0a000b summary="drift-detected triggered by cluster.drift_detected (2 events in batch)" root_cause=unknown_anomaly
+Aug 19 00:26:33 node-2 ai_executor_server[637]: 2026/08/19 00:26:33 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=62 baseline_ms=20 window=14 new_window=12
+Aug 19 00:27:57 node-2 ai_executor_server[637]: time=2026-08-19T00:27:57.813Z level=INFO msg="processing incident" incident_id=d3cc9783-9b64-11f1-8736-02420a0a000b rule_id=service-stopped tier=0 trigger=service.stopped batch_size=1
+Aug 19 00:27:57 node-2 ai_executor_server[637]: time=2026-08-19T00:27:57.891Z level=INFO msg="diagnosis complete" incident_id=d3cc9783-9b64-11f1-8736-02420a0a000b root_cause="unknown_anomaly (etcd)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 19 00:27:57 node-2 ai_executor_server[637]: time=2026-08-19T00:27:57.891Z level=INFO msg="INCIDENT RESOLVED" incident_id=d3cc9783-9b64-11f1-8736-02420a0a000b summary="service-stopped triggered by service.stopped on etcd (1 events in batch)" root_cause="unknown_anomaly (etcd)"
+Aug 19 00:27:57 node-2 ai_executor_server[637]: 2026/08/19 00:27:57 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=89 baseline_ms=20 window=12 new_window=10
+Aug 19 00:28:01 node-2 ai_executor_server[637]: time=2026-08-19T00:28:01.043Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 19 00:28:01 node-2 ai_executor_server[637]: time=2026-08-19T00:28:01.129Z level=INFO msg="codex: CLI not found"

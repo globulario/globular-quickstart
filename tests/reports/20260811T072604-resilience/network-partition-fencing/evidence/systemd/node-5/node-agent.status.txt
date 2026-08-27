@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 07:45:55 UTC; 17min ago
+    Process: 102 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 129 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 161 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 22.5M (peak: 32.7M)
+        CPU: 20.827s
+     CGroup: /system.slice/docker-be1295d58506c7859fb4204b9005a34c087adb018b6a5ee54f2a654b5ce16432.scope/system.slice/globular-node-agent.service
+             └─161 /usr/lib/globular/bin/node_agent_server
+
+Aug 11 08:03:13 node-5 node_agent_server[161]: 2026/08/11 08:03:13 disk-inventory: prune stale: disk candidates: etcd get keys: context deadline exceeded
+Aug 11 08:03:13 node-5 node_agent_server[161]: 2026/08/11 08:03:13 node-agent: controller endpoint refreshed: 10.10.0.13:443 -> 10.10.0.11:443
+Aug 11 08:03:13 node-5 node_agent_server[161]: 2026/08/11 08:03:13 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 11 08:03:13 node-5 node_agent_server[161]: 2026/08/11 08:03:13 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 11 08:03:14 node-5 node_agent_server[161]: 2026/08/11 08:03:14 nodeagent: reporting 37 installed services (hash=48791f542b75f08c26e230134dd199d604e2fa80bdb505d6cf16c3eec26a6d0c, sample=[node-agent catalog gateway event echo])
+Aug 11 08:03:20 node-5 node_agent_server[161]: 2026/08/11 08:03:20 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 11 08:03:20 node-5 node_agent_server[161]: 2026/08/11 08:03:20 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 11 08:03:20 node-5 node_agent_server[161]: 2026/08/11 08:03:20 event-handler: recovered (prior="event service not found in registry, retrying in 10s" suppressed=11)
+Aug 11 08:03:20 node-5 node_agent_server[161]: 2026/08/11 08:03:20 event-handler: connected to event service
+Aug 11 08:03:20 node-5 node_agent_server[161]: 2026/08/11 08:03:20 event-handler: subscribed to operation.*

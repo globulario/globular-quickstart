@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-23T16:11:37.556073Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "node-agent-uptime",
+  "suite": "soak",
+  "result": "PASS",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "Verify that all 5 node-agents remain active throughout a ~4 minute\nobservation window without operator intervention.\n\nThe node-agent is the executor for all cluster operations \u2014 if it\ncrashes and fails to restart, the node becomes unmanageable. This\nscenario samples all 5 nodes at 3 time points to verify:\n  - All node-agents are in \"active\" systemd state throughout\n  - No node-agent crash-loops during idle operation\n  - The installed package count (Layer 3) remains stable\n\nThis tests the \"quiet\" stability of the cluster: no chaos, no load,\njust time passing. If a node-agent exits during idle operation it\nindicates a memory leak, keepalive failure, or bad systemd unit config.\n\nAll 5 nodes are checked because founding nodes (1-3) and worker\nnodes (4-5) have different service footprints and different risk profiles.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

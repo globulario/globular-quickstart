@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-24T07:24:21.667133Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/upgrade/liveness-survives-state-writes.yaml",
+  "scenario": "liveness-survives-state-writes",
+  "suite": "upgrade",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "The controller's persisted node liveness must track reality, no matter how\nits state writes are optimized.\n\nTHE INCIDENT (2026-08-16). A routine ai-memory package deploy escalated into\na full cluster outage. Along the way etcd hit its 2 GiB backend quota and\nwent NOSPACE on 4 of 5 members. Investigating the write volume, an\noptimization shipped as cluster-controller@1.2.317: the controller's state\nblob was no longer rewritten when nothing \"semantic\" had changed, where\nlast_seen, reported_at, capabilities.disk_free_bytes and\nlast_admission_proof.checked_at were all classified as non-semantic\nobservation, plus a 5-minute floor bounding how often observation drift alone\ncould trigger a write.\n\nThe classification was correct about WHAT changes and wrong about WHO reads\nit. last_seen is not decoration on the state record \u2014 it is the liveness\nsignal. Within minutes of the rollout the persisted values were 254-276s\nstale against the 300s floor, and readers judging node liveness from\n/globular/clustercontroller/state reported 3 of 5 nodes UNREACHABLE with\nCRITICAL findings. Every node agent was healthy, listening on its port, and\nserving. The control plane was lying about the cluster, not observing it.\n\nThe rollback was itself blocked by the desired-state regression floor and\nneeded --allow-regression.\n\nWHY IT SHIPPED. Four unit tests covered the change. Every one asserted that\na write was SKIPPED \u2014 the optimization worked, and all four were green. Not\none asserted that anything still functioned afterwards. A test that pins a\nsuppression proves the suppression happens; it can never prove the\nsuppression was safe. That is the same shape as a check that cannot fail\nbeing indistinguishable from one that passes.\n\nThe justification was also wrong on its own numbers: the measured load was\n~78 KB x ~4/min = ~30 MB/hour, against a 1h compaction retention, so this\nwriter's steady-state contribution to the backend is bounded at ~30 MB. It\ncould not have filled 2 GiB. See etcd-backend-does-not-ratchet for what\nactually did.\n\nWHAT THIS SCENARIO PINS. On a healthy, idle cluster \u2014 where nothing\n\"semantic\" is changing and a content-hash optimization is therefore at its\nmost tempting \u2014 every node's persisted last_seen must stay fresh. The\nscenario deliberately waits through a quiet period, because a quiet cluster\nis exactly the condition under which the 1.2.317 dedup suppressed writes.\n\nFailure of this scenario means liveness in etcd has drifted from liveness in\nreality, whatever the mechanism.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-24T07:28:18.718821Z",
+    "result": "FAIL",
+    "executor_exit": 1,
+    "proof_eligible": false
+  }
+}

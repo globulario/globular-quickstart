@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-24T22:46:32.213861Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "control-plane-single-member-loss",
+  "suite": "resilience",
+  "result": "PASS",
+  "source_revision": "0ebfb24869929a4efe528be32759f80589ff0ba5",
+  "proof": {
+    "claim": "Verify that losing one of three control-plane nodes maintains etcd quorum.\n\nThis is the most fundamental HA test for a distributed system using Raft\nconsensus. With 3 etcd members, the quorum requires (3/2)+1 = 2 members.\nLosing 1 member leaves 2/3 active \u2014 quorum is maintained and the cluster\ncontinues to accept reads AND writes.\n\nWhat this test verifies:\n- Raft quorum is maintained after one control-plane node stops\n- etcd writes succeed with 2/3 members (the critical write-quorum test)\n- The remaining 2 members are individually reachable\n- Core services continue running (they're on node-1 and node-2)\n- AI services on node-3 become unavailable (expected, acceptable)\n- After node-3 restarts, it resyncs and joins the quorum\n\nCAP theorem implication: Globular chooses C (consistency) over A\n(availability) \u2014 writes continue on the majority partition, the minority\npartition loses write access. This test validates that the majority side\nfunctions correctly.\n\nClassical distributed failure: \"minority partition\" \u2014 node-3 becomes\nisolated (here: stopped entirely). The majority (nodes 1+2) continues.\n\nIMPORTANT: node-3 hosts the AI services (ai_memory, ai_executor, ai_router,\nai_watcher) and one instance each of all control-plane services (etcd,\ncontroller-standby, workflow-standby, etc.). Their loss during the test\nis expected. The cluster control plane (leader) is on nodes 1 or 2.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

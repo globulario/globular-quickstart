@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 15:57:14 UTC; 11s ago
+    Process: 289 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 471 (envoy)
+      Tasks: 8 (limit: 8641)
+     Memory: 20.7M (peak: 21.4M)
+        CPU: 189ms
+     CGroup: /system.slice/docker-3b1033bce5a3d34cb62d7cfeab87772acf96a463ce7d7baaa5d874c03a504cb3.scope/system.slice/globular-envoy.service
+             └─471 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Aug 18 15:57:14 node-5 envoy[471]: [2026-08-18 15:57:14.938][471][info][runtime] [source/common/runtime/runtime_impl.cc:550] RTDS has finished initialization
+Aug 18 15:57:14 node-5 envoy[471]: [2026-08-18 15:57:14.938][471][info][upstream] [source/common/upstream/cluster_manager_impl.cc:244] cm init: initializing cds
+Aug 18 15:57:14 node-5 envoy[471]: [2026-08-18 15:57:14.939][471][warning][main] [source/server/server.cc:1001] There is no configured limit to the number of allowed active downstream connections. Configure a limit in `envoy.resource_monitors.global_downstream_max_connections` resource monitor.
+Aug 18 15:57:14 node-5 envoy[471]: [2026-08-18 15:57:14.939][471][info][main] [source/server/server.cc:1043] starting main dispatch loop
+Aug 18 15:57:15 node-5 envoy[471]: [2026-08-18 15:57:15.629][471][info][upstream] [source/common/upstream/cds_api_helper.cc:34] cds: response indicates 33 added/updated cluster(s), 1 removed cluster(s); applying changes
+Aug 18 15:57:15 node-5 envoy[471]: [2026-08-18 15:57:15.693][471][info][upstream] [source/common/upstream/cds_api_helper.cc:87] cds: added/updated 33 cluster(s) (skipped 0 unmodified cluster(s)); removed 0 cluster(s)
+Aug 18 15:57:15 node-5 envoy[471]: [2026-08-18T15:57:15.710Z] "GET /ready HTTP/1.1" 503 - 0 17 0 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 18 15:57:24 node-5 envoy[471]: [2026-08-18T15:57:15.711Z] "GET /server_info HTTP/1.1" 200 - 0 98012 2 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 18 15:57:24 node-5 envoy[471]: [2026-08-18T15:57:15.715Z] "GET /stats?format=json HTTP/1.1" 200 - 0 482134 7 - "10.10.0.15" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 18 15:57:24 node-5 envoy[471]: [2026-08-18T15:57:22.520Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 689470 17 - "10.10.0.15" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"

@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 02:45:15 UTC; 18min ago
+    Process: 10351 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 10355 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 10358 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10364 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 29.0M (peak: 33.5M)
+        CPU: 10.059s
+     CGroup: /system.slice/docker-e2f3e3244bedde0a631fb2556de615751d2ab17e3ec60372f038c4e3ebc5d331.scope/system.slice/globular-workflow.service
+             └─10364 /usr/lib/globular/bin/workflow_server
+
+Aug 26 03:03:13 node-2 workflow_server[10364]: 2026/08/26 03:03:13 workflow: step short_circuit_clean SUCCEEDED (attempt 1)
+Aug 26 03:03:13 node-2 workflow_server[10364]: 2026/08/26 03:03:13 workflow: step aggregate_remediation starting (actor=cluster-controller action=controller.reconcile.aggregate_results)
+Aug 26 03:03:13 node-2 workflow_server[10364]: 2026/08/26 03:03:13 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 26 03:03:13 node-2 workflow_server[10364]: 2026/08/26 03:03:13 workflow: step aggregate_remediation SUCCEEDED (attempt 1)
+Aug 26 03:03:13 node-2 workflow_server[10364]: 2026/08/26 03:03:13 workflow: step finalize_reconcile starting (actor=cluster-controller action=controller.reconcile.finalize)
+Aug 26 03:03:13 node-2 workflow_server[10364]: 2026/08/26 03:03:13 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 26 03:03:13 node-2 workflow_server[10364]: 2026/08/26 03:03:13 workflow: step finalize_reconcile SUCCEEDED (attempt 1)
+Aug 26 03:03:13 node-2 workflow_server[10364]: 2026/08/26 03:03:13 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 26 03:03:13 node-2 workflow_server[10364]: time=2026-08-26T03:03:13.548Z level=INFO msg="executor: engine.Execute completed" run_id=reconcile:1787713391387
+Aug 26 03:03:13 node-2 workflow_server[10364]: time=2026-08-26T03:03:13.582Z level=INFO msg="executor: workflow finished" workflow=cluster.reconcile run_id=reconcile:1787713391387 status=RUN_STATUS_SUCCEEDED

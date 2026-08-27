@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:10:34 UTC; 11min ago
+    Process: 10056 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 10060 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 10063 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10069 (workflow_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 28.4M (peak: 31.7M)
+        CPU: 1.830s
+     CGroup: /system.slice/docker-b8fa6aca9bb82e631ce89b654ed458dabe59ec9fe67bf982b77e3cf43dab10a6.scope/system.slice/globular-workflow.service
+             └─10069 /usr/lib/globular/bin/workflow_server
+
+Jul 31 23:18:55 node-5 workflow_server[10069]: 2026/07/31 23:18:55 gocql: unable to dial control conn 10.10.0.14:9042: dial tcp 10.10.0.14:9042: connect: connection refused
+Jul 31 23:19:04 node-5 workflow_server[10069]: 2026/07/31 23:19:04 WARN executor lease: orphan scan iteration error err="Cannot achieve consistency level for cl LOCAL_ONE. Requires 1, alive 0"
+Jul 31 23:19:04 node-5 workflow_server[10069]: 2026/07/31 23:19:04 WARN executor lease: orphan scanner backing off consecutive_failures=1 backoff=1s next_scan_after=2026-07-31T23:19:05Z
+Jul 31 23:19:19 node-5 workflow_server[10069]: 2026/07/31 23:19:19 INFO executor lease: orphan scanner recovered previous_failures=1
+Jul 31 23:21:04 node-5 workflow_server[10069]: time=2026-07-31T23:21:04.684Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Jul 31 23:21:37 node-5 workflow_server[10069]: 2026/07/31 23:21:37 INFO acc: warmup complete baseline_rtt_ms=20 samples=205 elapsed=11m0s
+Jul 31 23:21:43 node-5 workflow_server[10069]: 2026/07/31 23:21:43 INFO superseded prior runs correlation_id=ai-remediation/globular-cluster-controller.service/976fd1c7-8d36-11f1-bd43-02420a0a000b new_run_id=979058b5-8d36-11f1-9912-02420a0a000f count=1
+Jul 31 23:21:43 node-5 workflow_server[10069]: time=2026-07-31T23:21:43.640Z level=INFO msg="workflow run started" run_id=979058b5-8d36-11f1-9912-02420a0a000f component="" node=c777633e-6d07-5713-9c4c-deb3317eee25 trigger=TRIGGER_REASON_REPAIR
+Jul 31 23:21:43 node-5 workflow_server[10069]: 2026/07/31 23:21:43 INFO acc: AIMD decrease method=/workflow.WorkflowService/StartRun rtt_ms=63 baseline_ms=20 window=101 new_window=90
+Jul 31 23:22:00 node-5 workflow_server[10069]: 2026/07/31 23:22:00 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListCorrelationDeferState

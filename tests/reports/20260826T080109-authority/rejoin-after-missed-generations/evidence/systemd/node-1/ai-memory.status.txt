@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 08:36:21 UTC; 44min ago
+    Process: 1816 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 1841 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1869 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1971 (ai_memory_serve)
+      Tasks: 21 (limit: 8641)
+     Memory: 41.5M (peak: 43.4M)
+        CPU: 13.981s
+     CGroup: /system.slice/docker-cef6ed79bbeff9e64be0590fdde03d11a70e19fdd36359ebd96753c2c7d2b8b8.scope/system.slice/globular-ai-memory.service
+             └─1971 /usr/lib/globular/bin/ai_memory_server
+
+Aug 26 09:18:49 node-1 ai_memory_server[1971]: time=2026-08-26T09:18:49.354Z level=INFO msg="memory stored" id=25b68ad0-a12f-11f1-9674-02420a0a000b project=globular-services type=debug title="incident: service_crash: globular-scylla-manager-agent.service → ACTION_RESTART_SERVICE (ACTION_FAILED)"
+Aug 26 09:18:49 node-1 ai_memory_server[1971]: 2026/08/26 09:18:49 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=39 baseline_ms=17 window=1016 new_window=914
+Aug 26 09:18:56 node-1 ai_memory_server[1971]: time=2026-08-26T09:18:56.429Z level=INFO msg="memory updated" id=f3f17a36-a12d-11f1-966c-02420a0a000b project=globular-services
+Aug 26 09:20:04 node-1 ai_memory_server[1971]: 2026/08/26 09:20:04 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=41 baseline_ms=17 window=1003 new_window=902
+Aug 26 09:20:16 node-1 ai_memory_server[1971]: time=2026-08-26T09:20:16.437Z level=INFO msg="memory updated" id=f3f17a36-a12d-11f1-966c-02420a0a000b project=globular-services
+Aug 26 09:20:19 node-1 ai_memory_server[1971]: time=2026-08-26T09:20:19.463Z level=INFO msg="memory stored" id=5b6c059f-a12f-11f1-9675-02420a0a000b project=globular-services type=debug title="incident: service_crash: globular-scylla-manager-agent.service → ACTION_RESTART_SERVICE (ACTION_FAILED)"
+Aug 26 09:20:19 node-1 ai_memory_server[1971]: 2026/08/26 09:20:19 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=37 baseline_ms=17 window=918 new_window=826
+Aug 26 09:20:20 node-1 ai_memory_server[1971]: 2026/08/26 09:20:20 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=147 baseline_ms=17 window=827 new_window=744
+Aug 26 09:20:21 node-1 ai_memory_server[1971]: 2026/08/26 09:20:21 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=54 baseline_ms=17 window=747 new_window=672
+Aug 26 09:20:37 node-1 ai_memory_server[1971]: 2026/08/26 09:20:37 ERROR rpc error: code = Internal desc = BehavioralMemoryService.GeneratePromotionCandidate: generate promotion candidate: theme "remediation.node.systemd.units_running" has 0 outcome(s) and 0 ungoverned check(s), need at least 2 observation(s) domain=10.10.0.11:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/GeneratePromotionCandidate function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663

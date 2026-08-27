@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 19:02:08 UTC; 11s ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 58 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 85 (event_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 27.0M (peak: 28.2M)
+        CPU: 363ms
+     CGroup: /system.slice/docker-cfdb302755e666ec2712c471dbf2598cd6102cf549dfe8e08bc087c67c2b9b59.scope/system.slice/globular-event.service
+             └─85 /usr/lib/globular/bin/event_server
+
+Aug 05 19:02:08 node-5 event_server[85]: time=2026-08-05T19:02:08.425Z level=INFO msg="service ready" service=event.EventService port=10050 proxy=10051 protocol=grpc domain=globular.internal startup_ms=48 version=1.2.297
+Aug 05 19:02:08 node-5 event_server[85]: time=2026-08-05T19:02:08.425Z level=INFO msg="starting service" name=event.EventService id=ae220301-9352-393b-be03-90707f486149 port=10050
+Aug 05 19:02:08 node-5 event_server[85]: 2026/08/05 19:02:08 INFO policy: loaded permissions from file service=event path=/var/lib/globular/policy/services/event/permissions.generated.json count=7
+Aug 05 19:02:08 node-5 event_server[85]: time=2026-08-05T19:02:08.425Z level=INFO msg="authz: permission mappings loaded" service=event count=7 action_mappings=7
+Aug 05 19:02:08 node-5 event_server[85]: time=2026-08-05T19:02:08.425Z level=INFO msg="service started successfully" name=event.EventService id=ae220301-9352-393b-be03-90707f486149 port=10050
+Aug 05 19:02:08 node-5 event_server[85]: time=2026-08-05T19:02:08.531Z level=INFO msg="resumed from durable cursor" instance=event-node-5.globular.internal cursor_time=2026-08-05T19:02:06Z
+Aug 05 19:02:08 node-5 event_server[85]: time=2026-08-05T19:02:08.532Z level=INFO msg="scylla event bus connected" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=globular_events
+Aug 05 19:02:08 node-5 event_server[85]: time=2026-08-05T19:02:08.533Z level=INFO msg="event loop started" service=event.EventService id=ae220301-9352-393b-be03-90707f486149
+Aug 05 19:02:08 node-5 event_server[85]: 2026/08/05 19:02:08 INFO metrics listening service=event.EventService addr=[::]:10051
+Aug 05 19:02:13 node-5 event_server[85]: 2026/08/05 19:02:13 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.15:10001: connect: connection refused\""

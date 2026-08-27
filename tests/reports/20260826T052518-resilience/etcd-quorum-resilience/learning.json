@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-26T05:53:51.630843Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "etcd-quorum-resilience",
+  "suite": "resilience",
+  "result": "PASS",
+  "source_revision": "18e2d1202d390302d87b5d293fa69bb9239f8459",
+  "proof": {
+    "claim": "Verify that etcd quorum is maintained when non-etcd nodes fail.\n\nThis test stops node-5 (a worker node with no etcd member), then verifies:\n  - etcd still reports 3 healthy members\n  - The cluster stays in \"healthy\" status\n  - All services remain registered in etcd\n  - The cluster can process reads (service matrix still reachable)\n\netcd requires (N/2)+1 members for quorum. With 3 members, 2 must be\navailable. Stopping a non-etcd node should have zero impact on quorum.\n\nThis proves that the quickstart cluster correctly separates etcd membership\nfrom worker node presence \u2014 etcd quorum is determined by the founding 3 nodes\n(node-1, node-2, node-3), not by worker nodes (node-4, node-5).",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

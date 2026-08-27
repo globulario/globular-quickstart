@@ -1,0 +1,25 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:26:00 UTC; 13s ago
+    Process: 213 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 238 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 245 (node_agent_serv)
+      Tasks: 26 (limit: 8641)
+     Memory: 25.8M (peak: 35.9M)
+        CPU: 13.752s
+     CGroup: /system.slice/docker-8e2076f4c40178dcdd9bcfeee512d2325132b3b746cdcd1fa2bc1708e47cfdb0.scope/system.slice/globular-node-agent.service
+             ├─245 /usr/lib/globular/bin/node_agent_server
+             ├─884 /usr/bin/systemctl restart globular-event.service
+             ├─885 /usr/bin/systemctl restart globular-file.service
+             └─886 /usr/bin/systemctl restart globular-log.service
+
+Aug 22 19:26:07 node-3 node_agent_server[245]: 2026/08/22 19:26:07 grpc-workflow: install-package event: globular-event.service active at 1.2.317, skipping
+Aug 22 19:26:07 node-3 node_agent_server[245]: 2026/08/22 19:26:07 install-skip-restamp: re-stamped canonical receipt for SERVICE/event @ 1.2.317 (legacy_sidecar superseded if present)
+Aug 22 19:26:07 node-3 node_agent_server[245]: 2026/08/22 19:26:07 grpc-workflow: install-package file: globular-file.service active at 1.2.317, skipping
+Aug 22 19:26:07 node-3 node_agent_server[245]: 2026/08/22 19:26:07 grpc-workflow: install-package log: globular-log.service active at 1.2.317, skipping
+Aug 22 19:26:07 node-3 node_agent_server[245]: 2026/08/22 19:26:07 grpc-workflow: runtime-proof: event running PID=91 binary checksum matches expected
+Aug 22 19:26:08 node-3 node_agent_server[245]: 2026/08/22 19:26:08 install-skip-restamp: re-stamped canonical receipt for SERVICE/file @ 1.2.317 (legacy_sidecar superseded if present)
+Aug 22 19:26:08 node-3 node_agent_server[245]: 2026/08/22 19:26:08 grpc-workflow: runtime-proof: file running PID=682 binary checksum matches expected
+Aug 22 19:26:08 node-3 node_agent_server[245]: 2026/08/22 19:26:08 install-skip-restamp: re-stamped canonical receipt for SERVICE/log @ 1.2.317 (legacy_sidecar superseded if present)
+Aug 22 19:26:08 node-3 node_agent_server[245]: 2026/08/22 19:26:08 grpc-workflow: runtime-proof: log running PID=544 binary checksum matches expected
+Aug 22 19:26:08 node-3 node_agent_server[245]: 2026/08/22 19:26:08 probe-scylla-health: [mode=NORMAL bootstrap=100%]

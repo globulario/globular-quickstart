@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:26:36 UTC; 27s ago
+    Process: 124 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 157 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 176 (node_agent_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 21.7M (peak: 32.8M)
+        CPU: 16.718s
+     CGroup: /system.slice/docker-f437b32de615aef177a05c06ceac9570dbde691a19f53fe11e50924dad53bf5c.scope/system.slice/globular-node-agent.service
+             └─176 /usr/lib/globular/bin/node_agent_server
+
+Aug 01 01:26:39 node-2 node_agent_server[176]: {"level":"warn","ts":"2026-08-01T01:26:39.186092Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00015b4a0/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 01 01:26:39 node-2 node_agent_server[176]: 2026/08/01 01:26:39 behavioral observation: infra_probe skipped component=minio node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record signal: rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl ONE. Requires 1, alive 0
+Aug 01 01:26:52 node-2 node_agent_server[176]: 2026/08/01 01:26:52 event-publisher: connected to event service
+Aug 01 01:26:52 node-2 node_agent_server[176]: 2026/08/01 01:26:52 event-handler: connected to event service
+Aug 01 01:26:52 node-2 node_agent_server[176]: 2026/08/01 01:26:52 event-handler: subscribed to operation.*
+Aug 01 01:26:56 node-2 node_agent_server[176]: 2026/08/01 01:26:56 minio-topology-gate: node c8a09d9e-3813-5357-ab58-93aa410f27fb (ip=10.10.0.12) not admitted — node not listed in approved objectstore topology (gen=0)
+Aug 01 01:26:57 node-2 node_agent_server[176]: 2026/08/01 01:26:57 nodeagent: reporting 14 installed services (hash=7b87c2faeaa710872818fcaf8bb0b24763157a46f9901e6c1b9fb14afa7dc275, sample=[repository cluster-controller envoy prometheus alertmanager])
+Aug 01 01:26:57 node-2 node_agent_server[176]: 2026/08/01 01:26:57 node heartbeat failed (state=degraded): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: connection refused
+Aug 01 01:26:59 node-2 node_agent_server[176]: 2026/08/01 01:26:59 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 01 01:27:00 node-2 node_agent_server[176]: 2026/08/01 01:27:00 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb

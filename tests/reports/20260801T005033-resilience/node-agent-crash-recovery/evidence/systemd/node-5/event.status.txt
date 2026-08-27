@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:12:53 UTC; 11min ago
+    Process: 54 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 77 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 98 (event_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 20.0M (peak: 20.7M)
+        CPU: 928ms
+     CGroup: /system.slice/docker-90c13a2e49466a72ab3c3683d19907de7e768a425d5abd8d672f5b03af3de399.scope/system.slice/globular-event.service
+             └─98 /usr/lib/globular/bin/event_server
+
+Aug 01 01:24:29 node-5 event_server[98]: time=2026-08-01T01:24:29.878Z level=INFO msg="poll hit event limit, deferring rest to next tick" events=500 limit=500
+Aug 01 01:24:29 node-5 event_server[98]: time=2026-08-01T01:24:29.991Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=22
+Aug 01 01:24:30 node-5 event_server[98]: time=2026-08-01T01:24:30.001Z level=INFO msg="poll hit event limit, deferring rest to next tick" events=500 limit=500
+Aug 01 01:24:30 node-5 event_server[98]: time=2026-08-01T01:24:30.191Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=20
+Aug 01 01:24:30 node-5 event_server[98]: time=2026-08-01T01:24:30.203Z level=INFO msg="poll hit event limit, deferring rest to next tick" events=500 limit=500
+Aug 01 01:24:30 node-5 event_server[98]: time=2026-08-01T01:24:30.390Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=16
+Aug 01 01:24:30 node-5 event_server[98]: 2026/08/01 01:24:30 ERROR rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (scylladb bus not connected) domain=10.10.0.15:8443 application=event.EventService user="" method=/event.EventService/OnEvent function=github.com/globulario/services/golang/interceptors.ServerStreamInterceptor file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:1731
+Aug 01 01:24:30 node-5 event_server[98]: time=2026-08-01T01:24:30.590Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=12
+Aug 01 01:24:30 node-5 event_server[98]: time=2026-08-01T01:24:30.791Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=8
+Aug 01 01:24:30 node-5 event_server[98]: time=2026-08-01T01:24:30.991Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=4

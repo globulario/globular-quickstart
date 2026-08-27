@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 07:14:40 UTC; 28min ago
+    Process: 152 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 199 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 242 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 307 (rbac_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 90.2M (peak: 91.4M)
+        CPU: 1.813s
+     CGroup: /system.slice/docker-0a1b305122e00c42847d531a5d4f93d9f5c7becabff5fe1ee48ff86b85045c09.scope/system.slice/globular-rbac.service
+             └─307 /usr/lib/globular/bin/rbac_server
+
+Aug 18 07:37:53 node-5 rbac_server[307]: 2026/08/18 07:37:53 gocql: unable to dial control conn 10.10.0.11:9142: dial tcp 10.10.0.11:9142: connect: connection refused
+Aug 18 07:37:53 node-5 rbac_server[307]: 2026/08/18 07:37:53 gocql: unable to reconnect control connection: dial tcp 10.10.0.11:9142: connect: connection refused
+Aug 18 07:37:57 node-5 rbac_server[307]: 2026/08/18 07:37:57 error: failed to connect to "[HostInfo hostname=\"10.10.0.13\" connectAddress=\"10.10.0.13\" peer=\"10.10.0.13\" rpc_address=\"10.10.0.13\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.13\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"a1102d19-d761-4eac-9ac2-ee2dfc1de248\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: tls: first record does not look like a TLS handshake
+Aug 18 07:38:00 node-5 rbac_server[307]: 2026/08/18 07:38:00 error: failed to connect to "[HostInfo hostname=\"10.10.0.12\" connectAddress=\"10.10.0.12\" peer=\"10.10.0.12\" rpc_address=\"10.10.0.12\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.12\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"46d042ea-fbf3-4a96-81d0-d4a1cf48601a\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: tls: first record does not look like a TLS handshake
+Aug 18 07:38:11 node-5 rbac_server[307]: time=2026-08-18T07:38:11.714Z level=WARN msg="permissions store unreachable; reconnecting with fresh host probe" err="gocql: no hosts available in the pool"
+Aug 18 07:38:11 node-5 rbac_server[307]: time=2026-08-18T07:38:11.760Z level=INFO msg="permissions store (re)connected" backend=scylla
+Aug 18 07:39:18 node-5 rbac_server[307]: 2026/08/18 07:39:18 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 07:40:12 node-5 rbac_server[307]: 2026/08/18 07:40:12 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 07:41:58 node-5 rbac_server[307]: 2026/08/18 07:41:58 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 07:42:41 node-5 rbac_server[307]: 2026/08/18 07:42:41 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

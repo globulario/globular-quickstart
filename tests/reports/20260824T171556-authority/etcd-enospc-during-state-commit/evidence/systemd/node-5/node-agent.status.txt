@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:52:47 UTC; 7min ago
+    Process: 18807 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 18811 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 18814 (node_agent_serv)
+      Tasks: 26 (limit: 8641)
+     Memory: 714.3M (peak: 1.8G)
+        CPU: 1min 1.609s
+     CGroup: /system.slice/docker-f9dc940ead06057e70353aabf792033a975678574d46627e5f8c91eae63b6cbc.scope/system.slice/globular-node-agent.service
+             └─18814 /usr/lib/globular/bin/node_agent_server
+
+Aug 24 17:59:28 node-5 node_agent_server[18814]: 2026/08/24 17:59:28 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 24 17:59:32 node-5 node_agent_server[18814]: {"level":"warn","ts":"2026-08-24T17:59:32.083181Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000274b40/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:59:32 node-5 node_agent_server[18814]: {"level":"warn","ts":"2026-08-24T17:59:32.083366Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000274b40/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 17:59:32 node-5 node_agent_server[18814]: 2026/08/24 17:59:32 nodeagent: list installed packages kind=COMMAND: installed_state: list "/globular/nodes/35ac3821-6b90-52eb-a800-41130471770b/packages/COMMAND/": context deadline exceeded — marking InventoryComplete=false
+Aug 24 17:59:32 node-5 node_agent_server[18814]: 2026/08/24 17:59:32 nodeagent: reporting 35 installed services (hash=af04d7876ce45f22a664cf8b721e68a67490c048087209e7cc175336de4ef868, sample=[file globular-cli alertmanager ai-router mail])
+Aug 24 17:59:32 node-5 node_agent_server[18814]: 2026/08/24 17:59:32 node heartbeat failed (state=degraded): rpc error: code = DeadlineExceeded desc = context deadline exceeded
+Aug 24 17:59:36 node-5 node_agent_server[18814]: 2026/08/24 17:59:36 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 24 17:59:37 node-5 node_agent_server[18814]: 2026/08/24 17:59:37 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 24 17:59:39 node-5 node_agent_server[18814]: 2026/08/24 17:59:39 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 24 17:59:39 node-5 node_agent_server[18814]: 2026/08/24 17:59:39 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b

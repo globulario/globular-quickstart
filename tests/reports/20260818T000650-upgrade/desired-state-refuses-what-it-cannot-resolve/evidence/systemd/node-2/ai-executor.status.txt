@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:59:00 UTC; 8min ago
+    Process: 634 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 664 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 684 (ai_executor_ser)
+      Tasks: 19 (limit: 8641)
+     Memory: 32.1M (peak: 33.0M)
+        CPU: 1.650s
+     CGroup: /system.slice/docker-9222800d3a47ca13f196913e2ca4b66dc75c10e92e0db6dc29b6567ac0cd909e.scope/system.slice/globular-ai-executor.service
+             └─684 /usr/lib/globular/bin/ai_executor_server
+
+Aug 18 00:04:55 node-2 ai_executor_server[684]: time=2026-08-18T00:04:55.532Z level=INFO msg="processing incident" incident_id=717f6e74-9a98-11f1-b1cc-02420a0a000c rule_id=service-stopped tier=0 trigger=service.stopped batch_size=10
+Aug 18 00:04:59 node-2 ai_executor_server[684]: time=2026-08-18T00:04:59.574Z level=INFO msg="diagnosis complete" incident_id=717f6e74-9a98-11f1-b1cc-02420a0a000c root_cause="unknown_anomaly (ai_router.AiRouterService)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 18 00:04:59 node-2 ai_executor_server[684]: time=2026-08-18T00:04:59.575Z level=INFO msg="INCIDENT RESOLVED" incident_id=717f6e74-9a98-11f1-b1cc-02420a0a000c summary="service-stopped triggered by service.stopped on ai_router.AiRouterService (10 events in batch)" root_cause="unknown_anomaly (ai_router.AiRouterService)"
+Aug 18 00:04:59 node-2 ai_executor_server[684]: time=2026-08-18T00:04:59.583Z level=WARN msg="behavioral feed signal record failed" incident=717f6e74-9a98-11f1-b1cc-02420a0a000c err="rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 18 00:07:07 node-2 ai_executor_server[684]: time=2026-08-18T00:07:07.372Z level=INFO msg="processing incident" incident_id=c00e99f1-9a98-11f1-b1ce-02420a0a000c rule_id=auth-denial tier=0 trigger=alert.auth.denied batch_size=7
+Aug 18 00:07:07 node-2 ai_executor_server[684]: time=2026-08-18T00:07:07.458Z level=INFO msg="diagnosis complete" incident_id=c00e99f1-9a98-11f1-b1ce-02420a0a000c root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 18 00:07:07 node-2 ai_executor_server[684]: time=2026-08-18T00:07:07.458Z level=INFO msg="INCIDENT RESOLVED" incident_id=c00e99f1-9a98-11f1-b1ce-02420a0a000c summary="auth-denial triggered by alert.auth.denied on repository.PackageRepository (7 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)"
+Aug 18 00:07:07 node-2 ai_executor_server[684]: time=2026-08-18T00:07:07.466Z level=INFO msg="processing incident" incident_id=c01ccaaa-9a98-11f1-8bed-02420a0a000b rule_id=auth-denial tier=0 trigger=alert.auth.denied batch_size=7
+Aug 18 00:07:07 node-2 ai_executor_server[684]: time=2026-08-18T00:07:07.523Z level=INFO msg="diagnosis complete" incident_id=c01ccaaa-9a98-11f1-8bed-02420a0a000b root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 18 00:07:07 node-2 ai_executor_server[684]: time=2026-08-18T00:07:07.523Z level=INFO msg="INCIDENT RESOLVED" incident_id=c01ccaaa-9a98-11f1-8bed-02420a0a000b summary="auth-denial triggered by alert.auth.denied on repository.PackageRepository (7 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)"

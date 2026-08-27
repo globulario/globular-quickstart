@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 18:23:48 UTC; 44min ago
+    Process: 553 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 582 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 594 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 678 (rbac_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 150.9M (peak: 470.3M)
+        CPU: 7.374s
+     CGroup: /system.slice/docker-4c675f6508b9a86c7b995eb51d86a0499df1ded44d81b29ffb1411f52fc36f32.scope/system.slice/globular-rbac.service
+             └─678 /usr/lib/globular/bin/rbac_server
+
+Aug 27 19:07:17 node-1 rbac_server[678]: 2026/08/27 19:07:17 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 27 19:07:21 node-1 rbac_server[678]: 2026/08/27 19:07:21 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 27 19:07:21 node-1 rbac_server[678]: 2026/08/27 19:07:21 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 27 19:07:21 node-1 rbac_server[678]: 2026/08/27 19:07:21 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 27 19:07:57 node-1 rbac_server[678]: {"level":"warn","ts":"2026-08-27T19:07:57.013431Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003e9860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:07:57 node-1 rbac_server[678]: {"level":"info","ts":"2026-08-27T19:07:57.0135Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 19:07:58 node-1 rbac_server[678]: {"level":"warn","ts":"2026-08-27T19:07:58.460618Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00025fa40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:07:58 node-1 rbac_server[678]: {"level":"info","ts":"2026-08-27T19:07:58.4607Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 19:08:03 node-1 rbac_server[678]: {"level":"warn","ts":"2026-08-27T19:08:03.927085Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000380b40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 19:08:03 node-1 rbac_server[678]: {"level":"info","ts":"2026-08-27T19:08:03.927174Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-24T21:17:31.965179Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/functional/doctor-node-report-agrees-with-cluster-report.yaml",
+  "scenario": "doctor-node-report-agrees-with-cluster-report",
+  "suite": "functional",
+  "source_revision": "0ebfb24869929a4efe528be32759f80589ff0ba5",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "The two doctor surfaces must not contradict each other. A cluster-scoped\nfinding shown on a node's page must be one the cluster report actually holds.\n\nWHY THIS EXISTS. On 2026-08-19 globular-admin showed \"Worst Severity:\nCRITICAL\" on all five nodes of a completely healthy cluster. The finding was\nobjectstore.write_quorum_lost \u2014 \"active_drives=1 < write_quorum=3\" \u2014 against\na MinIO pool that was, at that moment, 4 drives online / 0 offline / EC:2,\nwith an object written on one node and read back byte-identical from all\nfour.\n\nThe tell was that the finding named a DIFFERENT sole survivor on every page:\n\n  viewing globule-ryzen   -> active_nodes=10.0.0.63,  down=[.102 .9 .8]\n  viewing globule-nuc     -> active_nodes=10.0.0.8,   down=[.63 .102 .9]\n  viewing globule-hp-01   -> active_nodes=10.0.0.9,   down=[.63 .102 .8]\n  viewing globule-lenovo  -> active_nodes=10.0.0.102, down=[.63 .9 .8]\n\nAll four cannot each be the last one standing. known_down_nodes was empty in\nevery case: nothing had ever been observed down.\n\nTHE CAUSE. EvaluateForNode builds a snapshot whose Nodes list is filtered to\nthe single node being reported on, then evaluates CLUSTER-scoped rules\nagainst that view. Rules that resolve membership see every other node as\nabsent \u2014 no NodeRecord, no inventory \u2014 and count them down. The verdict was\nassembled entirely from nodes missing from a deliberately narrowed snapshot,\nwhich is the shape ops.always.doctor.reduced-harvest-honesty exists to\nforbid: a reduced harvest is an UNKNOWN, never a FAIL.\n\nWHY THE CLUSTER REPORT ALONE CANNOT CATCH IT. `globular doctor report\ncluster` was clean throughout \u2014 it is the only surface that receives the full\nnode set. doctor-report-clean asks exactly that surface and would have passed\non every one of those days while every node page showed CRITICAL. The\ndivergence between the surfaces is the defect, so the divergence is what this\nasserts.\n\nDIRECTIONALITY. Only findings present in the NODE report and absent from the\nCLUSTER report fail this scenario. The reverse is legitimate \u2014 the cluster\nreport may hold cluster-scoped findings a node page does not surface \u2014 and is\nrecorded but never failed on.\n\nWHY ALL FIVE NODES. The defect was per-node by construction: each page\nindicted the other four. Checking one node would catch it here, but checking\nevery node is what distinguishes \"this surface is broken\" from \"this one node\nis odd\", and it costs one probe each.\n\nNOT COVERED HERE: whether either report is CORRECT about the cluster. This\npins agreement, not truth. A doctor that is wrong in the same way on both\nsurfaces passes this scenario and is caught by doctor-report-clean and by the\nobjectstore scenarios.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-24T21:19:58.227834Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

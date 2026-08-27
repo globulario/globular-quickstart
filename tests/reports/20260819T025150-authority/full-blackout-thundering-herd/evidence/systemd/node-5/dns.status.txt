@@ -1,0 +1,23 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:14 UTC; 15s ago
+    Process: 1089 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 1092 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1096 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1099 (dns_server)
+      Tasks: 12 (limit: 8641)
+     Memory: 26.3M (peak: 26.8M)
+        CPU: 149ms
+     CGroup: /system.slice/docker-d1f5b8be4d5e8a538660e463859f4b15e96ad466285c4e0d1073a4ae4c36e0a3.scope/system.slice/globular-dns.service
+             └─1099 /usr/lib/globular/bin/dns_server
+
+Aug 19 03:23:20 node-5 dns_server[1099]: {"level":"warn","ts":"2026-08-19T03:23:20.459428Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000265a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:22 node-5 dns_server[1099]: {"level":"warn","ts":"2026-08-19T03:23:22.460186Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000265a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 19 03:23:23 node-5 dns_server[1099]: 2026/08/19 03:23:23 INFO InitService: loaded config by name fallback service=dns.DnsService current_id=553ba599-3399-4d09-b1b4-3772c15c0bf3 config_id=c98fb9c5-d149-466c-86bd-b018422d0dd3
+Aug 19 03:23:25 node-5 dns_server[1099]: 2026/08/19 03:23:25 INFO InitGrpcServer: gRPC server initialized service=dns.DnsService tls=true port=10006
+Aug 19 03:23:29 node-5 dns_server[1099]: time=2026-08-19T03:23:29.649Z level=INFO msg="service ready" service=dns.DnsService port=10006 proxy=10007 protocol=grpc domain=globular.internal listen_ms=15200
+Aug 19 03:23:29 node-5 dns_server[1099]: time=2026-08-19T03:23:29.649Z level=INFO msg="starting service" name=dns.DnsService id=c98fb9c5-d149-466c-86bd-b018422d0dd3 port=10006
+Aug 19 03:23:29 node-5 dns_server[1099]: 2026/08/19 03:23:29 INFO policy: loaded permissions from file service=dns path=/var/lib/globular/policy/services/dns/permissions.generated.json count=39
+Aug 19 03:23:29 node-5 dns_server[1099]: time=2026-08-19T03:23:29.654Z level=INFO msg="authz: permission mappings loaded" service=dns count=39 action_mappings=40
+Aug 19 03:23:29 node-5 dns_server[1099]: time=2026-08-19T03:23:29.654Z level=INFO msg="service started successfully" name=dns.DnsService id=c98fb9c5-d149-466c-86bd-b018422d0dd3 port=10006
+Aug 19 03:23:29 node-5 dns_server[1099]: time=2026-08-19T03:23:29.656Z level=INFO msg="dns:udp server starting" port=53

@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:48:56 UTC; 2min 19s ago
+    Process: 52 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 70 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 92 (event_server)
+      Tasks: 22 (limit: 8641)
+     Memory: 23.2M (peak: 30.1M)
+        CPU: 1.244s
+     CGroup: /system.slice/docker-ad320a543adf0b98247f049770f1ddbb44e8f5a2f3712c4db491b6a85ccf76cf.scope/system.slice/globular-event.service
+             └─92 /usr/lib/globular/bin/event_server
+
+Aug 05 16:50:26 node-4 event_server[92]: time=2026-08-05T16:50:26.670Z level=INFO msg="stream registered" uuid=dc92709b-e8b7-40a1-89a5-9a30e90c1f99
+Aug 05 16:50:26 node-4 event_server[92]: time=2026-08-05T16:50:26.670Z level=INFO msg=subscribed channel=operation.* uuid=dc92709b-e8b7-40a1-89a5-9a30e90c1f99 subscribers=1
+Aug 05 16:50:34 node-4 event_server[92]: time=2026-08-05T16:50:34.946Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=ced69ebe-d6d1-4289-9c12-8e32411a4de1
+Aug 05 16:50:34 node-4 event_server[92]: time=2026-08-05T16:50:34.946Z level=INFO msg=subscribed channel=operation.* uuid=ced69ebe-d6d1-4289-9c12-8e32411a4de1 subscribers=2
+Aug 05 16:50:34 node-4 event_server[92]: time=2026-08-05T16:50:34.946Z level=INFO msg="OnEvent: registered" uuid=ced69ebe-d6d1-4289-9c12-8e32411a4de1
+Aug 05 16:50:34 node-4 event_server[92]: time=2026-08-05T16:50:34.946Z level=INFO msg="stream registered" uuid=ced69ebe-d6d1-4289-9c12-8e32411a4de1
+Aug 05 16:50:39 node-4 event_server[92]: time=2026-08-05T16:50:39.450Z level=WARN msg="event send failed; will drop subscriber" channel=alert.auth.denied uuid=dc92709b-e8b7-40a1-89a5-9a30e90c1f99 err="rpc error: code = Canceled desc = context canceled"
+Aug 05 16:50:39 node-4 event_server[92]: time=2026-08-05T16:50:39.450Z level=INFO msg="subscriber cleanup" uuid=dc92709b-e8b7-40a1-89a5-9a30e90c1f99
+Aug 05 16:50:39 node-4 event_server[92]: time=2026-08-05T16:50:39.450Z level=INFO msg="subscriber cleanup" uuid=ai_router_alert.*
+Aug 05 16:50:39 node-4 event_server[92]: time=2026-08-05T16:50:39.450Z level=INFO msg="OnEvent: stream ended" uuid=dc92709b-e8b7-40a1-89a5-9a30e90c1f99

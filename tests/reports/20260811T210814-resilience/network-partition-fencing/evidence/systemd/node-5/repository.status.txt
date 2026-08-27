@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 21:28:51 UTC; 18min ago
+    Process: 1127 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 1131 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1134 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 39.0M (peak: 41.9M)
+        CPU: 3.598s
+     CGroup: /system.slice/docker-0f992bf4fa933c9beed208604bdf7818484fd203bdc5dd91e5fc63687bd71492.scope/system.slice/globular-repository.service
+             └─1134 /usr/lib/globular/bin/repository_server
+
+Aug 11 21:45:59 node-5 repository_server[1134]: {"level":"warn","ts":"2026-08-11T21:45:59.338271Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000d8d20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 11 21:45:59 node-5 repository_server[1134]: {"level":"warn","ts":"2026-08-11T21:45:59.338395Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000d8d20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 11 21:45:59 node-5 repository_server[1134]: time=2026-08-11T21:45:59.338Z level=ERROR msg="scylladb reconnect failed" err="scylla reconnect: scylla: cluster hosts: etcd get /globular/cluster/scylla/hosts: context deadline exceeded"
+Aug 11 21:46:05 node-5 repository_server[1134]: 2026/08/11 21:46:05 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 11 21:46:06 node-5 repository_server[1134]: time=2026-08-11T21:46:06.336Z level=WARN msg="scylladb health check failed" err="scylla: not connected"
+Aug 11 21:46:06 node-5 repository_server[1134]: 2026/08/11 21:46:06 INFO scylladb connected hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=repository rf=3
+Aug 11 21:46:06 node-5 repository_server[1134]: 2026/08/11 21:46:06 INFO scylladb reconnected hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=repository rf=3
+Aug 11 21:46:06 node-5 repository_server[1134]: time=2026-08-11T21:46:06.462Z level=INFO msg="scylladb reconnected after health check failure"
+Aug 11 21:46:06 node-5 repository_server[1134]: time=2026-08-11T21:46:06.462Z level=INFO msg="repository metadata recovered — service is SERVING"
+Aug 11 21:46:28 node-5 repository_server[1134]: 2026/08/11 21:46:28 INFO acc: warmup complete baseline_rtt_ms=20 samples=205 elapsed=17m37s

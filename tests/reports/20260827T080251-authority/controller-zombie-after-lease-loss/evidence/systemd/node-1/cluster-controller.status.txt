@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 07:51:19 UTC; 17min ago
+    Process: 141 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 174 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 197 (cluster_control)
+      Tasks: 24 (limit: 8641)
+     Memory: 52.8M (peak: 54.6M)
+        CPU: 34.314s
+     CGroup: /system.slice/docker-397e55c282c79081902ab126fff23289815f88f1c2098484b8470853bced6027.scope/system.slice/globular-cluster-controller.service
+             └─197 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 27 08:06:23 node-1 cluster_controller_server[197]: 2026/08/27 08:06:23 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 27 08:06:50 node-1 cluster_controller_server[197]: 2026/08/27 08:06:50 minio-creds: read from /var/lib/globular/minio/credentials (user=globular)
+Aug 27 08:06:51 node-1 cluster_controller_server[197]: 2026/08/27 08:06:51 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)
+Aug 27 08:07:20 node-1 cluster_controller_server[197]: 2026/08/27 08:07:20 minio-creds: read from /var/lib/globular/minio/credentials (user=globular)
+Aug 27 08:07:21 node-1 cluster_controller_server[197]: 2026/08/27 08:07:21 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)
+Aug 27 08:07:50 node-1 cluster_controller_server[197]: 2026/08/27 08:07:50 minio-creds: read from /var/lib/globular/minio/credentials (user=globular)
+Aug 27 08:07:51 node-1 cluster_controller_server[197]: 2026/08/27 08:07:51 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)
+Aug 27 08:08:20 node-1 cluster_controller_server[197]: 2026/08/27 08:08:20 minio-creds: read from /var/lib/globular/minio/credentials (user=globular)
+Aug 27 08:08:20 node-1 cluster_controller_server[197]: 2026/08/27 08:08:20 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)
+Aug 27 08:08:41 node-1 systemd[1]: globular-cluster-controller.service: Sent signal SIGCONT to main process 197 (cluster_control) on client request.

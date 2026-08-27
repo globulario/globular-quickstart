@@ -1,0 +1,100 @@
+version: 1
+name: doctor-report-clean
+description: |
+  Verify that cluster-doctor reports no ERROR-severity findings against a
+  settled cluster.
+
+  Why this scenario exists:
+
+  On 2026-08-11 the certification suite scored 34/36 green while
+  cluster-doctor simultaneously reported 39 findings, 20 of them ERROR — a
+  corrupted etcd member on node-2, a poisoned scylladb package digest, and
+  nine units wedged in start-pre behind a failed ScyllaDB. Every one of those
+  defects was real, and the scenario suite sailed past all of them, because
+  the suite asserts almost entirely on PRESENCE (is the service registered? is
+  the unit active?) while the doctor asserts on COHERENCE ACROSS LAYERS (does
+  installed state match the manifest? does runtime match installed?).
+
+  A green suite alongside a 20-ERROR doctor report means the suite was not
+  measuring the thing that was broken. This scenario closes that gap by making
+  the doctor's own verdict a gated assertion instead of something a human has
+  to remember to read.
+
+  What it asserts, and what it deliberately does not:
+
+  - ERROR/CRITICAL count MUST be zero. These are coherence violations with an
+    identified owner and a remediation; none should survive a settled cluster.
+  - WARN is recorded as evidence but NOT gated. The quickstart runs MinIO in
+    standalone mode across 5 nodes, which is a legitimate standing WARN for
+    this topology (objectstore.standalone_in_cluster). Gating on zero WARN
+    would make the scenario permanently red for a known, accepted condition,
+    and a permanently red test is one people learn to ignore.
+  - reduced_harvest MUST be false. When collector sub-fetches fail, the doctor
+    marks its findings "[reduced-harvest]" and its verdict is bounded by
+    partial data. A zero-ERROR count harvested from partial data is absence of
+    evidence, not evidence of health — accepting it would rebuild the exact
+    false-green this scenario exists to prevent
+    (ops.always.doctor.reduced-harvest-honesty).
+  - reachable MUST be true. An unreachable doctor is not a clean cluster; it
+    is an unknown one. Without this the probe's zero counts on a dead RPC
+    would read as perfect health.
+
+  Run placement: functional, not resilience. The doctor legitimately reports
+  ERRORs while chaos is in flight (a stopped node IS unconverged), so this
+  belongs in a suite that runs against a settled cluster.
+
+suite: functional
+tags:
+  - functional
+  - doctor
+  - coherence
+  - four-layer
+  - regression
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: all_nodes_heartbeating
+    probe: cluster.nodes
+    expect:
+      count_gte: 5
+
+baseline:
+  - type: probe
+    id: doctor_baseline
+    probe: doctor.report_severity
+
+assertions:
+  # The doctor must actually have answered. Zero findings from an unreachable
+  # RPC is an unknown, not a pass.
+  - id: doctor_reachable
+    probe: doctor.report_severity
+    expect:
+      reachable: true
+
+  # The harvest must be complete, or the counts below mean nothing.
+  - id: harvest_complete
+    probe: doctor.report_severity
+    expect:
+      reduced_harvest: false
+
+  # The gate: no coherence violations on a settled cluster.
+  - id: no_error_findings
+    probe: doctor.report_severity
+    expect:
+      error_lte: 0
+
+cleanup:
+  - id: final_doctor_state
+    probe: doctor.report_severity

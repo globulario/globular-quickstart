@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "scenario": "etcd-enospc-during-state-commit",
+  "suite": "authority",
+  "start_time": "2026-08-19T05:37:03.588351Z",
+  "end_time": "2026-08-19T05:37:04.348409Z",
+  "passed": false,
+  "item_count": 6,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "unknown",
+        "error": "primary container not running",
+        "members": 0,
+        "nodes": 0
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:03.654182Z"
+    },
+    {
+      "id": "no_standing_alarms",
+      "section": "preconditions",
+      "probe": "etcd.backend_growth",
+      "params": {},
+      "expect": {
+        "alarms": 0
+      },
+      "result": {
+        "max_db_bytes": 0,
+        "quota_bytes": 0,
+        "pct_of_quota": 0,
+        "defrag_scheduled": false,
+        "compaction_configured": false,
+        "alarms": 0,
+        "error": "etcd container not running"
+      },
+      "passed": true,
+      "timestamp": "2026-08-19T05:37:03.689937Z"
+    },
+    {
+      "id": "writes_work_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": false,
+        "error": "primary container not running",
+        "latency_ms": 0
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:03.726329Z"
+    },
+    {
+      "id": "liveness_settled_before",
+      "section": "preconditions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 0,
+        "max_age_s": -1,
+        "stale_nodes": 0,
+        "error": "etcd container not running"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:03.763581Z"
+    },
+    {
+      "id": "ensure_quota_released",
+      "section": "cleanup",
+      "probe": "chaos.clear_etcd_volume_fill",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.clear_etcd_volume_fill",
+        "container": "globular-node-1",
+        "exit_code": 1,
+        "status": ""
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:03.783006Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {},
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "unproven": "no baseline captured"
+      },
+      "passed": false,
+      "timestamp": "2026-08-19T05:37:03.783069Z"
+    }
+  ],
+  "result": "INFRA_ERROR",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

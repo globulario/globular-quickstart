@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:48 UTC; 13min ago
+    Process: 623 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 627 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 634 (authentication_)
+      Tasks: 21 (limit: 8641)
+     Memory: 45.5M (peak: 383.9M swap: 196.0K swap peak: 2.0M)
+        CPU: 24.258s
+     CGroup: /system.slice/docker-c69956e40d44afec6c24aae66a0eb98093a9df7e8d446a0705e3a4916478dce3.scope/system.slice/globular-authentication.service
+             └─634 /usr/lib/globular/bin/authentication_server
+
+Aug 18 19:19:03 node-4 authentication_server[634]: {"level":"info","ts":"2026-08-18T19:19:03.441062Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 18 19:19:08 node-4 authentication_server[634]: {"level":"warn","ts":"2026-08-18T19:19:06.755269Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004aa1e0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:19:14 node-4 authentication_server[634]: {"level":"warn","ts":"2026-08-18T19:19:13.951273Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004aa1e0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:19:20 node-4 authentication_server[634]: {"level":"warn","ts":"2026-08-18T19:19:20.392066Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004aa1e0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:19:25 node-4 authentication_server[634]: time=2026-08-18T19:19:25.543Z level=WARN msg="sessions list failed" err="rpc error: code = Internal desc = {\"ErrorMsg\":\"rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (gocql: no hosts available in the pool)\",\"FileLine\":\"github.com/globulario/services/golang/resource/resource_server/sessions.go:106\",\"FunctionName\":\"main.(*server).GetSessions\"}"
+Aug 18 19:19:25 node-4 authentication_server[634]: time=2026-08-18T19:19:25.724Z level=WARN msg="sessions list failed" err="rpc error: code = Unimplemented desc = unknown service resource.ResourceService"
+Aug 18 19:20:01 node-4 authentication_server[634]: time=2026-08-18T19:20:01.531Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-4.globular.internal:443
+Aug 18 19:20:01 node-4 authentication_server[634]: time=2026-08-18T19:20:01.532Z level=INFO msg="mesh: gRPC connection established" target=node-4.globular.internal:443
+Aug 18 19:20:01 node-4 authentication_server[634]: time=2026-08-18T19:20:01.532Z level=WARN msg="sessions list failed" err="rpc error: code = Unimplemented desc = unknown service resource.ResourceService"
+Aug 18 19:20:59 node-4 authentication_server[634]: time=2026-08-18T19:20:59.696Z level=WARN msg="sessions list failed" err="rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused"

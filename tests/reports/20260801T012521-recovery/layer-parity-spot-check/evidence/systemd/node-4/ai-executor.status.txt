@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:25:39 UTC; 1min 45s ago
+    Process: 954 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 977 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 984 (ai_executor_ser)
+      Tasks: 17 (limit: 8641)
+     Memory: 24.2M (peak: 29.0M)
+        CPU: 714ms
+     CGroup: /system.slice/docker-9180d30e9d1ba804a7b09169efb4bbc01eb91329f628cb2e20c93a2f4151a900.scope/system.slice/globular-ai-executor.service
+             └─984 /usr/lib/globular/bin/ai_executor_server
+
+Aug 01 01:26:11 node-4 ai_executor_server[984]: time=2026-08-01T01:26:11.466Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 01 01:26:16 node-4 ai_executor_server[984]: time=2026-08-01T01:26:16.468Z level=WARN msg="peer: ping failed" endpoint=10.10.0.13:10010 err="rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"
+Aug 01 01:26:16 node-4 ai_executor_server[984]: time=2026-08-01T01:26:16.468Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010
+Aug 01 01:26:16 node-4 ai_executor_server[984]: time=2026-08-01T01:26:16.477Z level=INFO msg="peer: connected" node=node-5 endpoint=10.10.0.15:10010
+Aug 01 01:27:14 node-4 ai_executor_server[984]: time=2026-08-01T01:27:14.967Z level=INFO msg="processing incident" incident_id=2098be46-8d48-11f1-ba40-02420a0a000e rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=136
+Aug 01 01:27:15 node-4 ai_executor_server[984]: time=2026-08-01T01:27:15.028Z level=INFO msg="processing incident" incident_id=20a346b7-8d48-11f1-9382-02420a0a000d rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=136
+Aug 01 01:27:15 node-4 ai_executor_server[984]: time=2026-08-01T01:27:15.048Z level=INFO msg="diagnosis complete" incident_id=2098be46-8d48-11f1-ba40-02420a0a000e root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 01 01:27:15 node-4 ai_executor_server[984]: time=2026-08-01T01:27:15.049Z level=INFO msg="INCIDENT RESOLVED" incident_id=2098be46-8d48-11f1-ba40-02420a0a000e summary="doctor-finding triggered by cluster.finding.created (136 events in batch)" root_cause=unknown_anomaly
+Aug 01 01:27:15 node-4 ai_executor_server[984]: time=2026-08-01T01:27:15.075Z level=INFO msg="diagnosis complete" incident_id=20a346b7-8d48-11f1-9382-02420a0a000d root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 01 01:27:15 node-4 ai_executor_server[984]: time=2026-08-01T01:27:15.075Z level=INFO msg="INCIDENT RESOLVED" incident_id=20a346b7-8d48-11f1-9382-02420a0a000d summary="doctor-finding triggered by cluster.finding.created (136 events in batch)" root_cause=unknown_anomaly

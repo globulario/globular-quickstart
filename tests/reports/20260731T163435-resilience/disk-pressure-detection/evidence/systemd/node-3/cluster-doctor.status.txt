@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 16:37:19 UTC; 1min 45s ago
+    Process: 459 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 482 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 524 (cluster_doctor_)
+      Tasks: 11 (limit: 8641)
+     Memory: 12.8M
+        CPU: 183ms
+     CGroup: /system.slice/docker-a940c3d3d301ea460c6ef6d5072c25365503c7b1b37629387a254e2e32970eca.scope/system.slice/globular-cluster-doctor.service
+             └─524 /usr/lib/globular/bin/cluster_doctor_server
+
+Jul 31 16:37:19 node-3 cluster_doctor_server[524]: 2026/07/31 16:37:19 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Jul 31 16:37:19 node-3 cluster_doctor_server[524]: 2026/07/31 16:37:19 INFO security: loaded cluster roles from external policy file roles=22
+Jul 31 16:37:20 node-3 cluster_doctor_server[524]: 2026/07/31 16:37:20 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-3.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 16:37:20 node-3 cluster_doctor_server[524]: 2026/07/31 16:37:20 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.12 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-3.globular.internal:8443: Get \"http://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 16:37:20 node-3 cluster_doctor_server[524]: time=2026-07-31T16:37:20.036Z level=WARN msg="event client init failed (finding events disabled)" err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-3.globular.internal:8443: Get \"http://node-3.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.13:8443: connect: connection refused"
+Jul 31 16:37:20 node-3 cluster_doctor_server[524]: time=2026-07-31T16:37:20.036Z level=INFO msg="TLS enabled" cert=/var/lib/globular/pki/issued/services/service.crt key=/var/lib/globular/pki/issued/services/service.key ca=/var/lib/globular/pki/ca.crt
+Jul 31 16:37:20 node-3 cluster_doctor_server[524]: time=2026-07-31T16:37:20.151Z level=INFO msg="metrics/pprof listening" addr=[::]:41561
+Jul 31 16:37:20 node-3 cluster_doctor_server[524]: time=2026-07-31T16:37:20.161Z level=INFO msg="healer: background loop starting" mode=observe interval=1m0s max_actions=10
+Jul 31 16:37:20 node-3 cluster_doctor_server[524]: time=2026-07-31T16:37:20.179Z level=INFO msg="doctor leader election: campaigning" candidate=doctor:node-3:524:19cba43c-9c72-4790-a438-99b1b79301ad
+Jul 31 16:37:20 node-3 cluster_doctor_server[524]: time=2026-07-31T16:37:20.221Z level=INFO msg="cluster doctor ready" address=:12005 controller=10.10.0.14:443 version=1.2.288

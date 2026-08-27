@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:07:09 UTC; 21s ago
+    Process: 173 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 184 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 203 (node_agent_serv)
+      Tasks: 23 (limit: 8641)
+     Memory: 21.4M (peak: 33.9M)
+        CPU: 18.532s
+     CGroup: /system.slice/docker-c0adeb54c3e856286dee91181b663fe0332b2e8184e7e300172c1db2276e7b0b.scope/system.slice/globular-node-agent.service
+             └─203 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 20:07:23 node-4 node_agent_server[203]: 2026/07/31 20:07:23 nodeagent: repaired installed-state SERVICE/workflow from local package cache workflow_1.2.288_linux_amd64.tgz (build_id=2e8ab538-c03a-403d-9efc-6ec362ef6a16)
+Jul 31 20:07:24 node-4 node_agent_server[203]: 2026/07/31 20:07:24 event-publisher: connected to event service
+Jul 31 20:07:24 node-4 node_agent_server[203]: 2026/07/31 20:07:24 event-handler: connected to event service
+Jul 31 20:07:24 node-4 node_agent_server[203]: 2026/07/31 20:07:24 event-handler: subscribed to operation.*
+Jul 31 20:07:28 node-4 node_agent_server[203]: 2026/07/31 20:07:28 nodeagent: repaired installed-state COMMAND/libnss-resolve from local package cache libnss-resolve_255.4_linux_amd64.tgz (build_id=)
+Jul 31 20:07:29 node-4 node_agent_server[203]: 2026/07/31 20:07:29 nodeagent: sync repo artifacts: list: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:10003: connect: connection refused"
+Jul 31 20:07:29 node-4 node_agent_server[203]: 2026/07/31 20:07:29 minio-topology-gate: node 6400b443-cf38-52da-a683-de2fc5103c0b (ip=10.10.0.14) not admitted — node not listed in approved objectstore topology (gen=0)
+Jul 31 20:07:29 node-4 node_agent_server[203]: 2026/07/31 20:07:29 minio-topology-gate: node 6400b443-cf38-52da-a683-de2fc5103c0b (ip=10.10.0.14) is NOT in ObjectStoreDesiredState.Nodes (gen=0) — stopping globular-minio.service to enforce topology contract (held_not_in_topology)
+Jul 31 20:07:29 node-4 node_agent_server[203]: 2026/07/31 20:07:29 minio-topology-gate: stopped globular-minio.service on non-member node 6400b443-cf38-52da-a683-de2fc5103c0b (ip=10.10.0.14) — state=held_not_in_topology; MinIO will start only after apply-topology admits this node
+Jul 31 20:07:30 node-4 node_agent_server[203]: 2026/07/31 20:07:30 nodeagent: reporting 15 installed services (hash=713345b3f1599e79ec73ce654cfc79d249ace400295c8427170a080b8bea1644, sample=[etcd envoy libnss-resolve workflow cluster-doctor])

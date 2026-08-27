@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:57:16 UTC; 7min ago
+    Process: 9035 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 9039 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 9042 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 790.1M (peak: 790.4M)
+        CPU: 14.324s
+     CGroup: /system.slice/docker-059225d7a49fdbb867afd4a4acd66baab01c465f6ce3c4b555ea76d934cd376b.scope/system.slice/globular-cluster-controller.service
+             └─9042 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 18 11:04:33 node-1 cluster_controller_server[9042]: 2026/08/18 11:04:33 materialize-infra: skipping sidekick (install_mode=topology_workflow, managed by dedicated workflow)
+Aug 18 11:04:33 node-1 cluster_controller_server[9042]: 2026/08/18 11:04:33 materialize-infra: skipping etcd (install_mode=day0_join, managed by dedicated workflow)
+Aug 18 11:04:33 node-1 cluster_controller_server[9042]: 2026/08/18 11:04:33 materialize-infra: skipping keepalived — version unresolved (not installed on any node)
+Aug 18 11:04:33 node-1 cluster_controller_server[9042]: 2026/08/18 11:04:33 materialize-infra: skipping minio (install_mode=topology_workflow, managed by dedicated workflow)
+Aug 18 11:04:33 node-1 cluster_controller_server[9042]: 2026/08/18 11:04:33 materialize-infra: skipping sidekick (install_mode=topology_workflow, managed by dedicated workflow)
+Aug 18 11:04:33 node-1 cluster_controller_server[9042]: 2026/08/18 11:04:33 scylla hosts: skipping 10.10.0.14 — not reachable on :9042 (dial tcp 10.10.0.14:9042: connect: connection refused)
+Aug 18 11:04:33 node-1 cluster_controller_server[9042]: 2026/08/18 11:04:33 scylla hosts: skipping 10.10.0.13 — not reachable on :9042 (dial tcp 10.10.0.13:9042: connect: connection refused)
+Aug 18 11:04:33 node-1 cluster_controller_server[9042]: 2026/08/18 11:04:33 scylla hosts updated in etcd: [10.10.0.11 10.10.0.15]
+Aug 18 11:04:37 node-1 cluster_controller_server[9042]: 2026/08/18 11:04:37 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 18 11:04:37 node-1 cluster_controller_server[9042]: 2026/08/18 11:04:37 INFO mesh: gRPC connection established target=node-1.globular.internal:443

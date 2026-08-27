@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:52:32 UTC; 18s ago
+    Process: 9209 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 9238 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 9260 (repository_serv)
+      Tasks: 13 (limit: 8641)
+     Memory: 20.7M (peak: 21.5M)
+        CPU: 257ms
+     CGroup: /system.slice/docker-b8fa6aca9bb82e631ce89b654ed458dabe59ec9fe67bf982b77e3cf43dab10a6.scope/system.slice/globular-repository.service
+             └─9260 /usr/lib/globular/bin/repository_server
+
+Jul 31 23:52:32 node-5 systemd[1]: Starting globular-repository.service - Globular repository...
+Jul 31 23:52:32 node-5 systemd[1]: Started globular-repository.service - Globular repository.
+Jul 31 23:52:32 node-5 repository_server[9260]: 2026/07/31 23:52:32 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Jul 31 23:52:32 node-5 repository_server[9260]: 2026/07/31 23:52:32 INFO security: loaded cluster roles from external policy file roles=22
+Jul 31 23:52:32 node-5 repository_server[9260]: PortAllocator range: 10000 - 20000
+Jul 31 23:52:34 node-5 repository_server[9260]: {"level":"warn","ts":"2026-07-31T23:52:34.784634Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000229680/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Jul 31 23:52:36 node-5 repository_server[9260]: {"level":"warn","ts":"2026-07-31T23:52:36.786526Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000229680/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Jul 31 23:52:36 node-5 repository_server[9260]: 2026/07/31 23:52:36 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"
+Jul 31 23:52:38 node-5 repository_server[9260]: {"level":"warn","ts":"2026-07-31T23:52:38.78996Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004914a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Jul 31 23:52:39 node-5 repository_server[9260]: 2026/07/31 23:52:39 INFO InitGrpcServer: gRPC server initialized service=repository.PackageRepository tls=true port=10004

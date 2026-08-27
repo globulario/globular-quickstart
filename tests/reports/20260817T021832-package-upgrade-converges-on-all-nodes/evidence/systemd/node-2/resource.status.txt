@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-15 04:26:01 UTC; 1 day 21h ago
+    Process: 377 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 384 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 394 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 444 (resource_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 41.1M (peak: 54.4M swap: 944.0K swap peak: 964.0K)
+        CPU: 2min 47.257s
+     CGroup: /system.slice/docker-3358e2156c2bb6e2805bb5269993ac7d2d06707cd1fa1721350a1e542fe6b078.scope/system.slice/globular-resource.service
+             └─444 /usr/lib/globular/bin/resource_server
+
+Aug 17 01:30:36 node-2 resource_server[444]: 2026/08/17 01:30:36 gocql: unable to connect to any ring node: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 17 01:30:36 node-2 resource_server[444]: 2026/08/17 01:30:36 gocql: control falling back to initial contact points.
+Aug 17 01:30:36 node-2 resource_server[444]: 2026/08/17 01:30:36 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 17 01:30:36 node-2 resource_server[444]: 2026/08/17 01:30:36 gocql: unable to reconnect control connection: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 17 01:30:37 node-2 resource_server[444]: 2026/08/17 01:30:37 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 17 01:30:49 node-2 resource_server[444]: time=2026-08-17T01:30:49.013Z level=INFO msg="dependencies recovered — service is SERVING"
+Aug 17 02:00:26 node-2 resource_server[444]: {"level":"warn","ts":"2026-08-17T02:00:26.81108Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002fcf00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 17 02:00:26 node-2 resource_server[444]: {"level":"info","ts":"2026-08-17T02:00:26.811292Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 17 02:01:31 node-2 resource_server[444]: {"level":"warn","ts":"2026-08-17T02:01:31.814327Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002fcf00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 17 02:01:31 node-2 resource_server[444]: {"level":"info","ts":"2026-08-17T02:01:31.81443Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

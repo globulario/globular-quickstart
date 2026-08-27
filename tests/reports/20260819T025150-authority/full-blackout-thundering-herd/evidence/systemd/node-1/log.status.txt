@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:11 UTC; 5s ago
+    Process: 2125 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 2146 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2168 (log_server)
+      Tasks: 11 (limit: 8641)
+     Memory: 7.5M (peak: 7.9M)
+        CPU: 65ms
+     CGroup: /system.slice/docker-ca280363fa2453665805d4ffe29b667a4fb9760e5edf5d71628a9f162a1884b1.scope/system.slice/globular-log.service
+             └─2168 /usr/lib/globular/bin/log_server
+
+Aug 19 03:23:11 node-1 systemd[1]: globular-log.service: Scheduled restart job, restart counter is at 2.
+Aug 19 03:23:11 node-1 systemd[1]: Starting globular-log.service - Globular log...
+Aug 19 03:23:11 node-1 systemd[1]: Started globular-log.service - Globular log.
+Aug 19 03:23:11 node-1 log_server[2168]: 2026/08/19 03:23:11 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 19 03:23:11 node-1 log_server[2168]: 2026/08/19 03:23:11 INFO security: loaded cluster roles from external policy file roles=22
+Aug 19 03:23:11 node-1 log_server[2168]: PortAllocator range: 10000 - 20000
+Aug 19 03:23:13 node-1 log_server[2168]: {"level":"warn","ts":"2026-08-19T03:23:13.697241Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002df0e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:15 node-1 log_server[2168]: {"level":"warn","ts":"2026-08-19T03:23:15.699219Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002df0e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:15 node-1 log_server[2168]: 2026/08/19 03:23:15 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"
+Aug 19 03:23:15 node-1 log_server[2168]: time=2026-08-19T03:23:15.699Z level=INFO msg="starting log service" service=log.LogService version=1.2.312 domain=globular.internal address=10.10.0.11:8443 retention_hours=168 cache_type=SCYLLADB cache_address=10.10.0.11 monitoring_port=9092

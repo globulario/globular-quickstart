@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:25:36 UTC; 4min 28s ago
+    Process: 106 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 142 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 163 (node_agent_serv)
+      Tasks: 23 (limit: 8641)
+     Memory: 39.0M (peak: 853.9M swap: 300.0K swap peak: 332.0K)
+        CPU: 18.466s
+     CGroup: /system.slice/docker-d1f5b8be4d5e8a538660e463859f4b15e96ad466285c4e0d1073a4ae4c36e0a3.scope/system.slice/globular-node-agent.service
+             └─163 /usr/lib/globular/bin/node_agent_server
+
+Aug 19 03:29:48 node-5 node_agent_server[163]: 2026/08/19 03:29:48 behavioral observation: infra_probe skipped component=minio node=35ac3821-6b90-52eb-a800-41130471770b: behavioral-memory endpoint not resolvable
+Aug 19 03:29:48 node-5 node_agent_server[163]: 2026/08/19 03:29:48 behavioral observation: infra_probe skipped component=envoy node=35ac3821-6b90-52eb-a800-41130471770b: behavioral-memory endpoint not resolvable
+Aug 19 03:29:50 node-5 node_agent_server[163]: 2026/08/19 03:29:50 nodeagent: list installed packages kind=INFRASTRUCTURE: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:29:50 node-5 node_agent_server[163]: 2026/08/19 03:29:50 nodeagent: list installed packages kind=APPLICATION: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:29:50 node-5 node_agent_server[163]: 2026/08/19 03:29:50 nodeagent: list installed packages kind=SERVICE: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:29:50 node-5 node_agent_server[163]: 2026/08/19 03:29:50 nodeagent: list installed packages kind=COMMAND: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:29:50 node-5 node_agent_server[163]: 2026/08/19 03:29:50 nodeagent: reporting 35 installed services (hash=ea9693f197989c6380f6c17c0f7cb7ece13231646b11755ab76c21a164ea535f, sample=[node-exporter ldap repository ai-router node-agent])
+Aug 19 03:29:50 node-5 node_agent_server[163]: 2026/08/19 03:29:50 node heartbeat failed (state=unreachable): TLS probe to 10.10.0.12:443 (ServerName=10.10.0.12): tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "Globular Root CA")
+Aug 19 03:29:57 node-5 node_agent_server[163]: {"level":"warn","ts":"2026-08-19T03:29:57.527195Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004feb40/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:29:59 node-5 node_agent_server[163]: {"level":"warn","ts":"2026-08-19T03:29:59.528263Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004feb40/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}

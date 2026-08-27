@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:02 UTC; 22s ago
+    Process: 928 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 942 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 958 (repository_serv)
+      Tasks: 13 (limit: 8641)
+     Memory: 26.4M (peak: 26.9M)
+        CPU: 264ms
+     CGroup: /system.slice/docker-385981ec9bab5109e8a8585b8d7070b5708eef8209ed44d8f8789bedfa13bd12.scope/system.slice/globular-repository.service
+             └─958 /usr/lib/globular/bin/repository_server
+
+Aug 19 03:23:17 node-4 repository_server[958]: time=2026-08-19T03:23:17.750Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 19 03:23:17 node-4 repository_server[958]: time=2026-08-19T03:23:17.750Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10000
+Aug 19 03:23:17 node-4 repository_server[958]: 2026/08/19 03:23:17 WARN port conflict detected - attempting reallocation service=repository.PackageRepository conflicting_port=10000 attempt=1 max_attempts=5
+Aug 19 03:23:17 node-4 repository_server[958]: 2026/08/19 03:23:17 INFO port reallocated successfully service=repository.PackageRepository old_port=10000 new_port=10003
+Aug 19 03:23:17 node-4 repository_server[958]: 2026/08/19 03:23:17 WARN port conflict detected - attempting reallocation service=repository.PackageRepository conflicting_port=10003 attempt=2 max_attempts=5
+Aug 19 03:23:17 node-4 repository_server[958]: 2026/08/19 03:23:17 INFO port reallocated successfully service=repository.PackageRepository old_port=10003 new_port=10005
+Aug 19 03:23:17 node-4 repository_server[958]: 2026/08/19 03:23:17 WARN port conflict detected - attempting reallocation service=repository.PackageRepository conflicting_port=10005 attempt=3 max_attempts=5
+Aug 19 03:23:18 node-4 repository_server[958]: 2026/08/19 03:23:18 INFO port reallocated successfully service=repository.PackageRepository old_port=10005 new_port=10008
+Aug 19 03:23:19 node-4 repository_server[958]: 2026/08/19 03:23:19 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=41021
+Aug 19 03:23:19 node-4 repository_server[958]: 2026/08/19 03:23:19 INFO metrics listening service=repository.PackageRepository addr=[::]:41021

@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 23:36:35 UTC; 6min ago
+    Process: 518 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 552 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 572 (log_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 25.1M (peak: 27.3M)
+        CPU: 1.124s
+     CGroup: /system.slice/docker-9fe941577b188393d600caa05ab83e1ba976630520db98bfdeac6b8ab52f0f27.scope/system.slice/globular-log.service
+             └─572 /usr/lib/globular/bin/log_server
+
+Aug 24 23:39:28 node-3 log_server[572]: 2026/08/24 23:39:28 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 24 23:39:28 node-3 log_server[572]: 2026/08/24 23:39:28 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 24 23:39:28 node-3 log_server[572]: 2026/08/24 23:39:28 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 23:39:28 node-3 log_server[572]: 2026/08/24 23:39:28 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 23:39:28 node-3 log_server[572]: time=2026-08-24T23:39:28.209Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 24 23:39:28 node-3 log_server[572]: time=2026-08-24T23:39:28.215Z level=WARN msg="store write failed (suppressing repeats for 30s)" err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 24 23:39:28 node-3 log_server[572]: time=2026-08-24T23:39:28.309Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 24 23:39:28 node-3 log_server[572]: time=2026-08-24T23:39:28.403Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 24 23:39:28 node-3 log_server[572]: time=2026-08-24T23:39:28.458Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 24 23:39:32 node-3 log_server[572]: 2026/08/24 23:39:32 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

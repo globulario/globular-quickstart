@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "scenario": "service-crash-recovery",
+  "suite": "resilience",
+  "start_time": "2026-08-10T19:21:29.601491Z",
+  "end_time": "2026-08-10T19:21:44.817298Z",
+  "passed": false,
+  "item_count": 6,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 1,
+        "nodes": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T19:21:30.460449Z"
+    },
+    {
+      "id": "dns_registered_before",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "dns"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 42
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T19:21:30.553716Z"
+    },
+    {
+      "id": "dns_active_before",
+      "section": "preconditions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-3",
+        "service": "dns"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "inactive",
+        "node": "node-3",
+        "service": "dns"
+      },
+      "passed": false,
+      "timestamp": "2026-08-10T19:21:30.640421Z"
+    },
+    {
+      "id": "ensure_dns_started",
+      "section": "cleanup",
+      "probe": "chaos.restart_service",
+      "params": {
+        "node": "node-3",
+        "service": "dns"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.restart_service",
+        "container": "globular-node-3",
+        "unit": "globular-dns.service",
+        "exit_code": 5,
+        "stderr": "Failed to restart globular-dns.service: Unit globular-dns.service not found."
+      },
+      "passed": false,
+      "timestamp": "2026-08-10T19:21:30.700501Z"
+    },
+    {
+      "id": "final_dns_status",
+      "section": "cleanup",
+      "probe": "service.status",
+      "params": {
+        "node": "node-3",
+        "service": "dns"
+      },
+      "expect": {},
+      "result": {
+        "unit_state": "inactive",
+        "node": "node-3",
+        "service": "dns"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T19:21:30.794925Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 1,
+          "etcd_member_count": "1",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "missing UNREADABLE backups=0",
+            "node-3": "missing UNREADABLE backups=0",
+            "node-4": "missing UNREADABLE backups=0",
+            "node-5": "missing UNREADABLE backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 1,
+          "etcd_member_count": "1",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "missing UNREADABLE backups=0",
+            "node-3": "missing UNREADABLE backups=0",
+            "node-4": "missing UNREADABLE backups=0",
+            "node-5": "missing UNREADABLE backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T19:21:31.373984Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

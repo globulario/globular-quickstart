@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:22:17 UTC; 1min 3s ago
+    Process: 162 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 178 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 188 (node_agent_serv)
+      Tasks: 24 (limit: 8641)
+     Memory: 33.3M (peak: 514.0M)
+        CPU: 14.756s
+     CGroup: /system.slice/docker-eaf603c2f39593e684a79b489943b17e4093c415bcd1a02da0f3503cb1e1f052.scope/system.slice/globular-node-agent.service
+             └─188 /usr/lib/globular/bin/node_agent_server
+
+Aug 19 03:23:00 node-3 node_agent_server[188]: 2026/08/19 03:23:00 nodeagent: list installed packages kind=INFRASTRUCTURE: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:23:00 node-3 node_agent_server[188]: 2026/08/19 03:23:00 nodeagent: list installed packages kind=APPLICATION: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:23:00 node-3 node_agent_server[188]: 2026/08/19 03:23:00 nodeagent: list installed packages kind=SERVICE: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:23:00 node-3 node_agent_server[188]: 2026/08/19 03:23:00 nodeagent: list installed packages kind=COMMAND: installed_state: etcd client: context deadline exceeded — marking InventoryComplete=false
+Aug 19 03:23:00 node-3 node_agent_server[188]: 2026/08/19 03:23:00 nodeagent: reporting 43 installed services (hash=56b17f156ac9ff94aa7212bc750eae52b03610dad75052d10f35f8ad2b7b6240, sample=[globular-cli persistence scylla-manager sctool etcdctl])
+Aug 19 03:23:00 node-3 node_agent_server[188]: 2026/08/19 03:23:00 node heartbeat failed (state=degraded): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: connection refused
+Aug 19 03:23:09 node-3 node_agent_server[188]: {"level":"warn","ts":"2026-08-19T03:23:09.094212Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006c34a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:11 node-3 node_agent_server[188]: {"level":"warn","ts":"2026-08-19T03:23:11.095202Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006c34a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:19 node-3 node_agent_server[188]: {"level":"warn","ts":"2026-08-19T03:23:19.096337Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001c3860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:21 node-3 node_agent_server[188]: {"level":"warn","ts":"2026-08-19T03:23:21.097262Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001c3860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}

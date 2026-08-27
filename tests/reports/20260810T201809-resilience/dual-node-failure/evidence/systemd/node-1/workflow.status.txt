@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 20:24:58 UTC; 25s ago
+    Process: 28361 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 28365 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 28368 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 28374 (workflow_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 13.9M (peak: 16.6M)
+        CPU: 173ms
+     CGroup: /system.slice/docker-ee3334bee62c5a7cf2cf1308b1f2bf99dfc8dacd5999c1dfb26cbefc556eead6.scope/system.slice/globular-workflow.service
+             └─28374 /usr/lib/globular/bin/workflow_server
+
+Aug 10 20:24:58 node-1 workflow_server[28374]: 2026/08/10 20:24:58 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 10 20:24:58 node-1 workflow_server[28374]: 2026/08/10 20:24:58 INFO security: loaded cluster roles from external policy file roles=22
+Aug 10 20:24:58 node-1 workflow_server[28374]: time=2026-08-10T20:24:58.211Z level=INFO msg="starting workflow service" service=workflow.WorkflowService version=1.2.289 domain=globular.internal
+Aug 10 20:24:58 node-1 workflow_server[28374]: 2026/08/10 20:24:58 INFO InitService: loaded config by name fallback service=workflow.WorkflowService current_id=6c0e70e4-2f09-4ef0-ace7-e012713d42f9 config_id=f0d77dfc-f870-43b2-94e3-23f8cfe4bb68
+Aug 10 20:24:59 node-1 workflow_server[28374]: 2026/08/10 20:24:59 INFO InitGrpcServer: gRPC server initialized service=workflow.WorkflowService tls=true port=10220
+Aug 10 20:25:12 node-1 workflow_server[28374]: time=2026-08-10T20:25:12.405Z level=INFO msg="ScyllaDB connected" hosts=[10.10.0.11] keyspace=workflow
+Aug 10 20:25:12 node-1 workflow_server[28374]: time=2026-08-10T20:25:12.405Z level=INFO msg="retention: pruner started" cluster_id=globular.internal keep=1000
+Aug 10 20:25:12 node-1 workflow_server[28374]: time=2026-08-10T20:25:12.545Z level=INFO msg="incident projection: ai-memory connected" addr=10.10.0.11:10017
+Aug 10 20:25:12 node-1 workflow_server[28374]: time=2026-08-10T20:25:12.546Z level=INFO msg="incident scanner: cluster doctor connected" addr=10.10.0.11:12005
+Aug 10 20:25:12 node-1 workflow_server[28374]: time=2026-08-10T20:25:12.845Z level=INFO msg="workflow run started" run_id=96f45b83-94f9-11f1-887d-02420a0a000b component=day0-installer node=node-1 trigger=TRIGGER_REASON_BOOTSTRAP

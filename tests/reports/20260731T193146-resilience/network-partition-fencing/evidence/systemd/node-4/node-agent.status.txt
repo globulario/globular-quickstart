@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 19:54:11 UTC; 11min ago
+    Process: 167 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 190 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 206 (node_agent_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 503.3M (peak: 511.3M)
+        CPU: 35.716s
+     CGroup: /system.slice/docker-c0adeb54c3e856286dee91181b663fe0332b2e8184e7e300172c1db2276e7b0b.scope/system.slice/globular-node-agent.service
+             └─206 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 20:05:59 node-4 node_agent_server[206]: 2026/07/31 20:05:59 event-publisher: connected to event service
+Jul 31 20:05:59 node-4 node_agent_server[206]: 2026/07/31 20:05:59 behavioral observation: infra_probe skipped component=envoy node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl ONE. Requires 1, alive 0
+Jul 31 20:05:59 node-4 node_agent_server[206]: 2026/07/31 20:05:59 behavioral observation: infra_probe skipped component=scylladb node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl ONE. Requires 1, alive 0
+Jul 31 20:05:59 node-4 node_agent_server[206]: 2026/07/31 20:05:59 behavioral observation: infra_probe skipped component=etcd node=6400b443-cf38-52da-a683-de2fc5103c0b: record evidence signal.probe.accac73a5e907844.evidence.0: rpc error: code = Internal desc = BehavioralMemoryService.RecordEvidence: record evidence: put evidence: Cannot achieve consistency level for cl ONE. Requires 1, alive 0
+Jul 31 20:05:59 node-4 node_agent_server[206]: 2026/07/31 20:05:59 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record evidence signal.probe.3f91602ea2a4397c.evidence.0: rpc error: code = Internal desc = BehavioralMemoryService.RecordEvidence: record evidence: put evidence: Cannot achieve consistency level for cl ONE. Requires 1, alive 0
+Jul 31 20:05:59 node-4 node_agent_server[206]: 2026/07/31 20:05:59 event-publisher: publish service.exited failed: rpc error: code = Unknown desc = Cannot achieve consistency level for cl ONE. Requires 1, alive 0 (will reconnect)
+Jul 31 20:06:02 node-4 node_agent_server[206]: {"level":"warn","ts":"2026-07-31T20:06:02.203018Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000032780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 20:06:06 node-4 node_agent_server[206]: {"level":"warn","ts":"2026-07-31T20:06:06.216668Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000032780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 20:06:06 node-4 node_agent_server[206]: {"level":"warn","ts":"2026-07-31T20:06:06.216802Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000032780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 20:06:06 node-4 node_agent_server[206]: {"level":"warn","ts":"2026-07-31T20:06:06.250181Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000032780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Canceled desc = context canceled"}

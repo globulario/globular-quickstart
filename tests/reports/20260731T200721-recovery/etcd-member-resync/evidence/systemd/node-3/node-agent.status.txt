@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:08:24 UTC; 29s ago
+    Process: 164 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 185 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 218 (node_agent_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 25.0M (peak: 32.7M)
+        CPU: 19.863s
+     CGroup: /system.slice/docker-9491f541aeef78eb6b96ae7a9b032a5a25bad0e3a3056b4c1b7d5ef8fc87a820.scope/system.slice/globular-node-agent.service
+             └─218 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 20:08:40 node-3 node_agent_server[218]: 2026/07/31 20:08:40 event-handler: connected to event service
+Jul 31 20:08:40 node-3 node_agent_server[218]: 2026/07/31 20:08:40 event-handler: subscribed to operation.*
+Jul 31 20:08:45 node-3 node_agent_server[218]: 2026/07/31 20:08:45 nodeagent: sync repo artifacts: list: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:10003: connect: connection refused"
+Jul 31 20:08:45 node-3 node_agent_server[218]: 2026/07/31 20:08:45 minio-topology-gate: node a166b992-b66d-53cb-b7c7-61dfa4dd5a36 (ip=10.10.0.13) not admitted — node not listed in approved objectstore topology (gen=0)
+Jul 31 20:08:45 node-3 node_agent_server[218]: 2026/07/31 20:08:45 minio-topology-gate: node a166b992-b66d-53cb-b7c7-61dfa4dd5a36 (ip=10.10.0.13) is NOT in ObjectStoreDesiredState.Nodes (gen=0) — stopping globular-minio.service to enforce topology contract (held_not_in_topology)
+Jul 31 20:08:45 node-3 node_agent_server[218]: 2026/07/31 20:08:45 minio-topology-gate: stopped globular-minio.service on non-member node a166b992-b66d-53cb-b7c7-61dfa4dd5a36 (ip=10.10.0.13) — state=held_not_in_topology; MinIO will start only after apply-topology admits this node
+Jul 31 20:08:46 node-3 node_agent_server[218]: 2026/07/31 20:08:46 nodeagent: reporting 15 installed services (hash=713345b3f1599e79ec73ce654cfc79d249ace400295c8427170a080b8bea1644, sample=[gateway alertmanager xds node-agent cluster-controller])
+Jul 31 20:08:50 node-3 node_agent_server[218]: 2026/07/31 20:08:50 event-publisher: service.stopped unit=globular-minio.service (active/running → inactive/dead)
+Jul 31 20:08:50 node-3 node_agent_server[218]: 2026/07/31 20:08:50 ingress: spec changed (type: PUT), triggering reconciliation
+Jul 31 20:08:50 node-3 node_agent_server[218]: 2026/07/31 20:08:50 ingress: keepalived disabled on node a166b992-b66d-53cb-b7c7-61dfa4dd5a36

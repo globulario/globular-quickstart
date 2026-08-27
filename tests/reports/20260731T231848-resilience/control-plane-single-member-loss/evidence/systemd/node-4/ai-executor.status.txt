@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:19:12 UTC; 2min 54s ago
+    Process: 555 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 575 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 584 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 28.3M (peak: 30.5M)
+        CPU: 740ms
+     CGroup: /system.slice/docker-928b88015d720a8f11737bd2e4cef31a0f068e077aace4373fcff00bacea7705.scope/system.slice/globular-ai-executor.service
+             └─584 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 23:19:12 node-4 ai_executor_server[584]: time=2026-07-31T23:19:12.916Z level=INFO msg="job_store: connected to etcd"
+Jul 31 23:19:12 node-4 ai_executor_server[584]: time=2026-07-31T23:19:12.939Z level=INFO msg="job_store: loaded jobs from etcd" count=43
+Jul 31 23:19:12 node-4 ai_executor_server[584]: 2026/07/31 23:19:12 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Jul 31 23:19:14 node-4 ai_executor_server[584]: time=2026-07-31T23:19:14.186Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.12 10.10.0.15]"
+Jul 31 23:19:42 node-4 ai_executor_server[584]: time=2026-07-31T23:19:42.914Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Jul 31 23:19:42 node-4 ai_executor_server[584]: time=2026-07-31T23:19:42.924Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10010
+Jul 31 23:19:42 node-4 ai_executor_server[584]: time=2026-07-31T23:19:42.933Z level=INFO msg="peer: connected" node=node-5 endpoint=10.10.0.15:10010
+Jul 31 23:20:05 node-4 ai_executor_server[584]: time=2026-07-31T23:20:05.592Z level=INFO msg="processing incident" incident_id=5d24d044-8d36-11f1-bd42-02420a0a000b rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=23
+Jul 31 23:20:05 node-4 ai_executor_server[584]: time=2026-07-31T23:20:05.630Z level=INFO msg="diagnosis complete" incident_id=5d24d044-8d36-11f1-bd42-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Jul 31 23:20:05 node-4 ai_executor_server[584]: time=2026-07-31T23:20:05.630Z level=INFO msg="INCIDENT RESOLVED" incident_id=5d24d044-8d36-11f1-bd42-02420a0a000b summary="doctor-finding triggered by cluster.finding.created (23 events in batch)" root_cause=unknown_anomaly

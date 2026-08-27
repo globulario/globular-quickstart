@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 22:14:15 UTC; 2min 4s ago
+    Process: 140 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 175 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 195 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 37.4M (peak: 38.7M)
+        CPU: 2.033s
+     CGroup: /system.slice/docker-4a575daf3de9af6077e1d892ea4f8cf05978f233ac8f32245b197390900f3d6d.scope/system.slice/globular-cluster-controller.service
+             └─195 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 10 22:16:07 node-3 cluster_controller_server[195]: 2026/08/10 22:16:07 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 10 22:16:07 node-3 cluster_controller_server[195]: 2026/08/10 22:16:07 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 10 22:16:07 node-3 cluster_controller_server[195]: 2026/08/10 22:16:07 WARN ensureNodeExecutorBinding: failed to set role binding for node-3: rpc error: code = Internal desc = {"ErrorMsg":"Cannot achieve consistency level for cl ONE. Requires 1, alive 0","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:145","FunctionName":"main.(*server).SetRoleBinding"}
+Aug 10 22:16:14 node-3 cluster_controller_server[195]: 2026/08/10 22:16:14 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Aug 10 22:16:14 node-3 cluster_controller_server[195]: 2026/08/10 22:16:14 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Aug 10 22:16:14 node-3 cluster_controller_server[195]: 2026/08/10 22:16:14 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Aug 10 22:16:14 node-3 cluster_controller_server[195]: 2026/08/10 22:16:14 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Aug 10 22:16:14 node-3 cluster_controller_server[195]: 2026/08/10 22:16:14 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Aug 10 22:16:16 node-3 cluster_controller_server[195]: 2026/08/10 22:16:16 minio-creds: read from /var/lib/globular/minio/credentials (user=globular)
+Aug 10 22:16:16 node-3 cluster_controller_server[195]: 2026/08/10 22:16:16 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)

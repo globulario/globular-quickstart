@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:26:48 UTC; 17s ago
+    Process: 418 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 433 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 445 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 553 (workflow_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 26.1M (peak: 26.9M)
+        CPU: 477ms
+     CGroup: /system.slice/docker-2206a9848d7057d723137cf808b7918b201d11357dec3e1e80cb2d0a702c0d6b.scope/system.slice/globular-workflow.service
+             └─553 /usr/lib/globular/bin/workflow_server
+
+Aug 01 01:26:51 node-3 workflow_server[553]: time=2026-08-01T01:26:51.952Z level=INFO msg="retention: pruner started" cluster_id=globular.internal keep=1000
+Aug 01 01:26:51 node-3 workflow_server[553]: time=2026-08-01T01:26:51.984Z level=INFO msg="incident projection: ai-memory connected" addr=10.10.0.13:10013
+Aug 01 01:26:51 node-3 workflow_server[553]: time=2026-08-01T01:26:51.985Z level=INFO msg="incident scanner: cluster doctor connected" addr=10.10.0.13:12005
+Aug 01 01:26:51 node-3 workflow_server[553]: time=2026-08-01T01:26:51.992Z level=INFO msg="service initialized" duration_ms=3205
+Aug 01 01:26:51 node-3 workflow_server[553]: time=2026-08-01T01:26:51.992Z level=INFO msg="service ready" service=workflow.WorkflowService version=1.2.288 port=10220 domain=globular.internal startup_ms=3205
+Aug 01 01:26:51 node-3 workflow_server[553]: time=2026-08-01T01:26:51.992Z level=INFO msg="starting service" name=workflow.WorkflowService id=686518df-7c8d-41b0-922b-f08404ad508f port=10220
+Aug 01 01:26:51 node-3 workflow_server[553]: 2026/08/01 01:26:51 INFO policy: loaded permissions from file service=workflow path=/var/lib/globular/policy/services/workflow/permissions.generated.json count=40
+Aug 01 01:26:51 node-3 workflow_server[553]: time=2026-08-01T01:26:51.997Z level=INFO msg="authz: permission mappings loaded" service=workflow count=40 action_mappings=40
+Aug 01 01:26:51 node-3 workflow_server[553]: time=2026-08-01T01:26:51.997Z level=INFO msg="service started successfully" name=workflow.WorkflowService id=686518df-7c8d-41b0-922b-f08404ad508f port=10220
+Aug 01 01:26:52 node-3 workflow_server[553]: 2026/08/01 01:26:52 INFO metrics listening service=workflow.WorkflowService addr=[::]:10221

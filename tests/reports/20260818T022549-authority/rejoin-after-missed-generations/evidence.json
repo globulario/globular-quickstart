@@ -1,0 +1,473 @@
+{
+  "schema_version": 1,
+  "scenario": "rejoin-after-missed-generations",
+  "suite": "authority",
+  "start_time": "2026-08-18T03:26:52.464465Z",
+  "end_time": "2026-08-18T03:43:19.463583Z",
+  "passed": false,
+  "item_count": 20,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "nodes_gte": 5
+      },
+      "result": {
+        "status": "healthy",
+        "members": 4,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:26:53.362594Z"
+    },
+    {
+      "id": "target_node_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:26:53.391795Z"
+    },
+    {
+      "id": "liveness_settled_before",
+      "section": "preconditions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 14,
+        "stale_nodes": 0,
+        "oldest": "6400b443-cf38-52da-a683-de2fc5103c0b"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:26:53.538104Z"
+    },
+    {
+      "id": "desired_state_before",
+      "section": "baseline",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 24,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "dns",
+          "event",
+          "file",
+          "log",
+          "mcp",
+          "media",
+          "monitoring",
+          "node-agent",
+          "persistence",
+          "rbac",
+          "repository",
+          "resource",
+          "search",
+          "title",
+          "torrent",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:26:53.687988Z"
+    },
+    {
+      "id": "convergence_before",
+      "section": "baseline",
+      "probe": "cluster.installed_version_convergence",
+      "params": {
+        "package": "node-agent"
+      },
+      "expect": {},
+      "result": {
+        "nodes": 5,
+        "converged": 5,
+        "lagging": 0,
+        "versions": "1.2.322,1.2.322,1.2.322,1.2.322,1.2.322",
+        "unique": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:26:54.241912Z"
+    },
+    {
+      "id": "take_the_node_down",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-5",
+        "exit_code": 0,
+        "stdout": "globular-node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:26:59.921001Z"
+    },
+    {
+      "id": "advance_generation_1",
+      "section": "steps",
+      "probe": "ops.set_desired",
+      "params": {
+        "node": "node-1",
+        "name": "dns",
+        "version": "1.2.312",
+        "expect": "accepted"
+      },
+      "expect": {},
+      "result": {
+        "action": "ops.set_desired",
+        "service": "dns",
+        "version": "1.2.312",
+        "expect": "accepted",
+        "accepted": false,
+        "exit_code": 1,
+        "attempts": 6,
+        "error": "Error: cannot verify dns is a SERVICE package (no published version with a resolvable kind); `services desired set` fails closed on an unknown kind per desired.keyed_by_kind_and_name \u2014 publish the package first, then retry | Usage: |   globular services desired set <service> <version> [flags]",
+        "output": "  --output string       Output format (table|json|yaml) (default \"table\")\n      --timeout duration    Request timeout (default 5s)\n      --token string        Authorization token for the control plane"
+      },
+      "passed": false,
+      "timestamp": "2026-08-18T03:28:13.809528Z"
+    },
+    {
+      "id": "advance_generation_2",
+      "section": "steps",
+      "probe": "ops.set_desired",
+      "params": {
+        "node": "node-1",
+        "name": "ai-watcher",
+        "version": "1.2.312",
+        "expect": "accepted"
+      },
+      "expect": {},
+      "result": {
+        "action": "ops.set_desired",
+        "service": "ai-watcher",
+        "version": "1.2.312",
+        "expect": "accepted",
+        "accepted": false,
+        "exit_code": 1,
+        "attempts": 6,
+        "error": "Error: cannot verify ai-watcher is a SERVICE package (no published version with a resolvable kind); `services desired set` fails closed on an unknown kind per desired.keyed_by_kind_and_name \u2014 publish the package first, then retry | Usage: |   globular services desired set <service> <version> [flags]",
+        "output": "  --output string       Output format (table|json|yaml) (default \"table\")\n      --timeout duration    Request timeout (default 5s)\n      --token string        Authorization token for the control plane"
+      },
+      "passed": false,
+      "timestamp": "2026-08-18T03:29:19.111159Z"
+    },
+    {
+      "id": "advance_generation_3",
+      "section": "steps",
+      "probe": "ops.set_desired",
+      "params": {
+        "node": "node-2",
+        "name": "authentication",
+        "version": "1.2.312",
+        "expect": "accepted"
+      },
+      "expect": {},
+      "result": {
+        "action": "ops.set_desired",
+        "service": "authentication",
+        "version": "1.2.312",
+        "expect": "accepted",
+        "accepted": false,
+        "exit_code": 1,
+        "attempts": 6,
+        "error": "Error: cannot verify authentication is a SERVICE package (no published version with a resolvable kind); `services desired set` fails closed on an unknown kind per desired.keyed_by_kind_and_name \u2014 publish the package first, then retry | Usage: |   globular services desired set <service> <version> [flags]",
+        "output": "  --output string       Output format (table|json|yaml) (default \"table\")\n      --timeout duration    Request timeout (default 5s)\n      --token string        Authorization token for the control plane"
+      },
+      "passed": false,
+      "timestamp": "2026-08-18T03:30:20.018134Z"
+    },
+    {
+      "id": "bring_the_node_back",
+      "section": "steps",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-5",
+        "exit_code": 0,
+        "stdout": "globular-node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:31:50.326908Z"
+    },
+    {
+      "id": "node_registered_again",
+      "section": "assertions",
+      "probe": "node.etcd_registered",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "node": "node-5",
+        "uuid": "35ac3821-6b90-52eb-a800-41130471770b"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:42:50.482862Z"
+    },
+    {
+      "id": "cluster_sees_all_five",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "nodes_gte": 5
+      },
+      "result": {
+        "status": "healthy",
+        "members": 4,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:42:50.800339Z"
+    },
+    {
+      "id": "single_version_cluster_wide",
+      "section": "assertions",
+      "probe": "cluster.installed_version_convergence",
+      "params": {
+        "package": "node-agent"
+      },
+      "expect": {
+        "unique_lte": 1,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 5,
+        "converged": 5,
+        "lagging": 0,
+        "versions": "1.2.322,1.2.322,1.2.322,1.2.322,1.2.322",
+        "unique": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:42:51.368411Z"
+    },
+    {
+      "id": "desired_state_not_rolled_back",
+      "section": "assertions",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {
+        "count_gte": 1
+      },
+      "result": {
+        "count": 24,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "dns",
+          "event",
+          "file",
+          "log",
+          "mcp",
+          "media",
+          "monitoring",
+          "node-agent",
+          "persistence",
+          "rbac",
+          "repository",
+          "resource",
+          "search",
+          "title",
+          "torrent",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:42:51.523851Z"
+    },
+    {
+      "id": "no_identity_conflicts",
+      "section": "assertions",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {
+        "ambiguous": 0,
+        "conflict": 0,
+        "missing_blob": 0
+      },
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:42:51.933530Z"
+    },
+    {
+      "id": "no_doctor_errors",
+      "section": "assertions",
+      "probe": "doctor.report_severity",
+      "params": {},
+      "expect": {
+        "error": 0,
+        "reachable": true
+      },
+      "result": {
+        "reachable": true,
+        "info": 1,
+        "warn": 10,
+        "error": 4,
+        "total": 15,
+        "worst": "CRITICAL",
+        "reduced_harvest": false
+      },
+      "passed": false,
+      "timestamp": "2026-08-18T03:43:05.765905Z"
+    },
+    {
+      "id": "reconcile_settled",
+      "section": "assertions",
+      "probe": "cluster.reconcile_clean",
+      "params": {
+        "since": "3 min ago"
+      },
+      "expect": {
+        "clean": true
+      },
+      "result": {
+        "clean": true,
+        "error_count": 0,
+        "kinds": "",
+        "sample": "",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:43:05.879062Z"
+    },
+    {
+      "id": "liveness_current_everywhere",
+      "section": "assertions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 29,
+        "stale_nodes": 0,
+        "oldest": "35ac3821-6b90-52eb-a800-41130471770b"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:43:06.054905Z"
+    },
+    {
+      "id": "ensure_node_running",
+      "section": "cleanup",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-5"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-5",
+        "exit_code": 0,
+        "stdout": "globular-node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:43:06.079799Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 4,
+          "etcd_member_count": "4",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 4,
+          "etcd_member_count": "4",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T03:43:06.816746Z"
+    }
+  ],
+  "result": "PARTIAL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

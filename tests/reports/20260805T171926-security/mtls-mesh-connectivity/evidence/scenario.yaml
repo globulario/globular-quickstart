@@ -1,0 +1,180 @@
+version: 1
+name: mtls-mesh-connectivity
+description: |
+  Verify that mTLS connections succeed between cluster nodes (the service mesh).
+
+  All inter-service gRPC in Globular uses mutual TLS: both sides present their
+  certificate and verify the peer's certificate against the cluster CA. A broken
+  mTLS mesh means services cannot communicate even if they're all "running".
+
+  Failure modes caught by this test:
+  - CA certificate mismatch between nodes (nodes can't verify each other's certs)
+  - Service cert not signed by the cluster CA (wrong CA was used)
+  - TLS version mismatch or cipher suite incompatibility
+  - Network connectivity issue between specific node pairs
+  - Certificate revocation (if CRL checking is enabled)
+
+  Test coverage:
+  - Cross-node: node-1 → node-2 (controller port 12000)
+  - Cross-node: node-1 → node-2 (cluster doctor port 12100)
+  - Cross-node: node-2 → node-1 (rbac port 10004)
+  - Cross-node: node-3 → node-1 (authentication port 10005)
+  - Same-node: node-1 → node-1 (etcd port 2379) — tests loopback mTLS
+  - Compute-to-control: node-4 → node-1 (etcd port 2379)
+
+  All connections use the service certificate + cluster CA, matching what
+  running services use for their actual gRPC calls.
+
+  Industry known problem: "TLS works on some paths but not others" — typically
+  caused by asymmetric CA distribution or per-node cert generation using
+  different CA snapshots. Testing all directions catches this.
+
+  Ports used are from confirmed service registrations:
+  - cluster_controller: 12000 on node-2 (10.10.0.12)
+  - cluster_doctor: 12100 on node-2 (10.10.0.12)
+  - rbac: 10004 on node-1 (10.10.0.11)
+  - authentication: 10005 on node-1 (10.10.0.11)
+  - etcd client: 2379 on node-1 (10.10.0.11)
+suite: security
+tags:
+  - mtls
+  - pki
+  - connectivity
+  - mesh
+  - tls-handshake
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: pki_ca_valid
+    probe: pki.ca_valid
+    params:
+      node: node-1
+    expect:
+      valid: true
+
+baseline:
+  - type: probe
+    id: cert_info_baseline
+    probe: pki.cert_info
+    params:
+      node: node-1
+
+steps: []
+
+assertions:
+  # ── node-1 → node-2 connections ───────────────────────────────────────────
+  - type: probe
+    id: node1_to_controller_node2
+    probe: pki.mtls_connect
+    params:
+      node: node-1
+      target_ip: "10.10.0.12"
+      target_port: "12000"
+    expect:
+      connected: true
+
+  - type: probe
+    id: node1_to_doctor_node2
+    probe: pki.mtls_connect
+    params:
+      node: node-1
+      target_ip: "10.10.0.12"
+      target_port: "12100"
+    expect:
+      connected: true
+
+  # ── node-2 → node-1 connections ───────────────────────────────────────────
+  - type: probe
+    id: node2_to_rbac_node1
+    probe: pki.mtls_connect
+    params:
+      node: node-2
+      target_ip: "10.10.0.11"
+      target_port: "10004"
+    expect:
+      connected: true
+
+  - type: probe
+    id: node2_to_etcd_node1
+    probe: pki.mtls_connect
+    params:
+      node: node-2
+      target_ip: "10.10.0.11"
+      target_port: "2379"
+    expect:
+      connected: true
+
+  # ── node-3 → node-1 connections ───────────────────────────────────────────
+  - type: probe
+    id: node3_to_authentication_node1
+    probe: pki.mtls_connect
+    params:
+      node: node-3
+      target_ip: "10.10.0.11"
+      target_port: "10005"
+    expect:
+      connected: true
+
+  - type: probe
+    id: node3_to_etcd_node1
+    probe: pki.mtls_connect
+    params:
+      node: node-3
+      target_ip: "10.10.0.11"
+      target_port: "2379"
+    expect:
+      connected: true
+
+  # ── Compute-to-control connections ────────────────────────────────────────
+  # Compute nodes must reach control-plane services (node agent → controller).
+  - type: probe
+    id: node4_to_etcd_node1
+    probe: pki.mtls_connect
+    params:
+      node: node-4
+      target_ip: "10.10.0.11"
+      target_port: "2379"
+    expect:
+      connected: true
+
+  - type: probe
+    id: node5_to_etcd_node1
+    probe: pki.mtls_connect
+    params:
+      node: node-5
+      target_ip: "10.10.0.11"
+      target_port: "2379"
+    expect:
+      connected: true
+
+  # ── Same-node loopback mTLS ───────────────────────────────────────────────
+  # Services bind to 0.0.0.0 but other services on the same node reach them
+  # via the node's IP (not localhost) for consistent TLS SNI matching.
+  - type: probe
+    id: node1_to_self_etcd
+    probe: pki.mtls_connect
+    params:
+      node: node-1
+      target_ip: "10.10.0.11"
+      target_port: "2379"
+    expect:
+      connected: true
+
+cleanup:
+  - type: probe
+    id: final_health
+    probe: cluster.health
+    expect:
+      status: healthy

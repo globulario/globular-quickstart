@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:41:25 UTC; 13min ago
+    Process: 533 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 561 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 576 (repository_serv)
+      Tasks: 18 (limit: 8641)
+     Memory: 34.0M (peak: 34.5M)
+        CPU: 2.311s
+     CGroup: /system.slice/docker-4908e77bbf99ff3f7b177f626a29d247c8f9ef6a704b5c704dbea822ab1ca85b.scope/system.slice/globular-repository.service
+             └─576 /usr/lib/globular/bin/repository_server
+
+Jul 31 21:53:11 node-5 repository_server[576]: 2026/07/31 21:53:11 INFO scylladb connected hosts="[10.10.0.11 10.10.0.14]" keyspace=repository rf=2
+Jul 31 21:53:11 node-5 repository_server[576]: 2026/07/31 21:53:11 INFO scylladb reconnected hosts="[10.10.0.11 10.10.0.14]" keyspace=repository rf=2
+Jul 31 21:53:11 node-5 repository_server[576]: time=2026-07-31T21:53:11.579Z level=INFO msg="scylladb reconnected after health check failure"
+Jul 31 21:53:11 node-5 repository_server[576]: time=2026-07-31T21:53:11.579Z level=INFO msg="repository metadata recovered — service is SERVING"
+Jul 31 21:53:20 node-5 repository_server[576]: 2026/07/31 21:53:20 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Jul 31 21:53:33 node-5 repository_server[576]: 2026/07/31 21:53:33 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Jul 31 21:54:09 node-5 repository_server[576]: 2026/07/31 21:54:09 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Jul 31 21:54:09 node-5 repository_server[576]: 2026/07/31 21:54:09 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Jul 31 21:54:27 node-5 repository_server[576]: 2026/07/31 21:54:27 INFO acc: warmup complete baseline_rtt_ms=20 samples=210 elapsed=13m0s
+Jul 31 21:54:27 node-5 repository_server[576]: 2026/07/31 21:54:27 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=53 baseline_ms=20 window=107 new_window=96

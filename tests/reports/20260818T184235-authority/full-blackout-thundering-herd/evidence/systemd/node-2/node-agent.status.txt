@@ -1,0 +1,23 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:25 UTC; 44s ago
+    Process: 184 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 214 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 226 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 38.0M (peak: 942.7M)
+        CPU: 15.534s
+     CGroup: /system.slice/docker-b0762ab2a8bcd3a21dd0b30b300b2eb739623548a6218b32fd63454fbfbb2f99.scope/system.slice/globular-node-agent.service
+             ├─ 226 /usr/lib/globular/bin/node_agent_server
+             └─2019 systemctl show --property=Id,ActiveState,SubState,MainPID,Result,ExecMainStatus,NRestarts --no-pager globular-ai-executor.service globular-ai-memory.service globular-ai-router.service globular-ai-watcher.service globular-alertmanager.service globular-authentication.service globular-backup-manager.service globular-cluster-controller.service globular-cluster-doctor.service globular-dns.service globular-envoy.service globular-etcd.service globular-event.service globular-file.service globular-gateway.service globular-ldap.service globular-log.service globular-mcp.service globular-media.service globular-minio.service globular-monitoring.service globular-node-agent.service globular-node-exporter.service globular-persistence.service globular-prometheus.service globular-quickstart-bootstrap.service globular-rbac.service globular-repository.service globular-resource.service globular-scylla-manager-agent.service globular-scylla-manager.service globular-search.service globular-sidekick.service globular-title.service globular-workflow.service globular-xds.service
+
+Aug 18 19:12:49 node-2 node_agent_server[226]: 2026/08/18 19:12:49 node heartbeat failed (state=degraded): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: connection refused
+Aug 18 19:12:49 node-2 node_agent_server[226]: 2026/08/18 19:12:49 ca-drift: load etcd CA metadata: pki ca metadata: etcd unavailable: context deadline exceeded (skipping)
+Aug 18 19:12:56 node-2 node_agent_server[226]: {"level":"warn","ts":"2026-08-18T19:12:56.122571Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000a50780/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 18 19:12:58 node-2 node_agent_server[226]: {"level":"warn","ts":"2026-08-18T19:12:58.123549Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000a50780/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 18 19:13:01 node-2 node_agent_server[226]: 2026/08/18 19:13:01 behavioral observation: infra_probe skipped component=scylladb node=c8a09d9e-3813-5357-ab58-93aa410f27fb: behavioral-memory endpoint not resolvable
+Aug 18 19:13:02 node-2 node_agent_server[226]: 2026/08/18 19:13:02 behavioral observation: infra_probe skipped component=etcd node=c8a09d9e-3813-5357-ab58-93aa410f27fb: behavioral-memory endpoint not resolvable
+Aug 18 19:13:02 node-2 node_agent_server[226]: 2026/08/18 19:13:02 behavioral observation: infra_probe skipped component=minio node=c8a09d9e-3813-5357-ab58-93aa410f27fb: behavioral-memory endpoint not resolvable
+Aug 18 19:13:02 node-2 node_agent_server[226]: 2026/08/18 19:13:02 behavioral observation: infra_probe skipped component=envoy node=c8a09d9e-3813-5357-ab58-93aa410f27fb: behavioral-memory endpoint not resolvable
+Aug 18 19:13:05 node-2 node_agent_server[226]: 2026/08/18 19:13:05 event-publisher: connected to event service
+Aug 18 19:13:08 node-2 node_agent_server[226]: {"level":"warn","ts":"2026-08-18T19:13:08.534025Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000689a40/10.10.0.12:2379","attempt":0,"error":"rpc error: code = Canceled desc = context canceled"}

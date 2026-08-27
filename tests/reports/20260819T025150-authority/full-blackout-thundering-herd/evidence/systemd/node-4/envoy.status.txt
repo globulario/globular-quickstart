@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:22:19 UTC; 1min 8s ago
+    Process: 275 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 383 (envoy)
+      Tasks: 40 (limit: 8641)
+     Memory: 19.5M (peak: 39.0M swap: 7.9M swap peak: 7.9M)
+        CPU: 641ms
+     CGroup: /system.slice/docker-385981ec9bab5109e8a8585b8d7070b5708eef8209ed44d8f8789bedfa13bd12.scope/system.slice/globular-envoy.service
+             └─383 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Aug 19 03:22:50 node-4 envoy[383]: [2026-08-19 03:22:50.044][383][info][config] [source/common/listener_manager/listener_manager_impl.cc:1003] all dependencies initialized. starting workers
+Aug 19 03:23:00 node-4 envoy[383]: [2026-08-19T03:22:52.363Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 60209 1 - "10.10.0.14" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 19 03:23:10 node-4 envoy[383]: [2026-08-19T03:23:00.746Z] "GET /ready HTTP/1.1" 200 - 0 5 0 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 19 03:23:10 node-4 envoy[383]: [2026-08-19T03:23:00.746Z] "GET /server_info HTTP/1.1" 200 - 0 98002 2 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 19 03:23:10 node-4 envoy[383]: [2026-08-19T03:23:00.752Z] "GET /stats?format=json HTTP/1.1" 200 - 0 27941 1 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 19 03:23:10 node-4 envoy[383]: [2026-08-19T03:23:07.363Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 60211 1 - "10.10.0.14" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 19 03:23:19 node-4 envoy[383]: [2026-08-19 03:23:19.806][383][info][upstream] [source/common/upstream/cds_api_helper.cc:34] cds: response indicates 33 added/updated cluster(s), 1 removed cluster(s); applying changes
+Aug 19 03:23:19 node-4 envoy[383]: [2026-08-19 03:23:19.904][383][info][upstream] [source/common/upstream/cds_api_helper.cc:87] cds: added/updated 33 cluster(s) (skipped 0 unmodified cluster(s)); removed 0 cluster(s)
+Aug 19 03:23:19 node-4 envoy[383]: [2026-08-19 03:23:19.911][383][info][upstream] [source/common/listener_manager/lds_api.cc:109] lds: add/update listener 'ingress_listener_443_http_80'
+Aug 19 03:23:19 node-4 envoy[383]: [2026-08-19 03:23:19.913][383][info][upstream] [source/common/listener_manager/lds_api.cc:109] lds: add/update listener 'ingress_listener_443'

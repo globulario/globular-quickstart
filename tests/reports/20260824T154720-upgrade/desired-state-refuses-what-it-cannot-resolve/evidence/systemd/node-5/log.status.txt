@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 15:16:48 UTC; 32min ago
+    Process: 158 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 192 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 215 (log_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 22.2M (peak: 26.5M)
+        CPU: 1.362s
+     CGroup: /system.slice/docker-fc3370877ddffa814bdba4fa8349b78cd8af40773b6e1301274777b8655f6f94.scope/system.slice/globular-log.service
+             └─215 /usr/lib/globular/bin/log_server
+
+Aug 24 15:42:40 node-5 log_server[215]: time=2026-08-24T15:42:40.934Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 24 15:42:40 node-5 log_server[215]: time=2026-08-24T15:42:40.938Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 24 15:42:40 node-5 log_server[215]: time=2026-08-24T15:42:40.952Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 24 15:42:55 node-5 log_server[215]: 2026/08/24 15:42:55 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused"
+Aug 24 15:43:11 node-5 log_server[215]: time=2026-08-24T15:43:11.761Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 24 15:43:58 node-5 log_server[215]: time=2026-08-24T15:43:58.592Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 24 15:44:00 node-5 log_server[215]: 2026/08/24 15:44:00 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 24 15:45:03 node-5 log_server[215]: time=2026-08-24T15:45:03.521Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 24 15:45:03 node-5 log_server[215]: 2026/08/24 15:45:03 INFO acc: warmup complete baseline_rtt_ms=20 samples=201 elapsed=28m13s
+Aug 24 15:45:03 node-5 log_server[215]: 2026/08/24 15:45:03 INFO acc: AIMD decrease method=/log.LogService/Log rtt_ms=63014 baseline_ms=20 window=100 new_window=90

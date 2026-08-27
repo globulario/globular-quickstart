@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 11:01:46 UTC; 32s ago
+    Process: 3164 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 3188 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3209 (monitoring_serv)
+      Tasks: 10 (limit: 8641)
+     Memory: 24.6M (peak: 26.0M)
+        CPU: 244ms
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-monitoring.service
+             └─3209 /usr/lib/globular/bin/monitoring_server
+
+Aug 18 11:01:48 node-2 monitoring_server[3209]: {"level":"warn","ts":"2026-08-18T11:01:48.6837Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003d3860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:01:53 node-2 monitoring_server[3209]: {"level":"warn","ts":"2026-08-18T11:01:53.684293Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003d3860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:01:53 node-2 monitoring_server[3209]: 2026/08/18 11:01:53 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"
+Aug 18 11:01:57 node-2 monitoring_server[3209]: {"level":"warn","ts":"2026-08-18T11:01:57.686083Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003d3860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:02:01 node-2 monitoring_server[3209]: {"level":"warn","ts":"2026-08-18T11:02:01.687272Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003d3860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:02:05 node-2 monitoring_server[3209]: {"level":"warn","ts":"2026-08-18T11:02:05.689292Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003d3860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 11:02:09 node-2 monitoring_server[3209]: {"level":"warn","ts":"2026-08-18T11:02:09.570078Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003d3860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = etcdserver: leader changed"}
+Aug 18 11:02:10 node-2 monitoring_server[3209]: 2026/08/18 11:02:10 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 18 11:02:10 node-2 monitoring_server[3209]: time=2026-08-18T11:02:10.470Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=16786
+Aug 18 11:02:10 node-2 monitoring_server[3209]: 2026/08/18 11:02:10 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020

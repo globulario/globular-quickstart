@@ -1,0 +1,359 @@
+{
+  "schema_version": 1,
+  "scenario": "etcd-detach-before-wipe",
+  "suite": "recovery",
+  "start_time": "2026-08-05T19:09:45.696398Z",
+  "end_time": "2026-08-05T19:13:04.203759Z",
+  "passed": false,
+  "item_count": 16,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "members_gte": 3
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:09:46.693278Z"
+    },
+    {
+      "id": "etcd_writable_at_start",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 297
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:09:47.025610Z"
+    },
+    {
+      "id": "baseline_etcd_members",
+      "section": "baseline",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:09:47.330077Z"
+    },
+    {
+      "id": "detach_node3",
+      "section": "steps",
+      "probe": "chaos.detach_node_etcd",
+      "params": {
+        "node": "node-3",
+        "self_ip": "10.10.0.13",
+        "peer_ip": "10.10.0.11"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.detach_node_etcd",
+        "container": "globular-node-3",
+        "exit_code": 0,
+        "stdout": "Member 7b17f49da09d91fa removed from cluster  494c0d2663880d1\nDETACHED",
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:09:47.483600Z"
+    },
+    {
+      "id": "stop_node3",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-3",
+        "exit_code": 0,
+        "stdout": "globular-node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:09:52.488214Z"
+    },
+    {
+      "id": "writable_after_first_detach",
+      "section": "steps",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 286
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:10:07.808598Z"
+    },
+    {
+      "id": "detach_node2",
+      "section": "steps",
+      "probe": "chaos.detach_node_etcd",
+      "params": {
+        "node": "node-2",
+        "self_ip": "10.10.0.12",
+        "peer_ip": "10.10.0.11"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.detach_node_etcd",
+        "container": "globular-node-2",
+        "exit_code": 0,
+        "stdout": "Member e2e3e5371087d808 removed from cluster  494c0d2663880d1\nDETACHED",
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:10:07.939714Z"
+    },
+    {
+      "id": "stop_node2",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-2",
+        "exit_code": 0,
+        "stdout": "globular-node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:10:18.536570Z"
+    },
+    {
+      "id": "sole_survivor_still_accepts_writes",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 269
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:10:38.835981Z"
+    },
+    {
+      "id": "leader_still_elected",
+      "section": "assertions",
+      "probe": "cluster.leader",
+      "params": {},
+      "expect": {
+        "is_leader": true
+      },
+      "result": {
+        "leader_endpoint": "10.10.0.11:12000",
+        "is_leader": true
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:10:38.947063Z"
+    },
+    {
+      "id": "restart_node2",
+      "section": "cleanup",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-2",
+        "exit_code": 0,
+        "stdout": "globular-node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:10:39.238654Z"
+    },
+    {
+      "id": "restart_node3",
+      "section": "cleanup",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-3",
+        "exit_code": 0,
+        "stdout": "globular-node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-05T19:10:39.525993Z"
+    },
+    {
+      "id": "auto-reconstruct-etcd",
+      "section": "restoration",
+      "probe": "chaos.reconstruct_node_etcd_membership",
+      "params": {
+        "node": "node-3",
+        "self_ip": "10.10.0.13",
+        "peer_ip": "10.10.0.11"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.reconstruct_node_etcd_membership",
+        "container": "globular-node-3",
+        "mode": "EQUIVALENT_RECONSTRUCTION",
+        "scope": "MEMBER_RECONSTRUCTION",
+        "path": "gateway join script --repair-etcd",
+        "members_before": "DIAG members_before=3",
+        "exit_code": 1,
+        "stdout": "PHASE 2 \u2014 PKI / Identity\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n\n  ...   [2.1] Installing cluster CA certificate...\n  OK:   CA certificate installed and trusted\n  ...   [2.2] Obtaining signed JoinPlan from controller (v2 authorization gate)...\n  FAIL: join blocked: gateway error (HTTP 502) \u2014 controller error: rpc error: code = PermissionDenied desc = join token uses exhausted\n  WARN: join aborted during phase '2 \u2014 PKI / Identity' (exit 1) \u2014 compensating\n  WARN: compensation: unit restore not applicable at this phase \u2014 receipt at /var/lib/globular/nodeagent/join_interrupted.json",
+        "stderr": ""
+      },
+      "passed": false,
+      "timestamp": "2026-08-05T19:10:41.954243Z"
+    },
+    {
+      "id": "auto-reconstruct-etcd",
+      "section": "restoration",
+      "probe": "chaos.reconstruct_node_etcd_membership",
+      "params": {
+        "node": "node-2",
+        "self_ip": "10.10.0.12",
+        "peer_ip": "10.10.0.11"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.reconstruct_node_etcd_membership",
+        "container": "globular-node-2",
+        "mode": "EQUIVALENT_RECONSTRUCTION",
+        "scope": "MEMBER_RECONSTRUCTION",
+        "path": "gateway join script --repair-etcd",
+        "members_before": "DIAG members_before=3",
+        "exit_code": 1,
+        "stdout": "PHASE 2 \u2014 PKI / Identity\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n\n  ...   [2.1] Installing cluster CA certificate...\n  OK:   CA certificate installed and trusted\n  ...   [2.2] Obtaining signed JoinPlan from controller (v2 authorization gate)...\n  FAIL: join blocked: gateway error (HTTP 502) \u2014 controller error: rpc error: code = PermissionDenied desc = join token uses exhausted\n  WARN: join aborted during phase '2 \u2014 PKI / Identity' (exit 1) \u2014 compensating\n  WARN: compensation: unit restore not applicable at this phase \u2014 receipt at /var/lib/globular/nodeagent/join_interrupted.json",
+        "stderr": ""
+      },
+      "passed": false,
+      "timestamp": "2026-08-05T19:10:43.479320Z"
+    },
+    {
+      "id": "enforce_restoration",
+      "section": "restoration",
+      "probe": "restoration",
+      "params": {},
+      "expect": {
+        "residue_free": true
+      },
+      "result": {
+        "outstanding_at_teardown": [
+          {
+            "kind": "etcd_detached",
+            "node": "node-3",
+            "self_ip": "10.10.0.13",
+            "peer_ip": "10.10.0.11"
+          },
+          {
+            "kind": "etcd_detached",
+            "node": "node-2",
+            "self_ip": "10.10.0.12",
+            "peer_ip": "10.10.0.11"
+          }
+        ],
+        "reversed": [],
+        "discharged": [],
+        "failed": [
+          {
+            "kind": "etcd_detached",
+            "node": "node-3",
+            "self_ip": "10.10.0.13",
+            "peer_ip": "10.10.0.11"
+          },
+          {
+            "kind": "etcd_detached",
+            "node": "node-2",
+            "self_ip": "10.10.0.12",
+            "peer_ip": "10.10.0.11"
+          }
+        ],
+        "unrestorable": []
+      },
+      "passed": false,
+      "timestamp": "2026-08-05T19:10:43.479349Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/400 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 3,
+          "etcd_member_count": "3",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/400 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": [
+          "etcd_healthy_endpoints: baseline=5 now=3",
+          "etcd_member_count: baseline='5' now='3'"
+        ]
+      },
+      "passed": false,
+      "timestamp": "2026-08-05T19:12:51.521400Z"
+    }
+  ],
+  "result": "RESIDUE",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

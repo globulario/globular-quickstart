@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:41:24 UTC; 13min ago
+    Process: 55 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 80 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 106 (event_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 24.2M (peak: 24.9M)
+        CPU: 3.109s
+     CGroup: /system.slice/docker-b8fa6aca9bb82e631ce89b654ed458dabe59ec9fe67bf982b77e3cf43dab10a6.scope/system.slice/globular-event.service
+             └─106 /usr/lib/globular/bin/event_server
+
+Jul 31 23:52:59 node-5 event_server[106]: time=2026-07-31T23:52:59.142Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Jul 31 23:52:59 node-5 event_server[106]: time=2026-07-31T23:52:59.541Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Jul 31 23:52:59 node-5 event_server[106]: time=2026-07-31T23:52:59.942Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Jul 31 23:53:00 node-5 event_server[106]: time=2026-07-31T23:53:00.142Z level=WARN msg="poll events error" bucket=2026-07-31T23:53 err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Jul 31 23:53:00 node-5 event_server[106]: time=2026-07-31T23:53:00.143Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Jul 31 23:53:04 node-5 event_server[106]: {"level":"warn","ts":"2026-07-31T23:53:04.629501Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004e0d20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Unavailable desc = error reading from server: read tcp 10.10.0.15:50368->10.10.0.11:2379: read: connection reset by peer"}
+Jul 31 23:54:13 node-5 event_server[106]: time=2026-07-31T23:54:13.141Z level=INFO msg="Subscribe: ok" channel=operation.restart_requested uuid=517bf802-c05f-4f55-8203-8c8b81e14f14
+Jul 31 23:54:13 node-5 event_server[106]: time=2026-07-31T23:54:13.143Z level=INFO msg="OnEvent: registered" uuid=517bf802-c05f-4f55-8203-8c8b81e14f14
+Jul 31 23:54:13 node-5 event_server[106]: time=2026-07-31T23:54:13.157Z level=INFO msg=subscribed channel=operation.restart_requested uuid=517bf802-c05f-4f55-8203-8c8b81e14f14 subscribers=1
+Jul 31 23:54:13 node-5 event_server[106]: time=2026-07-31T23:54:13.157Z level=INFO msg="stream registered" uuid=517bf802-c05f-4f55-8203-8c8b81e14f14

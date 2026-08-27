@@ -1,0 +1,22 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:16 UTC; 3s ago
+    Process: 2093 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 2098 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 2105 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2117 (resource_server)
+      Tasks: 11 (limit: 8641)
+     Memory: 18.5M (peak: 18.9M)
+        CPU: 128ms
+     CGroup: /system.slice/docker-c9ec52239bf0c1a466e721d2fce1da845ffe2a6f535fdc6be88efc93c18b00de.scope/system.slice/globular-resource.service
+             └─2117 /usr/lib/globular/bin/resource_server
+
+Aug 19 03:23:16 node-2 systemd[1]: globular-resource.service: Scheduled restart job, restart counter is at 2.
+Aug 19 03:23:16 node-2 systemd[1]: Starting globular-resource.service - Globular resource...
+Aug 19 03:23:16 node-2 systemd[1]: Started globular-resource.service - Globular resource.
+Aug 19 03:23:16 node-2 resource_server[2117]: 2026/08/19 03:23:16 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 19 03:23:16 node-2 resource_server[2117]: 2026/08/19 03:23:16 INFO security: loaded cluster roles from external policy file roles=22
+Aug 19 03:23:16 node-2 resource_server[2117]: time=2026-08-19T03:23:16.513Z level=INFO msg="startup: RBAC failures will be non-fatal during initialization"
+Aug 19 03:23:16 node-2 resource_server[2117]: 2026/08/19 03:23:16 INFO policy: loaded permissions from file service=resource path=/var/lib/globular/policy/services/resource/permissions.generated.json count=74
+Aug 19 03:23:16 node-2 resource_server[2117]: PortAllocator range: 10000 - 20000
+Aug 19 03:23:18 node-2 resource_server[2117]: {"level":"warn","ts":"2026-08-19T03:23:18.522447Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00068e780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}

@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:51:18 UTC; 1min 35s ago
+    Process: 623 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 651 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 669 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 753 (rbac_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 73.9M (peak: 74.5M)
+        CPU: 417ms
+     CGroup: /system.slice/docker-059225d7a49fdbb867afd4a4acd66baab01c465f6ce3c4b555ea76d934cd376b.scope/system.slice/globular-rbac.service
+             └─753 /usr/lib/globular/bin/rbac_server
+
+Aug 18 10:52:49 node-1 rbac_server[753]: time=2026-08-18T10:52:49.039Z level=INFO msg="minio storage configured" endpoint=10.10.0.11:9000 bucket=globular secure=true
+Aug 18 10:52:49 node-1 rbac_server[753]: time=2026-08-18T10:52:49.039Z level=INFO msg="dependency health watchdog started" deps=1
+Aug 18 10:52:49 node-1 rbac_server[753]: time=2026-08-18T10:52:49.039Z level=INFO msg="rbac permission-cache invalidation watcher started"
+Aug 18 10:52:49 node-1 rbac_server[753]: time=2026-08-18T10:52:49.048Z level=INFO msg="rbac service ready" id=8b384839-8473-3b00-9ccc-7cb36fe97836 version=1.2.312 port=10003 proxy=10001 protocol=grpc domain=globular.internal address=10.10.0.11:10003 startup_ms=644
+Aug 18 10:52:49 node-1 rbac_server[753]: time=2026-08-18T10:52:49.049Z level=INFO msg="starting grpc server" port=10003
+Aug 18 10:52:49 node-1 rbac_server[753]: 2026/08/18 10:52:49 INFO metrics: proxy port conflict, using free port service=rbac.RbacService wanted=10001 actual=46659
+Aug 18 10:52:49 node-1 rbac_server[753]: 2026/08/18 10:52:49 INFO metrics listening service=rbac.RbacService addr=[::]:46659
+Aug 18 10:52:52 node-1 rbac_server[753]: 2026/08/18 10:52:52 WARN token validation failed in AuthContext method=/rbac.RbacService/AddResourceOwner error="validate token: parse: token is malformed: token contains an invalid number of segments"
+Aug 18 10:52:52 node-1 rbac_server[753]: 2026/08/18 10:52:52 WARN authz_decision audit="{\"timestamp\":\"2026-08-18T10:52:52.507910106Z\",\"policy_version\":\"unknown\",\"subject\":\"10.10.0.12\",\"principal_type\":\"application\",\"auth_method\":\"mtls\",\"is_loopback\":true,\"remote_addr\":\"unknown\",\"grpc_method\":\"/rbac.RbacService/AddResourceOwner\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"no_rbac_mapping_post_day0\",\"decision_latency_ms\":0,\"cluster_id\":\"10.10.0.12\",\"call_source\":\"local\"}" subject=10.10.0.12 method=/rbac.RbacService/AddResourceOwner allowed=false reason=no_rbac_mapping_post_day0 latency_ms=0 policy_version=unknown
+Aug 18 10:52:53 node-1 rbac_server[753]: 2026/08/18 10:52:53 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10003 new_port=10003 old_proxy=46659 new_proxy=10001

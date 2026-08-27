@@ -1,0 +1,168 @@
+version: 1
+name: desired-state-refuses-what-it-cannot-resolve
+description: |
+  Desired state must fail CLOSED: the control plane may only be pointed at an
+  artifact it can actually resolve and install.
+
+  WHY THIS EXISTS. The 2026-08-16 incident began with a deploy that reported
+  success it had not achieved, and every scenario in this suite until now
+  observed steady state — none drove the deploy path at all. The pipeline that
+  failed roughly one run in two had zero scenario coverage of its execution.
+
+  This drives the operator-facing half of that path: `globular services desired
+  set`. It is the single command that turns "an artifact exists" into "the
+  cluster will install it", and it is where a bad value does the most damage,
+  because everything downstream treats desired state as authority.
+
+  THE PROPERTY. A request naming something the repository cannot resolve must be
+  REFUSED, not accepted-and-retried-forever. An accepted-but-unresolvable
+  desired state is a rollout that can never finish and never says so: the
+  controller keeps trying, reconcile keeps failing, and the operator sees a
+  cluster that is perpetually "converging". That is strictly worse than an error
+  at the point of the request.
+
+  Three cases are exercised, and the refusals matter more than the acceptance —
+  which is why they are expressed as actions that FAIL the scenario on the wrong
+  outcome, rather than as assertions about state afterwards. An action that
+  quietly succeeded where a refusal was required would otherwise leave desired
+  state pointing at nothing while the scenario reported PASS.
+
+  NOT COVERED HERE, and worth stating plainly: the desired-state REGRESSION
+  floor. On 2026-08-16 a rollback was refused with "desired floor is 1.2.317,
+  attempted 1.2.316; pass --allow-regression to override (audited)". Exercising
+  that needs two published versions of one package, and a bundle ships one
+  version per package — so proving it needs a publish, not just a desired-state
+  change. See deploy-publish-then-converge for the half that is reachable.
+
+suite: upgrade
+tags:
+  - desired-state
+  - deploy-pipeline
+  - fail-closed
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # The repository must be able to resolve the real version, or "refused the
+  # fake one" proves only that everything is refused.
+  - type: probe
+    id: repository_resolution_is_clean
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+      missing_blob: 0
+
+baseline:
+  - type: probe
+    id: desired_state_before
+    probe: cluster.desired_state
+
+steps:
+  # ── A version that was never published ────────────────────────────────────
+  # Nothing resolves it, so nothing could ever install it.
+  - type: action
+    id: refuse_unpublished_version
+    action: ops.set_desired
+    params:
+      node: node-1
+      name: blog
+      version: 9.9.9
+      expect: refused
+
+  # ── A version-shaped string that is not a release ─────────────────────────
+  - type: action
+    id: refuse_nonexistent_patch
+    action: ops.set_desired
+    params:
+      node: node-1
+      name: blog
+      version: 1.2.311
+      expect: refused
+
+  # ── A service that does not exist ─────────────────────────────────────────
+  # Fails closed on unknown kind rather than inventing a SERVICE record.
+  - type: action
+    id: refuse_unknown_service
+    action: ops.set_desired
+    params:
+      node: node-1
+      name: not-a-real-service
+      version: 1.2.312
+      expect: refused
+
+  # ── The control: a real, resolvable version IS accepted ───────────────────
+  # Without this the scenario would pass on a control plane that refuses
+  # everything, including correct requests — a fail-closed system that is
+  # simply closed.
+  # dns rather than blog: both resolve with publish_state 3 and ref.kind 1, but
+  # `desired set` refuses blog with a kind error that its own resolver
+  # contradicts (desired_state.refusal_message_misattributes_cause). The control
+  # must be a target the platform genuinely accepts, or this scenario would fail
+  # on a diagnostic bug rather than on the property it tests.
+  - type: action
+    id: accept_the_published_version
+    action: ops.set_desired
+    params:
+      node: node-1
+      name: dns
+      version: 1.2.312
+      expect: accepted
+
+  - type: action
+    id: settle
+    action: wait
+    params:
+      seconds: 60
+      reason: "let the controller record the desired-state write and reconcile once"
+
+assertions:
+  # ── The refusals left nothing behind ──────────────────────────────────────
+  # A refusal that still wrote a record would be the worst outcome: desired
+  # state pointing at an unresolvable artifact, discovered later as a rollout
+  # that never completes.
+  - type: probe
+    id: no_unresolvable_desired_entries
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+      missing_blob: 0
+      conflict: 0
+
+  - type: probe
+    id: desired_state_still_coherent
+    probe: cluster.desired_state
+    expect:
+      count_gte: 1
+
+  # ── And the cluster is unharmed by being asked for impossible things ──────
+  - type: probe
+    id: cluster_still_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: reconcile_clean
+    probe: cluster.reconcile_clean
+    params:
+      since: "10 min ago"
+    expect:
+      clean: true
+
+  - type: probe
+    id: liveness_unaffected
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+
+cleanup: []

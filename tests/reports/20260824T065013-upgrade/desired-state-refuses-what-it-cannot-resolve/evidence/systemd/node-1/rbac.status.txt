@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 06:42:51 UTC; 9min ago
+    Process: 54352 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 54355 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 54359 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 54365 (rbac_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 132.8M (peak: 133.7M)
+        CPU: 1.907s
+     CGroup: /system.slice/docker-db0f982cd0ff640db84fc7eab885c3f57cb686a015e93e090a68ef3ade7c6e41.scope/system.slice/globular-rbac.service
+             └─54365 /usr/lib/globular/bin/rbac_server
+
+Aug 24 06:48:43 node-1 rbac_server[54365]: 2026/08/24 06:48:43 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 24 06:49:09 node-1 rbac_server[54365]: 2026/08/24 06:49:09 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 24 06:50:17 node-1 rbac_server[54365]: 2026/08/24 06:50:17 INFO addResourceOwner call path=/users/sa resourceType=file subject=sa subjectType=ACCOUNT
+Aug 24 06:50:17 node-1 rbac_server[54365]: 2026/08/24 06:50:17 WARN no path found  /users/sa The specified key does not exist.
+Aug 24 06:50:17 node-1 rbac_server[54365]: 2026/08/24 06:50:17 WARN fail to remove key  /users/sa :  Entry not found
+Aug 24 06:50:17 node-1 rbac_server[54365]: 2026/08/24 06:50:17 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 24 06:50:17 node-1 rbac_server[54365]: 2026/08/24 06:50:17 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 24 06:50:17 node-1 rbac_server[54365]: 2026/08/24 06:50:17 INFO acc: AIMD decrease method=/rbac.RbacService/AddResourceOwner rtt_ms=167 baseline_ms=20 window=111 new_window=99
+Aug 24 06:50:17 node-1 rbac_server[54365]: 2026/08/24 06:50:17 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 24 06:51:50 node-1 rbac_server[54365]: 2026/08/24 06:51:50 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

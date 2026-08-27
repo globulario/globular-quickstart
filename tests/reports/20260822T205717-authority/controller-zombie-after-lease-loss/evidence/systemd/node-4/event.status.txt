@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:24:54 UTC; 1h 38min ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 67 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 84 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 29.6M (peak: 32.2M)
+        CPU: 40.441s
+     CGroup: /system.slice/docker-b0ee96061132b593cfc49cfbc92e965d02de7fb7e6500a4382ff6f29bffc0497.scope/system.slice/globular-event.service
+             └─84 /usr/lib/globular/bin/event_server
+
+Aug 22 20:54:32 node-4 event_server[84]: time=2026-08-22T20:54:32.780Z level=INFO msg="stream registered" uuid=32576a29-e9b7-40a9-9c26-2a7a14058fb9
+Aug 22 20:56:28 node-4 event_server[84]: 2026/08/22 20:56:28 WARN token validation failed in AuthContext method=/event.EventService/Publish error="validate token: parse: token has invalid claims: token is expired"
+Aug 22 20:56:28 node-4 event_server[84]: 2026/08/22 20:56:28 WARN authz_decision audit="{\"timestamp\":\"2026-08-22T20:56:28.317214074Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/event.EventService/Publish\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"cluster_uid_missing\",\"decision_latency_ms\":0,\"call_source\":\"remote\"}" subject="" method=/event.EventService/Publish allowed=false reason=cluster_uid_missing latency_ms=0 policy_version=unknown
+Aug 22 20:59:32 node-4 event_server[84]: time=2026-08-22T20:59:32.837Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=node_agent_handler_c777633e-6d07-5713-9c4c-deb3317eee25
+Aug 22 20:59:32 node-4 event_server[84]: time=2026-08-22T20:59:32.837Z level=INFO msg=subscribed channel=operation.* uuid=node_agent_handler_c777633e-6d07-5713-9c4c-deb3317eee25 subscribers=2
+Aug 22 20:59:41 node-4 event_server[84]: time=2026-08-22T20:59:41.844Z level=WARN msg="keepalive send failed; will drop stream" uuid=32576a29-e9b7-40a9-9c26-2a7a14058fb9 err="rpc error: code = Canceled desc = context canceled"
+Aug 22 20:59:41 node-4 event_server[84]: time=2026-08-22T20:59:41.844Z level=INFO msg="subscriber cleanup" uuid=32576a29-e9b7-40a9-9c26-2a7a14058fb9
+Aug 22 20:59:41 node-4 event_server[84]: time=2026-08-22T20:59:41.844Z level=INFO msg="OnEvent: stream ended" uuid=32576a29-e9b7-40a9-9c26-2a7a14058fb9
+Aug 22 21:01:23 node-4 event_server[84]: time=2026-08-22T21:01:23.923Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=node_agent_handler_c8a09d9e-3813-5357-ab58-93aa410f27fb
+Aug 22 21:01:23 node-4 event_server[84]: time=2026-08-22T21:01:23.923Z level=INFO msg=subscribed channel=operation.* uuid=node_agent_handler_c8a09d9e-3813-5357-ab58-93aa410f27fb subscribers=3

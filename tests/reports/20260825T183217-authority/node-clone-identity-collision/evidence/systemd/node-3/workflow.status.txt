@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 19:30:34 UTC; 2min 34s ago
+    Process: 12298 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 12301 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 12304 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 12311 (workflow_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 25.9M (peak: 29.4M)
+        CPU: 571ms
+     CGroup: /system.slice/docker-cce517f480b16886ae430dabc4dd70793ce55d151be0d5e48653f181dd1d5d1f.scope/system.slice/globular-workflow.service
+             └─12311 /usr/lib/globular/bin/workflow_server
+
+Aug 25 19:30:34 node-3 workflow_server[12311]: time=2026-08-25T19:30:34.546Z level=INFO msg="service started successfully" name=workflow.WorkflowService id=27fe9af8-2d20-4c1b-80e7-6d8ca8d00919 port=10220
+Aug 25 19:30:34 node-3 workflow_server[12311]: 2026/08/25 19:30:34 INFO metrics listening service=workflow.WorkflowService addr=[::]:10221
+Aug 25 19:30:44 node-3 workflow_server[12311]: 2026/08/25 19:30:44 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 25 19:30:44 node-3 workflow_server[12311]: 2026/08/25 19:30:44 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 25 19:31:04 node-3 workflow_server[12311]: time=2026-08-25T19:31:04.317Z level=INFO msg="retention: startup delay elapsed, running first prune"
+Aug 25 19:31:04 node-3 workflow_server[12311]: time=2026-08-25T19:31:04.317Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 25 19:31:49 node-3 workflow_server[12311]: 2026/08/25 19:31:49 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListDriftUnresolved
+Aug 25 19:32:27 node-3 workflow_server[12311]: 2026/08/25 19:32:27 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ExecuteWorkflow
+Aug 25 19:32:27 node-3 workflow_server[12311]: 2026/08/25 19:32:27 WARN authz_decision audit="{\"timestamp\":\"2026-08-25T19:32:27.363911527Z\",\"policy_version\":\"unknown\",\"subject\":\"\",\"principal_type\":\"anonymous\",\"auth_method\":\"none\",\"is_loopback\":false,\"remote_addr\":\"unknown\",\"grpc_method\":\"/workflow.WorkflowService/ExecuteWorkflow\",\"resource_path\":\"\",\"permission\":\"\",\"allowed\":false,\"reason\":\"authentication_required\",\"decision_latency_ms\":0,\"cluster_id\":\"globular.internal\",\"call_source\":\"peer\"}" subject="" method=/workflow.WorkflowService/ExecuteWorkflow allowed=false reason=authentication_required latency_ms=0 policy_version=unknown
+Aug 25 19:32:48 node-3 workflow_server[12311]: 2026/08/25 19:32:48 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListWorkflowSummaries

@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 19:08:22 UTC; 11s ago
+    Process: 140 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 170 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 192 (cluster_control)
+      Tasks: 18 (limit: 8641)
+     Memory: 33.1M (peak: 35.0M)
+        CPU: 531ms
+     CGroup: /system.slice/docker-686e08c30f8397aeb316fbd344b32a3b480a30818af99daf150a3df2727e8c11.scope/system.slice/globular-cluster-controller.service
+             └─192 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 27 19:08:30 node-3 cluster_controller_server[192]: 2026/08/27 19:08:30 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Aug 27 19:08:30 node-3 cluster_controller_server[192]: 2026/08/27 19:08:30 projections: ALTER KEYSPACE globular_projections RF=3 applied at startup
+Aug 27 19:08:30 node-3 cluster_controller_server[192]: 2026/08/27 19:08:30 projections: node_identity projector online
+Aug 27 19:08:30 node-3 cluster_controller_server[192]: 2026/08/27 19:08:30 DNS reconciler: discovered 5 DNS endpoints from cluster membership: [node-5.globular.internal:10006 node-4.globular.internal:10006 node-3.globular.internal:10006 node-1.globular.internal:10006 node-2.globular.internal:10006]
+Aug 27 19:08:30 node-3 cluster_controller_server[192]: time=2026-08-27T19:08:30.806Z level=INFO msg="dns reconciler: ENABLED" domain=globular.internal endpoints=[]
+Aug 27 19:08:30 node-3 cluster_controller_server[192]: 2026/08/27 19:08:30 dns reconciler: starting loop (interval=30s)
+Aug 27 19:08:30 node-3 cluster_controller_server[192]: 2026/08/27 19:08:30 dns reconciler: starting health check loop (interval=30s)
+Aug 27 19:08:30 node-3 cluster_controller_server[192]: time=2026-08-27T19:08:30.806Z level=INFO msg="starting domain reconciler" interval=1m0s certs_dir=/var/lib/globular/domains renew_before=720h0m0s
+Aug 27 19:08:30 node-3 cluster_controller_server[192]: time=2026-08-27T19:08:30.806Z level=INFO msg="domain reconciler: ENABLED" certs_dir=/var/lib/globular/domains interval=1m renew_before=30d
+Aug 27 19:08:30 node-3 cluster_controller_server[192]: time=2026-08-27T19:08:30.832Z level=INFO msg="cluster controller ready" address=:12000 config=/var/lib/globular/cluster-controller/config.json cluster_domain=globular.internal version=1.2.325

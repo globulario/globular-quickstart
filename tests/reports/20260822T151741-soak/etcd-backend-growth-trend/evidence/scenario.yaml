@@ -1,0 +1,140 @@
+version: 1
+name: etcd-backend-growth-trend
+description: |
+  Over a sustained window, etcd's backend must not be on a one-way trip to the
+  quota.
+
+  WHY THIS EXISTS. The soak suite had three scenarios and not one of them waited
+  for anything — every assertion was evaluated within seconds of the previous
+  one. A suite that samples an instant cannot observe a trend, and the failure
+  that took the cluster down on 2026-08-16 is purely a trend:
+
+      measured growth    ~55 MB/hour
+      live working set   1.7 MB
+      default quota      2 GiB
+      time to NOSPACE    ~39 hours
+
+  Nothing about that is visible in a snapshot. At any single moment the backend
+  looks fine, right up until the moment it is 99% full and etcd goes read-only.
+  The cluster had been up 46 hours.
+
+  WHAT THIS PINS. Sample the backend across a real window and require that the
+  cluster is either not growing meaningfully, or is growing slowly enough that
+  reclamation keeps ahead of it. Both are acceptable outcomes; a steady climb
+  with nothing reclaiming is not.
+
+  It also requires that the maintenance loop is present AND has evidence of
+  working, because "not growing" is only reassuring if something is actually
+  giving space back. A cluster idle enough not to grow tells you nothing about
+  what happens when it is busy.
+
+  HONEST LIMITS. Twenty minutes cannot prove a 39-hour outcome; it can only
+  catch a cluster already climbing fast enough to matter, and confirm the
+  mechanism that prevents the climb is alive. A true soak belongs on a
+  long-running cluster, and the real one is the only place that exists. Treat a
+  pass here as "no acute leak and the brake is connected", not as "safe for 39
+  hours".
+
+suite: soak
+tags:
+  - etcd
+  - capacity
+  - trend
+  - incident-2026-08-16
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: no_standing_alarms
+    probe: etcd.backend_growth
+    expect:
+      alarms: 0
+
+  # The brake must be connected. Without this, "backend did not grow" is
+  # indistinguishable from "cluster was idle and nothing protects it".
+  - type: probe
+    id: maintenance_loop_present
+    probe: etcd.defrag_evidence
+    expect:
+      loops_started_gte: 1
+      nodes_seen_gte: 5
+
+baseline:
+  - type: probe
+    id: backend_at_start
+    probe: etcd.backend_growth
+
+steps:
+  - type: action
+    id: soak_window
+    action: wait
+    params:
+      seconds: 1200
+      reason: "20 minutes covers two full maintenance slots and is long enough for a fast leak to show as a percentage move"
+
+assertions:
+  # ── Headroom, measured at the end of the window ───────────────────────────
+  # 25% is deliberately tighter than the 50% used in the point-in-time
+  # scenario: on a healthy cluster this sits in low single digits, so anything
+  # approaching a quarter of the quota means something changed materially.
+  - type: probe
+    id: backend_has_ample_headroom
+    probe: etcd.backend_growth
+    expect:
+      pct_of_quota_lte: 25
+      alarms: 0
+
+  # ── Compaction still bounds history ───────────────────────────────────────
+  - type: probe
+    id: compaction_still_configured
+    probe: etcd.backend_growth
+    expect:
+      compaction_configured: true
+
+  - type: probe
+    id: reclamation_still_scheduled
+    probe: etcd.backend_growth
+    expect:
+      defrag_scheduled: true
+
+  # ── The cluster is still itself after sitting for twenty minutes ──────────
+  # Soak scenarios are where slow drifts surface: a liveness path that decays,
+  # a service that dies quietly, a reconcile loop that latches.
+  - type: probe
+    id: still_healthy_after_soak
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: liveness_still_fresh_after_soak
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+      max_age_s_lte: 90
+
+  - type: probe
+    id: writes_still_accepted
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: no_doctor_errors_after_soak
+    probe: doctor.report_severity
+    expect:
+      error: 0
+      reachable: true
+
+cleanup: []

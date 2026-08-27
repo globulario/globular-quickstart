@@ -1,0 +1,23 @@
+● globular-scylla-manager.service - Globular Scylla Manager
+     Loaded: loaded (/etc/systemd/system/globular-scylla-manager.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 19:08:31 UTC; 3s ago
+    Process: 530 ExecStartPre=/bin/sh -c for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "scylla 9042 not ready"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 583 ExecStartPre=/usr/lib/globular/bin/scylla-manager-configure (code=exited, status=0/SUCCESS)
+    Process: 587 ExecStartPost=/usr/lib/globular/bin/scylla-manager-register-cluster (code=exited, status=7)
+   Main PID: 586 (scylla-manager)
+      Tasks: 16 (limit: 8641)
+     Memory: 11.9M (peak: 13.7M)
+        CPU: 339ms
+     CGroup: /system.slice/docker-686e08c30f8397aeb316fbd344b32a3b480a30818af99daf150a3df2727e8c11.scope/system.slice/globular-scylla-manager.service
+             └─586 /usr/bin/scylla-manager --config-file /var/lib/globular/scylla-manager/scylla-manager.yaml
+
+Aug 27 19:08:32 node-3 scylla_manager[586]: {"L":"INFO","T":"2026-08-27T19:08:32.325Z","M":"Checking database connectivity...","_trace_id":"t1wyILK0SaSebfWTPV_uSw"}
+Aug 27 19:08:32 node-3 scylla_manager[586]: {"L":"INFO","T":"2026-08-27T19:08:32.342Z","M":"Migrating schema","keyspace":"scylla_manager","_trace_id":"t1wyILK0SaSebfWTPV_uSw"}
+Aug 27 19:08:33 node-3 scylla_manager[586]: {"L":"INFO","T":"2026-08-27T19:08:33.766Z","M":"Schema up to date","keyspace":"scylla_manager","_trace_id":"t1wyILK0SaSebfWTPV_uSw"}
+Aug 27 19:08:33 node-3 scylla_manager[586]: {"L":"INFO","T":"2026-08-27T19:08:33.784Z","M":"Initializing the clusters configuration cache","_trace_id":"t1wyILK0SaSebfWTPV_uSw"}
+Aug 27 19:08:33 node-3 scylla_manager[586]: {"L":"INFO","T":"2026-08-27T19:08:33.790Z","N":"cluster","M":"Creating new Scylla HTTP client","cluster_id":"1e64d548-b31f-4c25-a6b1-f8dedb8de997","_trace_id":"t1wyILK0SaSebfWTPV_uSw"}
+Aug 27 19:08:33 node-3 scylla_manager[586]: {"L":"INFO","T":"2026-08-27T19:08:33.806Z","N":"cluster.client","M":"HTTP retry backoff","operation":"NodeInfo","wait":"1.187502697s","error":"dial tcp 10.10.0.13:5612: connect: connection refused","_trace_id":"t1wyILK0SaSebfWTPV_uSw"}
+Aug 27 19:08:33 node-3 scylla_manager[586]: {"L":"INFO","T":"2026-08-27T19:08:33.806Z","N":"cluster.client","M":"HTTP retry backoff","operation":"NodeInfo","wait":"823.584319ms","error":"dial tcp 10.10.0.15:5612: connect: connection refused","_trace_id":"t1wyILK0SaSebfWTPV_uSw"}
+Aug 27 19:08:33 node-3 scylla_manager[586]: {"L":"INFO","T":"2026-08-27T19:08:33.814Z","N":"cluster.client","M":"HTTP retry now","operation":"SnitchDatacenterGet","error":"dial tcp 10.10.0.13:5612: connect: connection refused","_trace_id":"t1wyILK0SaSebfWTPV_uSw"}
+Aug 27 19:08:33 node-3 scylla_manager[586]: {"L":"INFO","T":"2026-08-27T19:08:33.814Z","N":"cluster.client","M":"HTTP retry now","operation":"SnitchRackGet","error":"dial tcp 10.10.0.15:5612: connect: connection refused","_trace_id":"t1wyILK0SaSebfWTPV_uSw"}
+Aug 27 19:08:34 node-3 scylla_manager[586]: {"L":"INFO","T":"2026-08-27T19:08:34.631Z","N":"cluster.client","M":"HTTP retry backoff","operation":"NodeInfo","wait":"1.866658536s","error":"dial tcp 10.10.0.15:5612: connect: connection refused","_trace_id":"t1wyILK0SaSebfWTPV_uSw"}

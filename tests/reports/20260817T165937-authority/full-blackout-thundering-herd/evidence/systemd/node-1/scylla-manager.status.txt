@@ -1,0 +1,23 @@
+● globular-scylla-manager.service - Globular Scylla Manager
+     Loaded: loaded (/etc/systemd/system/globular-scylla-manager.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:25 UTC; 1min 1s ago
+    Process: 408 ExecStartPre=/bin/sh -c for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "scylla 9042 not ready"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 453 ExecStartPre=/usr/lib/globular/bin/scylla-manager-configure (code=exited, status=0/SUCCESS)
+    Process: 458 ExecStartPost=/usr/lib/globular/bin/scylla-manager-register-cluster (code=exited, status=7)
+   Main PID: 457 (scylla-manager)
+      Tasks: 16 (limit: 8641)
+     Memory: 35.5M (peak: 36.3M)
+        CPU: 380ms
+     CGroup: /system.slice/docker-70ccd6e45272a6d2c8368750449e51bc86b2d7ca3bfb1e89db6d0e6ca685f1e5.scope/system.slice/globular-scylla-manager.service
+             └─457 /usr/bin/scylla-manager --config-file /var/lib/globular/scylla-manager/scylla-manager.yaml
+
+Aug 17 17:18:39 node-1 scylla_manager[457]: {"L":"INFO","T":"2026-08-17T17:18:39.875Z","M":"Starting HTTPS server","address":"10.10.0.11:5443","client_ca":"","_trace_id":"VdDbNa7XSka6rQ7W3_XvwQ"}
+Aug 17 17:18:39 node-1 scylla_manager[457]: {"L":"INFO","T":"2026-08-17T17:18:39.875Z","M":"Starting Prometheus server","address":":5090","_trace_id":"VdDbNa7XSka6rQ7W3_XvwQ"}
+Aug 17 17:18:39 node-1 scylla_manager[457]: {"L":"INFO","T":"2026-08-17T17:18:39.875Z","M":"Starting debug server","address":"127.0.0.1:5112","_trace_id":"VdDbNa7XSka6rQ7W3_XvwQ"}
+Aug 17 17:18:39 node-1 scylla_manager[457]: {"L":"INFO","T":"2026-08-17T17:18:39.875Z","M":"Service started","_trace_id":"VdDbNa7XSka6rQ7W3_XvwQ"}
+Aug 17 17:18:46 node-1 scylla_manager[457]: {"L":"INFO","T":"2026-08-17T17:18:46.252Z","M":"http: TLS handshake error from 10.10.0.11:50070: EOF"}
+Aug 17 17:18:46 node-1 scylla_manager[457]: {"L":"INFO","T":"2026-08-17T17:18:46.321Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.11:50080","status":200,"bytes":247,"duration":"9ms","_trace_id":"-1PodT0rQd2YdL3cjUpL6A"}
+Aug 17 17:18:46 node-1 scylla_manager[457]: {"L":"INFO","T":"2026-08-17T17:18:46.354Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.11:50096","status":200,"bytes":247,"duration":"4ms","_trace_id":"hMlkr6LyQdirB38qBUVNHA"}
+Aug 17 17:18:46 node-1 scylla_manager[457]: {"L":"INFO","T":"2026-08-17T17:18:46.381Z","N":"http","M":"GET /api/v1/cluster/globular.internal/suspended/details","from":"10.10.0.11:50102","status":200,"bytes":3,"duration":"2ms","_trace_id":"xEqigPIhQT-0tn_S0GK8FQ"}
+Aug 17 17:18:46 node-1 scylla_manager[457]: {"L":"INFO","T":"2026-08-17T17:18:46.386Z","N":"cluster","M":"Creating new Scylla HTTP client","cluster_id":"7b9cc688-a480-450e-8c1f-98c3fcfd1a13","_trace_id":"zPuI0R8dS5SgQXjt7kyvfQ"}
+Aug 17 17:18:46 node-1 scylla_manager[457]: {"L":"INFO","T":"2026-08-17T17:18:46.412Z","N":"http","M":"GET /api/v1/cluster/globular.internal/status","from":"10.10.0.11:50102","status":200,"bytes":1304,"duration":"29ms","_trace_id":"zPuI0R8dS5SgQXjt7kyvfQ"}

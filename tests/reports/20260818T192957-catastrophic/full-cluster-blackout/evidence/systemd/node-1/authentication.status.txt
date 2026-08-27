@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:33:32 UTC; 5min ago
+    Process: 708 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 759 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 779 (authentication_)
+      Tasks: 22 (limit: 8641)
+     Memory: 37.0M (peak: 37.5M)
+        CPU: 12.614s
+     CGroup: /system.slice/docker-9a67632422a5502a1d64625e1932bb8e76fae6f90cdee0187c70d84ee68d0231.scope/system.slice/globular-authentication.service
+             └─779 /usr/lib/globular/bin/authentication_server
+
+Aug 18 19:36:47 node-1 authentication_server[779]: {"level":"info","ts":"2026-08-18T19:36:47.078978Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 18 19:36:48 node-1 authentication_server[779]: {"level":"warn","ts":"2026-08-18T19:36:46.659053Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00062ba40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:36:49 node-1 authentication_server[779]: {"level":"info","ts":"2026-08-18T19:36:48.635629Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 18 19:36:51 node-1 authentication_server[779]: {"level":"warn","ts":"2026-08-18T19:36:50.509792Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006963c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:36:57 node-1 authentication_server[779]: {"level":"warn","ts":"2026-08-18T19:36:56.596551Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006963c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:37:02 node-1 authentication_server[779]: {"level":"warn","ts":"2026-08-18T19:37:01.957243Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006963c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:37:07 node-1 authentication_server[779]: {"level":"warn","ts":"2026-08-18T19:37:07.323849Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006963c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:37:13 node-1 authentication_server[779]: time=2026-08-18T19:37:13.024Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-1.globular.internal:443
+Aug 18 19:37:13 node-1 authentication_server[779]: time=2026-08-18T19:37:13.033Z level=INFO msg="mesh: gRPC connection established" target=node-1.globular.internal:443
+Aug 18 19:37:13 node-1 authentication_server[779]: time=2026-08-18T19:37:13.063Z level=WARN msg="sessions list failed" err="rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused"

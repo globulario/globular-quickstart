@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 02:22:04 UTC; 27min ago
+    Process: 387 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 392 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 399 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 29.2M (peak: 33.4M)
+        CPU: 12.104s
+     CGroup: /system.slice/docker-06e641380ccebeaf0e4edbf72d9d5837f80d5b64b34cd13adac2cc24c8cb20df.scope/system.slice/globular-event.service
+             └─399 /usr/lib/globular/bin/event_server
+
+Aug 26 02:43:53 node-1 event_server[399]: time=2026-08-26T02:43:53.578Z level=INFO msg="OnEvent: stream ended" uuid=4a4556c8-ea30-4cc9-9484-c67c4f75a62e
+Aug 26 02:44:06 node-1 event_server[399]: time=2026-08-26T02:44:06.288Z level=INFO msg="OnEvent: registered" uuid=49d085cf-360b-43bc-93b0-1b48d726f259
+Aug 26 02:44:06 node-1 event_server[399]: time=2026-08-26T02:44:06.288Z level=INFO msg="stream registered" uuid=49d085cf-360b-43bc-93b0-1b48d726f259
+Aug 26 02:44:06 node-1 event_server[399]: time=2026-08-26T02:44:06.288Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=49d085cf-360b-43bc-93b0-1b48d726f259
+Aug 26 02:44:06 node-1 event_server[399]: time=2026-08-26T02:44:06.288Z level=INFO msg=subscribed channel=operation.* uuid=49d085cf-360b-43bc-93b0-1b48d726f259 subscribers=4
+Aug 26 02:45:18 node-1 event_server[399]: 2026/08/26 02:45:18 INFO acc: AIMD decrease method=/event.EventService/Publish rtt_ms=201 baseline_ms=20 window=200 new_window=180
+Aug 26 02:45:18 node-1 event_server[399]: 2026/08/26 02:45:18 INFO acc: AIMD decrease method=/event.EventService/Publish rtt_ms=87 baseline_ms=20 window=180 new_window=162
+Aug 26 02:45:18 node-1 event_server[399]: 2026/08/26 02:45:18 INFO acc: AIMD decrease method=/event.EventService/Publish rtt_ms=141 baseline_ms=20 window=162 new_window=145
+Aug 26 02:47:38 node-1 event_server[399]: time=2026-08-26T02:47:38.376Z level=WARN msg="save cursor failed" err="Operation timed out for globular_events.cursors - received only 1 responses from 2 CL=QUORUM."
+Aug 26 02:47:40 node-1 event_server[399]: time=2026-08-26T02:47:40.379Z level=WARN msg="save cursor failed" err="Operation timed out for globular_events.cursors - received only 1 responses from 2 CL=QUORUM."

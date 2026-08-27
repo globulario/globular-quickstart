@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 21:56:51 UTC; 13min ago
+    Process: 8561 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 8565 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 8568 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 8571 (resource_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 26.3M (peak: 30.3M)
+        CPU: 1.573s
+     CGroup: /system.slice/docker-5be32e9d35427c72ef952403d0a24341ea29530afb9e48d959d5f3c1aa28aadc.scope/system.slice/globular-resource.service
+             └─8571 /usr/lib/globular/bin/resource_server
+
+Aug 10 21:56:53 node-5 resource_server[8571]: 2026/08/10 21:56:53 error: failed to connect to "[HostInfo hostname=\"10.10.0.11\" connectAddress=\"10.10.0.11\" peer=\"<nil>\" rpc_address=\"10.10.0.11\" broadcast_address=\"10.10.0.11\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.11\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"2254af7b-445e-442e-92ba-a8e1b5dfcfa7\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: gocql: connection closed waiting for response
+Aug 10 21:56:53 node-5 resource_server[8571]: 2026/08/10 21:56:53 error: failed to connect to "[HostInfo hostname=\"10.10.0.11\" connectAddress=\"10.10.0.11\" peer=\"<nil>\" rpc_address=\"10.10.0.11\" broadcast_address=\"10.10.0.11\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.11\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"2254af7b-445e-442e-92ba-a8e1b5dfcfa7\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: gocql: connection closed waiting for response
+Aug 10 21:56:53 node-5 resource_server[8571]: 2026/08/10 21:56:53 error: failed to connect to "[HostInfo hostname=\"10.10.0.11\" connectAddress=\"10.10.0.11\" peer=\"<nil>\" rpc_address=\"10.10.0.11\" broadcast_address=\"10.10.0.11\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.11\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"2254af7b-445e-442e-92ba-a8e1b5dfcfa7\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: gocql: connection closed waiting for response
+Aug 10 21:56:54 node-5 resource_server[8571]: 2026/08/10 21:56:54 error: failed to connect to "[HostInfo hostname=\"10.10.0.11\" connectAddress=\"10.10.0.11\" peer=\"<nil>\" rpc_address=\"10.10.0.11\" broadcast_address=\"10.10.0.11\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.11\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"2254af7b-445e-442e-92ba-a8e1b5dfcfa7\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: context canceled
+Aug 10 21:58:30 node-5 resource_server[8571]: time=2026-08-10T21:58:30.055Z level=WARN msg="rbac client unavailable in bootstrap mode" error="rbac: endpoint unresolved"
+Aug 10 21:58:30 node-5 resource_server[8571]: time=2026-08-10T21:58:30.055Z level=WARN msg="rbac disabled; skipping owner assignment" path=/users/sa@globular.internal subject=sa@globular.internal resourceType=file
+Aug 10 21:58:30 node-5 resource_server[8571]: 2026/08/10 21:58:30 INFO metrics listening service=resource.ResourceService addr=[::]:10011
+Aug 10 21:58:40 node-5 resource_server[8571]: 2026/08/10 21:58:40 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 10 21:58:40 node-5 resource_server[8571]: 2026/08/10 21:58:40 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 10 22:03:33 node-5 resource_server[8571]: 2026/08/10 22:03:33 INFO acc: warmup complete baseline_rtt_ms=20 samples=222 elapsed=5m0s

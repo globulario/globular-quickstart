@@ -1,0 +1,203 @@
+version: 1
+name: scylladb-restart
+description: |
+  Verify that restarting ScyllaDB does not affect etcd quorum or core services.
+
+  ScyllaDB is the persistence layer for AI services (ai_memory stores knowledge),
+  DNS zone records, and the package repository catalog. It is NOT on the critical
+  path for etcd, the cluster controller, workflow, or basic gRPC authentication.
+
+  This test validates the architectural boundary: ScyllaDB is an infrastructure
+  dependency for SOME services, but its loss must not cascade to the control plane.
+
+  What this validates:
+  - etcd remains healthy when ScyllaDB is stopped (different failure domain)
+  - Core services (controller, workflow, auth, rbac) continue operating
+  - ScyllaDB-dependent services (ai_memory, dns) may lose functionality briefly
+  - After ScyllaDB restarts, it becomes available again (healthcheck recovers)
+  - etcd write quorum is unaffected throughout
+
+  Industry known problem: "shared infrastructure SPOF" — if ScyllaDB were
+  on the critical path for etcd (e.g., etcd using ScyllaDB as storage), a
+  ScyllaDB restart would take down the entire cluster. Globular correctly
+  separates these failure domains: etcd uses its own Raft WAL, not ScyllaDB.
+
+  Known issue: DNS zones are stored in ScyllaDB. After ScyllaDB restarts,
+  DNS zones may need to be re-registered (legacy issue documented in CLAUDE.md).
+  This test checks that DNS service is still registered in etcd but does not
+  assert DNS resolution works (that's the dns-service-recovery scenario).
+
+  Note: ScyllaDB uses container name "globular-scylladb", so chaos.stop_node
+  with node: "scylladb" maps to container "globular-scylladb" correctly.
+suite: resilience
+tags:
+  - chaos
+  - scylladb
+  - storage
+  - failure-domain-isolation
+  - infrastructure
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: all_etcd_members_healthy
+    probe: cluster.etcd_members
+    expect:
+      healthy_gte: 3
+
+  - type: probe
+    id: scylladb_container_running
+    probe: node.container_running
+    params:
+      node: scylladb
+    expect:
+      running: true
+
+  - type: probe
+    id: write_quorum_before
+    probe: etcd.write_test
+    expect:
+      success: true
+
+baseline:
+  - type: probe
+    id: initial_cluster_health
+    probe: cluster.health
+
+  - type: probe
+    id: initial_etcd_members
+    probe: cluster.etcd_members
+
+  - type: probe
+    id: initial_service_count
+    probe: services.count
+
+steps:
+  # ── Step 1: Stop ScyllaDB ─────────────────────────────────────────────────
+  - id: stop_scylladb
+    action: chaos.stop_node
+    params:
+      node: scylladb
+
+  # ── Step 2: Wait for container to stop ───────────────────────────────────
+  - id: wait_for_scylladb_stopped
+    action: wait
+    params:
+      timeout: 30
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: scylladb
+        expect:
+          running: false
+
+  # ── Step 3: Assert etcd is unaffected ────────────────────────────────────
+  # These must succeed even with ScyllaDB stopped.
+  - id: verify_etcd_healthy_without_scylla
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - id: verify_write_quorum_without_scylla
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - id: verify_etcd_members_without_scylla
+    probe: cluster.etcd_members
+    expect:
+      healthy_gte: 3
+
+  # Core services must still be registered (they don't depend on ScyllaDB)
+  - id: verify_controller_without_scylla
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+  - id: verify_workflow_without_scylla
+    probe: service.registered
+    params:
+      service: workflow
+    expect:
+      registered: true
+
+  # ── Step 4: Restart ScyllaDB ─────────────────────────────────────────────
+  - id: start_scylladb
+    action: chaos.start_node
+    params:
+      node: scylladb
+
+  # ── Step 5: Wait for ScyllaDB to become healthy ───────────────────────────
+  # ScyllaDB has a 60s startup period + 10s health check interval.
+  # Allow up to 3 minutes for full recovery.
+  - id: wait_for_scylladb_healthy
+    action: wait
+    params:
+      timeout: 180
+      poll_interval: 15
+      until:
+        probe: node.container_running
+        params:
+          node: scylladb
+        expect:
+          running: true
+
+assertions:
+  # ── Final state assertions ────────────────────────────────────────────────
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: etcd_members_healthy_after
+    probe: cluster.etcd_members
+    expect:
+      healthy_gte: 3
+
+  - type: probe
+    id: write_quorum_after
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: scylladb_running_after
+    probe: node.container_running
+    params:
+      node: scylladb
+    expect:
+      running: true
+
+  # Core services must still be registered
+  - type: probe
+    id: all_nodes_heartbeating
+    probe: cluster.nodes
+    expect:
+      count_gte: 5
+
+cleanup:
+  - type: probe
+    id: final_health
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: final_etcd_members
+    probe: cluster.etcd_members

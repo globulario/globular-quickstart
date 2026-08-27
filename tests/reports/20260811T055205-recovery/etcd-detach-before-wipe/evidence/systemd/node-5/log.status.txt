@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:52:15 UTC; 3min 26s ago
+    Process: 157 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 194 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 213 (log_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 23.4M (peak: 25.3M)
+        CPU: 661ms
+     CGroup: /system.slice/docker-98c9f00371cba0d41174bc35433238892478111b3c35d44e70376c304ba640d9.scope/system.slice/globular-log.service
+             └─213 /usr/lib/globular/bin/log_server
+
+Aug 11 05:53:39 node-5 log_server[213]: 2026/08/11 05:53:39 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 11 05:53:43 node-5 log_server[213]: 2026/08/11 05:53:43 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl ONE. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 11 05:53:55 node-5 log_server[213]: 2026/08/11 05:53:55 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 11 05:54:13 node-5 log_server[213]: time=2026-08-11T05:54:13.589Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 11 05:54:28 node-5 log_server[213]: time=2026-08-11T05:54:28.809Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 11 05:54:38 node-5 log_server[213]: time=2026-08-11T05:54:38.631Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 11 05:54:42 node-5 log_server[213]: time=2026-08-11T05:54:42.029Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 11 05:54:46 node-5 log_server[213]: time=2026-08-11T05:54:46.901Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 11 05:54:58 node-5 log_server[213]: time=2026-08-11T05:54:58.822Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 11 05:55:09 node-5 log_server[213]: 2026/08/11 05:55:09 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

@@ -1,0 +1,21 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:53 UTC; 12s ago
+    Process: 1553 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 1560 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1569 (cluster_doctor_)
+      Tasks: 12 (limit: 8641)
+     Memory: 25.4M (peak: 25.7M)
+        CPU: 180ms
+     CGroup: /system.slice/docker-9a67632422a5502a1d64625e1932bb8e76fae6f90cdee0187c70d84ee68d0231.scope/system.slice/globular-cluster-doctor.service
+             └─1569 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 18 19:12:53 node-1 systemd[1]: globular-cluster-doctor.service: Scheduled restart job, restart counter is at 4.
+Aug 18 19:12:53 node-1 systemd[1]: Starting globular-cluster-doctor.service - Globular cluster_doctor...
+Aug 18 19:12:53 node-1 systemd[1]: Started globular-cluster-doctor.service - Globular cluster_doctor.
+Aug 18 19:12:53 node-1 cluster_doctor_server[1569]: 2026/08/18 19:12:53 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 18 19:12:53 node-1 cluster_doctor_server[1569]: 2026/08/18 19:12:53 INFO security: loaded cluster roles from external policy file roles=22
+Aug 18 19:12:55 node-1 cluster_doctor_server[1569]: {"level":"warn","ts":"2026-08-18T19:12:55.976202Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006a0780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 18 19:12:57 node-1 cluster_doctor_server[1569]: {"level":"warn","ts":"2026-08-18T19:12:57.97752Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006a0780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 18 19:13:05 node-1 cluster_doctor_server[1569]: {"level":"warn","ts":"2026-08-18T19:13:05.282383Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00034ab40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 18 19:13:05 node-1 cluster_doctor_server[1569]: time=2026-08-18T19:13:05.336Z level=INFO msg="TLS enabled" cert=/var/lib/globular/pki/issued/services/service.crt key=/var/lib/globular/pki/issued/services/service.key ca=/var/lib/globular/pki/ca.crt

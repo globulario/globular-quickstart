@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-27T04:07:16.754062Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/recovery/service-crash-autostart.yaml",
+  "scenario": "service-crash-autostart",
+  "suite": "recovery",
+  "source_revision": "661b8e66966476e1055ec07b50891dc3d3818e5b",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that systemd's Restart=on-failure policy automatically recovers\nservices after a hard crash (SIGKILL) on a control-plane node.\n\nThe Globular service model relies on systemd as the process supervisor.\nAll services have Restart=on-failure configured, which means:\n- On clean exit (code 0): no restart (intentional stop)\n- On failure (non-zero exit, signal): restart after RestartSec\n\nSIGKILL (signal 9) cannot be caught by the process \u2014 it's an unconditional\nkernel-level kill. systemd receives the SIGCHLD, sees the abnormal exit,\nand schedules a restart. This simulates: OOM kill, kernel panic on peer,\n`kill -9` by an admin, or hardware-triggered watchdog.\n\nServices tested:\n- workflow (node-1): critical service, must auto-restart\n- dns (node-1): DNS queries blocked during crash, must auto-restart\n\nFailure modes caught:\n- Restart=on-failure not configured in the unit file\n- RestartSec too long (service stays down for minutes)\n- Service restart loop (crashes immediately after restart \u2014 caught by\n  StartLimitIntervalSec / StartLimitBurst)\n- Service leaves lock files or sockets preventing restart\n- Service fails to reconnect to etcd after restart (auth issue)\n\nIndustry known problem: \"restart storm\" \u2014 a service that crashes immediately\nafter restart triggers the systemd StartLimitBurst, causing systemd to\ngive up restarting. Setting StartLimitIntervalSec=300 and StartLimitBurst=5\ngives 5 attempts in 5 minutes, which is sufficient for transient failures\nwithout allowing infinite loops.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-27T04:07:31.719184Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

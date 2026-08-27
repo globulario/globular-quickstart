@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 18:40:53 UTC; 16s ago
+    Process: 107 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 134 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 166 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 31.9M (peak: 35.3M)
+        CPU: 668ms
+     CGroup: /system.slice/docker-275036856f340ff32191dfa1db98755b1b411154e8efcc5004300e722c8207d8.scope/system.slice/globular-cluster-controller.service
+             └─166 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 11 18:40:58 node-2 cluster_controller_server[166]: time=2026-08-11T18:40:58.399Z level=INFO msg="domain reconciler: ENABLED" certs_dir=/var/lib/globular/domains interval=1m renew_before=30d
+Aug 11 18:40:58 node-2 cluster_controller_server[166]: 2026/08/11 18:40:58 dns reconciler: starting health check loop (interval=30s)
+Aug 11 18:40:58 node-2 cluster_controller_server[166]: time=2026-08-11T18:40:58.426Z level=INFO msg="cluster controller ready" address=:12000 config=/var/lib/globular/cluster-controller/config.json cluster_domain=globular.internal version=1.2.311
+Aug 11 18:41:00 node-2 cluster_controller_server[166]: 2026/08/11 18:41:00 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Aug 11 18:41:03 node-2 cluster_controller_server[166]: 2026/08/11 18:41:03 INFO leader-proxy: connected to leader addr=10.10.0.11:12000
+Aug 11 18:41:04 node-2 cluster_controller_server[166]: 2026/08/11 18:41:04 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Aug 11 18:41:04 node-2 cluster_controller_server[166]: 2026/08/11 18:41:04 WARN ensureNodeExecutorBinding: failed to set role binding for node-2: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: first record does not look like a TLS handshake"
+Aug 11 18:41:05 node-2 cluster_controller_server[166]: 2026/08/11 18:41:05 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Aug 11 18:41:05 node-2 cluster_controller_server[166]: 2026/08/11 18:41:05 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Aug 11 18:41:09 node-2 cluster_controller_server[166]: 2026/08/11 18:41:09 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003

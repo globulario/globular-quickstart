@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 18:19:02 UTC; 19min ago
+    Process: 719 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 740 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 758 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 34.4M (peak: 35.8M)
+        CPU: 2.265s
+     CGroup: /system.slice/docker-2c9bb35747f9e01b5ee59e23fbccef39c248607555d453cfba4ed458fe886c34.scope/system.slice/globular-ai-executor.service
+             └─758 /usr/lib/globular/bin/ai_executor_server
+
+Aug 25 18:29:34 node-1 ai_executor_server[758]: time=2026-08-25T18:29:34.291Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10002
+Aug 25 18:29:34 node-1 ai_executor_server[758]: time=2026-08-25T18:29:34.291Z level=INFO msg="peer: removed stale" node=node-3
+Aug 25 18:34:04 node-1 ai_executor_server[758]: time=2026-08-25T18:34:04.274Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 25 18:34:04 node-1 ai_executor_server[758]: time=2026-08-25T18:34:04.301Z level=INFO msg="codex: no credentials found"
+Aug 25 18:35:27 node-1 ai_executor_server[758]: 2026/08/25 18:35:27 WARN port/proxy change detected in desired; restart required to take effect service=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd old_port=10002 new_port=10010 old_proxy=10231 new_proxy=10231
+Aug 25 18:35:27 node-1 ai_executor_server[758]: 2026/08/25 18:35:27 WARN port/proxy change detected in desired; restart required to take effect service=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd old_port=10010 new_port=10005 old_proxy=10231 new_proxy=10231
+Aug 25 18:35:34 node-1 ai_executor_server[758]: time=2026-08-25T18:35:34.309Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10010
+Aug 25 18:35:34 node-1 ai_executor_server[758]: time=2026-08-25T18:35:34.319Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10005
+Aug 25 18:35:34 node-1 ai_executor_server[758]: time=2026-08-25T18:35:34.319Z level=INFO msg="peer: removed stale" node=node-3
+Aug 25 18:35:34 node-1 ai_executor_server[758]: time=2026-08-25T18:35:34.319Z level=INFO msg="peer: removed stale" node=node-2

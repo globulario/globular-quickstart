@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:23:01 UTC; 12min ago
+    Process: 148 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 188 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 213 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 43.1M (peak: 50.3M)
+        CPU: 24.549s
+     CGroup: /system.slice/docker-fbd50be62ef8809d6e93c288dffbbd1077867e0e3f7fe69f97f12b29cb90c420.scope/system.slice/globular-cluster-controller.service
+             └─213 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 22 19:35:20 node-1 cluster_controller_server[213]: 2026/08/22 19:35:20 drift-reconciler: suppressed node=node-4 pkg=sidekick outcome=BLOCKED_MISSING_NATIVE_DEP
+Aug 22 19:35:20 node-1 cluster_controller_server[213]: 2026/08/22 19:35:20 drift-reconciler: node=node-3 pkg=media — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 22 19:35:20 node-1 cluster_controller_server[213]: 2026/08/22 19:35:20 drift-reconciler: node=node-3 pkg=torrent — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 22 19:35:20 node-1 cluster_controller_server[213]: 2026/08/22 19:35:20 drift-reconciler: node=node-3 pkg=title — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 22 19:35:20 node-1 cluster_controller_server[213]: 2026/08/22 19:35:20 drift-reconciler: suppressed node=node-3 pkg=sidekick outcome=BLOCKED_MISSING_NATIVE_DEP
+Aug 22 19:35:20 node-1 cluster_controller_server[213]: 2026/08/22 19:35:20 drift-reconciler: node=node-2 pkg=torrent — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 22 19:35:20 node-1 cluster_controller_server[213]: 2026/08/22 19:35:20 drift-reconciler: node=node-2 pkg=title — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 22 19:35:20 node-1 cluster_controller_server[213]: 2026/08/22 19:35:20 drift-reconciler: suppressed node=node-2 pkg=sidekick outcome=BLOCKED_MISSING_NATIVE_DEP
+Aug 22 19:35:20 node-1 cluster_controller_server[213]: 2026/08/22 19:35:20 drift-reconciler: node=node-2 pkg=media — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Aug 22 19:35:22 node-1 cluster_controller_server[213]: 2026/08/22 19:35:22 convergence-committer: node=35ac3821-6b90-52eb-a800-41130471770b COMMAND/claude outcome=FAILED_TRANSIENT reason=

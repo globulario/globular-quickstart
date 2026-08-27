@@ -1,0 +1,408 @@
+{
+  "schema_version": 1,
+  "scenario": "scylladb-restart",
+  "suite": "resilience",
+  "start_time": "2026-07-31T17:11:17.218575Z",
+  "end_time": "2026-07-31T17:11:27.374100Z",
+  "passed": true,
+  "item_count": 23,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:17.528959Z"
+    },
+    {
+      "id": "all_etcd_members_healthy",
+      "section": "preconditions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:17.804358Z"
+    },
+    {
+      "id": "scylladb_container_running",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "scylladb"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "scylladb"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:17.831106Z"
+    },
+    {
+      "id": "write_quorum_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 225
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:18.086420Z"
+    },
+    {
+      "id": "initial_cluster_health",
+      "section": "baseline",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {},
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:18.344189Z"
+    },
+    {
+      "id": "initial_etcd_members",
+      "section": "baseline",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:18.621113Z"
+    },
+    {
+      "id": "initial_service_count",
+      "section": "baseline",
+      "probe": "services.count",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 25,
+        "service_ids": [
+          "10595db3-3e7b-343e-9f86-94a6e317585f",
+          "2bfada01-cac5-3bd2-baa1-e56defbc9ff9",
+          "34c0fd47-fa40-3a81-bfdb-25757ad3080f",
+          "4b49c975-09f1-3d2b-a0a1-53030bc62f07",
+          "5cb3840f-089b-3e7c-98bd-4cfbed1c445f",
+          "6416894b-ec10-387a-a734-fec3fc1e914e",
+          "7ae9ec7e-4bcf-3f22-bc21-c9aebab644e3",
+          "80da969b-fdf0-4cfa-bded-6121ce3cd724",
+          "84723d53-3b03-38a8-b876-50809c8491cd",
+          "8b384839-8473-3b00-9ccc-7cb36fe97836",
+          "93882e68-6037-351e-8ec1-5999aa4b7996",
+          "9c1248a4-9ba6-497f-adc8-42b4a939fd58",
+          "ae220301-9352-393b-be03-90707f486149",
+          "c5f8d601-bb57-3220-8a20-2f1f34dac0a5",
+          "cluster_controller.ClusterControllerService",
+          "cluster_doctor.ClusterDoctorService",
+          "ec07ae05-1033-4270-b923-d70520ae11f1",
+          "f7ec54e4-c7fd-32c1-a222-80c2b39ad930",
+          "f8b714a7-2c0f-39ff-8bf1-f627649c2df6",
+          "node-agent-metrics-node-1",
+          "node-agent-metrics-node-2",
+          "node-agent-metrics-node-3",
+          "node-agent-metrics-node-4",
+          "node-agent-metrics-node-5",
+          "node_agent.NodeAgentService"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:18.784691Z"
+    },
+    {
+      "id": "stop_scylladb",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "scylladb"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-scylladb",
+        "exit_code": 0,
+        "stdout": "globular-scylladb"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:23.684356Z"
+    },
+    {
+      "id": "wait_for_scylladb_stopped",
+      "section": "steps",
+      "probe": "node.container_running",
+      "params": {
+        "node": "scylladb"
+      },
+      "expect": {
+        "running": false
+      },
+      "result": {
+        "running": false,
+        "node": "scylladb"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:23.715640Z"
+    },
+    {
+      "id": "verify_etcd_healthy_without_scylla",
+      "section": "steps",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:24.019210Z"
+    },
+    {
+      "id": "verify_write_quorum_without_scylla",
+      "section": "steps",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 252
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:24.304156Z"
+    },
+    {
+      "id": "verify_etcd_members_without_scylla",
+      "section": "steps",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:24.574985Z"
+    },
+    {
+      "id": "verify_controller_without_scylla",
+      "section": "steps",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:24.659522Z"
+    },
+    {
+      "id": "verify_workflow_without_scylla",
+      "section": "steps",
+      "probe": "service.registered",
+      "params": {
+        "service": "workflow"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 3
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:24.749485Z"
+    },
+    {
+      "id": "start_scylladb",
+      "section": "steps",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "scylladb"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-scylladb",
+        "exit_code": 0,
+        "stdout": "globular-scylladb"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:25.768542Z"
+    },
+    {
+      "id": "wait_for_scylladb_healthy",
+      "section": "steps",
+      "probe": "node.container_running",
+      "params": {
+        "node": "scylladb"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "scylladb"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:25.797890Z"
+    },
+    {
+      "id": "cluster_healthy_after",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:26.076919Z"
+    },
+    {
+      "id": "etcd_members_healthy_after",
+      "section": "assertions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:26.342173Z"
+    },
+    {
+      "id": "write_quorum_after",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 247
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:26.623988Z"
+    },
+    {
+      "id": "scylladb_running_after",
+      "section": "assertions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "scylladb"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "scylladb"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:26.654420Z"
+    },
+    {
+      "id": "all_nodes_heartbeating",
+      "section": "assertions",
+      "probe": "cluster.nodes",
+      "params": {},
+      "expect": {
+        "count_gte": 5
+      },
+      "result": {
+        "count": 5,
+        "node_ids": [
+          "12944a1b-cfae-5d2f-8056-e8f633c8d3dd",
+          "1a0bed89-043a-57f9-94ce-1ec9cb2bd482",
+          "2da500c8-32d8-5ffc-8452-6d8af5c02038",
+          "b68457f5-bfb6-5452-bccc-cc36f29d1bbc",
+          "c777633e-6d07-5713-9c4c-deb3317eee25"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:26.808082Z"
+    },
+    {
+      "id": "final_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:27.094589Z"
+    },
+    {
+      "id": "final_etcd_members",
+      "section": "cleanup",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T17:11:27.373997Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

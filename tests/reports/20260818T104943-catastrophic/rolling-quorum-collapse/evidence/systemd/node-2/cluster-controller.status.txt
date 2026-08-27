@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:59:01 UTC; 3min 16s ago
+    Process: 139 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 174 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 198 (cluster_control)
+      Tasks: 17 (limit: 8641)
+     Memory: 32.8M (peak: 38.4M)
+        CPU: 724ms
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-cluster-controller.service
+             └─198 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 18 11:02:15 node-2 cluster_controller_server[198]: 2026/08/18 11:02:15 DNS reconciler: discovered 5 DNS endpoints from cluster membership: [node-4.globular.internal:10006 node-3.globular.internal:10006 node-1.globular.internal:10006 node-2.globular.internal:10006 node-5.globular.internal:10006]
+Aug 18 11:02:15 node-2 cluster_controller_server[198]: time=2026-08-18T11:02:15.825Z level=INFO msg="dns reconciler: ENABLED" domain=globular.internal endpoints=[]
+Aug 18 11:02:15 node-2 cluster_controller_server[198]: 2026/08/18 11:02:15 dns reconciler: starting loop (interval=30s)
+Aug 18 11:02:15 node-2 cluster_controller_server[198]: time=2026-08-18T11:02:15.825Z level=INFO msg="starting domain reconciler" interval=1m0s certs_dir=/var/lib/globular/domains renew_before=720h0m0s
+Aug 18 11:02:15 node-2 cluster_controller_server[198]: time=2026-08-18T11:02:15.825Z level=INFO msg="domain reconciler: ENABLED" certs_dir=/var/lib/globular/domains interval=1m renew_before=30d
+Aug 18 11:02:15 node-2 cluster_controller_server[198]: 2026/08/18 11:02:15 dns reconciler: starting health check loop (interval=30s)
+Aug 18 11:02:15 node-2 cluster_controller_server[198]: time=2026-08-18T11:02:15.964Z level=INFO msg="cluster controller ready" address=:12000 config=/var/lib/globular/cluster-controller/config.json cluster_domain=globular.internal version=1.2.318
+Aug 18 11:02:17 node-2 cluster_controller_server[198]: 2026/08/18 11:02:17 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10011 host=10.10.0.11 port=10011
+Aug 18 11:02:17 node-2 cluster_controller_server[198]: 2026/08/18 11:02:17 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 18 11:02:17 node-2 cluster_controller_server[198]: 2026/08/18 11:02:17 INFO mesh: gRPC connection established target=node-2.globular.internal:443

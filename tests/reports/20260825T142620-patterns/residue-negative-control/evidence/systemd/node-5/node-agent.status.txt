@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 14:36:52 UTC; 11s ago
+    Process: 132 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 169 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 200 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 20.0M (peak: 28.2M)
+        CPU: 10.271s
+     CGroup: /system.slice/docker-0bf527dd76e151c4d23eebb74b62cc471639929bed5bf96cb949f90562d720de.scope/system.slice/globular-node-agent.service
+             └─200 /usr/lib/globular/bin/node_agent_server
+
+Aug 25 14:36:53 node-5 node_agent_server[200]: 2026/08/25 14:36:53 TLS enabled: cert=/var/lib/globular/pki/issued/services/service.crt key=/var/lib/globular/pki/issued/services/service.key ca=/var/lib/globular/pki/ca.crt
+Aug 25 14:36:53 node-5 node_agent_server[200]: 2026/08/25 14:36:53 ca-key-sync: DISABLED by default (CA private key must stay on signer authority; enable with EnableCAKeySync())
+Aug 25 14:36:53 node-5 node_agent_server[200]: 2026/08/25 14:36:53 ingress: starting reconciliation loop (interval: 30s)
+Aug 25 14:36:53 node-5 node_agent_server[200]: 2026/08/25 14:36:53 INFO etcd.maintenance_started endpoint=https://10.10.0.15:2379 interval=1m0s min_file_bytes=268435456 min_reclaim_bytes=67108864
+Aug 25 14:36:53 node-5 node_agent_server[200]: 2026/08/25 14:36:53 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 25 14:36:53 node-5 node_agent_server[200]: 2026/08/25 14:36:53 node agent listening on 0.0.0.0:11000
+Aug 25 14:36:54 node-5 node_agent_server[200]: 2026/08/25 14:36:54 metrics listening on 0.0.0.0:11001 (saved=11001, default=11001)
+Aug 25 14:36:54 node-5 node_agent_server[200]: {"level":"warn","ts":"2026-08-25T14:36:54.481404Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000d823c0/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 25 14:36:55 node-5 node_agent_server[200]: {"level":"warn","ts":"2026-08-25T14:36:55.266743Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000d823c0/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 25 14:36:55 node-5 node_agent_server[200]: {"level":"warn","ts":"2026-08-25T14:36:55.266857Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000d823c0/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}

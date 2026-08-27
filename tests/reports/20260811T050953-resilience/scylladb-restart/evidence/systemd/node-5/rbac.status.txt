@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:29:51 UTC; 19min ago
+    Process: 160 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 205 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 229 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 296 (rbac_server)
+      Tasks: 12 (limit: 8641)
+     Memory: 89.4M (peak: 89.9M)
+        CPU: 1.102s
+     CGroup: /system.slice/docker-98c9f00371cba0d41174bc35433238892478111b3c35d44e70376c304ba640d9.scope/system.slice/globular-rbac.service
+             └─296 /usr/lib/globular/bin/rbac_server
+
+Aug 11 05:47:51 node-5 rbac_server[296]: 2026/08/11 05:47:51 gocql: unable to dial control conn 10.10.0.11:9142: dial tcp 10.10.0.11:9142: connect: connection refused
+Aug 11 05:47:51 node-5 rbac_server[296]: 2026/08/11 05:47:51 gocql: unable to dial control conn 10.10.0.11:9142: dial tcp 10.10.0.11:9142: connect: connection refused
+Aug 11 05:47:51 node-5 rbac_server[296]: 2026/08/11 05:47:51 gocql: unable to connect to any ring node: dial tcp 10.10.0.11:9142: connect: connection refused
+Aug 11 05:47:51 node-5 rbac_server[296]: 2026/08/11 05:47:51 gocql: control falling back to initial contact points.
+Aug 11 05:47:51 node-5 rbac_server[296]: 2026/08/11 05:47:51 gocql: unable to dial control conn 10.10.0.11:9142: dial tcp 10.10.0.11:9142: connect: connection refused
+Aug 11 05:47:51 node-5 rbac_server[296]: 2026/08/11 05:47:51 gocql: unable to reconnect control connection: dial tcp 10.10.0.11:9142: connect: connection refused
+Aug 11 05:47:52 node-5 rbac_server[296]: time=2026-08-11T05:47:52.319Z level=WARN msg="permissions store unreachable; reconnecting with fresh host probe" err="gocql: no hosts available in the pool"
+Aug 11 05:48:12 node-5 rbac_server[296]: 2026/08/11 05:48:12 ERROR rpc error: code = Internal desc = {"ErrorMsg":"gocql: no hosts available in the pool","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193","FunctionName":"main.(*server).GetRoleBinding"} (repeated 3 times in 30s) domain=10.10.0.15:8443 application=rbac.RbacService user="" method=/rbac.RbacService/GetRoleBinding function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Aug 11 05:48:23 node-5 rbac_server[296]: time=2026-08-11T05:48:23.367Z level=INFO msg="permissions store (re)connected" backend=scylla
+Aug 11 05:49:08 node-5 rbac_server[296]: 2026/08/11 05:49:08 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

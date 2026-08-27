@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-25T15:53:36.085265Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/recovery/etcd-member-resync.yaml",
+  "scenario": "etcd-member-resync",
+  "suite": "recovery",
+  "source_revision": "07afa9e72caf0ffc533a3233aa20064d6425e91e",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that an etcd member resyncs correctly after rejoining a cluster\nwhere writes occurred during its absence.\n\nThis is one of the most important resilience properties of etcd/Raft:\nwhen a member that was offline comes back, it must catch up with all\nwrites that occurred during its absence \u2014 without losing any data and\nwithout requiring manual intervention.\n\nThe resync mechanism:\n1. Rejoining member contacts the current leader\n2. Leader sends all missing log entries (from member's last known index)\n3. Member replays the log entries to rebuild its state\n4. Member reports as healthy once its index matches the leader's\n5. The cluster is now fully consistent across all 3 members\n\nThis test writes to etcd while a member is down, then verifies the\nkey is readable from all endpoints after the member rejoins. This\ndirectly tests Raft's log replication guarantee.\n\nFailure modes caught:\n- Member comes back but stays in \"learner\" state (doesn't vote)\n- WAL corruption during catch-up (member falls behind again)\n- etcd db size mismatch preventing sync (compaction needed)\n- Network partition during resync (incomplete catch-up)\n- TLS cert not accepted during peer reconnect (cert renewal conflict)\n\nIndustry known problem: \"lagging replicas after maintenance\" \u2014 a member\nthat was down for a long time (> snapshot interval) must receive a full\nsnapshot instead of just log entries. etcd's snapshot transfer is\nautomatic but can be slow for large databases.\n\nCAP theorem note: the write during member absence demonstrates C over A:\nthe write succeeds (majority partition = consistent), and when the minority\nmember rejoins, it receives the write (eventual consistency achieved via\nRaft log replication).",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-25T15:53:59.910381Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

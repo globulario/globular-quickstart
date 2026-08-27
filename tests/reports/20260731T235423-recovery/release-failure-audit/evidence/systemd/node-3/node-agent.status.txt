@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:55:41 UTC; 1min 0s ago
+    Process: 121 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 150 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 178 (node_agent_serv)
+      Tasks: 19 (limit: 8641)
+     Memory: 50.1M (peak: 58.8M)
+        CPU: 17.225s
+     CGroup: /system.slice/docker-ef523abe62b38fa4260b9d9371bcf5710020077efa52c6c7244ed3a814093f41.scope/system.slice/globular-node-agent.service
+             └─178 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 23:55:58 node-3 node_agent_server[178]: 2026/07/31 23:55:58 nodeagent: sync repo artifacts: list: rpc error: code = Unavailable desc = artifact ledger unavailable: scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0
+Jul 31 23:55:59 node-3 node_agent_server[178]: 2026/07/31 23:55:59 minio-topology-gate: node a166b992-b66d-53cb-b7c7-61dfa4dd5a36 (ip=10.10.0.13) not admitted — node not listed in approved objectstore topology (gen=0)
+Jul 31 23:56:00 node-3 node_agent_server[178]: 2026/07/31 23:56:00 nodeagent: reporting 14 installed services (hash=b0591c92586a970c875120a7468e5a7b96f11082cd7120b8d53efcc006b09228, sample=[libnss-resolve prometheus scylladb etcd workflow])
+Jul 31 23:56:00 node-3 node_agent_server[178]: 2026/07/31 23:56:00 node heartbeat failed (state=degraded): TLS probe to 10.10.0.14:443 (ServerName=10.10.0.14): dial tcp 10.10.0.14:443: connect: connection refused
+Jul 31 23:56:11 node-3 node_agent_server[178]: 2026/07/31 23:56:11 ingress: keepalived disabled on node a166b992-b66d-53cb-b7c7-61dfa4dd5a36
+Jul 31 23:56:12 node-3 node_agent_server[178]: 2026/07/31 23:56:12 webroot-sync: synced=0 skipped=0 removed=0 (0.1s)
+Jul 31 23:56:13 node-3 node_agent_server[178]: 2026/07/31 23:56:13 behavioral observation: infra_probe skipped component=scylladb node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Jul 31 23:56:15 node-3 node_agent_server[178]: 2026/07/31 23:56:15 ingress: spec changed (type: PUT), triggering reconciliation
+Jul 31 23:56:15 node-3 node_agent_server[178]: 2026/07/31 23:56:15 ingress: keepalived disabled on node a166b992-b66d-53cb-b7c7-61dfa4dd5a36
+Jul 31 23:56:31 node-3 node_agent_server[178]: 2026/07/31 23:56:31 nodeagent: reporting 14 installed services (hash=b0591c92586a970c875120a7468e5a7b96f11082cd7120b8d53efcc006b09228, sample=[node-exporter prometheus workflow scylladb node-agent])

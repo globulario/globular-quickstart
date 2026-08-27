@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:40:39 UTC; 12min ago
+    Process: 204 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 227 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 245 (node_agent_serv)
+      Tasks: 24 (limit: 8641)
+     Memory: 1.1G (peak: 1.1G)
+        CPU: 6min 52.771s
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-node-agent.service
+             └─245 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 21:52:41 node-4 node_agent_server[245]: 2026/07/31 21:52:41 event-publisher: service.exited unit=globular-scylla-manager.service (activating/auto-restart → activating/auto-restart)
+Jul 31 21:52:42 node-4 node_agent_server[245]: 2026/07/31 21:52:42 behavioral observation: infra_probe skipped component=scylladb node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:52:42 node-4 node_agent_server[245]: 2026/07/31 21:52:42 behavioral observation: infra_probe skipped component=etcd node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:52:42 node-4 node_agent_server[245]: 2026/07/31 21:52:42 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:52:42 node-4 node_agent_server[245]: 2026/07/31 21:52:42 behavioral observation: infra_probe skipped component=envoy node=6400b443-cf38-52da-a683-de2fc5103c0b: record evidence signal.probe.240e4127551c6129.evidence.0: rpc error: code = Internal desc = BehavioralMemoryService.RecordEvidence: record evidence: put evidence: Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1
+Jul 31 21:52:44 node-4 node_agent_server[245]: 2026/07/31 21:52:44 nodeagent: reporting 41 installed services (hash=0850d5d5c9405c3f43d36c9d06676c74e34ebdd391dc4bac490c2d006e9759b7, sample=[file ai-executor xds repository mcp])
+Jul 31 21:52:44 node-4 node_agent_server[245]: 2026/07/31 21:52:44 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Jul 31 21:52:46 node-4 node_agent_server[245]: 2026/07/31 21:52:46 event-publisher: service.started unit=globular-scylla-manager.service (activating/auto-restart → active/running)
+Jul 31 21:52:50 node-4 node_agent_server[245]: 2026/07/31 21:52:50 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Jul 31 21:52:51 node-4 node_agent_server[245]: 2026/07/31 21:52:51 event-publisher: service.exited unit=globular-scylla-manager.service (active/running → activating/auto-restart)

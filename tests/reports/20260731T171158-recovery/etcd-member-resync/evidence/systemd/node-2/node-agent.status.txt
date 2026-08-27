@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 17:13:00 UTC; 25s ago
+    Process: 482 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 513 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 522 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 18.0M
+        CPU: 1.372s
+     CGroup: /system.slice/docker-af2aadfb3c39485ee1072795441d42f00e2bc57a822f9ef3189ee70b8a240413.scope/system.slice/globular-node-agent.service
+             └─522 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 17:13:15 node-2 node_agent_server[522]: 2026/07/31 17:13:15 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.13 base=/root/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:15 node-2 node_agent_server[522]: 2026/07/31 17:13:15 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.13:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:15 node-2 node_agent_server[522]: 2026/07/31 17:13:15 event-handler: event service unavailable, retrying in 10s: client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get "http://node-2.globular.internal:8443/get_ca_certificate": dial tcp 10.10.0.12:8443: connect: connection refused
+Jul 31 17:13:15 node-2 node_agent_server[522]: 2026/07/31 17:13:15 event-publisher: publish service.exited failed: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: connect: connection refused" (will reconnect)
+Jul 31 17:13:20 node-2 node_agent_server[522]: 2026/07/31 17:13:20 event-publisher: connected to event service
+Jul 31 17:13:20 node-2 node_agent_server[522]: 2026/07/31 17:13:20 event-publisher: publish service.exited failed: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: connect: connection refused" (will reconnect)
+Jul 31 17:13:25 node-2 node_agent_server[522]: 2026/07/31 17:13:25 event-publisher: connected to event service
+Jul 31 17:13:25 node-2 node_agent_server[522]: 2026/07/31 17:13:25 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-2.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:25 node-2 node_agent_server[522]: 2026/07/31 17:13:25 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.13 base=/root/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:25 node-2 node_agent_server[522]: 2026/07/31 17:13:25 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.13:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"

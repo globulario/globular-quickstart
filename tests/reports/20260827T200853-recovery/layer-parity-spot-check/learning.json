@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-27T20:41:10.851325Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "layer-parity-spot-check",
+  "suite": "recovery",
+  "result": "PASS",
+  "source_revision": "92adaac14aa1ae8c0959eda2e745ce46fa8015f4",
+  "proof": {
+    "claim": "Spot-check the relationship between Layer 3 (installed in etcd) and\nLayer 4 (running in systemd) for a set of critical services.\n\nThe 4-layer model guarantees these layers are INDEPENDENT \u2014 a service\ncan be installed (Layer 3) but not running (Layer 4), or running but\nnot recorded as installed.\n\nLab topology exception (quickstart.topology_lab_only_exception):\nIn the quickstart lab, services are pre-installed in the Docker container\nimage rather than deployed through the Globular package management system.\nAs a result, Layer 3 (etcd package records under /globular/nodes/<id>/packages/)\nis structurally EMPTY even though Layer 4 (systemd) is fully active.\nLayer 3 assertions are therefore skipped in this scenario; they are only\nmeaningful in clusters that have run a full package deployment cycle.\n\nWhat IS verified here:\n  - Layer 4 (systemd active) for node-agent on all 5 nodes\n  - Layer 2 (service registry) for dns \u2014 registered in etcd\n  - Layer 4 (systemd active) for dns on node-3 (post-SIGKILL recovery)\n  - Cluster health stable post-chaos\n\nThis is a post-resilience parity check \u2014 verifies that the chaos\nscenarios (crash, node restart) left Layer 4 runtime state intact.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

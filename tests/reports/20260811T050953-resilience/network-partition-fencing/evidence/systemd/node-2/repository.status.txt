@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:39:51 UTC; 7min ago
+    Process: 28719 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 28723 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 28726 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 36.6M (peak: 41.0M)
+        CPU: 2.801s
+     CGroup: /system.slice/docker-2c3e1df9b00a56d277665fa4fc05d2f1b3851a0074ffa6d89c2beb01aae9b7ce.scope/system.slice/globular-repository.service
+             └─28726 /usr/lib/globular/bin/repository_server
+
+Aug 11 05:39:52 node-2 repository_server[28726]: time=2026-08-11T05:39:52.585Z level=INFO msg="service ready" service=repository.PackageRepository port=10004 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=639
+Aug 11 05:39:52 node-2 repository_server[28726]: time=2026-08-11T05:39:52.585Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 11 05:39:52 node-2 repository_server[28726]: 2026/08/11 05:39:52 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 11 05:39:52 node-2 repository_server[28726]: time=2026-08-11T05:39:52.586Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 11 05:39:52 node-2 repository_server[28726]: time=2026-08-11T05:39:52.586Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 11 05:39:52 node-2 repository_server[28726]: 2026/08/11 05:39:52 INFO metrics listening service=repository.PackageRepository addr=[::]:10001
+Aug 11 05:41:11 node-2 repository_server[28726]: 2026/08/11 05:41:11 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 11 05:44:53 node-2 repository_server[28726]: 2026/08/11 05:44:53 INFO acc: warmup complete baseline_rtt_ms=20 samples=417 elapsed=5m0s
+Aug 11 05:46:14 node-2 repository_server[28726]: 2026/08/11 05:46:14 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 11 05:46:55 node-2 repository_server[28726]: 2026/08/11 05:46:55 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=175 baseline_ms=20 window=468 new_window=421

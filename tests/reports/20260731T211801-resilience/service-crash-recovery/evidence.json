@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "scenario": "service-crash-recovery",
+  "suite": "resilience",
+  "start_time": "2026-07-31T21:53:26.816149Z",
+  "end_time": "2026-07-31T21:54:49.239329Z",
+  "passed": false,
+  "item_count": 12,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 6
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:53:27.221025Z"
+    },
+    {
+      "id": "dns_registered_before",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "dns"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 42
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:53:27.344646Z"
+    },
+    {
+      "id": "dns_active_before",
+      "section": "preconditions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-3",
+        "service": "dns"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-3",
+        "service": "dns"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:53:27.457008Z"
+    },
+    {
+      "id": "baseline_node_count",
+      "section": "baseline",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {},
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 6
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:53:27.808348Z"
+    },
+    {
+      "id": "kill_dns_service",
+      "section": "steps",
+      "probe": "chaos.sigkill_service",
+      "params": {
+        "node": "node-3",
+        "service": "dns"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.sigkill_service",
+        "container": "globular-node-3",
+        "unit": "globular-dns.service",
+        "signal": "SIGKILL",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:53:27.893431Z"
+    },
+    {
+      "id": "wait_dns_restarted",
+      "section": "steps",
+      "probe": "service.status",
+      "params": {
+        "node": "node-3",
+        "service": "dns"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "failed",
+        "node": "node-3",
+        "service": "dns"
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T21:54:34.483133Z"
+    },
+    {
+      "id": "wait_dns_reregistered",
+      "section": "steps",
+      "probe": "service.registered",
+      "params": {
+        "service": "dns"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 42
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:54:34.599130Z"
+    },
+    {
+      "id": "dns_unit_active_after",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-3",
+        "service": "dns"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "failed",
+        "node": "node-3",
+        "service": "dns"
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T21:54:34.703866Z"
+    },
+    {
+      "id": "dns_registered_after",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "dns"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 42
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:54:34.808946Z"
+    },
+    {
+      "id": "cluster_still_healthy",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 6
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:54:35.128455Z"
+    },
+    {
+      "id": "ensure_dns_started",
+      "section": "cleanup",
+      "probe": "chaos.restart_service",
+      "params": {
+        "node": "node-3",
+        "service": "dns"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.restart_service",
+        "container": "globular-node-3",
+        "unit": "globular-dns.service",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:54:35.203796Z"
+    },
+    {
+      "id": "final_dns_status",
+      "section": "cleanup",
+      "probe": "service.status",
+      "params": {
+        "node": "node-3",
+        "service": "dns"
+      },
+      "expect": {},
+      "result": {
+        "unit_state": "active",
+        "node": "node-3",
+        "service": "dns"
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T21:54:35.330633Z"
+    }
+  ],
+  "result": "PARTIAL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

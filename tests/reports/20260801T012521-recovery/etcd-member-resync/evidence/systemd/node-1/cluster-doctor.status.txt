@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 00:42:19 UTC; 44min ago
+    Process: 27406 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 27410 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 27413 (cluster_doctor_)
+      Tasks: 21 (limit: 8641)
+     Memory: 35.5M (peak: 41.8M)
+        CPU: 43.508s
+     CGroup: /system.slice/docker-18b323bfa9beb153eb9d36bc94faef425c64f4b85468ea1b94a5f78650f213de.scope/system.slice/globular-cluster-doctor.service
+             └─27413 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 01 01:26:50 node-1 cluster_doctor_server[27413]: 2026/08/01 01:26:50 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListDesiredBuildIDs: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 01 01:26:50 node-1 cluster_doctor_server[27413]: 2026/08/01 01:26:50 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=GetDesiredState: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 01 01:26:51 node-1 cluster_doctor_server[27413]: 2026/08/01 01:26:51 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListStepOutcomes: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 01 01:26:51 node-1 cluster_doctor_server[27413]: 2026/08/01 01:26:51 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListWorkflowSummaries: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 01 01:26:51 node-1 cluster_doctor_server[27413]: 2026/08/01 01:26:51 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListDriftUnresolved: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 01 01:26:51 node-1 cluster_doctor_server[27413]: 2026/08/01 01:26:51 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListRuns(BLOCKED): rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 01 01:26:51 node-1 cluster_doctor_server[27413]: 2026/08/01 01:26:51 collector: data-source fetch failed (reduced harvest) service=workflow rpc=ListCorrelationDeferState(abandoned): rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 01 01:26:51 node-1 cluster_doctor_server[27413]: 2026/08/01 01:26:51 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListServiceReleasesJson: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 01 01:26:51 node-1 cluster_doctor_server[27413]: 2026/08/01 01:26:51 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListInfrastructureReleasesJson: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 01 01:26:59 node-1 cluster_doctor_server[27413]: 2026/08/01 01:26:59 WARN event client: publish circuit breaker closed dropped_during_window=43

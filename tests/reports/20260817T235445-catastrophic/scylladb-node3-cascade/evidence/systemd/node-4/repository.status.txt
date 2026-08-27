@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:19:02 UTC; 41min ago
+    Process: 163 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 191 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 227 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 40.0M (peak: 56.6M)
+        CPU: 37.887s
+     CGroup: /system.slice/docker-b20775b8a2a560480b2efa5ecaabe93ae56dc7289499604fd316260a4deb88b6.scope/system.slice/globular-repository.service
+             └─227 /usr/lib/globular/bin/repository_server
+
+Aug 17 23:57:23 node-4 repository_server[227]: time=2026-08-17T23:57:23.015Z level=ERROR msg="scylladb reconnect failed" err="scylla reconnect: scylla: cluster hosts: etcd get /globular/cluster/scylla/hosts: context deadline exceeded"
+Aug 17 23:57:31 node-4 repository_server[227]: 2026/08/17 23:57:31 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused"
+Aug 17 23:57:33 node-4 repository_server[227]: time=2026-08-17T23:57:33.015Z level=WARN msg="scylladb health check failed" err="scylla: not connected"
+Aug 17 23:57:38 node-4 repository_server[227]: 2026/08/17 23:57:38 WARN scylla: connection attempt failed, retrying attempt=1 next_retry_in=1s err="gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.13:9042: connect: connection refused"
+Aug 17 23:57:39 node-4 repository_server[227]: 2026/08/17 23:57:39 INFO scylla: connection established after retries attempts=2
+Aug 17 23:57:39 node-4 repository_server[227]: 2026/08/17 23:57:39 INFO scylladb connected hosts="[10.10.0.12 10.10.0.13]" keyspace=repository rf=2
+Aug 17 23:57:39 node-4 repository_server[227]: 2026/08/17 23:57:39 INFO scylladb reconnected hosts="[10.10.0.12 10.10.0.13]" keyspace=repository rf=2
+Aug 17 23:57:39 node-4 repository_server[227]: time=2026-08-17T23:57:39.525Z level=INFO msg="scylladb reconnected after health check failure"
+Aug 17 23:57:39 node-4 repository_server[227]: time=2026-08-17T23:57:39.525Z level=INFO msg="repository metadata recovered — service is SERVING"
+Aug 17 23:57:45 node-4 repository_server[227]: 2026/08/17 23:57:45 gocql: unable to dial control conn 10.10.0.12:9042: dial tcp 10.10.0.12:9042: connect: connection refused

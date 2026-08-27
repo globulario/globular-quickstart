@@ -1,0 +1,21 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:25:39 UTC; 1min 44s ago
+    Process: 637 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 782 (resource_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 24.3M (peak: 25.0M)
+        CPU: 624ms
+     CGroup: /system.slice/docker-9180d30e9d1ba804a7b09169efb4bbc01eb91329f628cb2e20c93a2f4151a900.scope/system.slice/globular-resource.service
+             └─782 /usr/lib/globular/bin/resource_server
+
+Aug 01 01:25:39 node-4 resource_server[782]: time=2026-08-01T01:25:39.663Z level=INFO msg="scylla host detected" host=10.10.0.11 method=tcp-probe
+Aug 01 01:25:39 node-4 resource_server[782]: time=2026-08-01T01:25:39.664Z level=INFO msg="starting resource service" service=resource.ResourceService version=1.2.288 domain=globular.internal address=10.10.0.14:8443 port=10000 backend=SCYLLA backend_address=10.10.0.11 bootstrap_mode=true
+Aug 01 01:25:40 node-4 resource_server[782]: 2026/08/01 01:25:40 INFO InitGrpcServer: gRPC server initialized service=resource.ResourceService tls=true port=10004
+Aug 01 01:25:40 node-4 resource_server[782]: time=2026-08-01T01:25:40.290Z level=INFO msg="service ready" service=resource.ResourceService port=10004 proxy=10011 protocol=grpc domain=globular.internal startup_ms=626 pid=782 id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 version=1.2.288 store=SCYLLA
+Aug 01 01:25:40 node-4 resource_server[782]: 2026/08/01 01:25:40 INFO scylla: connected id=local_resource hosts=[10.10.0.11] port=9042 keyspace=local_resource
+Aug 01 01:25:40 node-4 resource_server[782]: time=2026-08-01T01:25:40.450Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042
+Aug 01 01:25:40 node-4 resource_server[782]: 2026/08/01 01:25:40 error: failed to connect to "[HostInfo hostname=\"10.10.0.14\" connectAddress=\"10.10.0.14\" peer=\"10.10.0.14\" rpc_address=\"10.10.0.14\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.14\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"6cc30ccf-0695-4f6f-bb8e-fc2bbfaf8fe5\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: gocql: connection closed waiting for response
+Aug 01 01:27:17 node-4 resource_server[782]: time=2026-08-01T01:27:17.816Z level=WARN msg="rbac client unavailable in bootstrap mode" error="rbac: endpoint unresolved"
+Aug 01 01:27:17 node-4 resource_server[782]: time=2026-08-01T01:27:17.816Z level=WARN msg="rbac disabled; skipping owner assignment" path=/users/sa@globular.internal subject=sa@globular.internal resourceType=file
+Aug 01 01:27:17 node-4 resource_server[782]: 2026/08/01 01:27:17 INFO metrics listening service=resource.ResourceService addr=[::]:10011

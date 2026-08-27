@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "scenario": "workflow-basic",
+  "suite": "functional",
+  "start_time": "2026-08-10T21:51:49.577689Z",
+  "end_time": "2026-08-10T21:52:13.812847Z",
+  "passed": false,
+  "item_count": 10,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 4,
+        "nodes": 2
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:51:55.623698Z"
+    },
+    {
+      "id": "workflow_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "workflow"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 43
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:51:55.746780Z"
+    },
+    {
+      "id": "baseline_workflow_status",
+      "section": "baseline",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "workflow"
+      },
+      "expect": {},
+      "result": {
+        "unit_state": "active",
+        "node": "node-1",
+        "service": "workflow"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:51:55.835262Z"
+    },
+    {
+      "id": "wait_workflow_active",
+      "section": "steps",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "workflow"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-1",
+        "service": "workflow"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:51:56.095683Z"
+    },
+    {
+      "id": "workflow_service_registered",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "workflow"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 43
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:51:56.204438Z"
+    },
+    {
+      "id": "workflow_unit_active_node1",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "workflow"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-1",
+        "service": "workflow"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:51:56.288593Z"
+    },
+    {
+      "id": "workflow_unit_active_node2",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "workflow"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "inactive",
+        "node": "node-2",
+        "service": "workflow"
+      },
+      "passed": false,
+      "timestamp": "2026-08-10T21:51:56.375766Z"
+    },
+    {
+      "id": "workflow_unit_active_node3",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-3",
+        "service": "workflow"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-3",
+        "service": "workflow"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:51:56.684401Z"
+    },
+    {
+      "id": "final_cluster_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 4,
+        "nodes": 2
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:51:57.291629Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 3,
+          "etcd_member_count": "4",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 3,
+          "etcd_member_count": "4",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:52:01.070263Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:19:02 UTC; 49min ago
+    Process: 161 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 189 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 221 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 308 (rbac_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 205.9M (peak: 206.9M)
+        CPU: 6.346s
+     CGroup: /system.slice/docker-b20775b8a2a560480b2efa5ecaabe93ae56dc7289499604fd316260a4deb88b6.scope/system.slice/globular-rbac.service
+             └─308 /usr/lib/globular/bin/rbac_server
+
+Aug 18 00:05:57 node-4 rbac_server[308]: 2026/08/18 00:05:57 error: failed to connect to "[HostInfo hostname=\"10.10.0.12\" connectAddress=\"10.10.0.12\" peer=\"10.10.0.12\" rpc_address=\"10.10.0.12\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.12\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"6df933e7-2f7e-4f3a-bf3f-5fe1a204663a\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: tls: first record does not look like a TLS handshake
+Aug 18 00:06:00 node-4 rbac_server[308]: 2026/08/18 00:06:00 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 00:06:00 node-4 rbac_server[308]: 2026/08/18 00:06:00 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 00:06:00 node-4 rbac_server[308]: 2026/08/18 00:06:00 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 00:06:00 node-4 rbac_server[308]: 2026/08/18 00:06:00 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 00:06:00 node-4 rbac_server[308]: 2026/08/18 00:06:00 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 00:06:00 node-4 rbac_server[308]: 2026/08/18 00:06:00 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 00:06:03 node-4 rbac_server[308]: time=2026-08-18T00:06:03.484Z level=WARN msg="permissions store unreachable; reconnecting with fresh host probe" err="gocql: no hosts available in the pool"
+Aug 18 00:06:03 node-4 rbac_server[308]: time=2026-08-18T00:06:03.570Z level=INFO msg="permissions store (re)connected" backend=scylla
+Aug 18 00:07:08 node-4 rbac_server[308]: 2026/08/18 00:07:08 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

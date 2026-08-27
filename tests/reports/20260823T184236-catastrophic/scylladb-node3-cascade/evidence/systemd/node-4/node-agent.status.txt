@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:47:08 UTC; 1min 48s ago
+    Process: 131 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 168 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 206 (node_agent_serv)
+      Tasks: 23 (limit: 8641)
+     Memory: 26.9M (peak: 35.6M)
+        CPU: 37.479s
+     CGroup: /system.slice/docker-7e69e47bf0d813687d9ef0f9e68075561c53d70636a4160452595c23d81254bd.scope/system.slice/globular-node-agent.service
+             └─206 /usr/lib/globular/bin/node_agent_server
+
+Aug 23 18:48:20 node-4 node_agent_server[206]: 2026/08/23 18:48:20 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 23 18:48:20 node-4 node_agent_server[206]: 2026/08/23 18:48:20 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 23 18:48:39 node-4 node_agent_server[206]: 2026/08/23 18:48:39 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 23 18:48:39 node-4 node_agent_server[206]: 2026/08/23 18:48:39 behavioral observation: infra_probe skipped component=scylladb node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0
+Aug 23 18:48:39 node-4 node_agent_server[206]: 2026/08/23 18:48:39 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
+Aug 23 18:48:41 node-4 node_agent_server[206]: 2026/08/23 18:48:41 behavioral observation: infra_probe skipped component=etcd node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: no route to host"
+Aug 23 18:48:41 node-4 node_agent_server[206]: 2026/08/23 18:48:41 behavioral observation: infra_probe skipped component=envoy node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: No route to host
+Aug 23 18:48:49 node-4 node_agent_server[206]: 2026/08/23 18:48:49 nodeagent: reporting 28 installed services (hash=d8281a1cb90968c832645fa1a95f7e2bb91790ed1abd095fbbbd3444b7540393, sample=[minio authentication globular-cli restic file])
+Aug 23 18:48:50 node-4 node_agent_server[206]: 2026/08/23 18:48:50 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 23 18:48:50 node-4 node_agent_server[206]: 2026/08/23 18:48:50 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b

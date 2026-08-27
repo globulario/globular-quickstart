@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:24:57 UTC; 1min 29s ago
+    Process: 464 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 514 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 540 (log_server)
+      Tasks: 16 (limit: 8641)
+     Memory: 22.8M (peak: 28.0M)
+        CPU: 583ms
+     CGroup: /system.slice/docker-8a2300a0f18747bba3241876cd92062f2571f5a82547685010954d3da55c4b12.scope/system.slice/globular-log.service
+             └─540 /usr/lib/globular/bin/log_server
+
+Aug 22 19:24:58 node-2 log_server[540]: time=2026-08-22T19:24:58.180Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 22 19:24:58 node-2 log_server[540]: time=2026-08-22T19:24:58.180Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 22 19:24:58 node-2 log_server[540]: 2026/08/22 19:24:58 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 22 19:25:56 node-2 log_server[540]: 2026/08/22 19:25:56 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 22 19:25:58 node-2 log_server[540]: 2026/08/22 19:25:58 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=log.write reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 22 19:25:59 node-2 log_server[540]: time=2026-08-22T19:25:59.869Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 22 19:25:59 node-2 log_server[540]: time=2026-08-22T19:25:59.875Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 22 19:25:59 node-2 log_server[540]: time=2026-08-22T19:25:59.875Z level=WARN msg="store write failed (suppressing repeats for 30s)" err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 22 19:26:00 node-2 log_server[540]: time=2026-08-22T19:26:00.074Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 22 19:26:00 node-2 log_server[540]: time=2026-08-22T19:26:00.094Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB

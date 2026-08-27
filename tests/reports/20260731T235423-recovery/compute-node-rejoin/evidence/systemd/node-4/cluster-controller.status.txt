@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:54:11 UTC; 24s ago
+    Process: 135 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 171 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 184 (cluster_control)
+      Tasks: 16 (limit: 8641)
+     Memory: 33.0M (peak: 34.7M)
+        CPU: 884ms
+     CGroup: /system.slice/docker-928b88015d720a8f11737bd2e4cef31a0f068e077aace4373fcff00bacea7705.scope/system.slice/globular-cluster-controller.service
+             └─184 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 23:54:32 node-4 cluster_controller_server[184]: time=2026-07-31T23:54:32.193Z level=INFO msg="dns reconciler: ENABLED" domain=globular.internal endpoints=[]
+Jul 31 23:54:32 node-4 cluster_controller_server[184]: 2026/07/31 23:54:32 dns reconciler: starting loop (interval=30s)
+Jul 31 23:54:32 node-4 cluster_controller_server[184]: 2026/07/31 23:54:32 dns reconciler: starting health check loop (interval=30s)
+Jul 31 23:54:32 node-4 cluster_controller_server[184]: time=2026-07-31T23:54:32.193Z level=INFO msg="starting domain reconciler" interval=1m0s certs_dir=/var/lib/globular/domains renew_before=720h0m0s
+Jul 31 23:54:32 node-4 cluster_controller_server[184]: time=2026-07-31T23:54:32.193Z level=INFO msg="domain reconciler: ENABLED" certs_dir=/var/lib/globular/domains interval=1m renew_before=30d
+Jul 31 23:54:32 node-4 cluster_controller_server[184]: time=2026-07-31T23:54:32.595Z level=INFO msg="cluster controller ready" address=:12000 config=/var/lib/globular/cluster-controller/config.json cluster_domain=globular.internal version=1.2.289
+Jul 31 23:54:32 node-4 cluster_controller_server[184]: 2026/07/31 23:54:32 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Jul 31 23:54:32 node-4 cluster_controller_server[184]: 2026/07/31 23:54:32 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Jul 31 23:54:33 node-4 cluster_controller_server[184]: 2026/07/31 23:54:33 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Jul 31 23:54:34 node-4 cluster_controller_server[184]: 2026/07/31 23:54:34 WARN ensureNodeExecutorBinding: failed to set role binding for node-4: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:10001: connect: connection refused"

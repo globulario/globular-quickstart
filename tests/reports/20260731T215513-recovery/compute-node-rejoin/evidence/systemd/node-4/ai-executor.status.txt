@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:55:11 UTC; 17s ago
+    Process: 628 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 650 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 654 (ai_executor_ser)
+      Tasks: 15 (limit: 8641)
+     Memory: 23.2M (peak: 27.7M)
+        CPU: 426ms
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-ai-executor.service
+             └─654 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 21:55:11 node-4 ai_executor_server[654]: time=2026-07-31T21:55:11.831Z level=WARN msg="authz: no permission mappings registered — RBAC will resolve raw method paths and deny role-based calls" service=ai_executor expected_path=/var/lib/globular/policy/services/ai_executor/permissions.generated.json
+Jul 31 21:55:11 node-4 ai_executor_server[654]: time=2026-07-31T21:55:11.831Z level=INFO msg="service started successfully" name=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd port=10010
+Jul 31 21:55:11 node-4 ai_executor_server[654]: time=2026-07-31T21:55:11.891Z level=INFO msg="job_store: connected to etcd"
+Jul 31 21:55:11 node-4 ai_executor_server[654]: 2026/07/31 21:55:11 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Jul 31 21:55:11 node-4 ai_executor_server[654]: time=2026-07-31T21:55:11.921Z level=INFO msg="job_store: loaded jobs from etcd" count=69
+Jul 31 21:55:12 node-4 ai_executor_server[654]: time=2026-07-31T21:55:12.575Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.13 10.10.0.14]"
+Jul 31 21:55:27 node-4 ai_executor_server[654]: time=2026-07-31T21:55:27.693Z level=INFO msg="processing incident" incident_id=8a740aa3-8d2a-11f1-aed0-02420a0a000e rule_id=service-crash tier=1 trigger=service.exited batch_size=2
+Jul 31 21:55:27 node-4 ai_executor_server[654]: time=2026-07-31T21:55:27.833Z level=INFO msg="diagnosis complete" incident_id=8a740aa3-8d2a-11f1-aed0-02420a0a000e root_cause="service_crash: globular-dns.service" confidence=0.6000000238418579 proposed_action=restart_service:globular-dns.service job_state=JOB_DIAGNOSED
+Jul 31 21:55:27 node-4 ai_executor_server[654]: time=2026-07-31T21:55:27.833Z level=INFO msg="executing remediation" incident=8a740aa3-8d2a-11f1-aed0-02420a0a000e action_type=ACTION_RESTART_SERVICE target=restart_service:globular-dns.service
+Jul 31 21:55:27 node-4 ai_executor_server[654]: time=2026-07-31T21:55:27.860Z level=INFO msg="restart_service: request published" target=restart_service:globular-dns.service

@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:05:45 UTC; 1min 3s ago
+    Process: 7846 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 7850 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 7853 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 7859 (resource_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 19.7M (peak: 20.4M)
+        CPU: 318ms
+     CGroup: /system.slice/docker-fac1d0fd94bea9a0d7ffcda0c0edf931a4d141c04f8b3de9361d6d7a1ebcb85f.scope/system.slice/globular-resource.service
+             └─7859 /usr/lib/globular/bin/resource_server
+
+Jul 31 20:05:59 node-5 resource_server[7859]: 2026/07/31 20:05:59 INFO InitService: loaded config by name fallback service=resource.ResourceService current_id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 config_id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6
+Jul 31 20:05:59 node-5 resource_server[7859]: 2026/07/31 20:05:59 INFO InitGrpcServer: gRPC server initialized service=resource.ResourceService tls=true port=10004
+Jul 31 20:05:59 node-5 resource_server[7859]: time=2026-07-31T20:05:59.944Z level=INFO msg="service ready" service=resource.ResourceService port=10004 proxy=10011 protocol=grpc domain=globular.internal startup_ms=6308 pid=7859 id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 version=1.2.288 store=SCYLLA
+Jul 31 20:06:04 node-5 resource_server[7859]: 2026/07/31 20:06:04 ERROR scylla: create keyspace failed keyspace=local_resource err="gocql: no response received from cassandra within timeout period"
+Jul 31 20:06:04 node-5 resource_server[7859]: time=2026-07-31T20:06:04.958Z level=WARN msg="operation failed, retrying" attempt=1 next_retry_in=1s error="connect to 10.10.0.11:9042: gocql: no response received from cassandra within timeout period"
+Jul 31 20:06:10 node-5 resource_server[7859]: 2026/07/31 20:06:10 ERROR scylla: create keyspace failed keyspace=local_resource err="gocql: no response received from cassandra within timeout period"
+Jul 31 20:06:10 node-5 resource_server[7859]: time=2026-07-31T20:06:10.968Z level=WARN msg="operation failed, retrying" attempt=2 next_retry_in=2s error="connect to 10.10.0.11:9042: gocql: no response received from cassandra within timeout period"
+Jul 31 20:06:13 node-5 resource_server[7859]: 2026/07/31 20:06:13 INFO scylla: connected id=local_resource hosts=[10.10.0.11] port=9042 keyspace=local_resource
+Jul 31 20:06:13 node-5 resource_server[7859]: time=2026-07-31T20:06:13.950Z level=INFO msg="operation succeeded after retries" attempts=3
+Jul 31 20:06:13 node-5 resource_server[7859]: time=2026-07-31T20:06:13.950Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042

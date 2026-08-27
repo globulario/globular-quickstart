@@ -1,0 +1,61 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-27T02:45:56.243726Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "desired-state-reconciliation",
+  "suite": "patterns",
+  "result": "PASS",
+  "source_revision": "661b8e66966476e1055ec07b50891dc3d3818e5b",
+  "proof": {
+    "claim": "Installed/runtime mismatch does not create an unbounded reconciliation loop, and inability to converge remains observable rather than being reported as success.",
+    "kind": "certification",
+    "origin": {
+      "type": "architecture",
+      "ref": "pattern.desired_state_reconciliation"
+    },
+    "governing_contracts": [
+      "pattern.desired_state_reconciliation"
+    ],
+    "invariants": [
+      "convergence.no_infinite_retry",
+      "install.result.atomic_commit",
+      "infra.desired_hash_consistency",
+      "runtime.installed_state_not_liveness"
+    ],
+    "known_failure_modes": [
+      "pattern.stale_authority",
+      "pattern.partial_truth"
+    ],
+    "forbidden_outcomes": [
+      "unbounded reconciliation dispatch",
+      "runtime liveness accepted as installed-state proof",
+      "convergence failure reported as success"
+    ],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": true,
+    "candidate_types": [
+      "failure_mode",
+      "invariant",
+      "scenario"
+    ],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 19:04:33 UTC; 5min ago
+    Process: 126 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 166 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 193 (log_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 22.1M (peak: 24.6M)
+        CPU: 695ms
+     CGroup: /system.slice/docker-c614908eae77dbf4f1bb2e5b7eeb70368e8053dbd05376ba648db6afd6e2a352.scope/system.slice/globular-log.service
+             └─193 /usr/lib/globular/bin/log_server
+
+Aug 10 19:09:14 node-4 log_server[193]: {"level":"info","ts":"2026-08-10T19:09:14.708126Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 10 19:09:30 node-4 log_server[193]: {"level":"warn","ts":"2026-08-10T19:09:30.164907Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0005aef00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 10 19:09:30 node-4 log_server[193]: {"level":"warn","ts":"2026-08-10T19:09:30.173268Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0005aef00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 10 19:09:30 node-4 log_server[193]: 2026/08/10 19:09:30 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 10 19:09:30 node-4 log_server[193]: 2026/08/10 19:09:30 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 10 19:09:30 node-4 log_server[193]: 2026/08/10 19:09:30 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 10 19:09:34 node-4 log_server[193]: {"level":"warn","ts":"2026-08-10T19:09:34.191108Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0005aef00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 10 19:09:36 node-4 log_server[193]: {"level":"warn","ts":"2026-08-10T19:09:36.195829Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0005aef00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 10 19:09:36 node-4 log_server[193]: 2026/08/10 19:09:36 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 10 19:09:39 node-4 log_server[193]: 2026/08/10 19:09:39 INFO acc: warmup complete baseline_rtt_ms=20 samples=219 elapsed=5m0s

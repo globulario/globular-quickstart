@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:29:51 UTC; 19min ago
+    Process: 52 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 73 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 98 (event_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 25.6M (peak: 26.6M)
+        CPU: 3.373s
+     CGroup: /system.slice/docker-98c9f00371cba0d41174bc35433238892478111b3c35d44e70376c304ba640d9.scope/system.slice/globular-event.service
+             └─98 /usr/lib/globular/bin/event_server
+
+Aug 11 05:48:12 node-5 event_server[98]: time=2026-08-11T05:48:12.718Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 11 05:48:12 node-5 event_server[98]: time=2026-08-11T05:48:12.918Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 11 05:48:13 node-5 event_server[98]: time=2026-08-11T05:48:13.118Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 11 05:48:13 node-5 event_server[98]: time=2026-08-11T05:48:13.318Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 11 05:48:22 node-5 event_server[98]: 2026/08/11 05:48:22 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = DeadlineExceeded desc = stream terminated by RST_STREAM with error code: CANCEL"
+Aug 11 05:48:46 node-5 event_server[98]: time=2026-08-11T05:48:46.467Z level=INFO msg="Subscribe: ok" channel=cluster.* uuid=209d7f85-ad0d-44bd-a186-4077f7660608
+Aug 11 05:48:46 node-5 event_server[98]: time=2026-08-11T05:48:46.467Z level=INFO msg=subscribed channel=cluster.* uuid=209d7f85-ad0d-44bd-a186-4077f7660608 subscribers=2
+Aug 11 05:48:56 node-5 event_server[98]: time=2026-08-11T05:48:56.830Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=node_agent_handler_c8a09d9e-3813-5357-ab58-93aa410f27fb
+Aug 11 05:48:56 node-5 event_server[98]: time=2026-08-11T05:48:56.830Z level=INFO msg=subscribed channel=operation.* uuid=node_agent_handler_c8a09d9e-3813-5357-ab58-93aa410f27fb subscribers=2
+Aug 11 05:49:09 node-5 event_server[98]: time=2026-08-11T05:49:09.517Z level=INFO msg="subscriber cleanup" uuid=209d7f85-ad0d-44bd-a186-4077f7660608

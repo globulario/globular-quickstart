@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:57:29 UTC; 47min ago
+    Process: 153 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 184 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 203 (cluster_control)
+      Tasks: 22 (limit: 8641)
+     Memory: 47.2M (peak: 59.4M)
+        CPU: 2min 12.759s
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-cluster-controller.service
+             └─203 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 18 00:45:08 node-1 cluster_controller_server[203]: 2026/08/18 00:45:08 dns reconciler: applied to node-2.globular.internal:10006: A=14, AAAA=0, SRV=3 records
+Aug 18 00:45:08 node-1 cluster_controller_server[203]: 2026/08/18 00:45:08 reconcile-workflow: scan_drift found 0 drift items across 5 nodes
+Aug 18 00:45:08 node-1 cluster_controller_server[203]: 2026/08/18 00:45:08 reconcile-workflow: classify_drift received 0 drift items
+Aug 18 00:45:08 node-1 cluster_controller_server[203]: 2026/08/18 00:45:08 actor[controller]: reconcile clean — no remediation needed for globular.internal
+Aug 18 00:45:08 node-1 cluster_controller_server[203]: 2026/08/18 00:45:08 reconcile-workflow: cluster globular.internal is clean — no drift detected
+Aug 18 00:45:08 node-1 cluster_controller_server[203]: 2026/08/18 00:45:08 dns reconciler: applied to node-5.globular.internal:10006: A=14, AAAA=0, SRV=3 records
+Aug 18 00:45:08 node-1 cluster_controller_server[203]: 2026/08/18 00:45:08 reconcile-workflow: finalized (status=completed)
+Aug 18 00:45:08 node-1 cluster_controller_server[203]: 2026/08/18 00:45:08 reconcile-workflow: completed
+Aug 18 00:45:08 node-1 cluster_controller_server[203]: 2026/08/18 00:45:08 workflow cluster.reconcile (correlation=reconcile:1787013904443): SUCCEEDED
+Aug 18 00:45:08 node-1 cluster_controller_server[203]: 2026/08/18 00:45:08 reconcile-workflow: cluster.reconcile completed

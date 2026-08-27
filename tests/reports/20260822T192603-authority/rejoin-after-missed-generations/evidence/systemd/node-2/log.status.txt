@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:24:57 UTC; 10min ago
+    Process: 464 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 514 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 540 (log_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 25.1M (peak: 28.0M)
+        CPU: 1.843s
+     CGroup: /system.slice/docker-8a2300a0f18747bba3241876cd92062f2571f5a82547685010954d3da55c4b12.scope/system.slice/globular-log.service
+             └─540 /usr/lib/globular/bin/log_server
+
+Aug 22 19:25:59 node-2 log_server[540]: time=2026-08-22T19:25:59.869Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 22 19:25:59 node-2 log_server[540]: time=2026-08-22T19:25:59.875Z level=INFO msg="store opened" name=log_entries store=log_entries type=SCYLLADB
+Aug 22 19:25:59 node-2 log_server[540]: time=2026-08-22T19:25:59.875Z level=WARN msg="store write failed (suppressing repeats for 30s)" err="Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 22 19:26:00 node-2 log_server[540]: time=2026-08-22T19:26:00.074Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 22 19:26:00 node-2 log_server[540]: time=2026-08-22T19:26:00.094Z level=INFO msg="store opened" name=log_registry store=log_registry type=SCYLLADB
+Aug 22 19:27:22 node-2 log_server[540]: 2026/08/22 19:27:22 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 22 19:30:19 node-2 log_server[540]: 2026/08/22 19:30:19 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 22 19:34:19 node-2 log_server[540]: 2026/08/22 19:34:19 INFO acc: warmup complete baseline_rtt_ms=20 samples=237 elapsed=9m20s
+Aug 22 19:34:19 node-2 log_server[540]: 2026/08/22 19:34:19 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 22 19:35:20 node-2 log_server[540]: 2026/08/22 19:35:20 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"

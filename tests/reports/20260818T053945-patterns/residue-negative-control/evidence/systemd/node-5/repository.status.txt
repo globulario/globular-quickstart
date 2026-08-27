@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 05:40:07 UTC; 10s ago
+    Process: 142 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 181 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 211 (repository_serv)
+      Tasks: 13 (limit: 8641)
+     Memory: 26.1M (peak: 26.7M)
+        CPU: 329ms
+     CGroup: /system.slice/docker-e78c0a83b4338c9b877248d9746b7899f2416901c79a6edd5643d30705c4cb35.scope/system.slice/globular-repository.service
+             └─211 /usr/lib/globular/bin/repository_server
+
+Aug 18 05:40:08 node-5 repository_server[211]: 2026/08/18 05:40:08 INFO scylladb connected hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=repository rf=3
+Aug 18 05:40:08 node-5 repository_server[211]: time=2026-08-18T05:40:08.118Z level=INFO msg="repository storage initialized — local POSIX CAS only (MinIO is never used for packages)" local=/var/lib/globular/repository
+Aug 18 05:40:08 node-5 repository_server[211]: 2026/08/18 05:40:08 INFO publish-reconciler: started interval=1m0s
+Aug 18 05:40:08 node-5 repository_server[211]: time=2026-08-18T05:40:08.119Z level=INFO msg="service ready" service=repository.PackageRepository port=10003 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=405
+Aug 18 05:40:08 node-5 repository_server[211]: time=2026-08-18T05:40:08.119Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 18 05:40:08 node-5 repository_server[211]: 2026/08/18 05:40:08 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 18 05:40:08 node-5 repository_server[211]: time=2026-08-18T05:40:08.119Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 18 05:40:08 node-5 repository_server[211]: time=2026-08-18T05:40:08.119Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 18 05:40:08 node-5 repository_server[211]: time=2026-08-18T05:40:08.125Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 18 05:40:08 node-5 repository_server[211]: 2026/08/18 05:40:08 INFO metrics listening service=repository.PackageRepository addr=[::]:10001

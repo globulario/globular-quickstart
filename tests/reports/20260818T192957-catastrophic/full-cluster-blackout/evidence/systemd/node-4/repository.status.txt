@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:48 UTC; 25min ago
+    Process: 535 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 552 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 566 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 59.7M (peak: 65.1M swap: 472.0K swap peak: 548.0K)
+        CPU: 53.356s
+     CGroup: /system.slice/docker-c69956e40d44afec6c24aae66a0eb98093a9df7e8d446a0705e3a4916478dce3.scope/system.slice/globular-repository.service
+             └─566 /usr/lib/globular/bin/repository_server
+
+Aug 18 19:37:13 node-4 repository_server[566]: 2026/08/18 19:37:13 INFO scylla: connection established after retries attempts=6
+Aug 18 19:37:15 node-4 repository_server[566]: 2026/08/18 19:37:15 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 18 19:37:28 node-4 repository_server[566]: 2026/08/18 19:37:28 INFO scylladb connected hosts="[10.10.0.11 10.10.0.12]" keyspace=repository rf=2
+Aug 18 19:37:28 node-4 repository_server[566]: 2026/08/18 19:37:28 INFO scylladb reconnected hosts="[10.10.0.11 10.10.0.12]" keyspace=repository rf=2
+Aug 18 19:37:28 node-4 repository_server[566]: time=2026-08-18T19:37:28.354Z level=INFO msg="scylladb reconnected after health check failure"
+Aug 18 19:37:37 node-4 repository_server[566]: 2026/08/18 19:37:37 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 18 19:37:37 node-4 repository_server[566]: 2026/08/18 19:37:37 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=58 baseline_ms=20 window=936 new_window=842
+Aug 18 19:37:37 node-4 repository_server[566]: 2026/08/18 19:37:37 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=51 baseline_ms=20 window=846 new_window=761
+Aug 18 19:38:38 node-4 repository_server[566]: 2026/08/18 19:38:38 INFO acc: AIMD decrease method=/repository.PackageRepository/VerifyArtifact rtt_ms=85 baseline_ms=20 window=1040 new_window=936
+Aug 18 19:38:40 node-4 repository_server[566]: 2026/08/18 19:38:40 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=217 baseline_ms=20 window=943 new_window=848

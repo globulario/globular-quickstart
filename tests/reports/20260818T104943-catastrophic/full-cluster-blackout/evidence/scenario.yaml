@@ -1,0 +1,276 @@
+version: 1
+name: full-cluster-blackout
+description: |
+  Simulate complete control-plane brain death: stop ALL three etcd nodes
+  (node-1, node-2, node-3) simultaneously, leaving the cluster with zero
+  etcd members alive.
+
+  This is the most severe infrastructure failure short of data corruption.
+  With all three etcd members stopped:
+    - No reads or writes are possible to the cluster's source of truth
+    - All services that rely on etcd for config, discovery, or state will
+      fail to start or will be stuck on their last known cached values
+    - No heartbeats can be written → node agent health tracking stops
+    - No workflows can be dispatched or completed
+    - Compute nodes (4, 5) are isolated — their agent has nowhere to register
+
+  What Globular CANNOT do:
+    - Recover from zero-member quorum without operator intervention
+    - Write the quorum_loss alert (etcd is completely offline)
+    - Elect a controller leader (etcd lease required)
+    - Accept any new desired-state changes
+
+  What Globular CAN guarantee:
+    - DATA DURABILITY: Raft log is fsync'd to disk on each member before
+      acknowledging writes. On restart, the log is replayed in full. No
+      committed entry is lost, even after a total cluster stop.
+    - CLEAN RESTART: etcd members use their persisted WAL to restore state.
+      The cluster re-forms via Raft leader election once ≥2 members are online.
+    - STAGGERED OR SIMULTANEOUS RESTART: Both work. The first node to come
+      online waits for a quorum peer before accepting writes.
+
+  Recovery path (operator action required):
+    1. Investigate root cause (hardware failure, power loss, misconfiguration)
+    2. Restart at least 2 of 3 nodes to restore quorum
+    3. Third node resyncs automatically via Raft log replication
+
+  Integrity verdict: PROTECTED — Raft durability prevents data loss.
+  Recovery: automatic after operator restarts at least 2 nodes.
+
+suite: catastrophic
+tags:
+  - catastrophe
+  - etcd-quorum
+  - full-blackout
+  - zero-members
+  - operator-required
+  - data-durability
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy_before
+    probe: cluster.health
+    expect:
+      status: healthy
+      members_gte: 3
+
+  - type: probe
+    id: all_etcd_members_healthy
+    probe: cluster.etcd_members
+    expect:
+      total: 3
+      healthy_gte: 3
+
+  - type: probe
+    id: etcd_writable_pre_blackout
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - type: probe
+    id: controller_registered_before
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+  - type: probe
+    id: workflow_registered_before
+    probe: service.registered
+    params:
+      service: workflow
+    expect:
+      registered: true
+
+baseline:
+  - type: probe
+    id: baseline_health
+    probe: cluster.health
+
+  - type: probe
+    id: baseline_member_count
+    probe: cluster.etcd_members
+
+  - type: probe
+    id: baseline_service_count
+    probe: services.count
+
+  - type: probe
+    id: baseline_installed_packages
+    probe: cluster.installed_packages
+
+  - type: probe
+    id: baseline_write_latency
+    probe: etcd.write_test
+
+steps:
+  # ── Inject total failure: stop all 3 control-plane nodes ───────────────────
+  - id: stop_node1
+    action: chaos.stop_node
+    params:
+      node: node-1
+
+  - id: stop_node2
+    action: chaos.stop_node
+    params:
+      node: node-2
+
+  - id: stop_node3
+    action: chaos.stop_node
+    params:
+      node: node-3
+
+  # Verify all three are confirmed stopped before asserting blackout state
+  - id: wait_all_stopped
+    action: wait
+    params:
+      timeout: 45
+      poll_interval: 5
+      until:
+        probe: node.container_running
+        params:
+          node: node-3
+        expect:
+          running: false
+
+  # ── Observe the blackout state for a fixed window ──────────────────────────
+  # Let the compute nodes (4, 5) experience the full loss of their etcd
+  # backend. Their node agents cannot write heartbeats. Any pending
+  # operations will queue and fail. We observe for 30s.
+  - id: observe_total_blackout
+    action: wait
+    params:
+      timeout: 30
+
+assertions:
+  # ── Verify all 3 control-plane nodes are stopped ───────────────────────────
+  - type: probe
+    id: node1_confirmed_stopped
+    probe: node.container_running
+    params:
+      node: node-1
+    expect:
+      running: false
+
+  - type: probe
+    id: node2_confirmed_stopped
+    probe: node.container_running
+    params:
+      node: node-2
+    expect:
+      running: false
+
+  - type: probe
+    id: node3_confirmed_stopped
+    probe: node.container_running
+    params:
+      node: node-3
+    expect:
+      running: false
+
+  # ── Cluster brain is dead: no etcd, no probe visibility ───────────────────
+  # EXPECTED: cluster.health returns "unknown" because the primary probe
+  # container (node-1) is not running. This is the expected blackout signature.
+  - type: probe
+    id: cluster_brain_dead
+    probe: cluster.health
+    expect:
+      status: unknown
+
+  # EXPECTED: etcd writes fail (container not running)
+  - type: probe
+    id: etcd_write_rejected
+    probe: etcd.write_test
+    expect:
+      success: false
+
+  # ── Compute nodes are still running (isolated but alive) ──────────────────
+  # node-4 and node-5 containers survive the control-plane outage.
+  # Their workloads continue (if any) but cannot report state to etcd.
+  - type: probe
+    id: node4_isolated_but_running
+    probe: node.container_running
+    params:
+      node: node-4
+    expect:
+      running: true
+
+  - type: probe
+    id: node5_isolated_but_running
+    probe: node.container_running
+    params:
+      node: node-5
+    expect:
+      running: true
+
+cleanup:
+  # ── Staggered restart: node-1 first (CA generator) ─────────────────────────
+  - id: start_node1
+    action: chaos.start_node
+    params:
+      node: node-1
+
+  # Wait for node-1's etcd to come online and be writable (2/3 quorum not yet,
+  # but etcd on node-1 alone tries to hold an election — wait for it to timeout
+  # and for the cluster to come up once node-2 joins).
+  # Actually node-1 alone can't form quorum either (needs 2/3).
+  # Start node-2 quickly after to restore quorum.
+  - id: start_node2
+    action: chaos.start_node
+    params:
+      node: node-2
+
+  # Wait for 2/3 quorum (nodes 1+2) before attempting writes
+  - id: wait_two_members_online
+    action: wait
+    params:
+      timeout: 120
+      poll_interval: 10
+      until:
+        probe: cluster.etcd_members
+        expect:
+          healthy_gte: 2
+
+  # Restore node-3
+  - id: start_node3
+    action: chaos.start_node
+    params:
+      node: node-3
+
+  # Wait for full 3/3 quorum
+  - id: wait_full_quorum
+    action: wait
+    params:
+      timeout: 180
+      poll_interval: 15
+      until:
+        probe: cluster.etcd_members
+        expect:
+          healthy_gte: 3
+
+  # ── Data integrity check ───────────────────────────────────────────────────
+  # Services re-register to etcd on startup. Verify at least the core services
+  # are back and the cluster is healthy — confirming Raft log survived blackout.
+  - id: verify_health_after_blackout
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - id: verify_etcd_writable_after_recovery
+    probe: etcd.write_test
+    expect:
+      success: true
+
+  - id: verify_controller_survived
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true

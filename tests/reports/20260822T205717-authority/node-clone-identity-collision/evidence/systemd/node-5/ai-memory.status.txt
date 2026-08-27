@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 21:57:53 UTC; 1min 46s ago
+    Process: 6018 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 6022 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 6025 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 6031 (ai_memory_serve)
+      Tasks: 19 (limit: 8641)
+     Memory: 31.4M (peak: 36.4M)
+        CPU: 1.272s
+     CGroup: /system.slice/docker-8f2c20fa44c525c5f9d44495f4696ab93e352f205e623d4a83e994a0a58a6e0d.scope/system.slice/globular-ai-memory.service
+             └─6031 /usr/lib/globular/bin/ai_memory_server
+
+Aug 22 21:58:06 node-5 ai_memory_server[6031]: 2026/08/22 21:58:06 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 22 21:58:06 node-5 ai_memory_server[6031]: 2026/08/22 21:58:06 WARN keystore: failed to write legacy private key issuer=02:42:0a:0a:00:0f path=/var/lib/globular/keys/02_42_0a_0a_00_0f_private err="open /var/lib/globular/keys/02_42_0a_0a_00_0f_private: permission denied"
+Aug 22 21:58:06 node-5 ai_memory_server[6031]: 2026/08/22 21:58:06 WARN keystore: failed to write legacy public key issuer=02:42:0a:0a:00:0f path=/var/lib/globular/keys/02_42_0a_0a_00_0f_public err="open /var/lib/globular/keys/02_42_0a_0a_00_0f_public: permission denied"
+Aug 22 21:58:08 node-5 ai_memory_server[6031]: time=2026-08-22T21:58:08.527Z level=INFO msg="memory stored" id=8f702d02-9e74-11f1-9b24-02420a0a000f project=globular-services type=debug title="incident: service_crash: globular-scylla-manager-agent.service → ACTION_RESTART_SERVICE (ACTION_FAILED)"
+Aug 22 21:58:15 node-5 ai_memory_server[6031]: 2026/08/22 21:58:15 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/ai_memory.AiMemoryService/Query
+Aug 22 21:58:26 node-5 ai_memory_server[6031]: time=2026-08-22T21:58:26.181Z level=INFO msg="memory updated" id=94e7be31-9e51-11f1-8fb7-02420a0a000d project=globular-services
+Aug 22 21:58:47 node-5 ai_memory_server[6031]: 2026/08/22 21:58:47 ERROR rpc error: code = Internal desc = BehavioralMemoryService.GeneratePromotionCandidate: generate promotion candidate: theme "remediation.cluster.desired_state.absent" has 0 outcome(s) and 0 ungoverned check(s), need at least 2 observation(s) domain=10.10.0.15:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/GeneratePromotionCandidate function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663
+Aug 22 21:58:47 node-5 ai_memory_server[6031]: 2026/08/22 21:58:47 INFO log forwarding enabled address=10.10.0.11:10100
+Aug 22 21:59:23 node-5 ai_memory_server[6031]: time=2026-08-22T21:59:23.347Z level=INFO msg="memory stored" id=bc08f06c-9e74-11f1-9b25-02420a0a000f project=globular-services type=debug title="incident: service_crash: globular-scylla-manager-agent.service → ACTION_RESTART_SERVICE (ACTION_FAILED)"
+Aug 22 21:59:23 node-5 ai_memory_server[6031]: time=2026-08-22T21:59:23.403Z level=INFO msg="memory stored" id=bc11e2f7-9e74-11f1-9b26-02420a0a000f project=globular-services type=debug title="incident: service_crash: globular-scylla-manager-agent.service → ACTION_RESTART_SERVICE (ACTION_FAILED)"

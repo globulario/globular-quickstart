@@ -1,0 +1,17 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:26:29 UTC; 307ms ago
+    Process: 7674 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 7678 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 7681 (cluster_doctor_)
+      Tasks: 10 (limit: 8641)
+     Memory: 7.2M (peak: 7.6M)
+        CPU: 68ms
+     CGroup: /system.slice/docker-9cbf484db170ae0c2e7abe0b6ccaf6884f6851db1bc95966564d78bfe2964b8d.scope/system.slice/globular-cluster-doctor.service
+             └─7681 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 18 19:26:29 node-5 systemd[1]: globular-cluster-doctor.service: Scheduled restart job, restart counter is at 59.
+Aug 18 19:26:29 node-5 systemd[1]: Starting globular-cluster-doctor.service - Globular cluster_doctor...
+Aug 18 19:26:29 node-5 systemd[1]: Started globular-cluster-doctor.service - Globular cluster_doctor.
+Aug 18 19:26:29 node-5 cluster_doctor_server[7681]: 2026/08/18 19:26:29 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 18 19:26:29 node-5 cluster_doctor_server[7681]: 2026/08/18 19:26:29 INFO security: loaded cluster roles from external policy file roles=22

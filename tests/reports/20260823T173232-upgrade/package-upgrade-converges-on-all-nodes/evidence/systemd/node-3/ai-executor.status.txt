@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 17:31:24 UTC; 41min ago
+    Process: 614 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 629 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 655 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 43.2M (peak: 46.8M)
+        CPU: 6.808s
+     CGroup: /system.slice/docker-2933a85b7b1593c7729244973043c5e50a4611956f0941363dbbbe66b1c2a0e2.scope/system.slice/globular-ai-executor.service
+             └─655 /usr/lib/globular/bin/ai_executor_server
+
+Aug 23 17:58:52 node-3 ai_executor_server[655]: time=2026-08-23T17:58:52.784Z level=INFO msg="processing incident" incident_id=4d1530bb-9f1c-11f1-88e0-02420a0a000d rule_id=doctor-finding tier=0 trigger=cluster.finding.created batch_size=31
+Aug 23 17:58:53 node-3 ai_executor_server[655]: time=2026-08-23T17:58:53.084Z level=INFO msg="diagnosis complete" incident_id=4d1530bb-9f1c-11f1-88e0-02420a0a000d root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 23 17:58:53 node-3 ai_executor_server[655]: time=2026-08-23T17:58:53.084Z level=INFO msg="INCIDENT RESOLVED" incident_id=4d1530bb-9f1c-11f1-88e0-02420a0a000d summary="doctor-finding triggered by cluster.finding.created (31 events in batch)" root_cause=unknown_anomaly
+Aug 23 17:58:53 node-3 ai_executor_server[655]: 2026/08/23 17:58:53 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=312 baseline_ms=20 window=22 new_window=19
+Aug 23 18:01:26 node-3 ai_executor_server[655]: time=2026-08-23T18:01:26.307Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 23 18:01:26 node-3 ai_executor_server[655]: time=2026-08-23T18:01:26.387Z level=INFO msg="codex: CLI not found"
+Aug 23 18:06:26 node-3 ai_executor_server[655]: time=2026-08-23T18:06:26.387Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 23 18:06:26 node-3 ai_executor_server[655]: time=2026-08-23T18:06:26.474Z level=INFO msg="codex: CLI not found"
+Aug 23 18:11:26 node-3 ai_executor_server[655]: time=2026-08-23T18:11:26.290Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 23 18:11:26 node-3 ai_executor_server[655]: time=2026-08-23T18:11:26.333Z level=INFO msg="codex: CLI not found"

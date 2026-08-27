@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:29:51 UTC; 17min ago
+    Process: 160 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 205 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 229 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 296 (rbac_server)
+      Tasks: 12 (limit: 8641)
+     Memory: 81.6M (peak: 82.8M)
+        CPU: 774ms
+     CGroup: /system.slice/docker-98c9f00371cba0d41174bc35433238892478111b3c35d44e70376c304ba640d9.scope/system.slice/globular-rbac.service
+             └─296 /usr/lib/globular/bin/rbac_server
+
+Aug 11 05:46:46 node-5 rbac_server[296]: {"level":"info","ts":"2026-08-11T05:46:46.866283Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 05:46:47 node-5 rbac_server[296]: {"level":"warn","ts":"2026-08-11T05:46:47.779301Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00054d0e0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 11 05:46:47 node-5 rbac_server[296]: {"level":"info","ts":"2026-08-11T05:46:47.779357Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 05:46:52 node-5 rbac_server[296]: {"level":"warn","ts":"2026-08-11T05:46:52.445086Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc027d3a3c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 11 05:46:52 node-5 rbac_server[296]: {"level":"info","ts":"2026-08-11T05:46:52.445187Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 05:47:04 node-5 rbac_server[296]: time=2026-08-11T05:47:04.702Z level=WARN msg="dependency health check failed" dep=scylladb err="permissions store reconnect failed: scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.11:9142: i/o timeout"
+Aug 11 05:47:06 node-5 rbac_server[296]: time=2026-08-11T05:47:06.821Z level=INFO msg="permissions store (re)connected" backend=scylla
+Aug 11 05:47:06 node-5 rbac_server[296]: time=2026-08-11T05:47:06.824Z level=INFO msg="dependencies recovered — service is SERVING"
+Aug 11 05:47:07 node-5 rbac_server[296]: 2026/08/11 05:47:07 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10002 new_port=10002 old_proxy=37481 new_proxy=10001
+Aug 11 05:47:08 node-5 rbac_server[296]: 2026/08/11 05:47:08 INFO rbac: flushed permission cache on cross-instance RBAC change

@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:49:48 UTC; 3min 9s ago
+    Process: 22853 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 22857 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 22860 (cluster_control)
+      Tasks: 20 (limit: 8641)
+     Memory: 34.3M (peak: 41.9M)
+        CPU: 4.865s
+     CGroup: /system.slice/docker-125f94d8224fd1635dcec958e8671abd276b2dca5e533a6b55d7697e3fec591c.scope/system.slice/globular-cluster-controller.service
+             └─22860 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 18 10:52:48 node-3 cluster_controller_server[22860]: time=2026-08-18T10:52:48.315Z level=WARN msg="readiness-gate: hard predicates still unmet, continuing to wait" hard_unmet=[not_leader] soft_unmet=[]
+Aug 18 10:52:48 node-3 cluster_controller_server[22860]: 2026/08/18 10:52:48 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)
+Aug 18 10:52:48 node-3 cluster_controller_server[22860]: 2026/08/18 10:52:48 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 18 10:52:48 node-3 cluster_controller_server[22860]: 2026/08/18 10:52:48 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 18 10:52:53 node-3 cluster_controller_server[22860]: 2026/08/18 10:52:53 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10008 host=10.10.0.11 port=10008
+Aug 18 10:52:53 node-3 cluster_controller_server[22860]: 2026/08/18 10:52:53 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10008 host=10.10.0.11 port=10008
+Aug 18 10:52:53 node-3 cluster_controller_server[22860]: 2026/08/18 10:52:53 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10008 host=10.10.0.11 port=10008
+Aug 18 10:52:53 node-3 cluster_controller_server[22860]: 2026/08/18 10:52:53 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10008 host=10.10.0.11 port=10008
+Aug 18 10:52:53 node-3 cluster_controller_server[22860]: 2026/08/18 10:52:53 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10008 host=10.10.0.11 port=10008
+Aug 18 10:52:53 node-3 cluster_controller_server[22860]: 2026/08/18 10:52:53 dns reconciler: endpoint node-2.globular.internal:10006 is now HEALTHY — forcing re-push

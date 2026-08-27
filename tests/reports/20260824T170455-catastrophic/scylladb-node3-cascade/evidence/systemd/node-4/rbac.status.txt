@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:09:27 UTC; 1min 15s ago
+    Process: 141 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 175 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 193 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 287 (rbac_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 207.5M (peak: 208.2M)
+        CPU: 868ms
+     CGroup: /system.slice/docker-46d3e9bf00c9e04118c1a14b2224ddcb115e85cb764bf2551f39a6475b534673.scope/system.slice/globular-rbac.service
+             └─287 /usr/lib/globular/bin/rbac_server
+
+Aug 24 17:09:41 node-4 rbac_server[287]: 2026/08/24 17:09:41 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 24 17:09:43 node-4 rbac_server[287]: 2026/08/24 17:09:43 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 24 17:09:43 node-4 rbac_server[287]: 2026/08/24 17:09:43 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 24 17:09:43 node-4 rbac_server[287]: 2026/08/24 17:09:43 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 24 17:09:43 node-4 rbac_server[287]: 2026/08/24 17:09:43 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 24 17:09:43 node-4 rbac_server[287]: 2026/08/24 17:09:43 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 24 17:09:43 node-4 rbac_server[287]: 2026/08/24 17:09:43 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 24 17:09:49 node-4 rbac_server[287]: 2026/08/24 17:09:49 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 24 17:10:21 node-4 rbac_server[287]: 2026/08/24 17:10:21 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 24 17:10:26 node-4 rbac_server[287]: 2026/08/24 17:10:26 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: i/o timeout

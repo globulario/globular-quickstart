@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:18 UTC; 1min 12s ago
+    Process: 304 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 313 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 321 (authentication_)
+      Tasks: 16 (limit: 8641)
+     Memory: 25.0M (peak: 26.3M)
+        CPU: 396ms
+     CGroup: /system.slice/docker-cfd5ada68a3ca339623f6df7921f9fd5ffefba9fbd39d2998331bb23e8ac8901.scope/system.slice/globular-authentication.service
+             └─321 /usr/lib/globular/bin/authentication_server
+
+Aug 17 17:18:22 node-4 authentication_server[321]: time=2026-08-17T17:18:22.154Z level=INFO msg="InitGrpcServer: gRPC server initialized" service=authentication.AuthenticationService tls=true port=10003
+Aug 17 17:18:22 node-4 authentication_server[321]: time=2026-08-17T17:18:22.154Z level=INFO msg="service ready" service=authentication.AuthenticationService port=10003 proxy=10001 protocol=grpc domain=globular.internal startup_ms=447 version=1.2.312
+Aug 17 17:18:22 node-4 authentication_server[321]: time=2026-08-17T17:18:22.154Z level=INFO msg="starting service" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10003
+Aug 17 17:18:22 node-4 authentication_server[321]: time=2026-08-17T17:18:22.162Z level=INFO msg="policy: loaded permissions from file" service=authentication path=/var/lib/globular/policy/services/authentication/permissions.generated.json count=8
+Aug 17 17:18:22 node-4 authentication_server[321]: time=2026-08-17T17:18:22.162Z level=INFO msg="authz: permission mappings loaded" service=authentication count=8 action_mappings=8
+Aug 17 17:18:22 node-4 authentication_server[321]: time=2026-08-17T17:18:22.162Z level=INFO msg="service started successfully" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10003
+Aug 17 17:18:22 node-4 authentication_server[321]: time=2026-08-17T17:18:22.529Z level=INFO msg=setKey:generate mac=02:42:0a:0a:00:0e
+Aug 17 17:18:23 node-4 authentication_server[321]: time=2026-08-17T17:18:23.122Z level=INFO msg="metrics: proxy port conflict, using free port" service=authentication.AuthenticationService wanted=10001 actual=42527
+Aug 17 17:18:23 node-4 authentication_server[321]: time=2026-08-17T17:18:23.123Z level=INFO msg="metrics listening" service=authentication.AuthenticationService addr=[::]:42527
+Aug 17 17:18:26 node-4 authentication_server[321]: time=2026-08-17T17:18:26.590Z level=WARN msg="port/proxy change detected in desired; restart required to take effect" service=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f old_port=10003 new_port=10003 old_proxy=42527 new_proxy=10001

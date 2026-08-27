@@ -1,0 +1,20 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:19 UTC; 1min 14s ago
+    Process: 136 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 176 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 185 (monitoring_serv)
+      Tasks: 14 (limit: 8641)
+     Memory: 26.1M (peak: 26.9M)
+        CPU: 365ms
+     CGroup: /system.slice/docker-dab92beb975aa2797386e297c00d0bcba2ce8ae5ebc37c549fdba7e1f57d8454.scope/system.slice/globular-monitoring.service
+             └─185 /usr/lib/globular/bin/monitoring_server
+
+Aug 17 17:18:18 node-5 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 17 17:18:19 node-5 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 17 17:18:19 node-5 monitoring_server[185]: PortAllocator range: 10000 - 20000
+Aug 17 17:18:21 node-5 monitoring_server[185]: {"level":"warn","ts":"2026-08-17T17:18:21.102456Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000536b40/10.10.0.15:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 17 17:18:21 node-5 monitoring_server[185]: 2026/08/17 17:18:21 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"
+Aug 17 17:18:22 node-5 monitoring_server[185]: 2026/08/17 17:18:22 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 17 17:18:23 node-5 monitoring_server[185]: time=2026-08-17T17:18:23.080Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=1439
+Aug 17 17:18:23 node-5 monitoring_server[185]: 2026/08/17 17:18:23 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020

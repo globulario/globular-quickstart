@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:41:25 UTC; 11min ago
+    Process: 520 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 543 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 560 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 647 (ai_memory_serve)
+      Tasks: 15 (limit: 8641)
+     Memory: 13.4M (peak: 27.2M)
+        CPU: 616ms
+     CGroup: /system.slice/docker-4908e77bbf99ff3f7b177f626a29d247c8f9ef6a704b5c704dbea822ab1ca85b.scope/system.slice/globular-ai-memory.service
+             └─647 /usr/lib/globular/bin/ai_memory_server
+
+Jul 31 21:52:02 node-5 ai_memory_server[647]: {"level":"warn","ts":"2026-07-31T21:52:02.176494Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004ceb40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:06 node-5 ai_memory_server[647]: {"level":"warn","ts":"2026-07-31T21:52:06.179503Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004ceb40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:10 node-5 ai_memory_server[647]: 2026/07/31 21:52:10 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: i/o timeout
+Jul 31 21:52:11 node-5 ai_memory_server[647]: {"level":"warn","ts":"2026-07-31T21:52:11.179637Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004ceb40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:15 node-5 ai_memory_server[647]: 2026/07/31 21:52:15 ERROR GetClient: constructor returned error function=NewEventService_Client address="" service=event.EventService err="InitClient: no address provided (id=event.EventService)"
+Jul 31 21:52:20 node-5 ai_memory_server[647]: 2026/07/31 21:52:20 gocql: unable to dial control conn 10.10.0.14:9042: dial tcp 10.10.0.14:9042: i/o timeout
+Jul 31 21:52:20 node-5 ai_memory_server[647]: 2026/07/31 21:52:20 gocql: unable to reconnect control connection: dial tcp 10.10.0.14:9042: i/o timeout
+Jul 31 21:52:31 node-5 ai_memory_server[647]: {"level":"warn","ts":"2026-07-31T21:52:31.032554Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004ceb40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:31 node-5 ai_memory_server[647]: {"level":"info","ts":"2026-07-31T21:52:31.032627Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 21:52:31 node-5 ai_memory_server[647]: 2026/07/31 21:52:31 gocql: unable to dial control conn 10.10.0.14:9042: dial tcp 10.10.0.14:9042: i/o timeout

@@ -1,0 +1,22 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 10:23:43 UTC; 24s ago
+    Process: 17917 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 17925 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 17933 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 17939 (workflow_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 21.4M (peak: 22.5M)
+        CPU: 291ms
+     CGroup: /system.slice/docker-d8efe1082b541d0e450667ec1e5e138e924a0a8b77e12befdddf7d2d09f06f59.scope/system.slice/globular-workflow.service
+             └─17939 /usr/lib/globular/bin/workflow_server
+
+Aug 11 10:23:41 node-5 systemd[1]: globular-workflow.service: Failed with result 'exit-code'.
+Aug 11 10:23:43 node-5 systemd[1]: globular-workflow.service: Scheduled restart job, restart counter is at 55.
+Aug 11 10:23:43 node-5 systemd[1]: Starting globular-workflow.service - Globular workflow...
+Aug 11 10:23:43 node-5 systemd[1]: Started globular-workflow.service - Globular workflow.
+Aug 11 10:23:43 node-5 workflow_server[17939]: 2026/08/11 10:23:43 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 11 10:23:43 node-5 workflow_server[17939]: 2026/08/11 10:23:43 INFO security: loaded cluster roles from external policy file roles=22
+Aug 11 10:23:43 node-5 workflow_server[17939]: time=2026-08-11T10:23:43.393Z level=INFO msg="starting workflow service" service=workflow.WorkflowService version=1.2.308 domain=globular.internal
+Aug 11 10:23:47 node-5 workflow_server[17939]: 2026/08/11 10:23:47 INFO InitService: loaded config by name fallback service=workflow.WorkflowService current_id=76438e12-f001-472d-8b05-ec76d1a47c7b config_id=72881a04-0a97-4df8-a191-d2ac81ddc00c
+Aug 11 10:23:47 node-5 workflow_server[17939]: 2026/08/11 10:23:47 INFO InitGrpcServer: gRPC server initialized service=workflow.WorkflowService tls=true port=10220

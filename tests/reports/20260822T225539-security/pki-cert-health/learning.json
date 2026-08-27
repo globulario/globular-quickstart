@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-22T22:57:04.652973Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "pki-cert-health",
+  "suite": "security",
+  "result": "PASS",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "Verify the cluster PKI is healthy on every node.\n\nChecks per node:\n  - Service cert is valid and not expiring within 30 days\n  - VIP (10.10.0.100) is present in the service cert SANs\n    (critical: if VIP is absent, services behind the VIP reject TLS)\n  - CA cert is valid for 30+ days\n  - Ed25519 signing keys are present (identity layer)\n\nThe PKI is the root of security for the entire cluster. A cert that's\nmissing the VIP SAN is the #1 silent failure mode for traffic behind\nthe keepalived VIP (this burned us for 16 hours on nuc \u2014 see session_vip_cert_fix.md).",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

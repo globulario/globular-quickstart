@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 06:44:44 UTC; 39min ago
+    Process: 462 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 479 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 489 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 578 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 24.2M (peak: 31.0M)
+        CPU: 3.785s
+     CGroup: /system.slice/docker-68c9df6406a20dbcc998b92c745cb45d72fad4944896271f0621b9345590a548.scope/system.slice/globular-workflow.service
+             └─578 /usr/lib/globular/bin/workflow_server
+
+Aug 24 07:15:15 node-2 workflow_server[578]: time=2026-08-24T07:15:15.196Z level=INFO msg="retention: pruning complete" deleted=6 remaining=1000
+Aug 24 07:15:40 node-2 workflow_server[578]: 2026/08/24 07:15:40 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListDriftUnresolved
+Aug 24 07:16:40 node-2 workflow_server[578]: 2026/08/24 07:16:40 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=106 baseline_ms=20 window=74 new_window=66
+Aug 24 07:19:40 node-2 workflow_server[578]: 2026/08/24 07:19:40 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListStepOutcomes
+Aug 24 07:19:40 node-2 workflow_server[578]: 2026/08/24 07:19:40 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListRuns
+Aug 24 07:19:40 node-2 workflow_server[578]: 2026/08/24 07:19:40 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=111 baseline_ms=20 window=70 new_window=63
+Aug 24 07:20:40 node-2 workflow_server[578]: 2026/08/24 07:20:40 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListWorkflowSummaries
+Aug 24 07:20:41 node-2 workflow_server[578]: 2026/08/24 07:20:41 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListCorrelationDeferState
+Aug 24 07:21:40 node-2 workflow_server[578]: 2026/08/24 07:21:40 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListDriftUnresolved
+Aug 24 07:22:40 node-2 workflow_server[578]: 2026/08/24 07:22:40 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=106 baseline_ms=20 window=67 new_window=60

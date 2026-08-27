@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 02:27:51 UTC; 8min ago
+    Process: 2422 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 2425 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2429 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 39.6M (peak: 42.4M)
+        CPU: 7.096s
+     CGroup: /system.slice/docker-83b7ff05bb9a31fdf9235b005db83913f82c3bf8d6e8ec141a19cdf5357ffd90.scope/system.slice/globular-repository.service
+             └─2429 /usr/lib/globular/bin/repository_server
+
+Aug 18 02:31:24 node-4 repository_server[2429]: 2026/08/18 02:31:24 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 18 02:32:52 node-4 repository_server[2429]: 2026/08/18 02:32:52 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 18 02:33:23 node-4 repository_server[2429]: 2026/08/18 02:33:23 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 18 02:33:24 node-4 repository_server[2429]: 2026/08/18 02:33:24 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=171 baseline_ms=20 window=209 new_window=188
+Aug 18 02:33:35 node-4 repository_server[2429]: 2026/08/18 02:33:35 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=43 baseline_ms=20 window=282 new_window=253
+Aug 18 02:33:35 node-4 repository_server[2429]: 2026/08/18 02:33:35 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=43 baseline_ms=20 window=255 new_window=229
+Aug 18 02:34:34 node-4 repository_server[2429]: 2026/08/18 02:34:34 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=44 baseline_ms=20 window=477 new_window=429
+Aug 18 02:34:34 node-4 repository_server[2429]: 2026/08/18 02:34:34 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=45 baseline_ms=20 window=429 new_window=386
+Aug 18 02:35:23 node-4 repository_server[2429]: 2026/08/18 02:35:23 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=46 baseline_ms=20 window=580 new_window=522
+Aug 18 02:35:25 node-4 repository_server[2429]: 2026/08/18 02:35:25 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=178 baseline_ms=20 window=615 new_window=553

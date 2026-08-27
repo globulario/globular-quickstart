@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:24:57 UTC; 2min 1s ago
+    Process: 364 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 384 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 390 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 442 (workflow_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 23.6M (peak: 28.2M)
+        CPU: 633ms
+     CGroup: /system.slice/docker-8a2300a0f18747bba3241876cd92062f2571f5a82547685010954d3da55c4b12.scope/system.slice/globular-workflow.service
+             └─442 /usr/lib/globular/bin/workflow_server
+
+Aug 22 19:25:53 node-2 workflow_server[442]: time=2026-08-22T19:25:53.225Z level=WARN msg="scylla_reconnect: attempt failed" attempt=1 err="scylla connect: gocql: unable to create session: unable to connect to initial hosts: dial tcp 10.10.0.13:9042: connect: no route to host"
+Aug 22 19:25:55 node-2 workflow_server[442]: time=2026-08-22T19:25:55.225Z level=INFO msg="scylla_reconnect: attempting reconnect" attempt=2 backoff=2s
+Aug 22 19:25:56 node-2 workflow_server[442]: 2026/08/22 19:25:56 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: no route to host
+Aug 22 19:25:58 node-2 workflow_server[442]: time=2026-08-22T19:25:58.087Z level=WARN msg="dependency health check failed" dep=scylladb err="scylladb: session unavailable (reconnecting)"
+Aug 22 19:25:59 node-2 workflow_server[442]: time=2026-08-22T19:25:59.497Z level=INFO msg=workflow.scylla_reconnected scylla_session_generation=2 scylla_reconnect_attempts=2
+Aug 22 19:26:13 node-2 workflow_server[442]: 2026/08/22 19:26:13 INFO executor lease: orphan detected run_id=reconcile:1787426518924 stale_executor=executor:node-3:494 heartbeat_age_ms=254132
+Aug 22 19:26:13 node-2 workflow_server[442]: time=2026-08-22T19:26:13.090Z level=INFO msg="dependencies recovered — service is SERVING"
+Aug 22 19:26:13 node-2 workflow_server[442]: 2026/08/22 19:26:13 INFO executor lease: claimed orphan, resuming run_id=reconcile:1787426518924
+Aug 22 19:26:13 node-2 workflow_server[442]: 2026/08/22 19:26:13 INFO executor lease: orphan scanner recovered previous_failures=3
+Aug 22 19:26:13 node-2 workflow_server[442]: 2026/08/22 19:26:13 INFO resume: run already terminal, skipping run_id=reconcile:1787426518924 status=RUN_STATUS_SUCCEEDED

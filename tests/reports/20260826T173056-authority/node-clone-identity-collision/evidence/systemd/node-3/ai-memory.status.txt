@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 18:15:27 UTC; 27min ago
+    Process: 466 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 484 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 510 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 622 (ai_memory_serve)
+      Tasks: 21 (limit: 8641)
+     Memory: 31.7M (peak: 41.2M)
+        CPU: 8.427s
+     CGroup: /system.slice/docker-e925f8e3bc6a9d4c506cb1c7e36d0f61cf24256f8244f6a492a8be578aa7d4f3.scope/system.slice/globular-ai-memory.service
+             └─622 /usr/lib/globular/bin/ai_memory_server
+
+Aug 26 18:40:47 node-3 ai_memory_server[622]: 2026/08/26 18:40:47 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=62 baseline_ms=20 window=91 new_window=81
+Aug 26 18:41:10 node-3 ai_memory_server[622]: 2026/08/26 18:41:10 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=52 baseline_ms=20 window=101 new_window=90
+Aug 26 18:41:27 node-3 ai_memory_server[622]: time=2026-08-26T18:41:27.389Z level=INFO msg="memory updated" id=e6964273-a16f-11f1-a40a-02420a0a000d project=globular-services
+Aug 26 18:41:27 node-3 ai_memory_server[622]: 2026/08/26 18:41:27 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=46 baseline_ms=20 window=103 new_window=92
+Aug 26 18:41:27 node-3 ai_memory_server[622]: 2026/08/26 18:41:27 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=50 baseline_ms=20 window=93 new_window=83
+Aug 26 18:41:43 node-3 ai_memory_server[622]: 2026/08/26 18:41:43 ERROR rpc error: code = Internal desc = BehavioralMemoryService.GeneratePromotionCandidate: generate promotion candidate: theme "remediation.cluster.desired_state.absent" has 0 outcome(s) and 0 ungoverned check(s), need at least 2 observation(s) domain=10.10.0.13:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/GeneratePromotionCandidate function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663
+Aug 26 18:42:16 node-3 ai_memory_server[622]: time=2026-08-26T18:42:16.430Z level=INFO msg="memory updated" id=6c58ee1a-a172-11f1-b720-02420a0a000b project=globular-services
+Aug 26 18:42:16 node-3 ai_memory_server[622]: time=2026-08-26T18:42:16.433Z level=INFO msg="memory updated" id=6c58ee1a-a172-11f1-b720-02420a0a000b project=globular-services
+Aug 26 18:42:20 node-3 ai_memory_server[622]: 2026/08/26 18:42:20 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=52 baseline_ms=20 window=139 new_window=125
+Aug 26 18:42:20 node-3 ai_memory_server[622]: 2026/08/26 18:42:20 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=59 baseline_ms=20 window=126 new_window=113

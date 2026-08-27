@@ -1,0 +1,199 @@
+version: 1
+name: crash-during-mutation-is-atomic
+description: |
+  A mutation interrupted by a crash must end in one of exactly two states:
+  it never happened, or it completed exactly once.
+
+  THE FAULT. Begin a real desired-state mutation, then SIGKILL the controller
+  while it is in flight. Let it restart and settle.
+
+      desired-state write begins
+            ↓  SIGKILL — no shutdown, no flush, no cleanup
+      controller restarts with no memory of what it was doing
+            ↓
+      the cluster must resolve to one of two states, and no other
+
+  THE TWO ACCEPTABLE OUTCOMES:
+
+      the operation never happened
+      the operation eventually converged exactly once
+
+  There is no third state, and in particular there is no state called "the
+  workflow says SUCCEEDED". This suite has already established that a child
+  workflow reporting SUCCEEDED is dispatch acknowledgement rather than install
+  proof, so "it says it worked" is not one of the permitted answers.
+
+  WHAT MUST NOT HAPPEN. A desired-state record without its generation. An
+  artifact published twice, or once under two build_ids. A reconcile loop that
+  keeps retrying a half-finished transition. A release marked converged on
+  evidence written before the crash.
+
+  SCOPE, STATED PLAINLY. This kills at ONE boundary — the controller during a
+  desired-state write. The full fault matrix wants a killpoint at every durable
+  transition:
+
+      publish → desired generation → dispatch → download →
+      install → service start → installed receipt → converged
+
+  and running the same scenario once per boundary, with only the two outcomes
+  above permitted at each. That needs deterministic failpoints inside the
+  services, because from outside the harness cannot reliably observe the moment
+  between "package installed" and "receipt written" — the window is small and
+  unobservable, and a timing-based approximation would test whichever boundary it
+  happened to hit rather than the one it named. Until those failpoints exist,
+  this scenario covers the boundary that IS reachable and says so, rather than
+  claiming a matrix it does not run.
+
+suite: authority
+tags:
+  - atomicity
+  - idempotence
+  - crash
+  - killpoint
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: identity_clean_before
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+      conflict: 0
+
+  # A settled cluster means liveness is current, not merely that cluster.health
+  # says "healthy". require_healthy_before_start passed at a moment when liveness
+  # was 927 seconds stale after the blackout scenario, so the next scenario began
+  # mutating a cluster that had not finished recovering — and left residue when
+  # its first steps failed. Asserting liveness here fails fast, with a reason.
+  - type: probe
+    id: liveness_settled_before
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+      nodes_gte: 5
+
+baseline:
+  - type: probe
+    id: desired_state_before
+    probe: cluster.desired_state
+
+  - type: probe
+    id: convergence_before
+    probe: cluster.installed_version_convergence
+    params:
+      package: node-agent
+
+steps:
+  # Either outcome is correct for the mutation itself: the write may land before
+  # the kill or die with it. Only a partial result is forbidden.
+  - type: action
+    id: begin_the_mutation
+    action: ops.set_desired
+    params:
+      node: node-1
+      name: dns
+      version: 1.2.312
+      expect: any
+
+  # No grace period. SIGKILL is the point: a graceful stop would let the
+  # controller finish or roll back, which is the case that already works.
+  - type: action
+    id: kill_the_controller_mid_flight
+    action: chaos.sigkill_service
+    params:
+      node: node-1
+      service: cluster-controller
+
+  - type: action
+    id: allow_restart_and_settle
+    action: wait
+    params:
+      seconds: 240
+      reason: "systemd restarts the controller; it must then resolve the interrupted mutation without operator help"
+
+assertions:
+  # ── Exactly once, or not at all ───────────────────────────────────────────
+  # A mutation applied twice, or applied half-way, surfaces here: one version
+  # with two build_ids is the signature of a retried publish, and a manifest
+  # without its blob is the signature of a write that stopped in the middle.
+  - type: probe
+    id: no_duplicate_or_partial_artifacts
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+      conflict: 0
+      missing_blob: 0
+
+  - type: probe
+    id: desired_state_coherent
+    probe: cluster.desired_state
+    expect:
+      count_gte: 1
+
+  - type: probe
+    id: single_installed_version
+    probe: cluster.installed_version_convergence
+    params:
+      package: node-agent
+    expect:
+      unique_lte: 1
+
+  # ── The release ledger is not lying ───────────────────────────────────────
+  # A release left FAILED, or marked converged on pre-crash evidence, is the
+  # third state this scenario exists to forbid.
+  - type: probe
+    id: no_release_left_failed
+    probe: release.audit
+    expect:
+      failed: 0
+      pending: 0
+
+  # ── It recovered without help ─────────────────────────────────────────────
+  - type: probe
+    id: controller_is_serving_again
+    probe: service.status
+    params:
+      node: node-1
+      service: cluster-controller
+    expect:
+      unit_state: active
+
+  - type: probe
+    id: leadership_reestablished
+    probe: controller.leadership
+    expect:
+      has_leader: true
+
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # ── And is not stuck retrying a half-finished transition ───────────────────
+  - type: probe
+    id: reconcile_not_looping
+    probe: cluster.reconcile_clean
+    params:
+      since: "3 min ago"
+    expect:
+      clean: true
+
+  - type: probe
+    id: liveness_current
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+
+cleanup: []

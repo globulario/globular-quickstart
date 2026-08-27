@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 20:07:09 UTC; 2min 4s ago
+    Process: 60 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 92 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 107 (repository_serv)
+      Tasks: 18 (limit: 8641)
+     Memory: 41.1M (peak: 42.1M)
+        CPU: 2.476s
+     CGroup: /system.slice/docker-c0adeb54c3e856286dee91181b663fe0332b2e8184e7e300172c1db2276e7b0b.scope/system.slice/globular-repository.service
+             └─107 /usr/lib/globular/bin/repository_server
+
+Jul 31 20:07:09 node-4 repository_server[107]: time=2026-07-31T20:07:09.512Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10006
+Jul 31 20:07:09 node-4 repository_server[107]: 2026/07/31 20:07:09 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Jul 31 20:07:09 node-4 repository_server[107]: time=2026-07-31T20:07:09.513Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Jul 31 20:07:09 node-4 repository_server[107]: time=2026-07-31T20:07:09.513Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10006
+Jul 31 20:07:09 node-4 repository_server[107]: time=2026-07-31T20:07:09.515Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=114 already_present=57 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Jul 31 20:07:09 node-4 repository_server[107]: 2026/07/31 20:07:09 INFO metrics listening service=repository.PackageRepository addr=[::]:10001
+Jul 31 20:07:17 node-4 repository_server[107]: 2026/07/31 20:07:17 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Jul 31 20:07:21 node-4 repository_server[107]: 2026/07/31 20:07:21 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Jul 31 20:08:15 node-4 repository_server[107]: 2026/07/31 20:08:15 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Jul 31 20:08:15 node-4 repository_server[107]: 2026/07/31 20:08:15 INFO mesh: gRPC connection established target=node-4.globular.internal:443

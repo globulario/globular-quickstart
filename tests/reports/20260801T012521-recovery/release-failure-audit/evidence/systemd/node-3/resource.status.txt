@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:26:48 UTC; 47s ago
+    Process: 414 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 421 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 435 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 508 (resource_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 21.0M (peak: 22.2M)
+        CPU: 448ms
+     CGroup: /system.slice/docker-2206a9848d7057d723137cf808b7918b201d11357dec3e1e80cb2d0a702c0d6b.scope/system.slice/globular-resource.service
+             └─508 /usr/lib/globular/bin/resource_server
+
+Aug 01 01:26:48 node-3 resource_server[508]: time=2026-08-01T01:26:48.737Z level=INFO msg="startup: RBAC failures will be non-fatal during initialization"
+Aug 01 01:26:48 node-3 resource_server[508]: 2026/08/01 01:26:48 INFO policy: loaded permissions from file service=resource path=/var/lib/globular/policy/services/resource/permissions.generated.json count=74
+Aug 01 01:26:48 node-3 resource_server[508]: PortAllocator range: 10000 - 20000
+Aug 01 01:26:48 node-3 resource_server[508]: time=2026-08-01T01:26:48.804Z level=INFO msg="Scylla process detected, using Scylla as backend store" process="[290 415 479]"
+Aug 01 01:26:48 node-3 resource_server[508]: time=2026-08-01T01:26:48.833Z level=INFO msg="scylla host detected" host=10.10.0.11 method=tcp-probe
+Aug 01 01:26:48 node-3 resource_server[508]: time=2026-08-01T01:26:48.833Z level=INFO msg="starting resource service" service=resource.ResourceService version=1.2.288 domain=globular.internal address=10.10.0.13:8443 port=10000 backend=SCYLLA backend_address=10.10.0.11 bootstrap_mode=true
+Aug 01 01:26:49 node-3 resource_server[508]: 2026/08/01 01:26:49 INFO InitGrpcServer: gRPC server initialized service=resource.ResourceService tls=true port=10004
+Aug 01 01:26:49 node-3 resource_server[508]: time=2026-08-01T01:26:49.003Z level=INFO msg="service ready" service=resource.ResourceService port=10004 proxy=10011 protocol=grpc domain=globular.internal startup_ms=169 pid=508 id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 version=1.2.288 store=SCYLLA
+Aug 01 01:26:49 node-3 resource_server[508]: 2026/08/01 01:26:49 INFO scylla: connected id=local_resource hosts=[10.10.0.11] port=9042 keyspace=local_resource
+Aug 01 01:26:49 node-3 resource_server[508]: time=2026-08-01T01:26:49.044Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042

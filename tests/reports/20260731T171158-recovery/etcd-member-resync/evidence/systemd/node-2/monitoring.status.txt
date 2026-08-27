@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 17:13:00 UTC; 26s ago
+    Process: 540 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 572 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 599 (monitoring_serv)
+      Tasks: 14 (limit: 8641)
+     Memory: 14.3M
+        CPU: 165ms
+     CGroup: /system.slice/docker-af2aadfb3c39485ee1072795441d42f00e2bc57a822f9ef3189ee70b8a240413.scope/system.slice/globular-monitoring.service
+             └─599 /usr/lib/globular/bin/monitoring_server
+
+Jul 31 17:13:00 node-2 monitoring_server[599]: PortAllocator range: 10000 - 20000
+Jul 31 17:13:00 node-2 monitoring_server[599]: 2026/07/31 17:13:00 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10004
+Jul 31 17:13:00 node-2 monitoring_server[599]: time=2026-07-31T17:13:00.812Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10004 proxy=10020 protocol=grpc domain=globular.internal listen_ms=88
+Jul 31 17:13:00 node-2 monitoring_server[599]: 2026/07/31 17:13:00 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Jul 31 17:13:10 node-2 monitoring_server[599]: 2026/07/31 17:13:10 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-2.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:10 node-2 monitoring_server[599]: 2026/07/31 17:13:10 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.13 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:10 node-2 monitoring_server[599]: 2026/07/31 17:13:10 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.13:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:20 node-2 monitoring_server[599]: 2026/07/31 17:13:20 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-2.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:20 node-2 monitoring_server[599]: 2026/07/31 17:13:20 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.15 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"
+Jul 31 17:13:20 node-2 monitoring_server[599]: 2026/07/31 17:13:20 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.15:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-2.globular.internal:8443: Get \"http://node-2.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.12:8443: connect: connection refused"

@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 05:52:17 UTC; 10min ago
+    Process: 5316 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 5319 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 5322 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 444.9M (peak: 704.6M)
+        CPU: 7.450s
+     CGroup: /system.slice/docker-0ec183cf98216386a761950989a5649979754c0fb823897d5cde60eeda1205e5.scope/system.slice/globular-repository.service
+             └─5322 /usr/lib/globular/bin/repository_server
+
+Aug 17 05:52:34 node-5 repository_server[5322]: time=2026-08-17T05:52:34.315Z level=INFO msg="blob-seed: materialized blob into local CAS from staged join package" artifact=core@globular.io%prometheus%3.5.1%linux_amd64%1 staged=/var/lib/globular/packages/pinned/prometheus_3.5.1_linux_amd64.tgz checksum=sha256:8c878815a
+Aug 17 05:52:34 node-5 repository_server[5322]: time=2026-08-17T05:52:34.559Z level=INFO msg="blob-seed: materialized blob into local CAS from staged join package" artifact=core@globular.io%persistence%1.2.312%linux_amd64%1 staged=/var/lib/globular/packages/pinned/persistence_1.2.312_linux_amd64.tgz checksum=sha256:b40f9c3b5
+Aug 17 05:52:34 node-5 repository_server[5322]: time=2026-08-17T05:52:34.559Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=6 seeded_from_staged=50 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 17 05:52:39 node-5 repository_server[5322]: 2026/08/17 05:52:39 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 17 05:52:49 node-5 repository_server[5322]: 2026/08/17 05:52:49 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10004 new_port=10004 old_proxy=41707 new_proxy=10001
+Aug 17 05:52:57 node-5 repository_server[5322]: 2026/08/17 05:52:57 invalid peer or peer with empty schema_version: peer="[HostInfo hostname=\"\" connectAddress=\"10.10.0.11\" peer=\"10.10.0.13\" rpc_address=\"<nil>\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.11\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"\" rack=\"\" host_id=\"1e4333c4-d16a-449c-ae66-a69acbf2293b\" version=\"v0.0.0\" state=UP num_tokens=0]"
+Aug 17 05:57:18 node-5 repository_server[5322]: 2026/08/17 05:57:18 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 17 05:58:37 node-5 repository_server[5322]: 2026/08/17 05:58:37 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 17 06:01:36 node-5 repository_server[5322]: 2026/08/17 06:01:36 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=45 baseline_ms=20 window=487 new_window=438
+Aug 17 06:01:53 node-5 repository_server[5322]: 2026/08/17 06:01:53 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=176 baseline_ms=20 window=622 new_window=559

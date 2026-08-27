@@ -1,0 +1,23 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 10:23:44 UTC; 24s ago
+    Process: 17952 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 17956 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 17959 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 17965 (dns_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 29.0M (peak: 31.1M)
+        CPU: 363ms
+     CGroup: /system.slice/docker-d8efe1082b541d0e450667ec1e5e138e924a0a8b77e12befdddf7d2d09f06f59.scope/system.slice/globular-dns.service
+             └─17965 /usr/lib/globular/bin/dns_server
+
+Aug 11 10:23:48 node-5 dns_server[17965]: time=2026-08-11T10:23:48.144Z level=INFO msg="dns:udp server starting" port=53
+Aug 11 10:23:48 node-5 dns_server[17965]: 2026/08/11 10:23:48 INFO metrics listening service=dns.DnsService addr=[::]:10007
+Aug 11 10:23:49 node-5 dns_server[17965]: 2026/08/11 10:23:49 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 11 10:23:49 node-5 dns_server[17965]: 2026/08/11 10:23:49 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 11 10:23:50 node-5 dns_server[17965]: 2026/08/11 10:23:50 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=dns.zone.read reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl ONE. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"
+Aug 11 10:23:50 node-5 dns_server[17965]: time=2026-08-11T10:23:50.103Z level=ERROR msg="dns dependency degraded; rejecting RPC" err="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: starting (Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 2, alive 0)"
+Aug 11 10:23:51 node-5 dns_server[17965]: time=2026-08-11T10:23:51.191Z level=ERROR msg="dns dependency degraded; rejecting RPC" err="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: starting (Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 2, alive 0)"
+Aug 11 10:23:59 node-5 dns_server[17965]: time=2026-08-11T10:23:59.627Z level=ERROR msg="dns dependency degraded; rejecting RPC" err="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: starting (Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 2, alive 0)"
+Aug 11 10:24:02 node-5 dns_server[17965]: time=2026-08-11T10:24:02.941Z level=INFO msg="dependencies recovered — service is SERVING"
+Aug 11 10:24:04 node-5 dns_server[17965]: time=2026-08-11T10:24:04.727Z level=WARN msg="GetDomains served from in-memory cache after store failure" err="Cannot achieve consistency level for cl LOCAL_QUORUM. Requires 2, alive 0" count=1

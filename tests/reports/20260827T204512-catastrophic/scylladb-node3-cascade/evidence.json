@@ -1,0 +1,599 @@
+{
+  "schema_version": 1,
+  "scenario": "scylladb-node3-cascade",
+  "suite": "catastrophic",
+  "start_time": "2026-08-27T20:51:41.955589Z",
+  "end_time": "2026-08-27T20:54:24.805331Z",
+  "passed": true,
+  "item_count": 30,
+  "items": [
+    {
+      "id": "cluster_healthy_before",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "members_gte": 3
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:24.682093Z"
+    },
+    {
+      "id": "all_etcd_members_healthy",
+      "section": "preconditions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "total": 3,
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:25.027324Z"
+    },
+    {
+      "id": "etcd_writable_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 386
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:25.450170Z"
+    },
+    {
+      "id": "scylladb_service_running",
+      "section": "preconditions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "scylla",
+        "unit": "scylla-server.service"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-1",
+        "service": "scylla"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:25.547389Z"
+    },
+    {
+      "id": "node3_running_before",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:25.577507Z"
+    },
+    {
+      "id": "node1_running_before",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:25.610410Z"
+    },
+    {
+      "id": "node2_running_before",
+      "section": "preconditions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:25.643244Z"
+    },
+    {
+      "id": "baseline_cluster_health",
+      "section": "baseline",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {},
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:26.020148Z"
+    },
+    {
+      "id": "baseline_etcd_members",
+      "section": "baseline",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:26.334756Z"
+    },
+    {
+      "id": "baseline_services",
+      "section": "baseline",
+      "probe": "services.count",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 29,
+        "service_ids": [
+          "099c1762-5cf3-37aa-a777-63ccec0bd7ed",
+          "0fa34ecb-3c60-3d3a-a132-f7adc6764a55",
+          "10595db3-3e7b-343e-9f86-94a6e317585f",
+          "2bfada01-cac5-3bd2-baa1-e56defbc9ff9",
+          "2ed69e66-1c8d-3b83-912c-3b1ccf5dd764",
+          "34c0fd47-fa40-3a81-bfdb-25757ad3080f",
+          "4f442c3f-54b3-3cbe-9155-654c359d5eb3",
+          "5cb3840f-089b-3e7c-98bd-4cfbed1c445f",
+          "6416894b-ec10-387a-a734-fec3fc1e914e",
+          "77e4c8f7-1bef-4839-9cd9-b688d7f09b94",
+          "84723d53-3b03-38a8-b876-50809c8491cd",
+          "8b384839-8473-3b00-9ccc-7cb36fe97836",
+          "93882e68-6037-351e-8ec1-5999aa4b7996",
+          "ae220301-9352-393b-be03-90707f486149",
+          "c5f8d601-bb57-3220-8a20-2f1f34dac0a5",
+          "cluster_controller.ClusterControllerService",
+          "cluster_doctor.ClusterDoctorService",
+          "d335f957-83ad-408a-a79e-48dd163c6a8b",
+          "e6ab9161-9336-3e49-bd82-2c5edc48693c",
+          "f0e8ee87-daf1-3070-ae65-f1a9bf010c9d",
+          "f7ec54e4-c7fd-32c1-a222-80c2b39ad930",
+          "f8b416c0-ea49-3997-8a24-82c26619ca98",
+          "f8b714a7-2c0f-39ff-8bf1-f627649c2df6",
+          "node-agent-metrics-node-1",
+          "node-agent-metrics-node-2",
+          "node-agent-metrics-node-3",
+          "node-agent-metrics-node-4",
+          "node-agent-metrics-node-5",
+          "node_agent.NodeAgentService"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:26.493912Z"
+    },
+    {
+      "id": "stop_scylladb",
+      "section": "steps",
+      "probe": "chaos.kill_service",
+      "params": {
+        "node": "node-1",
+        "service": "scylla",
+        "unit": "scylla-server.service"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.kill_service",
+        "container": "globular-node-1",
+        "unit": "scylla-server.service",
+        "attempts": 1,
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:29.304684Z"
+    },
+    {
+      "id": "stop_node3",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-3",
+        "exit_code": 0,
+        "stdout": "globular-node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:34.944126Z"
+    },
+    {
+      "id": "wait_for_detection",
+      "section": "steps",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "running": false
+      },
+      "result": {
+        "running": false,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:34.976482Z"
+    },
+    {
+      "id": "verify_etcd_survives_cascade",
+      "section": "steps",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 258
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:53:35.269022Z"
+    },
+    {
+      "id": "scylladb_stopped",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "scylla",
+        "unit": "scylla-server.service"
+      },
+      "expect": {
+        "unit_state": "inactive"
+      },
+      "result": {
+        "unit_state": "inactive",
+        "node": "node-1",
+        "service": "scylla"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:05.367705Z"
+    },
+    {
+      "id": "node3_stopped",
+      "section": "assertions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "running": false
+      },
+      "result": {
+        "running": false,
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:05.397221Z"
+    },
+    {
+      "id": "etcd_quorum_maintained",
+      "section": "assertions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_gte": 2
+      },
+      "result": {
+        "total": 3,
+        "healthy": 2,
+        "unhealthy": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:10.671605Z"
+    },
+    {
+      "id": "etcd_isolated_from_scylladb",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 258
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:10.961790Z"
+    },
+    {
+      "id": "controller_survives_cascade",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:11.059407Z"
+    },
+    {
+      "id": "workflow_survives_cascade",
+      "section": "assertions",
+      "probe": "service.registered",
+      "params": {
+        "service": "workflow"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 43
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:11.157635Z"
+    },
+    {
+      "id": "node1_still_running",
+      "section": "assertions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:11.186190Z"
+    },
+    {
+      "id": "node2_still_running",
+      "section": "assertions",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-2"
+      },
+      "expect": {
+        "running": true
+      },
+      "result": {
+        "running": true,
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:11.215100Z"
+    },
+    {
+      "id": "start_scylladb",
+      "section": "cleanup",
+      "probe": "chaos.restart_service",
+      "params": {
+        "node": "node-1",
+        "service": "scylla",
+        "unit": "scylla-server.service"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.restart_service",
+        "container": "globular-node-1",
+        "unit": "scylla-server.service",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:11.287027Z"
+    },
+    {
+      "id": "wait_scylladb_ready",
+      "section": "cleanup",
+      "probe": "service.status",
+      "params": {
+        "node": "node-1",
+        "service": "scylla",
+        "unit": "scylla-server.service"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-1",
+        "service": "scylla"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:21.477824Z"
+    },
+    {
+      "id": "start_node3",
+      "section": "cleanup",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-3",
+        "exit_code": 0,
+        "stdout": "globular-node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:21.790906Z"
+    },
+    {
+      "id": "wait_full_quorum_restored",
+      "section": "cleanup",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "healthy_gte": 3
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:23.397534Z"
+    },
+    {
+      "id": "final_cluster_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:23.778865Z"
+    },
+    {
+      "id": "final_etcd_write",
+      "section": "cleanup",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 264
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:24.075192Z"
+    },
+    {
+      "id": "enforce_restoration",
+      "section": "restoration",
+      "probe": "restoration",
+      "params": {},
+      "expect": {
+        "residue_free": true
+      },
+      "result": {
+        "outstanding_at_teardown": [
+          {
+            "kind": "service_killed",
+            "node": "node-1",
+            "service": "scylla",
+            "unit": "scylla-server.service"
+          }
+        ],
+        "reversed": [],
+        "discharged": [
+          {
+            "kind": "service_killed",
+            "node": "node-1",
+            "service": "scylla",
+            "unit": "scylla-server.service",
+            "recovered_by": "product"
+          }
+        ],
+        "failed": [],
+        "unrestorable": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:24.142899Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-27T20:54:24.805193Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

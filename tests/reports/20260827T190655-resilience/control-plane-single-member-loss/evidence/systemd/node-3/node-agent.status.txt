@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 19:08:22 UTC; 11s ago
+    Process: 198 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 229 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 242 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 41.8M (peak: 44.6M)
+        CPU: 10.724s
+     CGroup: /system.slice/docker-686e08c30f8397aeb316fbd344b32a3b480a30818af99daf150a3df2727e8c11.scope/system.slice/globular-node-agent.service
+             └─242 /usr/lib/globular/bin/node_agent_server
+
+Aug 27 19:08:22 node-3 node_agent_server[242]: 2026/08/27 19:08:22 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 27 19:08:22 node-3 node_agent_server[242]: 2026/08/27 19:08:22 INFO security: loaded cluster roles from external policy file roles=22
+Aug 27 19:08:23 node-3 node_agent_server[242]: 2026/08/27 19:08:23 etcd bootstrap skipped; globular-etcd.service should be managed by systemd
+Aug 27 19:08:23 node-3 node_agent_server[242]: 2026/08/27 19:08:23 TLS enabled: cert=/var/lib/globular/pki/issued/services/service.crt key=/var/lib/globular/pki/issued/services/service.key ca=/var/lib/globular/pki/ca.crt
+Aug 27 19:08:23 node-3 node_agent_server[242]: 2026/08/27 19:08:23 ca-key-sync: DISABLED by default (CA private key must stay on signer authority; enable with EnableCAKeySync())
+Aug 27 19:08:23 node-3 node_agent_server[242]: 2026/08/27 19:08:23 ingress: starting reconciliation loop (interval: 30s)
+Aug 27 19:08:24 node-3 node_agent_server[242]: 2026/08/27 19:08:24 INFO etcd.maintenance_started endpoint=https://10.10.0.13:2379 interval=1m0s min_file_bytes=268435456 min_reclaim_bytes=67108864
+Aug 27 19:08:24 node-3 node_agent_server[242]: 2026/08/27 19:08:24 ingress: keepalived disabled on node a166b992-b66d-53cb-b7c7-61dfa4dd5a36
+Aug 27 19:08:24 node-3 node_agent_server[242]: 2026/08/27 19:08:24 node agent listening on 0.0.0.0:11000
+Aug 27 19:08:24 node-3 node_agent_server[242]: 2026/08/27 19:08:24 metrics listening on 0.0.0.0:11001 (saved=11001, default=11001)

@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:30:18 UTC; 18s ago
+    Process: 5906 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 5910 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 5913 (ai_executor_ser)
+      Tasks: 22 (limit: 8641)
+     Memory: 29.1M (peak: 39.1M)
+        CPU: 372ms
+     CGroup: /system.slice/docker-eaf603c2f39593e684a79b489943b17e4093c415bcd1a02da0f3503cb1e1f052.scope/system.slice/globular-ai-executor.service
+             └─5913 /usr/lib/globular/bin/ai_executor_server
+
+Aug 19 03:30:18 node-3 ai_executor_server[5913]: time=2026-08-19T03:30:18.595Z level=WARN msg="authz: no permission mappings registered — RBAC will resolve raw method paths and deny role-based calls" service=ai_executor expected_path=/var/lib/globular/policy/services/ai_executor/permissions.generated.json
+Aug 19 03:30:18 node-3 ai_executor_server[5913]: time=2026-08-19T03:30:18.595Z level=INFO msg="service started successfully" name=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd port=10018
+Aug 19 03:30:18 node-3 ai_executor_server[5913]: time=2026-08-19T03:30:18.617Z level=INFO msg="job_store: connected to etcd"
+Aug 19 03:30:18 node-3 ai_executor_server[5913]: 2026/08/19 03:30:18 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 19 03:30:18 node-3 ai_executor_server[5913]: time=2026-08-19T03:30:18.631Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]"
+Aug 19 03:30:18 node-3 ai_executor_server[5913]: time=2026-08-19T03:30:18.670Z level=INFO msg="job_store: loaded jobs from etcd" count=44
+Aug 19 03:30:28 node-3 ai_executor_server[5913]: {"level":"warn","ts":"2026-08-19T03:30:28.520393Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000e3860/10.10.0.13:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 19 03:30:28 node-3 ai_executor_server[5913]: {"level":"warn","ts":"2026-08-19T03:30:28.647697Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0000e3860/10.10.0.13:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 19 03:30:28 node-3 ai_executor_server[5913]: 2026/08/19 03:30:28 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 19 03:30:28 node-3 ai_executor_server[5913]: 2026/08/19 03:30:28 INFO mesh: gRPC connection established target=node-3.globular.internal:443

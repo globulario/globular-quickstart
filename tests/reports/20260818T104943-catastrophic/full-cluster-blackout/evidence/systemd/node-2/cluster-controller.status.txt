@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:56:04 UTC; 37s ago
+    Process: 3199 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 3204 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3211 (cluster_control)
+      Tasks: 18 (limit: 8641)
+     Memory: 27.9M (peak: 29.2M)
+        CPU: 532ms
+     CGroup: /system.slice/docker-dfeb0f21b4a15d2274ee4c2f9a90f2df7b12db9efd9b54065d8dd66caea9a965.scope/system.slice/globular-cluster-controller.service
+             └─3211 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 18 10:56:40 node-2 cluster_controller_server[3211]: 2026/08/18 10:56:40 dns reconciler: applied to node-2.globular.internal:10007: A=18, AAAA=0, SRV=4 records
+Aug 18 10:56:40 node-2 cluster_controller_server[3211]: 2026/08/18 10:56:40 dns reconciler: partial success (1/5 instances updated)
+Aug 18 10:56:40 node-2 cluster_controller_server[3211]: 2026/08/18 10:56:40 dns reconciler: SUCCESS - applied generation 3 to 1 domain(s)
+Aug 18 10:56:41 node-2 cluster_controller_server[3211]: time=2026-08-18T10:56:41.170Z level=WARN msg="startupAutoImport: desired state is EMPTY — operator must seed it explicitly via 'globular deploy' or SeedDesiredState RPC. Auto-import from runtime observations is disabled to prevent phantom rematerialization."
+Aug 18 10:56:41 node-2 cluster_controller_server[3211]: 2026/08/18 10:56:41 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10011 host=10.10.0.11 port=10011
+Aug 18 10:56:41 node-2 cluster_controller_server[3211]: time=2026-08-18T10:56:41.179Z level=INFO msg="readiness-gate: all predicates passed"
+Aug 18 10:56:41 node-2 cluster_controller_server[3211]: 2026/08/18 10:56:41 convergence-committer: node=35ac3821-6b90-52eb-a800-41130471770b COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 18 10:56:41 node-2 cluster_controller_server[3211]: 2026/08/18 10:56:41 convergence-committer: node=6400b443-cf38-52da-a683-de2fc5103c0b COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Aug 18 10:56:41 node-2 cluster_controller_server[3211]: 2026/08/18 10:56:41 convergence-committer: committed node=6400b443-cf38-52da-a683-de2fc5103c0b INFRASTRUCTURE/etcd@3.5.14 build_number=0
+Aug 18 10:56:41 node-2 cluster_controller_server[3211]: 2026/08/18 10:56:41 convergence-committer: node=c777633e-6d07-5713-9c4c-deb3317eee25 COMMAND/claude outcome=FAILED_TRANSIENT reason=

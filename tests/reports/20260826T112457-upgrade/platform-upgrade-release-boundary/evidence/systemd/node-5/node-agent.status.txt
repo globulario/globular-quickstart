@@ -1,0 +1,24 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 11:45:32 UTC; 27min ago
+    Process: 8040 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 8044 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 8047 (node_agent_serv)
+      Tasks: 31 (limit: 8641)
+     Memory: 81.1M (peak: 92.2M)
+        CPU: 6min 58.626s
+     CGroup: /system.slice/docker-4b8db66a9626e1ec9facac9e65acbe684a7fb65df8a77f379ebeff4308956853.scope/system.slice/globular-node-agent.service
+             ├─ 8047 /usr/lib/globular/bin/node_agent_server
+             ├─18059 "[systemctl]"
+             └─18060 systemctl show --property=ActiveState --property=SubState --property=Type --property=ExecStart --property=FragmentPath --property=MainPID --property=ExecMainStartTimestamp globular-echo.service
+
+Aug 26 12:11:50 node-5 node_agent_server[8047]: 2026/08/26 12:11:50 nodeagent: reporting 35 installed services (hash=af04d7876ce45f22a664cf8b721e68a67490c048087209e7cc175336de4ef868, sample=[node-exporter ai-router blog monitoring rclone])
+Aug 26 12:11:50 node-5 node_agent_server[8047]: 2026/08/26 12:11:50 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 26 12:11:50 node-5 node_agent_server[8047]: 2026/08/26 12:11:50 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 26 12:11:58 node-5 node_agent_server[8047]: 2026/08/26 12:11:58 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 26 12:11:58 node-5 node_agent_server[8047]: 2026/08/26 12:11:58 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 26 12:12:02 node-5 node_agent_server[8047]: 2026/08/26 12:12:02 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 26 12:12:22 node-5 node_agent_server[8047]: 2026/08/26 12:12:22 nodeagent: reporting 35 installed services (hash=af04d7876ce45f22a664cf8b721e68a67490c048087209e7cc175336de4ef868, sample=[log mail gateway file etcd])
+Aug 26 12:12:28 node-5 node_agent_server[8047]: 2026/08/26 12:12:28 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 26 12:12:28 node-5 node_agent_server[8047]: 2026/08/26 12:12:28 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 26 12:12:32 node-5 node_agent_server[8047]: 2026/08/26 12:12:32 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b

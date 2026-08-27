@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:26:49 UTC; 4s ago
+    Process: 8029 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 8037 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 8043 (event_server)
+      Tasks: 10 (limit: 8641)
+     Memory: 6.6M (peak: 7.2M)
+        CPU: 70ms
+     CGroup: /system.slice/docker-9cbf484db170ae0c2e7abe0b6ccaf6884f6851db1bc95966564d78bfe2964b8d.scope/system.slice/globular-event.service
+             └─8043 /usr/lib/globular/bin/event_server
+
+Aug 18 19:26:49 node-5 systemd[1]: globular-event.service: Scheduled restart job, restart counter is at 18.
+Aug 18 19:26:49 node-5 systemd[1]: Starting globular-event.service - Globular event...
+Aug 18 19:26:49 node-5 systemd[1]: Started globular-event.service - Globular event.
+Aug 18 19:26:49 node-5 event_server[8043]: 2026/08/18 19:26:49 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 18 19:26:49 node-5 event_server[8043]: 2026/08/18 19:26:49 INFO security: loaded cluster roles from external policy file roles=22
+Aug 18 19:26:49 node-5 event_server[8043]: PortAllocator range: 10000 - 20000
+Aug 18 19:26:51 node-5 event_server[8043]: {"level":"warn","ts":"2026-08-18T19:26:51.551529Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002ded20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \\\"crypto/rsa: verification error\\\" while trying to verify candidate authority certificate \\\"Globular Root CA\\\")\""}
+Aug 18 19:26:53 node-5 event_server[8043]: {"level":"warn","ts":"2026-08-18T19:26:53.552503Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002ded20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \\\"crypto/rsa: verification error\\\" while trying to verify candidate authority certificate \\\"Globular Root CA\\\")\""}
+Aug 18 19:26:53 node-5 event_server[8043]: 2026/08/18 19:26:53 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"
+Aug 18 19:26:53 node-5 event_server[8043]: time=2026-08-18T19:26:53.552Z level=INFO msg="starting event service" service=event.EventService version=1.2.312 domain=globular.internal address=10.10.0.15:8443 port=10000

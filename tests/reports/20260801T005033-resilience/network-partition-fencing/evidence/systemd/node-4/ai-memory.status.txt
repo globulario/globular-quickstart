@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:12:37 UTC; 11min ago
+    Process: 598 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 621 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 643 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 722 (ai_memory_serve)
+      Tasks: 20 (limit: 8641)
+     Memory: 31.2M (peak: 34.7M)
+        CPU: 4.863s
+     CGroup: /system.slice/docker-9180d30e9d1ba804a7b09169efb4bbc01eb91329f628cb2e20c93a2f4151a900.scope/system.slice/globular-ai-memory.service
+             └─722 /usr/lib/globular/bin/ai_memory_server
+
+Aug 01 01:23:47 node-4 ai_memory_server[722]: 2026/08/01 01:23:47 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordSignal rtt_ms=6 baseline_ms=1 window=10 new_window=10
+Aug 01 01:23:52 node-4 ai_memory_server[722]: 2026/08/01 01:23:52 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordSignal rtt_ms=4 baseline_ms=1 window=10 new_window=10
+Aug 01 01:23:58 node-4 ai_memory_server[722]: 2026/08/01 01:23:58 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordSignal rtt_ms=5 baseline_ms=1 window=10 new_window=10
+Aug 01 01:23:58 node-4 ai_memory_server[722]: 2026/08/01 01:23:58 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordSignal rtt_ms=8 baseline_ms=1 window=10 new_window=10
+Aug 01 01:24:02 node-4 ai_memory_server[722]: 2026/08/01 01:24:02 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordSignal rtt_ms=4 baseline_ms=1 window=10 new_window=10
+Aug 01 01:24:02 node-4 ai_memory_server[722]: 2026/08/01 01:24:02 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=16 baseline_ms=1 window=10 new_window=10
+Aug 01 01:24:02 node-4 ai_memory_server[722]: 2026/08/01 01:24:02 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordSignal rtt_ms=6 baseline_ms=1 window=10 new_window=10
+Aug 01 01:24:02 node-4 ai_memory_server[722]: 2026/08/01 01:24:02 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=17 baseline_ms=1 window=10 new_window=10
+Aug 01 01:24:13 node-4 ai_memory_server[722]: 2026/08/01 01:24:13 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=3 baseline_ms=1 window=10 new_window=10
+Aug 01 01:24:13 node-4 ai_memory_server[722]: 2026/08/01 01:24:13 ERROR rpc error: code = Internal desc = BehavioralMemoryService.RecordEvidence: record evidence: target signal "signal.probe.32c98929d17d25cb": Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0 domain=10.10.0.14:8443 application=behavioral_memory.BehavioralMemoryService user="" method=/behavioral_memory.BehavioralMemoryService/RecordEvidence function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:632

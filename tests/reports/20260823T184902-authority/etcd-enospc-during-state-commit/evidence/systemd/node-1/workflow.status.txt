@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:45:25 UTC; 4min 22s ago
+    Process: 415 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 429 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 440 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 583 (workflow_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 24.0M (peak: 27.8M)
+        CPU: 2.497s
+     CGroup: /system.slice/docker-7fac91a876a85840c60c302acf724a18f722fb5bd5d00f55ebb1b0ece4798c2c.scope/system.slice/globular-workflow.service
+             └─583 /usr/lib/globular/bin/workflow_server
+
+Aug 23 18:48:40 node-1 workflow_server[583]: time=2026-08-23T18:48:40.890Z level=WARN msg="dependency health check failed" dep=scylladb err="scylladb: session unavailable (reconnecting)"
+Aug 23 18:48:41 node-1 workflow_server[583]: 2026/08/23 18:48:41 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: no route to host
+Aug 23 18:48:41 node-1 workflow_server[583]: 2026/08/23 18:48:41 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 23 18:48:41 node-1 workflow_server[583]: time=2026-08-23T18:48:41.929Z level=WARN msg="scylla_reconnect: attempt failed" attempt=4 err="scylla connect: gocql: unable to create session: unable to connect to initial hosts: dial tcp 10.10.0.11:9042: connect: connection refused"
+Aug 23 18:48:55 node-1 workflow_server[583]: time=2026-08-23T18:48:55.891Z level=WARN msg="dependency health check failed" dep=scylladb err="scylladb: session unavailable (reconnecting)"
+Aug 23 18:49:10 node-1 workflow_server[583]: time=2026-08-23T18:49:10.891Z level=WARN msg="dependency health check failed" dep=scylladb err="scylladb: session unavailable (reconnecting)"
+Aug 23 18:49:11 node-1 workflow_server[583]: time=2026-08-23T18:49:11.930Z level=INFO msg="scylla_reconnect: attempting reconnect" attempt=5 backoff=30s
+Aug 23 18:49:11 node-1 workflow_server[583]: time=2026-08-23T18:49:11.933Z level=INFO msg=workflow.scylla_reconnected scylla_session_generation=3 scylla_reconnect_attempts=8
+Aug 23 18:49:25 node-1 workflow_server[583]: 2026/08/23 18:49:25 INFO executor lease: orphan scanner recovered previous_failures=6
+Aug 23 18:49:25 node-1 workflow_server[583]: time=2026-08-23T18:49:25.894Z level=INFO msg="dependencies recovered — service is SERVING"

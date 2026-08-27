@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 23:47:39 UTC; 28min ago
+    Process: 215 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 230 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 249 (node_agent_serv)
+      Tasks: 41 (limit: 8641)
+     Memory: 107.7M (peak: 131.8M)
+        CPU: 6min 11.252s
+     CGroup: /system.slice/docker-9a63d2117b8538ee4c4f80a487a8a41ef68a018cdf573386eb01dd30a5d6455b.scope/system.slice/globular-node-agent.service
+             └─249 /usr/lib/globular/bin/node_agent_server
+
+Aug 19 00:13:41 node-2 node_agent_server[249]: 2026/08/19 00:13:41 minio-systemd: updated /var/lib/globular/minio/minio.env (generation=1)
+Aug 19 00:13:43 node-2 node_agent_server[249]: 2026/08/19 00:13:43 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 19 00:13:43 node-2 node_agent_server[249]: 2026/08/19 00:13:43 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Aug 19 00:13:43 node-2 node_agent_server[249]: 2026/08/19 00:13:43 nodeagent: reporting 43 installed services (hash=033f0a338bcd6d50e25ecf81ae6e7d3f88228fc9883bf7ac68ab5f5e52831145, sample=[monitoring envoy repository gateway alertmanager])
+Aug 19 00:14:16 node-2 node_agent_server[249]: 2026/08/19 00:14:16 nodeagent: reporting 43 installed services (hash=033f0a338bcd6d50e25ecf81ae6e7d3f88228fc9883bf7ac68ab5f5e52831145, sample=[log etcdctl codex scylla-manager-agent sha256sum])
+Aug 19 00:14:47 node-2 node_agent_server[249]: 2026/08/19 00:14:47 nodeagent: reporting 43 installed services (hash=033f0a338bcd6d50e25ecf81ae6e7d3f88228fc9883bf7ac68ab5f5e52831145, sample=[backup-manager storage prometheus codex ai-memory])
+Aug 19 00:15:18 node-2 node_agent_server[249]: 2026/08/19 00:15:18 nodeagent: reporting 43 installed services (hash=033f0a338bcd6d50e25ecf81ae6e7d3f88228fc9883bf7ac68ab5f5e52831145, sample=[ai-memory envoy restic persistence scylla-manager-agent])
+Aug 19 00:15:23 node-2 node_agent_server[249]: 2026/08/19 00:15:23 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Aug 19 00:15:50 node-2 node_agent_server[249]: 2026/08/19 00:15:50 nodeagent: reporting 43 installed services (hash=033f0a338bcd6d50e25ecf81ae6e7d3f88228fc9883bf7ac68ab5f5e52831145, sample=[sctool persistence prometheus backup-manager event])
+Aug 19 00:15:53 node-2 node_agent_server[249]: 2026/08/19 00:15:53 probe-scylla-health: [mode=NORMAL bootstrap=100%]

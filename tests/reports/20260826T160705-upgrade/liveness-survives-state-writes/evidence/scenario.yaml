@@ -1,0 +1,141 @@
+version: 1
+name: liveness-survives-state-writes
+description: |
+  The controller's persisted node liveness must track reality, no matter how
+  its state writes are optimized.
+
+  THE INCIDENT (2026-08-16). A routine ai-memory package deploy escalated into
+  a full cluster outage. Along the way etcd hit its 2 GiB backend quota and
+  went NOSPACE on 4 of 5 members. Investigating the write volume, an
+  optimization shipped as cluster-controller@1.2.317: the controller's state
+  blob was no longer rewritten when nothing "semantic" had changed, where
+  last_seen, reported_at, capabilities.disk_free_bytes and
+  last_admission_proof.checked_at were all classified as non-semantic
+  observation, plus a 5-minute floor bounding how often observation drift alone
+  could trigger a write.
+
+  The classification was correct about WHAT changes and wrong about WHO reads
+  it. last_seen is not decoration on the state record — it is the liveness
+  signal. Within minutes of the rollout the persisted values were 254-276s
+  stale against the 300s floor, and readers judging node liveness from
+  /globular/clustercontroller/state reported 3 of 5 nodes UNREACHABLE with
+  CRITICAL findings. Every node agent was healthy, listening on its port, and
+  serving. The control plane was lying about the cluster, not observing it.
+
+  The rollback was itself blocked by the desired-state regression floor and
+  needed --allow-regression.
+
+  WHY IT SHIPPED. Four unit tests covered the change. Every one asserted that
+  a write was SKIPPED — the optimization worked, and all four were green. Not
+  one asserted that anything still functioned afterwards. A test that pins a
+  suppression proves the suppression happens; it can never prove the
+  suppression was safe. That is the same shape as a check that cannot fail
+  being indistinguishable from one that passes.
+
+  The justification was also wrong on its own numbers: the measured load was
+  ~78 KB x ~4/min = ~30 MB/hour, against a 1h compaction retention, so this
+  writer's steady-state contribution to the backend is bounded at ~30 MB. It
+  could not have filled 2 GiB. See etcd-backend-does-not-ratchet for what
+  actually did.
+
+  WHAT THIS SCENARIO PINS. On a healthy, idle cluster — where nothing
+  "semantic" is changing and a content-hash optimization is therefore at its
+  most tempting — every node's persisted last_seen must stay fresh. The
+  scenario deliberately waits through a quiet period, because a quiet cluster
+  is exactly the condition under which the 1.2.317 dedup suppressed writes.
+
+  Failure of this scenario means liveness in etcd has drifted from liveness in
+  reality, whatever the mechanism.
+suite: upgrade
+tags:
+  - liveness
+  - etcd
+  - controller
+  - regression
+  - incident-2026-08-16
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # Every node must be reporting a last_seen at all. A node absent from the
+  # blob cannot go stale, and would silently weaken every assertion below.
+  - type: probe
+    id: all_nodes_report_liveness
+    probe: state.liveness_freshness
+    expect:
+      nodes_gte: 5
+
+baseline:
+  - type: probe
+    id: liveness_fresh_at_start
+    probe: state.liveness_freshness
+    expect:
+      max_age_s_lte: 90
+      stale_nodes: 0
+
+steps:
+  # The quiet period is the test. Under the 1.2.317 dedup an idle cluster is
+  # precisely where writes stop: no semantic field changes, so nothing triggers
+  # a persist, and last_seen ages until the floor elapses. 210s comfortably
+  # exceeds a normal heartbeat interval while sitting inside the 300s floor
+  # that shipped — so a reintroduced floor is caught here rather than being
+  # masked by a periodic flush.
+  - type: action
+    id: quiet_period
+    action: wait
+    params:
+      seconds: 210
+      reason: "let the cluster idle — no semantic state change, the exact condition under which the 1.2.317 dedup stopped persisting liveness"
+
+assertions:
+  # ── The property the outage violated ──────────────────────────────────────
+  # 90s is generous against a sub-minute agent heartbeat. Under 1.2.317 this
+  # read 254-276s.
+  - type: probe
+    id: liveness_still_fresh_after_idle
+    probe: state.liveness_freshness
+    expect:
+      max_age_s_lte: 90
+      stale_nodes: 0
+
+  # ── Stated a second way, on purpose ───────────────────────────────────────
+  # Above bounds the worst node; this asserts no node at all crossed the
+  # staleness line. Both held before 1.2.317 and both broke together, and
+  # keeping them separate means a partial regression cannot hide behind an
+  # average.
+  - type: probe
+    id: no_node_is_stale
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+      nodes_gte: 5
+
+  # ── The consequence readers actually saw ──────────────────────────────────
+  # Stale liveness surfaced to operators as UNREACHABLE nodes and CRITICAL
+  # findings. Asserting the downstream verdict as well as the upstream field
+  # means this scenario still fails if some future path derives liveness
+  # differently and goes stale by another route.
+  - type: probe
+    id: doctor_reports_no_errors
+    probe: doctor.report_severity
+    expect:
+      error: 0
+      reachable: true
+
+  - type: probe
+    id: cluster_still_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+cleanup: []

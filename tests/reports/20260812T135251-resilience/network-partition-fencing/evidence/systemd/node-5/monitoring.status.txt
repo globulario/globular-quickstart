@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-12 14:13:32 UTC; 17min ago
+    Process: 159 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 192 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 219 (monitoring_serv)
+      Tasks: 19 (limit: 8641)
+     Memory: 18.3M (peak: 26.2M)
+        CPU: 532ms
+     CGroup: /system.slice/docker-ba9fac652a3405e514249b33ab0346f14fc135e89814b53d3d37f427697e77f5.scope/system.slice/globular-monitoring.service
+             └─219 /usr/lib/globular/bin/monitoring_server
+
+Aug 12 14:28:43 node-5 monitoring_server[219]: {"level":"info","ts":"2026-08-12T14:28:43.00928Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 12 14:29:18 node-5 monitoring_server[219]: {"level":"warn","ts":"2026-08-12T14:29:18.013203Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000398b40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 12 14:29:18 node-5 monitoring_server[219]: {"level":"info","ts":"2026-08-12T14:29:18.013276Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 12 14:29:53 node-5 monitoring_server[219]: {"level":"warn","ts":"2026-08-12T14:29:53.014323Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000398b40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 12 14:29:53 node-5 monitoring_server[219]: {"level":"info","ts":"2026-08-12T14:29:53.01439Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 12 14:30:23 node-5 monitoring_server[219]: {"level":"warn","ts":"2026-08-12T14:30:23.312641Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000b2c780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 12 14:30:25 node-5 monitoring_server[219]: {"level":"warn","ts":"2026-08-12T14:30:25.31358Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000b2c780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 12 14:30:25 node-5 monitoring_server[219]: 2026/08/12 14:30:25 WARN acc: config watcher stopped, will retry err="context deadline exceeded" backoff=5m0s
+Aug 12 14:30:28 node-5 monitoring_server[219]: {"level":"warn","ts":"2026-08-12T14:30:28.016219Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000398b40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 12 14:30:28 node-5 monitoring_server[219]: {"level":"info","ts":"2026-08-12T14:30:28.016279Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

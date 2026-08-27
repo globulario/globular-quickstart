@@ -1,0 +1,24 @@
+● globular-etcd.service - Globular etcd
+     Loaded: loaded (/etc/systemd/system/globular-etcd.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:26:00 UTC; 1min 1s ago
+    Process: 47 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 71 ExecStartPre=/usr/bin/chown globular:globular /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 83 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 103 ExecStartPre=/bin/sh -c chown globular:globular /var/lib/globular/pki/issued/services/service.key /var/lib/globular/pki/issued/services/service.crt 2>/dev/null || true (code=exited, status=0/SUCCESS)
+   Main PID: 136 (etcd)
+      Tasks: 24 (limit: 8641)
+     Memory: 128.0M (peak: 129.1M)
+        CPU: 9.856s
+     CGroup: /system.slice/docker-8e2076f4c40178dcdd9bcfeee512d2325132b3b746cdcd1fa2bc1708e47cfdb0.scope/system.slice/globular-etcd.service
+             └─136 /usr/lib/globular/bin/etcd --config-file /var/lib/globular/config/etcd.yaml
+
+Aug 22 19:26:38 node-3 etcd[136]: {"level":"info","ts":"2026-08-22T19:26:38.707891Z","caller":"mvcc/hash.go:137","msg":"storing new hash","hash":3499690614,"revision":33787,"compact-revision":1}
+Aug 22 19:26:39 node-3 etcd[136]: {"level":"info","ts":"2026-08-22T19:26:39.152084Z","caller":"traceutil/trace.go:171","msg":"trace[1563894921] linearizableReadLoop","detail":"{readStateIndex:278125; appliedIndex:278126; }","duration":"107.03477ms","start":"2026-08-22T19:26:39.045025Z","end":"2026-08-22T19:26:39.15206Z","steps":["trace[1563894921] 'read index received'  (duration: 107.023529ms)","trace[1563894921] 'applied index is now lower than readState.Index'  (duration: 9.307µs)"],"step_count":2}
+Aug 22 19:26:39 node-3 etcd[136]: {"level":"warn","ts":"2026-08-22T19:26:39.152234Z","caller":"etcdserver/util.go:170","msg":"apply request took too long","took":"113.068361ms","expected-duration":"100ms","prefix":"read-only range ","request":"key:\"/globular/services/5cb3840f-089b-3e7c-98bd-4cfbed1c445f/runtime\" ","response":"range_response_count:1 size:144"}
+Aug 22 19:26:39 node-3 etcd[136]: {"level":"info","ts":"2026-08-22T19:26:39.152282Z","caller":"traceutil/trace.go:171","msg":"trace[673860905] range","detail":"{range_begin:/globular/services/5cb3840f-089b-3e7c-98bd-4cfbed1c445f/runtime; range_end:; response_count:1; response_revision:33805; }","duration":"113.1393ms","start":"2026-08-22T19:26:39.039132Z","end":"2026-08-22T19:26:39.152271Z","steps":["trace[673860905] 'agreement among raft nodes before linearized reading'  (duration: 113.023339ms)"],"step_count":1}
+Aug 22 19:26:39 node-3 etcd[136]: {"level":"info","ts":"2026-08-22T19:26:39.465524Z","caller":"v3rpc/maintenance.go:92","msg":"starting defragment"}
+Aug 22 19:26:39 node-3 etcd[136]: {"level":"info","ts":"2026-08-22T19:26:39.516066Z","caller":"backend/backend.go:509","msg":"defragmenting","path":"/var/lib/globular/etcd/member/snap/db","current-db-size-bytes":97787904,"current-db-size":"98 MB","current-db-size-in-use-bytes":1773568,"current-db-size-in-use":"1.8 MB"}
+Aug 22 19:26:39 node-3 etcd[136]: {"level":"info","ts":"2026-08-22T19:26:39.588247Z","caller":"backend/backend.go:561","msg":"finished defragmenting directory","path":"/var/lib/globular/etcd/member/snap/db","current-db-size-bytes-diff":-96329728,"current-db-size-bytes":1458176,"current-db-size":"1.5 MB","current-db-size-in-use-bytes-diff":-323584,"current-db-size-in-use-bytes":1449984,"current-db-size-in-use":"1.4 MB","took":"122.674836ms"}
+Aug 22 19:26:39 node-3 etcd[136]: {"level":"info","ts":"2026-08-22T19:26:39.588295Z","caller":"v3rpc/maintenance.go:100","msg":"finished defragment"}
+Aug 22 19:26:39 node-3 etcd[136]: {"level":"info","ts":"2026-08-22T19:26:39.588315Z","caller":"v3rpc/health.go:61","msg":"grpc service status changed","service":"","status":"SERVING"}
+Aug 22 19:26:54 node-3 etcd[136]: {"level":"warn","ts":"2026-08-22T19:26:54.357712Z","caller":"embed/config_logging.go:169","msg":"rejected connection","remote-addr":"10.10.0.11:60584","server-name":"","error":"EOF"}

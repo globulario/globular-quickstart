@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 19:54:11 UTC; 11min ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 64 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 89 (cluster_control)
+      Tasks: 22 (limit: 8641)
+     Memory: 33.3M (peak: 43.0M)
+        CPU: 31.740s
+     CGroup: /system.slice/docker-c0adeb54c3e856286dee91181b663fe0332b2e8184e7e300172c1db2276e7b0b.scope/system.slice/globular-cluster-controller.service
+             └─89 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 20:05:36 node-4 cluster_controller_server[89]: {"level":"info","ts":"2026-07-31T20:05:36.339918Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 20:05:41 node-4 cluster_controller_server[89]: 2026/07/31 20:05:41 minio-creds: read from /var/lib/globular/minio/credentials (user=globular)
+Jul 31 20:05:41 node-4 cluster_controller_server[89]: 2026/07/31 20:05:41 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)
+Jul 31 20:05:54 node-4 cluster_controller_server[89]: {"level":"warn","ts":"2026-07-31T20:05:54.6983Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00036e780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Canceled desc = context canceled"}
+Jul 31 20:06:00 node-4 cluster_controller_server[89]: {"level":"warn","ts":"2026-07-31T20:06:00.948189Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00051af00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 20:06:01 node-4 cluster_controller_server[89]: {"level":"warn","ts":"2026-07-31T20:06:01.340925Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00036e780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = Canceled desc = context canceled"}
+Jul 31 20:06:03 node-4 cluster_controller_server[89]: {"level":"warn","ts":"2026-07-31T20:06:03.662616Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00051af00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 20:06:04 node-4 cluster_controller_server[89]: {"level":"warn","ts":"2026-07-31T20:06:04.991873Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00051af00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 20:06:04 node-4 cluster_controller_server[89]: 2026/07/31 20:06:04 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Jul 31 20:06:04 node-4 cluster_controller_server[89]: 2026/07/31 20:06:04 INFO mesh: gRPC connection established target=node-4.globular.internal:443

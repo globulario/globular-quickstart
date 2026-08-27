@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:54:11 UTC; 24s ago
+    Process: 193 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 220 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 238 (node_agent_serv)
+      Tasks: 17 (limit: 8641)
+     Memory: 25.0M (peak: 32.0M)
+        CPU: 13.983s
+     CGroup: /system.slice/docker-928b88015d720a8f11737bd2e4cef31a0f068e077aace4373fcff00bacea7705.scope/system.slice/globular-node-agent.service
+             └─238 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 23:54:13 node-4 node_agent_server[238]: 2026/07/31 23:54:13 ingress: spec changed (type: PUT), triggering reconciliation
+Jul 31 23:54:13 node-4 node_agent_server[238]: {"level":"warn","ts":"2026-07-31T23:54:13.760564Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0007843c0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:54:13 node-4 node_agent_server[238]: {"level":"warn","ts":"2026-07-31T23:54:13.760858Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0007843c0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:54:13 node-4 node_agent_server[238]: 2026/07/31 23:54:13 behavioral observation: infra_probe skipped component=etcd node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: connect: connection refused"
+Jul 31 23:54:13 node-4 node_agent_server[238]: 2026/07/31 23:54:13 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Jul 31 23:54:13 node-4 node_agent_server[238]: 2026/07/31 23:54:13 behavioral observation: infra_probe skipped component=envoy node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused"
+Jul 31 23:54:15 node-4 node_agent_server[238]: 2026/07/31 23:54:15 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Internal desc = BehavioralMemoryService.RecordSignal: record signal: put signal: Operation timed out for behavioral_memory.signals - received only 0 responses from 1 CL=QUORUM.
+Jul 31 23:54:26 node-4 node_agent_server[238]: 2026/07/31 23:54:26 event-publisher: connected to event service
+Jul 31 23:54:26 node-4 node_agent_server[238]: 2026/07/31 23:54:26 event-handler: connected to event service
+Jul 31 23:54:26 node-4 node_agent_server[238]: 2026/07/31 23:54:26 event-handler: subscribed to operation.*

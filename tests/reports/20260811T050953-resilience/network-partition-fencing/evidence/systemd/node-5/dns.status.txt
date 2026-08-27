@@ -1,0 +1,23 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:29:51 UTC; 17min ago
+    Process: 304 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 328 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 341 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 367 (dns_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 16.5M (peak: 26.3M)
+        CPU: 890ms
+     CGroup: /system.slice/docker-98c9f00371cba0d41174bc35433238892478111b3c35d44e70376c304ba640d9.scope/system.slice/globular-dns.service
+             └─367 /usr/lib/globular/bin/dns_server
+
+Aug 11 05:46:56 node-5 dns_server[367]: {"level":"warn","ts":"2026-08-11T05:46:56.482545Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001f94a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 11 05:47:00 node-5 dns_server[367]: {"level":"warn","ts":"2026-08-11T05:47:00.483391Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001f94a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 11 05:47:00 node-5 dns_server[367]: 2026/08/11 05:47:00 gocql: unable to dial control conn 10.10.0.12:9042: dial tcp 10.10.0.12:9042: i/o timeout
+Aug 11 05:47:00 node-5 dns_server[367]: 2026/08/11 05:47:00 gocql: unable to connect to any ring node: dial tcp 10.10.0.12:9042: i/o timeout
+Aug 11 05:47:00 node-5 dns_server[367]: 2026/08/11 05:47:00 gocql: control falling back to initial contact points.
+Aug 11 05:47:05 node-5 dns_server[367]: {"level":"warn","ts":"2026-08-11T05:47:05.484296Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001f94a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 11 05:47:05 node-5 dns_server[367]: 2026/08/11 05:47:05 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: i/o timeout
+Aug 11 05:47:07 node-5 dns_server[367]: time=2026-08-11T05:47:07.390Z level=WARN msg="dependency health check failed" dep=scylladb err="gocql: no hosts available in the pool"
+Aug 11 05:47:10 node-5 dns_server[367]: time=2026-08-11T05:47:10.185Z level=ERROR msg="dns dependency degraded; rejecting RPC" err="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (gocql: no hosts available in the pool)"
+Aug 11 05:47:12 node-5 dns_server[367]: time=2026-08-11T05:47:12.954Z level=ERROR msg="dns dependency degraded; rejecting RPC" err="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (gocql: no hosts available in the pool)"

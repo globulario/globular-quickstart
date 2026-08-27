@@ -1,0 +1,136 @@
+version: 1
+name: package-upgrade-converges-on-all-nodes
+description: |
+  A package upgrade must reach every node that requires it, and "converged"
+  must mean observed, not dispatched.
+
+  WHY THIS EXISTS. The 2026-08-16 outage began as an ordinary package deploy.
+  The deploy reported success and the operator moved on; the rollout had not
+  converged, and the gap was found hours later through unrelated symptoms. The
+  suite had 68 scenarios at the time and not one of them exercised an upgrade,
+  which is the single most frequent mutation this platform performs.
+
+  THE DISTINCTION THIS PINS. A child workflow reporting SUCCEEDED is a dispatch
+  acknowledgement, not install proof
+  (reconcile.terminal_success_requires_observed_convergence). A rollout is
+  converged only when every required node proves the expected artifact is
+  installed AND running (rollout.convergence_requires_runtime_proof). Those two
+  are routinely conflated, and the conflation is invisible while the cluster is
+  healthy — it only shows up when one node is slow, partitioned, or missing the
+  blob, which is precisely when it matters.
+
+  Convergence identity is the build_id, not the version-only summary hash
+  (convergence.identity_is_build_id). A version that resolves to two build_ids
+  cannot converge deterministically, so this scenario also refuses to call a
+  rollout healthy while resolution is ambiguous.
+
+  This scenario observes the steady state rather than driving an upgrade
+  itself: it asserts that whatever the cluster currently believes it has
+  deployed is actually deployed, uniformly, everywhere. Run it after any
+  deploy — that is the check the pipeline used to skip.
+suite: upgrade
+tags:
+  - upgrade
+  - convergence
+  - rollout
+  - four-layer
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: nodes_present
+    probe: cluster.nodes
+    expect:
+      count_gte: 5
+
+baseline:
+  - type: probe
+    id: installed_versions_at_start
+    probe: cluster.installed_version_convergence
+    params:
+      package: node-agent
+
+assertions:
+  # ── Layer 3: one version installed, everywhere ────────────────────────────
+  # More than one distinct installed version means the rollout is still in
+  # flight or stuck. Reporting the count rather than a boolean makes a partial
+  # rollout legible instead of just failing.
+  - type: probe
+    id: node_agent_single_version_cluster_wide
+    probe: cluster.installed_version_convergence
+    params:
+      package: node-agent
+    expect:
+      unique_lte: 1
+      nodes_gte: 5
+
+  - type: probe
+    id: cluster_controller_single_version_cluster_wide
+    probe: cluster.installed_version_convergence
+    params:
+      package: cluster-controller
+    expect:
+      unique_lte: 1
+
+  # ── Desired vs installed ──────────────────────────────────────────────────
+  # Never assume Desired == Installed. This is the layer boundary the 4-layer
+  # model exists to keep separate, and the one a green deploy log invites you
+  # to collapse.
+  - type: probe
+    id: no_drift_between_desired_and_installed
+    probe: cluster.reconcile_clean
+    expect:
+      clean: true
+
+  # ── Layer 4: installed is not the same as running ─────────────────────────
+  # Two separate facts. The registry must actually list the services (a matrix
+  # that lost its entries would make every other assertion vacuous), and the
+  # doctor — which is the only component allowed to render a cross-layer health
+  # verdict (bypass_doctor_for_cross_layer_health_finding) — must report no
+  # errors. Deriving "everything is running" here from raw layer reads would be
+  # exactly the forbidden shortcut.
+  - type: probe
+    id: service_registry_is_populated
+    probe: cluster.service_matrix
+    expect:
+      count_gte: 20
+
+  - type: probe
+    id: doctor_reports_no_errors
+    probe: doctor.report_severity
+    expect:
+      error: 0
+      reachable: true
+
+  # ── Deterministic identity ────────────────────────────────────────────────
+  # An ambiguous resolution means convergence cannot be decided at all, so it
+  # is asserted here as part of "converged", not as a separate repository
+  # concern.
+  - type: probe
+    id: resolution_is_deterministic
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+
+  # ── And the liveness that all of the above is read through ────────────────
+  # Every judgement in this scenario depends on node observations being
+  # current. If liveness is stale the rest is unfalsifiable, so it is checked
+  # here too rather than assumed.
+  - type: probe
+    id: liveness_is_current
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+
+cleanup: []

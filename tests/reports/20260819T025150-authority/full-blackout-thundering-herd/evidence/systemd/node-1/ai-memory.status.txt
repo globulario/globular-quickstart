@@ -1,0 +1,20 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:23:14 UTC; 3s ago
+    Process: 2314 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 2319 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 2326 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2339 (ai_memory_serve)
+      Tasks: 12 (limit: 8641)
+     Memory: 6.5M (peak: 7.4M)
+        CPU: 104ms
+     CGroup: /system.slice/docker-ca280363fa2453665805d4ffe29b667a4fb9760e5edf5d71628a9f162a1884b1.scope/system.slice/globular-ai-memory.service
+             └─2339 /usr/lib/globular/bin/ai_memory_server
+
+Aug 19 03:23:14 node-1 systemd[1]: globular-ai-memory.service: Scheduled restart job, restart counter is at 7.
+Aug 19 03:23:14 node-1 systemd[1]: Starting globular-ai-memory.service - Globular ai_memory...
+Aug 19 03:23:14 node-1 systemd[1]: Started globular-ai-memory.service - Globular ai_memory.
+Aug 19 03:23:14 node-1 ai_memory_server[2339]: 2026/08/19 03:23:14 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 19 03:23:14 node-1 ai_memory_server[2339]: 2026/08/19 03:23:14 INFO security: loaded cluster roles from external policy file roles=22
+Aug 19 03:23:14 node-1 ai_memory_server[2339]: PortAllocator range: 10000 - 20000
+Aug 19 03:23:16 node-1 ai_memory_server[2339]: {"level":"warn","ts":"2026-08-19T03:23:16.746916Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003eba40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}

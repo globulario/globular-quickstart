@@ -1,0 +1,33 @@
+● globular-minio.service - Globular MinIO
+     Loaded: loaded (/etc/systemd/system/globular-minio.service; enabled; preset: enabled)
+    Drop-In: /etc/systemd/system/globular-minio.service.d
+             └─distributed.conf
+     Active: active (running) since Mon 2026-08-24 17:09:27 UTC; 1min 12s ago
+    Process: 50 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/minio /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 75 ExecStartPre=/usr/bin/chown -R globular:globular /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 98 ExecStartPre=/usr/bin/chown -R globular:globular /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 125 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 147 ExecStartPre=/usr/bin/chmod 0700 /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 169 ExecStartPre=/bin/sh -c chmod o+x "$(dirname /shared/minio/data)" "$(dirname "$(dirname /shared/minio/data)")" 2>/dev/null || true (code=exited, status=0/SUCCESS)
+    Process: 198 ExecStartPre=/usr/bin/test -w /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 220 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 232 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 248 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+    Process: 263 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+   Main PID: 276 (minio)
+      Tasks: 19 (limit: 8641)
+     Memory: 73.5M (peak: 74.5M)
+        CPU: 1.227s
+     CGroup: /system.slice/docker-8b98724c89d7814ef3d4703a4c42e0cc7bef5b84406d2f3799206f7b685a6043.scope/system.slice/globular-minio.service
+             └─276 /usr/lib/globular/bin/minio server https://10.10.0.11:9000/var/lib/minio/d1/data1 https://10.10.0.11:9000/var/lib/minio/d1/data2 https://10.10.0.12:9000/var/lib/minio/d1/data1 https://10.10.0.12:9000/var/lib/minio/d1/data2 https://10.10.0.13:9000/var/lib/minio/d1/data1 https://10.10.0.13:9000/var/lib/minio/d1/data2 --address 10.10.0.12:9000 --console-address 10.10.0.12:9001
+
+Aug 24 17:09:43 node-2 minio[276]:        1: cmd/erasure-sets.go:231:cmd.(*erasureSets).connectDisks.func2()
+Aug 24 17:09:43 node-2 minio[276]: API: SYSTEM.peers
+Aug 24 17:09:43 node-2 minio[276]: Time: 17:09:43 UTC 08/24/2026
+Aug 24 17:09:43 node-2 minio[276]: DeploymentID: f7aae030-c9b1-4924-b41d-a44cdadd74a7
+Aug 24 17:09:43 node-2 minio[276]: Error: Drive: https://10.10.0.13:9000/var/lib/minio/d1/data1 returned drive not found (*fmt.wrapError)
+Aug 24 17:09:43 node-2 minio[276]:        endpoint="https://10.10.0.13:9000/var/lib/minio/d1/data1"
+Aug 24 17:09:43 node-2 minio[276]:        4: internal/logger/logger.go:261:logger.LogAlwaysIf()
+Aug 24 17:09:43 node-2 minio[276]:        3: cmd/logging.go:65:cmd.peersLogAlwaysIf()
+Aug 24 17:09:43 node-2 minio[276]:        2: cmd/prepare-storage.go:51:cmd.init.init.func23.func52()
+Aug 24 17:09:43 node-2 minio[276]:        1: cmd/erasure-sets.go:231:cmd.(*erasureSets).connectDisks.func2()

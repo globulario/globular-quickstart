@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:24:54 UTC; 1h 38min ago
+    Process: 318 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 335 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 349 (authentication_)
+      Tasks: 19 (limit: 8641)
+     Memory: 20.8M (peak: 27.2M)
+        CPU: 3.732s
+     CGroup: /system.slice/docker-b0ee96061132b593cfc49cfbc92e965d02de7fb7e6500a4382ff6f29bffc0497.scope/system.slice/globular-authentication.service
+             └─349 /usr/lib/globular/bin/authentication_server
+
+Aug 22 20:44:53 node-4 authentication_server[349]: time=2026-08-22T20:44:53.601Z level=WARN msg="AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization" cluster_id=globular.internal method=/authentication.AuthenticationService/Authenticate
+Aug 22 20:44:53 node-4 authentication_server[349]: time=2026-08-22T20:44:53.756Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-4.globular.internal:443
+Aug 22 20:44:53 node-4 authentication_server[349]: time=2026-08-22T20:44:53.760Z level=INFO msg="mesh: gRPC connection established" target=node-4.globular.internal:443
+Aug 22 20:44:53 node-4 authentication_server[349]: time=2026-08-22T20:44:53.893Z level=INFO msg=authenticate:root:ok
+Aug 22 20:44:53 node-4 authentication_server[349]: time=2026-08-22T20:44:53.893Z level=INFO msg="acc: AIMD decrease" method=/authentication.AuthenticationService/Authenticate rtt_ms=291 baseline_ms=20 window=100 new_window=90
+Aug 22 20:45:03 node-4 authentication_server[349]: time=2026-08-22T20:45:03.420Z level=INFO msg=authenticate:root:ok
+Aug 22 20:45:03 node-4 authentication_server[349]: time=2026-08-22T20:45:03.420Z level=INFO msg="acc: AIMD decrease" method=/authentication.AuthenticationService/Authenticate rtt_ms=263 baseline_ms=20 window=90 new_window=81
+Aug 22 20:50:57 node-4 authentication_server[349]: time=2026-08-22T20:50:57.785Z level=WARN msg="AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization" cluster_id=globular.internal method=/authentication.AuthenticationService/Authenticate
+Aug 22 20:50:58 node-4 authentication_server[349]: time=2026-08-22T20:50:58.082Z level=INFO msg=authenticate:root:ok
+Aug 22 20:50:58 node-4 authentication_server[349]: time=2026-08-22T20:50:58.082Z level=INFO msg="acc: AIMD decrease" method=/authentication.AuthenticationService/Authenticate rtt_ms=296 baseline_ms=20 window=81 new_window=72

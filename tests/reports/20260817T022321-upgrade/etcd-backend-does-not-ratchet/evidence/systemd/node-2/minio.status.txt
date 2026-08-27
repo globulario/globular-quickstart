@@ -1,0 +1,33 @@
+● globular-minio.service - Globular MinIO
+     Loaded: loaded (/etc/systemd/system/globular-minio.service; enabled; preset: enabled)
+    Drop-In: /etc/systemd/system/globular-minio.service.d
+             └─distributed.conf
+     Active: active (running) since Sat 2026-08-15 04:25:52 UTC; 1 day 21h ago
+    Process: 50 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/minio /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 65 ExecStartPre=/usr/bin/chown -R globular:globular /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 86 ExecStartPre=/usr/bin/chown -R globular:globular /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 104 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 119 ExecStartPre=/usr/bin/chmod 0700 /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 149 ExecStartPre=/bin/sh -c chmod o+x "$(dirname /shared/minio/data)" "$(dirname "$(dirname /shared/minio/data)")" 2>/dev/null || true (code=exited, status=0/SUCCESS)
+    Process: 183 ExecStartPre=/usr/bin/test -w /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 201 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 222 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 235 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+    Process: 238 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+   Main PID: 245 (minio)
+      Tasks: 27 (limit: 8641)
+     Memory: 118.0M (peak: 195.9M swap: 5.2M swap peak: 5.2M)
+        CPU: 5min 15.155s
+     CGroup: /system.slice/docker-3358e2156c2bb6e2805bb5269993ac7d2d06707cd1fa1721350a1e542fe6b078.scope/system.slice/globular-minio.service
+             └─245 /usr/lib/globular/bin/minio server https://10.10.0.11:9000/var/lib/minio/d1/data1 https://10.10.0.11:9000/var/lib/minio/d1/data2 https://10.10.0.12:9000/var/lib/minio/d1/data1 https://10.10.0.12:9000/var/lib/minio/d1/data2 https://10.10.0.13:9000/var/lib/minio/d1/data1 https://10.10.0.13:9000/var/lib/minio/d1/data2 --address 10.10.0.12:9000 --console-address 10.10.0.12:9001
+
+Aug 16 12:43:54 node-2 minio[245]: Host: 10.10.0.12:9000
+Aug 16 12:43:54 node-2 minio[245]: Error: host https://10.10.0.13:9000 last pong too old (8h33m40.617s); disconnecting (*errors.errorString)
+Aug 16 12:43:54 node-2 minio[245]:        8: internal/logger/logger.go:271:logger.LogIf()
+Aug 16 12:43:54 node-2 minio[245]:        7: internal/grid/connection.go:51:grid.gridLogIf()
+Aug 16 12:43:54 node-2 minio[245]:        6: internal/grid/connection.go:1154:grid.(*Connection).writeStream()
+Aug 16 12:43:54 node-2 minio[245]:        5: internal/grid/connection.go:936:grid.(*Connection).handleMessages()
+Aug 16 12:43:54 node-2 minio[245]:        4: internal/grid/connection.go:824:grid.(*Connection).handleIncoming()
+Aug 16 12:43:54 node-2 minio[245]:        3: internal/grid/manager.go:267:grid.(*Manager).IncomingConn()
+Aug 16 12:43:54 node-2 minio[245]:        2: internal/grid/manager.go:184:cmd.registerDistErasureRouters.(*Manager).Handler.func1()
+Aug 16 12:43:54 node-2 minio[245]:        1: net/http/server.go:2294:http.HandlerFunc.ServeHTTP()

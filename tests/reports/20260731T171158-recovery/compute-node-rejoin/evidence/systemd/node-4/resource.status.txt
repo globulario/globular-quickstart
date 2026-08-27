@@ -1,0 +1,22 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; vendor preset: enabled)
+     Active: active (running) since Fri 2026-07-31 17:11:47 UTC; 19s ago
+    Process: 374 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 388 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 395 (resource_server)
+      Tasks: 12 (limit: 8641)
+     Memory: 12.5M
+        CPU: 157ms
+     CGroup: /system.slice/docker-09f6e3fd0105ea36b64cc1d5223e57d727633cf4b1bc00f5bfd34f72d0eec23a.scope/system.slice/globular-resource.service
+             └─395 /usr/lib/globular/bin/resource_server
+
+Jul 31 17:11:47 node-4 resource_server[395]: 2026/07/31 17:11:47 INFO security: loaded cluster roles from external policy file roles=22
+Jul 31 17:11:47 node-4 resource_server[395]: time=2026-07-31T17:11:47.223Z level=INFO msg="startup: RBAC failures will be non-fatal during initialization"
+Jul 31 17:11:47 node-4 resource_server[395]: PortAllocator range: 10000 - 20000
+Jul 31 17:11:47 node-4 resource_server[395]: time=2026-07-31T17:11:47.259Z level=INFO msg="Scylla process detected, using Scylla as backend store" process=[]
+Jul 31 17:11:47 node-4 resource_server[395]: time=2026-07-31T17:11:47.280Z level=INFO msg="scylla host detected" host=10.10.0.20 method=tcp-probe
+Jul 31 17:11:47 node-4 resource_server[395]: time=2026-07-31T17:11:47.280Z level=INFO msg="starting resource service" service=resource.ResourceService version=1.2.288 domain=globular.internal address=node-4.globular.internal: port=10012 backend=SCYLLA backend_address=10.10.0.20 bootstrap_mode=true
+Jul 31 17:11:47 node-4 resource_server[395]: 2026/07/31 17:11:47 INFO InitGrpcServer: gRPC server initialized service=resource.ResourceService tls=true port=10005
+Jul 31 17:11:47 node-4 resource_server[395]: time=2026-07-31T17:11:47.303Z level=INFO msg="service ready" service=resource.ResourceService port=10005 proxy=10011 protocol=grpc domain=globular.internal startup_ms=22 pid=395 id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 version=1.2.288 store=SCYLLA
+Jul 31 17:11:47 node-4 resource_server[395]: 2026/07/31 17:11:47 INFO scylla: connected id=local_resource hosts=[10.10.0.20] port=9042 keyspace=local_resource
+Jul 31 17:11:47 node-4 resource_server[395]: time=2026-07-31T17:11:47.326Z level=INFO msg="store is running and ready to be used" address=10.10.0.20:9042

@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 00:53:38 UTC; 30min ago
+    Process: 194 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 208 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 220 (cluster_doctor_)
+      Tasks: 22 (limit: 8641)
+     Memory: 33.5M (peak: 38.3M)
+        CPU: 28.754s
+     CGroup: /system.slice/docker-2206a9848d7057d723137cf808b7918b201d11357dec3e1e80cb2d0a702c0d6b.scope/system.slice/globular-cluster-doctor.service
+             └─220 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 01 01:23:19 node-3 cluster_doctor_server[220]: 2026/08/01 01:23:19 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListInfrastructureReleasesJson: rpc error: code = Canceled desc = context canceled
+Aug 01 01:23:59 node-3 cluster_doctor_server[220]: 2026/08/01 01:23:59 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListDesiredBuildIDs: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+Aug 01 01:23:59 node-3 cluster_doctor_server[220]: 2026/08/01 01:23:59 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=GetDesiredState: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+Aug 01 01:24:00 node-3 cluster_doctor_server[220]: 2026/08/01 01:24:00 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb endpoint=10.10.0.12:11000 timeout=30s
+Aug 01 01:24:00 node-3 cluster_doctor_server[220]: 2026/08/01 01:24:00 collector: VerifyPackageIntegrity on node=6400b443-cf38-52da-a683-de2fc5103c0b endpoint=10.10.0.14:11000 timeout=30s
+Aug 01 01:24:00 node-3 cluster_doctor_server[220]: 2026/08/01 01:24:00 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 endpoint=10.10.0.11:11000 timeout=30s
+Aug 01 01:24:05 node-3 cluster_doctor_server[220]: 2026/08/01 01:24:05 collector: data-source fetch failed (reduced harvest) service=node_agent@a166b992-b66d-53cb-b7c7-61dfa4dd5a36 rpc=GetInventory: rpc error: code = DeadlineExceeded desc = stream terminated by RST_STREAM with error code: CANCEL
+Aug 01 01:24:05 node-3 cluster_doctor_server[220]: 2026/08/01 01:24:05 collector: data-source fetch failed (reduced harvest) service=node_agent@35ac3821-6b90-52eb-a800-41130471770b rpc=GetInventory: rpc error: code = DeadlineExceeded desc = context deadline exceeded
+Aug 01 01:24:06 node-3 cluster_doctor_server[220]: 2026/08/01 01:24:06 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 endpoint=10.10.0.13:11000 timeout=30s
+Aug 01 01:24:10 node-3 cluster_doctor_server[220]: 2026/08/01 01:24:10 collector: data-source fetch failed (reduced harvest) service=node_agent@35ac3821-6b90-52eb-a800-41130471770b rpc=ListInstalledPackages: rpc error: code = DeadlineExceeded desc = context deadline exceeded

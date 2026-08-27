@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "scenario": "reconcile-clean",
+  "suite": "functional",
+  "start_time": "2026-08-10T21:46:45.194866Z",
+  "end_time": "2026-08-10T21:51:14.664285Z",
+  "passed": false,
+  "item_count": 8,
+  "items": [
+    {
+      "id": "controller_registered",
+      "section": "preconditions",
+      "probe": "service.registered",
+      "params": {
+        "service": "cluster_controller"
+      },
+      "expect": {
+        "registered": true
+      },
+      "result": {
+        "registered": true,
+        "match_count": 2
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:46:45.968971Z"
+    },
+    {
+      "id": "cluster_health_context",
+      "section": "baseline",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {},
+      "result": {
+        "status": "healthy",
+        "members": 1,
+        "nodes": 1
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:46:46.758040Z"
+    },
+    {
+      "id": "reconcile_baseline",
+      "section": "baseline",
+      "probe": "cluster.reconcile_clean",
+      "params": {
+        "node": "node-1",
+        "since": "30 min ago"
+      },
+      "expect": {},
+      "result": {
+        "clean": false,
+        "error_count": 3,
+        "kinds": "reconcile-workflow: cluster.reconcile FAILED;",
+        "sample": "reconcile-workflow: cluster.reconcile FAILED",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:46:47.035465Z"
+    },
+    {
+      "id": "reconcile_clean_recent",
+      "section": "assertions",
+      "probe": "cluster.reconcile_clean",
+      "params": {
+        "node": "node-1",
+        "since": "2 min ago"
+      },
+      "expect": {
+        "clean": true,
+        "error_count": 0
+      },
+      "result": {
+        "clean": true,
+        "error_count": 0,
+        "kinds": "",
+        "sample": "",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:48:47.324435Z"
+    },
+    {
+      "id": "desired_state_present",
+      "section": "assertions",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {
+        "count_gte": 1
+      },
+      "result": {
+        "count": 24,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "dns",
+          "event",
+          "file",
+          "log",
+          "mcp",
+          "media",
+          "monitoring",
+          "node-agent",
+          "persistence",
+          "rbac",
+          "repository",
+          "resource",
+          "search",
+          "title",
+          "torrent",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:48:47.527446Z"
+    },
+    {
+      "id": "leader_elected",
+      "section": "assertions",
+      "probe": "cluster.leader",
+      "params": {},
+      "expect": {
+        "is_leader": true
+      },
+      "result": {
+        "leader_endpoint": "10.10.0.11:12000",
+        "is_leader": true
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:48:47.718412Z"
+    },
+    {
+      "id": "final_reconcile_state",
+      "section": "cleanup",
+      "probe": "cluster.reconcile_clean",
+      "params": {
+        "node": "node-1",
+        "since": "5 min ago"
+      },
+      "expect": {},
+      "result": {
+        "clean": false,
+        "error_count": 1,
+        "kinds": "reconcile-workflow: cluster.reconcile FAILED;",
+        "sample": "reconcile-workflow: cluster.reconcile FAILED",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-10T21:48:48.102012Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 1,
+          "etcd_member_count": "1",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "missing UNREADABLE backups=0",
+            "node-3": "missing UNREADABLE backups=0",
+            "node-4": "missing UNREADABLE backups=0",
+            "node-5": "missing UNREADABLE backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 2,
+          "etcd_member_count": "3",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": [
+          "etcd_healthy_endpoints: baseline=1 now=2",
+          "etcd_member_count: baseline='1' now='3'",
+          "pki: baseline={'node-1': 'globular:globular/400 readable backups=0', 'node-2': 'missing UNREADABLE backups=0', 'node-3': 'missing UNREADABLE backups=0', 'node-4': 'missing UNREADABLE backups=0', 'node-5': 'missing UNREADABLE backups=0'} now={'node-1': 'globular:globular/400 readable backups=0', 'node-2': 'globular:globular/600 readable backups=0', 'node-3': 'globular:globular/600 readable backups=0', 'node-4': 'globular:globular/600 readable backups=0', 'node-5': 'globular:globular/600 readable backups=0'}"
+        ]
+      },
+      "passed": false,
+      "timestamp": "2026-08-10T21:50:58.912523Z"
+    }
+  ],
+  "result": "POSTCONDITION",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

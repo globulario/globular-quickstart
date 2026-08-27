@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:33:21 UTC; 5min ago
+    Process: 160 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 194 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 215 (cluster_doctor_)
+      Tasks: 21 (limit: 8641)
+     Memory: 43.3M (peak: 44.9M)
+        CPU: 11.750s
+     CGroup: /system.slice/docker-9a67632422a5502a1d64625e1932bb8e76fae6f90cdee0187c70d84ee68d0231.scope/system.slice/globular-cluster-doctor.service
+             └─215 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 18 19:37:36 node-1 cluster_doctor_server[215]: 2026/08/18 19:37:36 collector: data-source fetch failed (reduced harvest) service=node_agent@35ac3821-6b90-52eb-a800-41130471770b rpc=GetServiceRuntimeProof: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \"crypto/rsa: verification error\" while trying to verify candidate authority certificate \"Globular Root CA\")"
+Aug 18 19:37:36 node-1 cluster_doctor_server[215]: 2026/08/18 19:37:36 collector: data-source fetch failed (reduced harvest) service=node_agent@35ac3821-6b90-52eb-a800-41130471770b rpc=GetInfraProbe: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \"crypto/rsa: verification error\" while trying to verify candidate authority certificate \"Globular Root CA\")"
+Aug 18 19:37:36 node-1 cluster_doctor_server[215]: 2026/08/18 19:37:36 collector: VerifyPackageIntegrity on node=6400b443-cf38-52da-a683-de2fc5103c0b endpoint=10.10.0.14:11000 timeout=30s
+Aug 18 19:37:36 node-1 cluster_doctor_server[215]: 2026/08/18 19:37:36 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 endpoint=10.10.0.13:11000 timeout=30s
+Aug 18 19:37:36 node-1 cluster_doctor_server[215]: 2026/08/18 19:37:36 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 endpoint=10.10.0.11:11000 timeout=30s
+Aug 18 19:37:36 node-1 cluster_doctor_server[215]: 2026/08/18 19:37:36 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb endpoint=10.10.0.12:11000 timeout=30s
+Aug 18 19:37:40 node-1 cluster_doctor_server[215]: 2026/08/18 19:37:40 collector: VerifyPackageIntegrity on node=6400b443-cf38-52da-a683-de2fc5103c0b stored report (checked=28, findings=2) in 3.922309282s
+Aug 18 19:37:45 node-1 cluster_doctor_server[215]: 2026/08/18 19:37:45 collector: VerifyPackageIntegrity on node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 stored report (checked=43, findings=6) in 8.199054945s
+Aug 18 19:37:48 node-1 cluster_doctor_server[215]: 2026/08/18 19:37:48 collector: VerifyPackageIntegrity on node=c8a09d9e-3813-5357-ab58-93aa410f27fb stored report (checked=43, findings=5) in 11.9318509s
+Aug 18 19:37:49 node-1 cluster_doctor_server[215]: 2026/08/18 19:37:49 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 stored report (checked=47, findings=4) in 12.518660732s

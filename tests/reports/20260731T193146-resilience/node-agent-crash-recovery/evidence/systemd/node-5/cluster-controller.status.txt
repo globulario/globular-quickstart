@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 19:54:45 UTC; 11min ago
+    Process: 152 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 185 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 210 (cluster_control)
+      Tasks: 20 (limit: 8641)
+     Memory: 19.8M (peak: 31.3M)
+        CPU: 5.111s
+     CGroup: /system.slice/docker-fac1d0fd94bea9a0d7ffcda0c0edf931a4d141c04f8b3de9361d6d7a1ebcb85f.scope/system.slice/globular-cluster-controller.service
+             └─210 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 20:05:19 node-5 cluster_controller_server[210]: 2026/07/31 20:05:19 leader: failed to load state from etcd: context deadline exceeded — keeping local state
+Jul 31 20:05:49 node-5 cluster_controller_server[210]: {"level":"warn","ts":"2026-07-31T20:05:49.720939Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0005a2b40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 20:05:49 node-5 cluster_controller_server[210]: 2026/07/31 20:05:49 leader: failed to load state from etcd: context deadline exceeded — keeping local state
+Jul 31 20:05:50 node-5 cluster_controller_server[210]: {"level":"warn","ts":"2026-07-31T20:05:50.636148Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0005a2b40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 20:05:50 node-5 cluster_controller_server[210]: {"level":"info","ts":"2026-07-31T20:05:50.636211Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 20:05:50 node-5 cluster_controller_server[210]: {"level":"warn","ts":"2026-07-31T20:05:50.678425Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001f1c20/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 20:05:50 node-5 cluster_controller_server[210]: {"level":"info","ts":"2026-07-31T20:05:50.678479Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 20:06:19 node-5 cluster_controller_server[210]: {"level":"warn","ts":"2026-07-31T20:06:19.719859Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0005a2b40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 20:06:19 node-5 cluster_controller_server[210]: 2026/07/31 20:06:19 leader: failed to load state from etcd: context deadline exceeded — keeping local state
+Jul 31 20:06:22 node-5 cluster_controller_server[210]: 2026/07/31 20:06:22 cluster-controller: using cached MAC token for auth

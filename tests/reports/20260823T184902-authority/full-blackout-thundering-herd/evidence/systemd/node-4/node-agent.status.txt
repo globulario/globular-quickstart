@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:47:08 UTC; 3min 2s ago
+    Process: 131 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 168 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 206 (node_agent_serv)
+      Tasks: 23 (limit: 8641)
+     Memory: 26.6M (peak: 35.7M)
+        CPU: 40.694s
+     CGroup: /system.slice/docker-7e69e47bf0d813687d9ef0f9e68075561c53d70636a4160452595c23d81254bd.scope/system.slice/globular-node-agent.service
+             └─206 /usr/lib/globular/bin/node_agent_server
+
+Aug 23 18:49:50 node-4 node_agent_server[206]: 2026/08/23 18:49:50 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 23 18:49:50 node-4 node_agent_server[206]: 2026/08/23 18:49:50 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 23 18:49:50 node-4 node_agent_server[206]: 2026/08/23 18:49:50 grpc-workflow: install-package minio: installed_state matches but globular-minio.service is inactive; attempting repair
+Aug 23 18:49:50 node-4 node_agent_server[206]: 2026/08/23 18:49:50 grpc-workflow: install-package minio: unit inactive by topology hold (node not listed in approved objectstore topology) — leaving held, not repairing
+Aug 23 18:49:52 node-4 node_agent_server[206]: 2026/08/23 18:49:52 nodeagent: reporting 28 installed services (hash=d8281a1cb90968c832645fa1a95f7e2bb91790ed1abd095fbbbd3444b7540393, sample=[claude authentication xds rclone log])
+Aug 23 18:50:10 node-4 node_agent_server[206]: 2026/08/23 18:50:10 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 23 18:50:10 node-4 node_agent_server[206]: 2026/08/23 18:50:10 behavioral observation: infra_probe skipped component=scylladb node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
+Aug 23 18:50:10 node-4 node_agent_server[206]: 2026/08/23 18:50:10 behavioral observation: infra_probe skipped component=etcd node=6400b443-cf38-52da-a683-de2fc5103c0b: record evidence signal.probe.b0453ba576b5d6e3.evidence.0: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
+Aug 23 18:50:11 node-4 node_agent_server[206]: 2026/08/23 18:50:11 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 23 18:50:11 node-4 node_agent_server[206]: 2026/08/23 18:50:11 behavioral observation: infra_probe skipped component=envoy node=6400b443-cf38-52da-a683-de2fc5103c0b: record evidence signal.probe.59d6f3e8ca64dc4d.evidence.0: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused

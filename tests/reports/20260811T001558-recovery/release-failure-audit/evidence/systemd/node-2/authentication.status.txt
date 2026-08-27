@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 00:20:04 UTC; 16s ago
+    Process: 3398 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 3402 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 3405 (authentication_)
+      Tasks: 13 (limit: 8641)
+     Memory: 27.9M (peak: 29.3M)
+        CPU: 339ms
+     CGroup: /system.slice/docker-e40edb83c06b5289318bfe8bebe00df76d573ad3ce004f65def7ef8fba690a49.scope/system.slice/globular-authentication.service
+             └─3405 /usr/lib/globular/bin/authentication_server
+
+Aug 11 00:20:04 node-2 authentication_server[3405]: time=2026-08-11T00:20:04.773Z level=INFO msg="policy: loaded permissions from file" service=authentication path=/var/lib/globular/policy/services/authentication/permissions.generated.json count=8
+Aug 11 00:20:04 node-2 authentication_server[3405]: time=2026-08-11T00:20:04.773Z level=INFO msg="authz: permission mappings loaded" service=authentication count=8 action_mappings=8
+Aug 11 00:20:04 node-2 authentication_server[3405]: time=2026-08-11T00:20:04.773Z level=INFO msg="service started successfully" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10008
+Aug 11 00:20:04 node-2 authentication_server[3405]: time=2026-08-11T00:20:04.822Z level=INFO msg=setKey:generate mac=02:42:0a:0a:00:0c
+Aug 11 00:20:04 node-2 authentication_server[3405]: time=2026-08-11T00:20:04.915Z level=WARN msg="port conflict detected - attempting reallocation" service=authentication.AuthenticationService conflicting_port=10008 attempt=1 max_attempts=5
+Aug 11 00:20:04 node-2 authentication_server[3405]: time=2026-08-11T00:20:04.951Z level=INFO msg="port reallocated successfully" service=authentication.AuthenticationService old_port=10008 new_port=10009
+Aug 11 00:20:05 node-2 authentication_server[3405]: time=2026-08-11T00:20:05.016Z level=INFO msg="metrics: proxy port conflict, using free port" service=authentication.AuthenticationService wanted=10001 actual=43933
+Aug 11 00:20:05 node-2 authentication_server[3405]: time=2026-08-11T00:20:05.016Z level=INFO msg="metrics listening" service=authentication.AuthenticationService addr=[::]:43933
+Aug 11 00:20:15 node-2 authentication_server[3405]: time=2026-08-11T00:20:15.050Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-2.globular.internal:443
+Aug 11 00:20:15 node-2 authentication_server[3405]: time=2026-08-11T00:20:15.053Z level=INFO msg="mesh: gRPC connection established" target=node-2.globular.internal:443

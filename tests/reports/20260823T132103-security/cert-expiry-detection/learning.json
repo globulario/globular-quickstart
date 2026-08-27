@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-23T13:22:04.271815Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "cert-expiry-detection",
+  "suite": "security",
+  "result": "PASS",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "proof": {
+    "claim": "Verify that Globular's PKI invariant enforcement detects an expired TLS certificate\nand triggers automatic repair.\n\nThis test injects an expired self-signed certificate into node-3's service cert path,\nthen verifies that:\n  1. The PKI invariant validator detects the expired/invalid cert\n  2. A cluster event is emitted (controller.invariant.pki_violation)\n  3. The invariant repair step restarts node-agent on the affected node\n  4. The node-agent re-issues a valid cert from the cluster CA\n  5. The cert is back within the valid window after repair\n\nWhat Globular does automatically:\n  - PKI invariant runs during cluster.invariant.enforcement workflow\n  - Checks every node's cert: expiry, SAN coverage, chain validity, CA presence\n  - If violations found: restarts node-agent on affected nodes\n  - node-agent restart triggers certificate re-issuance from the cluster CA\n  - Certs approaching expiry (<30 days) are flagged before they expire\n\nWhat requires operator action:\n  - CA expiry (no automatic renewal \u2014 requires manual CA rotation)\n  - Cert issued with wrong domain/SAN that doesn't match cluster config\n  - mTLS failures caused by cert/CA mismatch between services\n\nThis test directly validates the fix for the VIP cert SAN issue that caused\na 16-hour silent outage (missing 10.0.0.100 in SANs \u2192 all VIP traffic rejected).",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

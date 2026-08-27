@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:47:08 UTC; 1min 48s ago
+    Process: 132 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 173 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 202 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 297 (rbac_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 123.7M (peak: 124.2M)
+        CPU: 787ms
+     CGroup: /system.slice/docker-7e69e47bf0d813687d9ef0f9e68075561c53d70636a4160452595c23d81254bd.scope/system.slice/globular-rbac.service
+             └─297 /usr/lib/globular/bin/rbac_server
+
+Aug 23 18:47:09 node-4 rbac_server[297]: 2026/08/23 18:47:09 INFO metrics: proxy port conflict, using free port service=rbac.RbacService wanted=10001 actual=33475
+Aug 23 18:47:09 node-4 rbac_server[297]: 2026/08/23 18:47:09 INFO metrics listening service=rbac.RbacService addr=[::]:33475
+Aug 23 18:47:17 node-4 rbac_server[297]: 2026/08/23 18:47:17 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 23 18:47:20 node-4 rbac_server[297]: 2026/08/23 18:47:20 INFO addResourceOwner call path=/users/sa resourceType=file subject=sa subjectType=ACCOUNT
+Aug 23 18:47:20 node-4 rbac_server[297]: 2026/08/23 18:47:20 WARN no path found  /users/sa The specified key does not exist.
+Aug 23 18:47:20 node-4 rbac_server[297]: 2026/08/23 18:47:20 WARN fail to remove key  /users/sa :  Entry not found
+Aug 23 18:47:20 node-4 rbac_server[297]: 2026/08/23 18:47:20 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 23 18:47:20 node-4 rbac_server[297]: 2026/08/23 18:47:20 ERROR rpc error: code = Internal desc = {"ErrorMsg":"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0","FileLine":"github.com/globulario/services/golang/rbac/rbac_server/rbac_ownership.go:168","FunctionName":"main.(*server).AddResourceOwner"} domain=10.10.0.14:8443 application=rbac.RbacService user="" method=/rbac.RbacService/AddResourceOwner function=github.com/globulario/services/golang/interceptors.logDeduped file=github.com/globulario/services/golang/interceptors/ServerInterceptors.go:663
+Aug 23 18:47:20 node-4 rbac_server[297]: 2026/08/23 18:47:20 INFO log forwarding enabled address=10.10.0.11:10100
+Aug 23 18:48:21 node-4 rbac_server[297]: 2026/08/23 18:48:21 INFO rbac: flushed permission cache on cross-instance RBAC change

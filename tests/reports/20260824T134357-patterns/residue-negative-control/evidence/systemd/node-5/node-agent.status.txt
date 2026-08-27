@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 13:44:28 UTC; 10s ago
+    Process: 147 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 181 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 207 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 19.8M (peak: 28.6M)
+        CPU: 9.819s
+     CGroup: /system.slice/docker-0019717d109dcbe8ae8a2e3049ca849a069a7242b4b139e6a568cf789eeb4717.scope/system.slice/globular-node-agent.service
+             └─207 /usr/lib/globular/bin/node_agent_server
+
+Aug 24 13:44:28 node-5 node_agent_server[207]: 2026/08/24 13:44:28 etcd bootstrap skipped; globular-etcd.service should be managed by systemd
+Aug 24 13:44:28 node-5 node_agent_server[207]: 2026/08/24 13:44:28 TLS enabled: cert=/var/lib/globular/pki/issued/services/service.crt key=/var/lib/globular/pki/issued/services/service.key ca=/var/lib/globular/pki/ca.crt
+Aug 24 13:44:28 node-5 node_agent_server[207]: 2026/08/24 13:44:28 ca-key-sync: DISABLED by default (CA private key must stay on signer authority; enable with EnableCAKeySync())
+Aug 24 13:44:29 node-5 node_agent_server[207]: 2026/08/24 13:44:29 ingress: starting reconciliation loop (interval: 30s)
+Aug 24 13:44:29 node-5 node_agent_server[207]: 2026/08/24 13:44:29 INFO etcd.maintenance_started endpoint=https://10.10.0.15:2379 interval=1m0s min_file_bytes=268435456 min_reclaim_bytes=67108864
+Aug 24 13:44:29 node-5 node_agent_server[207]: 2026/08/24 13:44:29 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 24 13:44:29 node-5 node_agent_server[207]: 2026/08/24 13:44:29 node agent listening on 0.0.0.0:11000
+Aug 24 13:44:29 node-5 node_agent_server[207]: 2026/08/24 13:44:29 metrics listening on 0.0.0.0:11001 (saved=11001, default=11001)
+Aug 24 13:44:30 node-5 node_agent_server[207]: 2026/08/24 13:44:30 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 24 13:44:30 node-5 node_agent_server[207]: 2026/08/24 13:44:30 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b

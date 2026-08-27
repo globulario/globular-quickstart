@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; disabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 17:31:24 UTC; 4min 0s ago
+    Process: 413 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 419 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 428 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 456 (resource_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 27.1M (peak: 28.5M)
+        CPU: 884ms
+     CGroup: /system.slice/docker-2933a85b7b1593c7729244973043c5e50a4611956f0941363dbbbe66b1c2a0e2.scope/system.slice/globular-resource.service
+             └─456 /usr/lib/globular/bin/resource_server
+
+Aug 23 17:31:24 node-3 resource_server[456]: time=2026-08-23T17:31:24.502Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042
+Aug 23 17:31:24 node-3 resource_server[456]: 2026/08/23 17:31:24 error: failed to connect to "[HostInfo hostname=\"10.10.0.12\" connectAddress=\"10.10.0.12\" peer=\"10.10.0.12\" rpc_address=\"10.10.0.12\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.12\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"afd3206e-ec00-4f81-91c3-bb1b12fcc93c\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: gocql: connection closed waiting for response
+Aug 23 17:31:24 node-3 resource_server[456]: 2026/08/23 17:31:24 error: failed to connect to "[HostInfo hostname=\"10.10.0.12\" connectAddress=\"10.10.0.12\" peer=\"10.10.0.12\" rpc_address=\"10.10.0.12\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.12\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"afd3206e-ec00-4f81-91c3-bb1b12fcc93c\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: EOF
+Aug 23 17:31:25 node-3 resource_server[456]: 2026/08/23 17:31:25 WARN scylla: Count fallback to scan; consider raw CQL with PK WHERE table=local_resource.accounts
+Aug 23 17:31:25 node-3 resource_server[456]: time=2026-08-23T17:31:25.430Z level=ERROR msg="fail to create account dir" error="failed to seed sa account: account with name sa already exist!"
+Aug 23 17:31:25 node-3 resource_server[456]: 2026/08/23 17:31:25 INFO metrics: proxy port conflict, using free port service=resource.ResourceService wanted=10011 actual=44599
+Aug 23 17:31:25 node-3 resource_server[456]: 2026/08/23 17:31:25 INFO metrics listening service=resource.ResourceService addr=[::]:44599
+Aug 23 17:31:30 node-3 resource_server[456]: 2026/08/23 17:31:30 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 23 17:32:25 node-3 resource_server[456]: 2026/08/23 17:32:25 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 23 17:32:25 node-3 resource_server[456]: 2026/08/23 17:32:25 INFO mesh: gRPC connection established target=node-3.globular.internal:443

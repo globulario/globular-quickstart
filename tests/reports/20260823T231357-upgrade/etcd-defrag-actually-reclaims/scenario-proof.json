@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-23T23:15:58.922889Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/upgrade/etcd-defrag-actually-reclaims.yaml",
+  "scenario": "etcd-defrag-actually-reclaims",
+  "suite": "upgrade",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "The node-agent maintenance loop must actually reclaim space, not merely start.\n\nWHY THIS EXISTS. etcd-backend-does-not-ratchet asserts defrag_scheduled=true,\nwhich becomes true the moment the loop logs etcd.maintenance_started at boot.\nOn the first cluster built with the fix, that assertion passed while the\nmeasured reality was:\n\n    loops_started: 6, defrags_run: 0, total_freed_bytes: 0\n\nThe backend sat at 79 MB against a 256 MB floor, so the pass had only ever\nskipped. A loop that starts, skips forever, and reclaims nothing satisfies the\nscheduled check exactly like a working one \u2014 the same shape as every other\ndefect in the 2026-08-16 chain: a check that cannot fail is indistinguishable\nfrom one that passes.\n\nThis scenario closes that gap by making the condition real. It writes enough\ndata to push the backend past the maintenance floor, deletes it, and compacts\n\u2014 leaving a large file that is mostly free pages, which is precisely the state\nthe outage lived in. Compaction never shrinks the file; only a defrag returns\nthe space to the filesystem. Then it waits for a maintenance turn and asserts\nthe loop did its job.\n\nWHY THE WAIT IS LONG. The pass is round-robin over the sorted member list, so\nexactly one member is eligible per 10-minute interval \u2014 that is the property\nthat stops a defrag from taking out quorum by pausing several members at once.\nAny single node therefore waits up to memberCount intervals for its own turn,\nbut SOME node is eligible every interval, and all members replicate the same\ndata so every backend grows together. 13 minutes guarantees at least one turn\nhas come and gone.\n\nCovered invariant: the fix for\netcd.backend_ratchets_because_nothing_defragments must be observed working,\nnot merely observed to be present.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-23T23:33:35.370506Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

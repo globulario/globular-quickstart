@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:55:01 UTC; 2min 28s ago
+    Process: 204 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 246 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 264 (node_agent_serv)
+      Tasks: 23 (limit: 8641)
+     Memory: 27.9M (peak: 40.0M)
+        CPU: 57.203s
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-node-agent.service
+             └─264 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 21:56:44 node-4 node_agent_server[264]: 2026/07/31 21:56:44 ingress: spec changed (type: PUT), triggering reconciliation
+Jul 31 21:56:44 node-4 node_agent_server[264]: 2026/07/31 21:56:44 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Jul 31 21:56:45 node-4 node_agent_server[264]: 2026/07/31 21:56:45 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Jul 31 21:56:52 node-4 node_agent_server[264]: 2026/07/31 21:56:52 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Jul 31 21:57:02 node-4 node_agent_server[264]: 2026/07/31 21:57:02 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Jul 31 21:57:03 node-4 node_agent_server[264]: 2026/07/31 21:57:03 webroot-sync: synced=0 skipped=0 removed=0 (0.1s)
+Jul 31 21:57:03 node-4 node_agent_server[264]: 2026/07/31 21:57:03 behavioral observation: infra_probe skipped component=envoy node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused"
+Jul 31 21:57:12 node-4 node_agent_server[264]: 2026/07/31 21:57:12 nodeagent: reporting 41 installed services (hash=0850d5d5c9405c3f43d36c9d06676c74e34ebdd391dc4bac490c2d006e9759b7, sample=[backup-manager mcp libnss-resolve log ai-router])
+Jul 31 21:57:12 node-4 node_agent_server[264]: 2026/07/31 21:57:12 nodeagent: refreshed etcd endpoint list from /globular/system/etcd_endpoints (3 endpoint(s))
+Jul 31 21:57:12 node-4 node_agent_server[264]: 2026/07/31 21:57:12 node heartbeat failed (state=unreachable): rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"

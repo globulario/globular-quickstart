@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:12:54 UTC; 13s ago
+    Process: 1634 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 1650 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1665 (repository_serv)
+      Tasks: 14 (limit: 8641)
+     Memory: 23.4M (peak: 23.7M)
+        CPU: 217ms
+     CGroup: /system.slice/docker-9a67632422a5502a1d64625e1932bb8e76fae6f90cdee0187c70d84ee68d0231.scope/system.slice/globular-repository.service
+             └─1665 /usr/lib/globular/bin/repository_server
+
+Aug 18 19:12:54 node-1 systemd[1]: Started globular-repository.service - Globular repository.
+Aug 18 19:12:54 node-1 repository_server[1665]: 2026/08/18 19:12:54 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 18 19:12:54 node-1 repository_server[1665]: 2026/08/18 19:12:54 INFO security: loaded cluster roles from external policy file roles=22
+Aug 18 19:12:54 node-1 repository_server[1665]: PortAllocator range: 10000 - 20000
+Aug 18 19:12:56 node-1 repository_server[1665]: {"level":"warn","ts":"2026-08-18T19:12:56.223704Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00025d860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 18 19:12:58 node-1 repository_server[1665]: {"level":"warn","ts":"2026-08-18T19:12:58.224615Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00025d860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 18 19:12:58 node-1 repository_server[1665]: 2026/08/18 19:12:58 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"
+Aug 18 19:12:59 node-1 repository_server[1665]: 2026/08/18 19:12:59 INFO InitGrpcServer: gRPC server initialized service=repository.PackageRepository tls=true port=10003
+Aug 18 19:13:00 node-1 repository_server[1665]: 2026/08/18 19:13:00 INFO scylladb connected hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=repository rf=3
+Aug 18 19:13:00 node-1 repository_server[1665]: time=2026-08-18T19:13:00.528Z level=INFO msg="repository storage initialized — local POSIX CAS only (MinIO is never used for packages)" local=/var/lib/globular/repository

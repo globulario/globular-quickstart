@@ -1,0 +1,24 @@
+● globular-etcd.service - Globular etcd
+     Loaded: loaded (/etc/systemd/system/globular-etcd.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:57:29 UTC; 10min ago
+    Process: 53 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 83 ExecStartPre=/usr/bin/chown globular:globular /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 105 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 122 ExecStartPre=/bin/sh -c chown globular:globular /var/lib/globular/pki/issued/services/service.key /var/lib/globular/pki/issued/services/service.crt 2>/dev/null || true (code=exited, status=0/SUCCESS)
+   Main PID: 159 (etcd)
+      Tasks: 26 (limit: 8641)
+     Memory: 123.7M (peak: 125.5M)
+        CPU: 1min 15.166s
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-etcd.service
+             └─159 /usr/lib/globular/bin/etcd --config-file /var/lib/globular/config/etcd.yaml
+
+Aug 18 00:07:38 node-1 etcd[159]: {"level":"info","ts":"2026-08-18T00:07:38.367611Z","caller":"traceutil/trace.go:171","msg":"trace[1522239146] linearizableReadLoop","detail":"{readStateIndex:248619; appliedIndex:248619; }","duration":"122.875699ms","start":"2026-08-18T00:07:38.244714Z","end":"2026-08-18T00:07:38.36759Z","steps":["trace[1522239146] 'read index received'  (duration: 122.869598ms)","trace[1522239146] 'applied index is now lower than readState.Index'  (duration: 4.047µs)"],"step_count":2}
+Aug 18 00:07:38 node-1 etcd[159]: {"level":"warn","ts":"2026-08-18T00:07:38.367819Z","caller":"etcdserver/util.go:170","msg":"apply request took too long","took":"123.073808ms","expected-duration":"100ms","prefix":"read-only range ","request":"key:\"/globular/ingress/v1/spec\" ","response":"range_response_count:1 size:416"}
+Aug 18 00:07:38 node-1 etcd[159]: {"level":"info","ts":"2026-08-18T00:07:38.367865Z","caller":"traceutil/trace.go:171","msg":"trace[579397562] range","detail":"{range_begin:/globular/ingress/v1/spec; range_end:; response_count:1; response_revision:30558; }","duration":"123.142465ms","start":"2026-08-18T00:07:38.244708Z","end":"2026-08-18T00:07:38.36785Z","steps":["trace[579397562] 'agreement among raft nodes before linearized reading'  (duration: 122.965386ms)"],"step_count":1}
+Aug 18 00:07:42 node-1 etcd[159]: {"level":"warn","ts":"2026-08-18T00:07:42.078366Z","caller":"embed/config_logging.go:169","msg":"rejected connection","remote-addr":"10.10.0.13:50064","server-name":"","error":"EOF"}
+Aug 18 00:07:43 node-1 etcd[159]: {"level":"warn","ts":"2026-08-18T00:07:43.420207Z","caller":"embed/config_logging.go:169","msg":"rejected connection","remote-addr":"10.10.0.11:49192","server-name":"","error":"EOF"}
+Aug 18 00:07:50 node-1 etcd[159]: {"level":"warn","ts":"2026-08-18T00:07:50.633253Z","caller":"embed/config_logging.go:169","msg":"rejected connection","remote-addr":"10.10.0.12:36184","server-name":"","error":"EOF"}
+Aug 18 00:07:56 node-1 etcd[159]: {"level":"warn","ts":"2026-08-18T00:07:56.253271Z","caller":"embed/config_logging.go:169","msg":"rejected connection","remote-addr":"10.10.0.11:33080","server-name":"","error":"EOF"}
+Aug 18 00:07:56 node-1 etcd[159]: {"level":"info","ts":"2026-08-18T00:07:56.919219Z","caller":"etcdserver/server.go:1451","msg":"triggering snapshot","local-member-id":"c7ec53e24c34ef16","local-member-applied-index":250025,"local-member-snapshot-index":240024,"local-member-snapshot-count":10000}
+Aug 18 00:07:56 node-1 etcd[159]: {"level":"info","ts":"2026-08-18T00:07:56.981718Z","caller":"etcdserver/server.go:2470","msg":"saved snapshot","snapshot-index":250025}
+Aug 18 00:07:56 node-1 etcd[159]: {"level":"info","ts":"2026-08-18T00:07:56.981848Z","caller":"etcdserver/server.go:2500","msg":"compacted Raft logs","compact-index":245025}

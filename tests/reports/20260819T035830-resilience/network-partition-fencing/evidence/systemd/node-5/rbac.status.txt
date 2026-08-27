@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 04:19:25 UTC; 24min ago
+    Process: 138 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 186 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 209 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 307 (rbac_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 80.1M (peak: 81.3M)
+        CPU: 1.229s
+     CGroup: /system.slice/docker-d1d010d17ae9b9a9217c993ef70ab8ff2e79dfbbc7b3c27286d118fe51178fca.scope/system.slice/globular-rbac.service
+             └─307 /usr/lib/globular/bin/rbac_server
+
+Aug 19 04:41:35 node-5 rbac_server[307]: {"level":"warn","ts":"2026-08-19T04:41:35.962512Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0002814a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 19 04:41:35 node-5 rbac_server[307]: {"level":"info","ts":"2026-08-19T04:41:35.962587Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 19 04:41:36 node-5 rbac_server[307]: {"level":"warn","ts":"2026-08-19T04:41:36.801255Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc026ee0780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 19 04:41:36 node-5 rbac_server[307]: {"level":"info","ts":"2026-08-19T04:41:36.801326Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 19 04:41:40 node-5 rbac_server[307]: time=2026-08-19T04:41:40.479Z level=INFO msg="permissions store (re)connected" backend=scylla
+Aug 19 04:41:40 node-5 rbac_server[307]: time=2026-08-19T04:41:40.482Z level=INFO msg="dependencies recovered — service is SERVING"
+Aug 19 04:41:40 node-5 rbac_server[307]: {"level":"warn","ts":"2026-08-19T04:41:40.766689Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc026dfc3c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 19 04:41:40 node-5 rbac_server[307]: {"level":"info","ts":"2026-08-19T04:41:40.766759Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 19 04:42:15 node-5 rbac_server[307]: {"level":"warn","ts":"2026-08-19T04:42:15.768304Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc026dfc3c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 19 04:42:15 node-5 rbac_server[307]: {"level":"info","ts":"2026-08-19T04:42:15.768366Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

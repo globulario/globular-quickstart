@@ -1,0 +1,33 @@
+● globular-minio.service - Globular MinIO
+     Loaded: loaded (/etc/systemd/system/globular-minio.service; disabled; preset: enabled)
+    Drop-In: /etc/systemd/system/globular-minio.service.d
+             └─distributed.conf
+     Active: active (running) since Tue 2026-08-18 19:25:04 UTC; 1min 23s ago
+    Process: 6772 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/minio /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 6774 ExecStartPre=/usr/bin/chown -R globular:globular /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 6776 ExecStartPre=/usr/bin/chown -R globular:globular /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 6778 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 6780 ExecStartPre=/usr/bin/chmod 0700 /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 6782 ExecStartPre=/bin/sh -c chmod o+x "$(dirname /shared/minio/data)" "$(dirname "$(dirname /shared/minio/data)")" 2>/dev/null || true (code=exited, status=0/SUCCESS)
+    Process: 6788 ExecStartPre=/usr/bin/test -w /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 6790 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 6792 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 6794 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+    Process: 6796 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+   Main PID: 6798 (minio)
+      Tasks: 19 (limit: 8641)
+     Memory: 59.3M (peak: 59.5M)
+        CPU: 1.332s
+     CGroup: /system.slice/docker-d012767a1d6021169228274ad798b8ec3e83c467525376ed8e947638c31723b1.scope/system.slice/globular-minio.service
+             └─6798 /usr/lib/globular/bin/minio server https://10.10.0.11:9000/var/lib/minio/d1/data1 https://10.10.0.11:9000/var/lib/minio/d1/data2 https://10.10.0.12:9000/var/lib/minio/d1/data1 https://10.10.0.12:9000/var/lib/minio/d1/data2 https://10.10.0.13:9000/var/lib/minio/d1/data1 https://10.10.0.13:9000/var/lib/minio/d1/data2 https://10.10.0.15:9000/var/lib/globular/minio/data1 https://10.10.0.15:9000/var/lib/globular/minio/data2 --address 10.10.0.13:9000 --console-address 10.10.0.13:9001
+
+Aug 18 19:26:26 node-3 minio[6798]: INFO: Following servers are currently offline or unreachable [https://10.10.0.13:9000->https://10.10.0.15:9000 is unreachable: remote disconnected https://10.10.0.13:9000->https://10.10.0.11:9000 is unreachable: remote disconnected https://10.10.0.13:9000->https://10.10.0.12:9000 is unreachable: remote disconnected]
+Aug 18 19:26:26 node-3 minio[6798]: API: SYSTEM.grid
+Aug 18 19:26:26 node-3 minio[6798]: Time: 19:26:26 UTC 08/18/2026
+Aug 18 19:26:26 node-3 minio[6798]: Error: grid: https://10.10.0.13:9000 re-connecting to https://10.10.0.15:9000: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "Globular Root CA") (*tls.CertificateVerificationError) Sleeping 1.418s (3) (*fmt.wrapError)
+Aug 18 19:26:26 node-3 minio[6798]:        6: internal/logger/logonce.go:118:logger.(*logOnceType).logOnceIf()
+Aug 18 19:26:26 node-3 minio[6798]:        5: internal/logger/logonce.go:149:logger.LogOnceIf()
+Aug 18 19:26:26 node-3 minio[6798]:        4: internal/grid/connection.go:59:grid.gridLogOnceIf()
+Aug 18 19:26:26 node-3 minio[6798]:        3: internal/grid/connection.go:669:grid.(*Connection).connect.func1()
+Aug 18 19:26:26 node-3 minio[6798]:        2: internal/grid/connection.go:675:grid.(*Connection).connect()
+Aug 18 19:26:26 node-3 minio[6798]:        1: internal/grid/connection.go:275:grid.newConnection.func3()

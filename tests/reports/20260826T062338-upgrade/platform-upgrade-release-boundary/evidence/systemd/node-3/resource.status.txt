@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 06:18:32 UTC; 53min ago
+    Process: 473 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 480 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 493 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 583 (resource_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 24.1M (peak: 29.3M)
+        CPU: 5.733s
+     CGroup: /system.slice/docker-885b485e6d27a919cde734645395194c128d080057746a1ad93cc9684347aacd.scope/system.slice/globular-resource.service
+             └─583 /usr/lib/globular/bin/resource_server
+
+Aug 26 06:18:32 node-3 resource_server[583]: time=2026-08-26T06:18:32.843Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042
+Aug 26 06:18:34 node-3 resource_server[583]: 2026/08/26 06:18:34 WARN scylla: Count fallback to scan; consider raw CQL with PK WHERE table=local_resource.accounts
+Aug 26 06:18:34 node-3 resource_server[583]: time=2026-08-26T06:18:34.891Z level=ERROR msg="fail to create account dir" error="failed to seed sa account: account with name sa already exist!"
+Aug 26 06:18:34 node-3 resource_server[583]: 2026/08/26 06:18:34 INFO metrics listening service=resource.ResourceService addr=[::]:10011
+Aug 26 06:18:40 node-3 resource_server[583]: 2026/08/26 06:18:40 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=resource.session.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 26 06:19:17 node-3 resource_server[583]: 2026/08/26 06:19:17 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=resource.session.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 26 06:20:16 node-3 resource_server[583]: 2026/08/26 06:20:16 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 26 06:20:16 node-3 resource_server[583]: 2026/08/26 06:20:16 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 26 06:21:38 node-3 resource_server[583]: 2026/08/26 06:21:38 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 26 06:23:36 node-3 resource_server[583]: 2026/08/26 06:23:36 INFO acc: warmup complete baseline_rtt_ms=20 samples=245 elapsed=5m0s

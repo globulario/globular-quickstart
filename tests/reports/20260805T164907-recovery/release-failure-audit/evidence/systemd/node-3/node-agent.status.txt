@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:50:19 UTC; 53s ago
+    Process: 188 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 210 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 245 (node_agent_serv)
+      Tasks: 23 (limit: 8641)
+     Memory: 37.6M (peak: 48.6M)
+        CPU: 26.092s
+     CGroup: /system.slice/docker-154ff78b33e38f88687df750b0fb75a8af915753f6ba66cfa182b12163553394.scope/system.slice/globular-node-agent.service
+             └─245 /usr/lib/globular/bin/node_agent_server
+
+Aug 05 16:50:49 node-3 node_agent_server[245]: 2026/08/05 16:50:49 event-publisher: connected to event service
+Aug 05 16:50:49 node-3 node_agent_server[245]: 2026/08/05 16:50:49 ingress: keepalived disabled on node a166b992-b66d-53cb-b7c7-61dfa4dd5a36
+Aug 05 16:50:52 node-3 node_agent_server[245]: 2026/08/05 16:50:52 behavioral observation: infra_probe skipped component=scylladb node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused"
+Aug 05 16:50:52 node-3 node_agent_server[245]: 2026/08/05 16:50:52 behavioral observation: infra_probe skipped component=etcd node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 05 16:50:52 node-3 node_agent_server[245]: 2026/08/05 16:50:52 behavioral observation: infra_probe skipped component=minio node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 05 16:50:52 node-3 node_agent_server[245]: 2026/08/05 16:50:52 behavioral observation: infra_probe skipped component=envoy node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 05 16:51:12 node-3 node_agent_server[245]: 2026/08/05 16:51:12 ingress: spec changed (type: PUT), triggering reconciliation
+Aug 05 16:51:12 node-3 node_agent_server[245]: 2026/08/05 16:51:12 ingress: keepalived disabled on node a166b992-b66d-53cb-b7c7-61dfa4dd5a36
+Aug 05 16:51:12 node-3 node_agent_server[245]: 2026/08/05 16:51:12 nodeagent: reporting 42 installed services (hash=aad08db6587fd26e8b610166e487e6170d60c58444fabeeee471f0d8fc6b04af, sample=[node-agent ai-watcher globular-cli minio envoy])
+Aug 05 16:51:12 node-3 node_agent_server[245]: 2026/08/05 16:51:12 node heartbeat failed (state=degraded): TLS probe to 10.10.0.13:443 (ServerName=10.10.0.13): dial tcp 10.10.0.13:443: connect: connection refused

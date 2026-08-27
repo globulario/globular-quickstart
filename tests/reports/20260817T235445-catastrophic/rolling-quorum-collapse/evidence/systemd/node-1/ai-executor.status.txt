@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:57:38 UTC; 1min 24s ago
+    Process: 771 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 790 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 805 (ai_executor_ser)
+      Tasks: 19 (limit: 8641)
+     Memory: 27.0M (peak: 29.4M)
+        CPU: 509ms
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-ai-executor.service
+             └─805 /usr/lib/globular/bin/ai_executor_server
+
+Aug 17 23:57:41 node-1 ai_executor_server[805]: time=2026-08-17T23:57:41.439Z level=INFO msg="job_store: connected to etcd"
+Aug 17 23:57:41 node-1 ai_executor_server[805]: time=2026-08-17T23:57:41.449Z level=INFO msg="job_store: loaded jobs from etcd" count=33
+Aug 17 23:57:41 node-1 ai_executor_server[805]: 2026/08/17 23:57:41 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 17 23:57:41 node-1 ai_executor_server[805]: 2026/08/17 23:57:41 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 17 23:57:44 node-1 ai_executor_server[805]: time=2026-08-17T23:57:44.485Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.12 10.10.0.13]"
+Aug 17 23:58:05 node-1 ai_executor_server[805]: 2026/08/17 23:58:05 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 17 23:58:16 node-1 ai_executor_server[805]: time=2026-08-17T23:58:16.390Z level=WARN msg="peer: ping failed" endpoint=10.10.0.12:10010 err="rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"
+Aug 17 23:58:16 node-1 ai_executor_server[805]: time=2026-08-17T23:58:16.390Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10010
+Aug 17 23:58:21 node-1 ai_executor_server[805]: time=2026-08-17T23:58:21.392Z level=WARN msg="peer: ping failed" endpoint=10.10.0.13:10010 err="rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"
+Aug 17 23:58:21 node-1 ai_executor_server[805]: time=2026-08-17T23:58:21.392Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010

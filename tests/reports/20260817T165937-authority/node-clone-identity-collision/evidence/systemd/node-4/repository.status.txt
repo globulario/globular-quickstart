@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:18 UTC; 5min ago
+    Process: 152 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 163 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 218 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 31.9M (peak: 38.6M)
+        CPU: 2.610s
+     CGroup: /system.slice/docker-cfd5ada68a3ca339623f6df7921f9fd5ffefba9fbd39d2998331bb23e8ac8901.scope/system.slice/globular-repository.service
+             └─218 /usr/lib/globular/bin/repository_server
+
+Aug 17 17:18:27 node-4 repository_server[218]: time=2026-08-17T17:18:27.330Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 17 17:18:27 node-4 repository_server[218]: time=2026-08-17T17:18:27.330Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 17 17:18:27 node-4 repository_server[218]: 2026/08/17 17:18:27 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=44539
+Aug 17 17:18:27 node-4 repository_server[218]: 2026/08/17 17:18:27 INFO metrics listening service=repository.PackageRepository addr=[::]:44539
+Aug 17 17:18:27 node-4 repository_server[218]: 2026/08/17 17:18:27 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10004 new_port=10004 old_proxy=44539 new_proxy=10001
+Aug 17 17:19:19 node-4 repository_server[218]: 2026/08/17 17:19:19 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 17 17:20:48 node-4 repository_server[218]: 2026/08/17 17:20:48 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 17 17:22:04 node-4 repository_server[218]: 2026/08/17 17:22:04 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 17 17:22:04 node-4 repository_server[218]: 2026/08/17 17:22:04 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 17 17:23:34 node-4 repository_server[218]: 2026/08/17 17:23:34 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s

@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-24T22:39:35.253046Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/recovery/release-failure-audit.yaml",
+  "scenario": "release-failure-audit",
+  "suite": "recovery",
+  "source_revision": "0ebfb24869929a4efe528be32759f80589ff0ba5",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Surface the release pipeline state as known, documented cluster state.\n\nWhat this scenario asserts:\n  - The release audit probe works and returns a parseable result\n  - Total ServiceRelease count is above a minimum (proves records exist)\n  - Releases actually converge \u2014 at least one reaches a terminal success\n    phase, proving the pipeline is not permanently stuck\n\nHistory (2026-08-11): this scenario previously asserted the OPPOSITE \u2014\nfailed_gte matching the total, and succeeded == 0 \u2014 on the stated premise\nthat \"all ServiceRelease records are in FAILED phase\" because of stale MinIO\ncredentials. That premise was largely an artifact of the audit probe itself:\nit counted phase == \"SUCCEEDED\", a phase that does not exist in the release\nvocabulary (see ReleasePhase* in cluster_controllerpb/resources_types.go \u2014\nthe terminal success phase is AVAILABLE). Every converged release was\ntherefore invisible to the probe and filed under \"pending\", making a working\npipeline look permanently broken. With the probe reading the real phases, the\ncluster shows converged releases alongside a small number of genuine\nfailures.\n\nDeliberately NOT asserted: an exact failure count. This scenario runs after\nthe chaos suites, which legitimately leave some releases FAILED; pinning a\nnumber is what made the previous version break the moment the system\nimproved.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-24T22:39:38.201720Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

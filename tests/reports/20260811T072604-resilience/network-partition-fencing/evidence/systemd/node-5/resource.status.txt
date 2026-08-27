@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 07:45:55 UTC; 17min ago
+    Process: 105 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 138 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 170 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 208 (resource_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 21.4M (peak: 30.5M)
+        CPU: 849ms
+     CGroup: /system.slice/docker-be1295d58506c7859fb4204b9005a34c087adb018b6a5ee54f2a654b5ce16432.scope/system.slice/globular-resource.service
+             └─208 /usr/lib/globular/bin/resource_server
+
+Aug 11 08:02:45 node-5 resource_server[208]: 2026/08/11 08:02:45 gocql: unable to reconnect control connection: dial tcp 10.10.0.11:9042: i/o timeout
+Aug 11 08:02:50 node-5 resource_server[208]: {"level":"warn","ts":"2026-08-11T08:02:50.601222Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00027fa40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 11 08:02:50 node-5 resource_server[208]: {"level":"info","ts":"2026-08-11T08:02:50.601285Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 08:02:56 node-5 resource_server[208]: 2026/08/11 08:02:56 ERROR scylla: ping failed err="gocql: no hosts available in the pool"
+Aug 11 08:02:56 node-5 resource_server[208]: time=2026-08-11T08:02:56.411Z level=WARN msg="dependency health check failed" dep=scylladb err="gocql: no hosts available in the pool"
+Aug 11 08:02:57 node-5 resource_server[208]: {"level":"warn","ts":"2026-08-11T08:02:57.441278Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00051c960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.11:2379: i/o timeout\""}
+Aug 11 08:02:57 node-5 resource_server[208]: {"level":"info","ts":"2026-08-11T08:02:57.441354Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 11 08:02:57 node-5 resource_server[208]: 2026/08/11 08:02:57 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: i/o timeout
+Aug 11 08:03:08 node-5 resource_server[208]: 2026/08/11 08:03:08 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: i/o timeout
+Aug 11 08:03:11 node-5 resource_server[208]: time=2026-08-11T08:03:11.409Z level=INFO msg="dependencies recovered — service is SERVING"

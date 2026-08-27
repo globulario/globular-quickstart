@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 19:21:51 UTC; 12s ago
+    Process: 21877 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 21881 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 21884 (cluster_control)
+      Tasks: 19 (limit: 8641)
+     Memory: 21.2M (peak: 22.7M)
+        CPU: 275ms
+     CGroup: /system.slice/docker-12d6f543c45c152a0f4bf2b55e300662123bd9230dd461f6140c864164aa12db.scope/system.slice/globular-cluster-controller.service
+             └─21884 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 10 19:21:58 node-1 cluster_controller_server[21884]: 2026/08/10 19:21:58 leader: wrote routing refresh (epoch=3)
+Aug 10 19:21:58 node-1 cluster_controller_server[21884]: 2026/08/10 19:21:58 leader election: became leader id=node-1:21884:e5753fa2-77dc-474a-8562-143886ead932 addr=10.10.0.11:12000
+Aug 10 19:21:58 node-1 cluster_controller_server[21884]: 2026/08/10 19:21:58 cluster-controller: publish "controller.leader_elected" failed, circuit breaker open for 30s: rpc error: code = Canceled desc = grpc: the client connection is closing
+Aug 10 19:22:01 node-1 cluster_controller_server[21884]: 2026/08/10 19:22:01 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Aug 10 19:22:01 node-1 cluster_controller_server[21884]: 2026/08/10 19:22:01 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Aug 10 19:22:01 node-1 cluster_controller_server[21884]: 2026/08/10 19:22:01 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Aug 10 19:22:01 node-1 cluster_controller_server[21884]: time=2026-08-10T19:22:01.368Z level=WARN msg="startupAutoImport: desired state is EMPTY — operator must seed it explicitly via 'globular deploy' or SeedDesiredState RPC. Auto-import from runtime observations is disabled to prevent phantom rematerialization."
+Aug 10 19:22:01 node-1 cluster_controller_server[21884]: 2026/08/10 19:22:01 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Aug 10 19:22:01 node-1 cluster_controller_server[21884]: 2026/08/10 19:22:01 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 10 19:22:01 node-1 cluster_controller_server[21884]: 2026/08/10 19:22:01 ensureNodeExecutorBinding: bound node-1 to roles [globular-node-executor globular-controller-sa]

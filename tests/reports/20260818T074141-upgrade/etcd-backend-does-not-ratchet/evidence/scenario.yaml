@@ -1,0 +1,113 @@
+version: 1
+name: etcd-backend-does-not-ratchet
+description: |
+  etcd's backend file must be able to give space back, not only take it.
+
+  THE INCIDENT (2026-08-16). etcd reached its 2 GiB backend quota and raised
+  NOSPACE on 4 of 5 members. The control plane went read-only: no desired state
+  could be written, no workflow dispatched, no service registered. Recovery was
+  a manual compact + defrag + alarm disarm, which took the backend from 2.1 GB
+  to 4.2 MB.
+
+  THE WRONG DIAGNOSIS. The obvious suspect was write volume, and the controller
+  rewriting its whole state blob on every heartbeat looked like the culprit. An
+  optimization was written and shipped on that theory. It caused a second, worse
+  outage (see liveness-survives-state-writes) and did not stop the growth: the
+  backend was back to 236 MB within hours, WITH the optimization live.
+
+  THE ACTUAL CAUSE. auto-compaction was already configured — periodic, 1h
+  retention — so MVCC history was bounded the whole time. What was missing was
+  defragmentation. Compaction frees pages logically but the backend file only
+  ratchets upward; without a defrag the high-water mark is never returned. The
+  file therefore grows to whatever the busiest hour demanded and stays there
+  forever, and any burst that pushes one hour past the quota is permanent.
+
+  Two configuration facts made that fatal rather than merely untidy:
+  quota-backend-bytes was 0, meaning etcd's 2 GiB default, on a cluster whose
+  steady state is a few hundred MB; and nothing anywhere — no systemd timer, no
+  cron entry — ever ran a defrag.
+
+  THE LESSON. The measurement that settles "is this writer the problem?" is
+  writes-per-prefix over a window, and it was never taken. The optimization was
+  built on a read of the code instead. This scenario asserts the structural
+  property that makes write volume survivable in the first place, so the
+  cluster does not depend on anyone diagnosing correctly under pressure.
+suite: upgrade
+tags:
+  - etcd
+  - capacity
+  - defrag
+  - incident-2026-08-16
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: etcd_write_quorum
+    probe: etcd.write_test
+    expect:
+      success: true
+
+baseline:
+  - type: probe
+    id: backend_state_at_start
+    probe: etcd.backend_growth
+
+assertions:
+  # ── No standing alarms ────────────────────────────────────────────────────
+  # NOSPACE latches: once raised, etcd stays read-only until the alarm is
+  # explicitly disarmed, even after space is reclaimed. A cluster with a live
+  # alarm is a cluster that cannot accept state.
+  - type: probe
+    id: no_etcd_alarms
+    probe: etcd.backend_growth
+    expect:
+      alarms: 0
+
+  # ── Bounded history ───────────────────────────────────────────────────────
+  # Compaction is what keeps MVCC history from being unbounded. This was
+  # already true during the incident and is asserted so a future change cannot
+  # quietly remove it and make everything below meaningless.
+  - type: probe
+    id: compaction_is_configured
+    probe: etcd.backend_growth
+    expect:
+      compaction_configured: true
+
+  # ── Reclaimable space — the gap that caused the outage ────────────────────
+  # This is the assertion that would have prevented 2026-08-16. Compaction
+  # without defrag means the file only ever grows. If this fails, the cluster
+  # is one busy hour away from a permanent high-water mark it cannot undo.
+  - type: probe
+    id: defrag_is_scheduled
+    probe: etcd.backend_growth
+    expect:
+      defrag_scheduled: true
+
+  # ── Headroom ──────────────────────────────────────────────────────────────
+  # Well below the quota, so there is room to notice and act. 50% is a warning
+  # line, not a cliff: at the observed steady state this sits in single digits,
+  # and reaching half the quota means something has changed materially.
+  - type: probe
+    id: backend_has_headroom
+    probe: etcd.backend_growth
+    expect:
+      pct_of_quota_lte: 50
+
+  - type: probe
+    id: writes_still_accepted
+    probe: etcd.write_test
+    expect:
+      success: true
+
+cleanup: []

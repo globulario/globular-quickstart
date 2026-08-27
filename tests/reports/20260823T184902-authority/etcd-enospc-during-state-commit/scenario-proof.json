@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-23T18:49:37.947427Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/authority/etcd-enospc-during-state-commit.yaml",
+  "scenario": "etcd-enospc-during-state-commit",
+  "suite": "authority",
+  "source_revision": "e4e929408ec90873f35057db2fceee972a9b8763",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "A desired-state mutation attempted while etcd cannot write must be atomic:\ncommitted, or rejected. Never half-published.\n\nTHE FAULT. Exhaust etcd's backend QUOTA, then attempt a real desired-state\nchange, then release it.\n\nWHY QUOTA AND NOT A FULL DISK. The first version of this filled the filesystem\netcd writes to. That directory lives on the HOST root filesystem via a docker\nvolume, so \"leave 2 MB free\" meant writing ~57 GB to the developer's disk \u2014 and\nthe only reason it did not is that it timed out first. Filling someone's disk to\ntest a cluster property is not an acceptable trade at any speed.\nQuota exhaustion is also the faithful fault: the 2026-08-16 outage was\nquota-backend-bytes exceeded, not a full disk.\n\nWHY THIS IS NOT disk-pressure-detection. That scenario fills the node's root\ndisk and checks the cluster NOTICES. This makes etcd refuse writes and attempts\na mutation into that refusal \u2014 so the question is not detection but atomicity.\n\nWHY IT MATTERS HERE SPECIFICALLY. The 2026-08-16 outage was an etcd NOSPACE\nevent: the backend hit quota and the control plane went read-only. What was\nnever established is what happens to a mutation caught in that window. A\ndesired-state write is not one key: it is a record, a generation, and the\nreconcile that follows. A partial write leaves the cluster pointed at something\nnobody chose, and \u2014 worse \u2014 leaves no error for the operator to act on, because\nfrom the caller's side the command simply failed.\n\nTHE TWO ACCEPTABLE OUTCOMES, and there is no third:\n\n    the mutation never happened      \u2014 refused, nothing changed\n    the mutation completed exactly once\n\nThere is no acceptable state called \"the record is there but the generation is\nnot\", and none called \"the command failed but the write landed\".\n\nWHAT MUST HOLD. After the space is released, the cluster returns to healthy\nwith no standing alarms, no ambiguous or half-published artifacts, and desired\nstate coherent \u2014 whichever of the two outcomes occurred.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-23T18:49:58.140581Z",
+    "result": "FAIL",
+    "executor_exit": 1,
+    "proof_eligible": false
+  }
+}

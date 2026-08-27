@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-10 22:20:56 UTC; 14min ago
+    Process: 149 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 165 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 179 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 214 (resource_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 27.7M (peak: 33.1M)
+        CPU: 1.695s
+     CGroup: /system.slice/docker-be8cb03d285a8e0d098f13468f457bc6eb909f7db097506a3ee3a7fbf7e2cbee.scope/system.slice/globular-resource.service
+             └─214 /usr/lib/globular/bin/resource_server
+
+Aug 10 22:20:57 node-4 resource_server[214]: 2026/08/10 22:20:57 error: failed to connect to "[HostInfo hostname=\"10.10.0.13\" connectAddress=\"10.10.0.13\" peer=\"10.10.0.13\" rpc_address=\"10.10.0.13\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.13\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"datacenter1\" rack=\"rack1\" host_id=\"6cefce36-6ec4-427b-9fc4-61bcbe9480d7\" version=\"v3.0.8\" state=UP num_tokens=1]" due to error: context canceled
+Aug 10 22:22:33 node-4 resource_server[214]: time=2026-08-10T22:22:33.219Z level=WARN msg="rbac client unavailable in bootstrap mode" error="rbac: endpoint unresolved"
+Aug 10 22:22:33 node-4 resource_server[214]: time=2026-08-10T22:22:33.219Z level=WARN msg="rbac disabled; skipping owner assignment" path=/users/sa@globular.internal subject=sa@globular.internal resourceType=file
+Aug 10 22:22:33 node-4 resource_server[214]: 2026/08/10 22:22:33 WARN port conflict detected - attempting reallocation service=resource.ResourceService conflicting_port=10008 attempt=1 max_attempts=5
+Aug 10 22:22:33 node-4 resource_server[214]: 2026/08/10 22:22:33 INFO port reallocated successfully service=resource.ResourceService old_port=10008 new_port=10009
+Aug 10 22:22:33 node-4 resource_server[214]: 2026/08/10 22:22:33 INFO metrics listening service=resource.ResourceService addr=[::]:10011
+Aug 10 22:22:34 node-4 resource_server[214]: 2026/08/10 22:22:34 WARN port/proxy change detected in desired; restart required to take effect service=resource.ResourceService id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 old_port=10009 new_port=10008 old_proxy=10011 new_proxy=10011
+Aug 10 22:22:43 node-4 resource_server[214]: 2026/08/10 22:22:43 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 10 22:22:43 node-4 resource_server[214]: 2026/08/10 22:22:43 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 10 22:27:34 node-4 resource_server[214]: 2026/08/10 22:27:34 INFO acc: warmup complete baseline_rtt_ms=20 samples=282 elapsed=5m0s

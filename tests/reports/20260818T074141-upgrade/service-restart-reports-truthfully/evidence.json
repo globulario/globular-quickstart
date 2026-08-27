@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "scenario": "service-restart-reports-truthfully",
+  "suite": "upgrade",
+  "start_time": "2026-08-18T08:58:30.671818Z",
+  "end_time": "2026-08-18T08:59:05.042536Z",
+  "passed": false,
+  "item_count": 9,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 4,
+        "nodes": 4
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T08:58:31.549957Z"
+    },
+    {
+      "id": "target_service_running_before",
+      "section": "preconditions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "ai-watcher"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-2",
+        "service": "ai-watcher"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T08:58:31.633612Z"
+    },
+    {
+      "id": "restart_truthful_at_baseline",
+      "section": "baseline",
+      "probe": "service.restart_is_truthful",
+      "params": {
+        "node": "node-2",
+        "unit": "globular-ai-watcher"
+      },
+      "expect": {},
+      "result": {
+        "claimed": "active",
+        "actual": "active",
+        "truthful": true
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T08:58:31.798138Z"
+    },
+    {
+      "id": "restart_the_service",
+      "section": "steps",
+      "probe": "chaos.restart_service",
+      "params": {
+        "node": "node-2",
+        "service": "ai-watcher"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.restart_service",
+        "container": "globular-node-2",
+        "unit": "globular-ai-watcher.service",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T08:58:31.864741Z"
+    },
+    {
+      "id": "reported_state_matches_actual_state",
+      "section": "assertions",
+      "probe": "service.restart_is_truthful",
+      "params": {
+        "node": "node-2",
+        "unit": "globular-ai-watcher"
+      },
+      "expect": {
+        "truthful": true,
+        "actual": "active"
+      },
+      "result": {
+        "claimed": "active",
+        "actual": "active",
+        "truthful": true
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T08:58:52.030279Z"
+    },
+    {
+      "id": "unit_is_active_after_restart",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-2",
+        "service": "ai-watcher"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-2",
+        "service": "ai-watcher"
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T08:58:52.124014Z"
+    },
+    {
+      "id": "cluster_still_healthy",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 4,
+        "nodes": 4
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T08:58:52.419964Z"
+    },
+    {
+      "id": "liveness_unaffected",
+      "section": "assertions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 3533,
+        "stale_nodes": 1,
+        "oldest": "35ac3821-6b90-52eb-a800-41130471770b"
+      },
+      "passed": false,
+      "timestamp": "2026-08-18T08:58:52.563914Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 4,
+          "etcd_member_count": "4",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "missing UNREADABLE backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 4,
+          "etcd_member_count": "4",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "missing UNREADABLE backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-18T08:58:53.151569Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

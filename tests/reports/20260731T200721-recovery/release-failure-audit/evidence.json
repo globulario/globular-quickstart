@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "scenario": "release-failure-audit",
+  "suite": "recovery",
+  "start_time": "2026-07-31T20:09:18.748011Z",
+  "end_time": "2026-07-31T20:09:33.648824Z",
+  "passed": false,
+  "item_count": 4,
+  "items": [
+    {
+      "id": "cluster_reachable",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 3,
+        "nodes": 6
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T20:09:19.081505Z"
+    },
+    {
+      "id": "release_records_exist",
+      "section": "assertions",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {
+        "total_gte": 15
+      },
+      "result": {
+        "total": 24,
+        "succeeded": 0,
+        "failed": 7,
+        "pending": 17
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T20:09:19.211134Z"
+    },
+    {
+      "id": "release_failure_state_known",
+      "section": "assertions",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {
+        "failed_gte": 15
+      },
+      "result": {
+        "total": 24,
+        "succeeded": 0,
+        "failed": 7,
+        "pending": 17
+      },
+      "passed": false,
+      "timestamp": "2026-07-31T20:09:19.340502Z"
+    },
+    {
+      "id": "no_phantom_successes",
+      "section": "assertions",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {
+        "succeeded": 0
+      },
+      "result": {
+        "total": 24,
+        "succeeded": 0,
+        "failed": 7,
+        "pending": 17
+      },
+      "passed": true,
+      "timestamp": "2026-07-31T20:09:19.485252Z"
+    }
+  ],
+  "result": "FAIL",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

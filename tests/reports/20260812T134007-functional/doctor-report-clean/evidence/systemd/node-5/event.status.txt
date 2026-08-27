@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-12 13:38:12 UTC; 2min 41s ago
+    Process: 5343 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 5347 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 5351 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 25.6M (peak: 28.5M)
+        CPU: 1.549s
+     CGroup: /system.slice/docker-ba9fac652a3405e514249b33ab0346f14fc135e89814b53d3d37f427697e77f5.scope/system.slice/globular-event.service
+             └─5351 /usr/lib/globular/bin/event_server
+
+Aug 12 13:38:14 node-5 event_server[5351]: 2026/08/12 13:38:14 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 12 13:38:14 node-5 event_server[5351]: 2026/08/12 13:38:14 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 12 13:38:31 node-5 event_server[5351]: time=2026-08-12T13:38:31.789Z level=INFO msg="Subscribe: ok" channel=service.* uuid=bd5b8e4f-e35e-4bb1-9083-833ddd9307bf
+Aug 12 13:38:31 node-5 event_server[5351]: time=2026-08-12T13:38:31.789Z level=INFO msg=subscribed channel=service.* uuid=bd5b8e4f-e35e-4bb1-9083-833ddd9307bf subscribers=1
+Aug 12 13:38:52 node-5 event_server[5351]: 2026/08/12 13:38:52 invalid peer or peer with empty schema_version: peer="[HostInfo hostname=\"\" connectAddress=\"10.10.0.11\" peer=\"10.10.0.13\" rpc_address=\"<nil>\" broadcast_address=\"<nil>\" preferred_ip=\"<nil>\" connect_addr=\"10.10.0.11\" connect_addr_source=\"connect_address\" port=9042 data_centre=\"\" rack=\"\" host_id=\"2986d690-f738-436b-ac0e-b7c8edf9b770\" version=\"v0.0.0\" state=UP num_tokens=0]"
+Aug 12 13:38:54 node-5 event_server[5351]: time=2026-08-12T13:38:54.535Z level=INFO msg="subscriber cleanup" uuid=bd5b8e4f-e35e-4bb1-9083-833ddd9307bf
+Aug 12 13:39:17 node-5 event_server[5351]: time=2026-08-12T13:39:17.077Z level=INFO msg="Subscribe: ok" channel=operation.restart_requested uuid=35d28fdd-af17-4086-adb3-baa00d57c84b
+Aug 12 13:39:17 node-5 event_server[5351]: time=2026-08-12T13:39:17.077Z level=INFO msg=subscribed channel=operation.restart_requested uuid=35d28fdd-af17-4086-adb3-baa00d57c84b subscribers=1
+Aug 12 13:39:17 node-5 event_server[5351]: time=2026-08-12T13:39:17.091Z level=INFO msg="OnEvent: registered" uuid=35d28fdd-af17-4086-adb3-baa00d57c84b
+Aug 12 13:39:17 node-5 event_server[5351]: time=2026-08-12T13:39:17.091Z level=INFO msg="stream registered" uuid=35d28fdd-af17-4086-adb3-baa00d57c84b

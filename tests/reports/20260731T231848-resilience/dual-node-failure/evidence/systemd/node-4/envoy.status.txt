@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:40:45 UTC; 11s ago
+    Process: 153 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 297 (envoy)
+      Tasks: 8 (limit: 8641)
+     Memory: 19.1M (peak: 19.6M)
+        CPU: 209ms
+     CGroup: /system.slice/docker-928b88015d720a8f11737bd2e4cef31a0f068e077aace4373fcff00bacea7705.scope/system.slice/globular-envoy.service
+             └─297 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Jul 31 23:40:45 node-4 envoy[297]: [2026-07-31 23:40:45.587][297][warning][main] [source/server/server.cc:1001] There is no configured limit to the number of allowed active downstream connections. Configure a limit in `envoy.resource_monitors.global_downstream_max_connections` resource monitor.
+Jul 31 23:40:45 node-4 envoy[297]: [2026-07-31 23:40:45.587][297][info][main] [source/server/server.cc:1043] starting main dispatch loop
+Jul 31 23:40:47 node-4 envoy[297]: [2026-07-31T23:40:47.403Z] "GET /ready HTTP/1.1" 503 - 0 17 0 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Jul 31 23:40:48 node-4 envoy[297]: [2026-07-31 23:40:48.673][297][info][upstream] [source/common/upstream/cds_api_helper.cc:34] cds: response indicates 25 added/updated cluster(s), 1 removed cluster(s); applying changes
+Jul 31 23:40:48 node-4 envoy[297]: [2026-07-31 23:40:48.747][297][info][upstream] [source/common/upstream/cds_api_helper.cc:87] cds: added/updated 25 cluster(s) (skipped 0 unmodified cluster(s)); removed 0 cluster(s)
+Jul 31 23:40:53 node-4 envoy[297]: [2026-07-31 23:40:53.772][297][info][upstream] [source/common/upstream/cds_api_helper.cc:34] cds: response indicates 25 added/updated cluster(s), 1 removed cluster(s); applying changes
+Jul 31 23:40:53 node-4 envoy[297]: [2026-07-31 23:40:53.774][297][info][upstream] [source/common/upstream/cds_api_helper.cc:87] cds: added/updated 1 cluster(s) (skipped 24 unmodified cluster(s)); removed 0 cluster(s)
+Jul 31 23:40:55 node-4 envoy[297]: [2026-07-31T23:40:47.405Z] "GET /server_info HTTP/1.1" 200 - 0 98012 3 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Jul 31 23:40:55 node-4 envoy[297]: [2026-07-31T23:40:47.410Z] "GET /stats?format=json HTTP/1.1" 200 - 0 24903 1 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Jul 31 23:40:55 node-4 envoy[297]: [2026-07-31T23:40:52.362Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 542113 14 - "10.10.0.14" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"

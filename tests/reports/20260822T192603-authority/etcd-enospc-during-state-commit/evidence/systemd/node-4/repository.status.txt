@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-22 19:24:54 UTC; 1min 54s ago
+    Process: 152 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 181 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 210 (repository_serv)
+      Tasks: 17 (limit: 8641)
+     Memory: 23.7M (peak: 26.1M)
+        CPU: 578ms
+     CGroup: /system.slice/docker-b0ee96061132b593cfc49cfbc92e965d02de7fb7e6500a4382ff6f29bffc0497.scope/system.slice/globular-repository.service
+             └─210 /usr/lib/globular/bin/repository_server
+
+Aug 22 19:24:56 node-4 repository_server[210]: time=2026-08-22T19:24:56.913Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 22 19:24:56 node-4 repository_server[210]: 2026/08/22 19:24:56 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 22 19:24:56 node-4 repository_server[210]: time=2026-08-22T19:24:56.913Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 22 19:24:56 node-4 repository_server[210]: time=2026-08-22T19:24:56.913Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 22 19:24:56 node-4 repository_server[210]: time=2026-08-22T19:24:56.915Z level=WARN msg="blob-seed: ListManifests failed — seeding skipped" err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0"
+Aug 22 19:24:57 node-4 repository_server[210]: 2026/08/22 19:24:57 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=33705
+Aug 22 19:24:57 node-4 repository_server[210]: 2026/08/22 19:24:57 INFO metrics listening service=repository.PackageRepository addr=[::]:33705
+Aug 22 19:24:58 node-4 repository_server[210]: 2026/08/22 19:24:58 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10003 new_port=10003 old_proxy=33705 new_proxy=10001
+Aug 22 19:25:04 node-4 repository_server[210]: 2026/08/22 19:25:04 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 22 19:25:33 node-4 repository_server[210]: 2026/08/22 19:25:33 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Internal desc = {\"ErrorMsg\":\"Cannot achieve consistency level for cl QUORUM. Requires 1, alive 0\",\"FileLine\":\"github.com/globulario/services/golang/rbac/rbac_server/rbac_role_bindings.go:193\",\"FunctionName\":\"main.(*server).GetRoleBinding\"}"

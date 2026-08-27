@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:40:39 UTC; 12min ago
+    Process: 198 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 225 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 244 (cluster_doctor_)
+      Tasks: 19 (limit: 8641)
+     Memory: 30.6M (peak: 33.2M)
+        CPU: 3.342s
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-cluster-doctor.service
+             └─244 /usr/lib/globular/bin/cluster_doctor_server
+
+Jul 31 21:52:50 node-4 cluster_doctor_server[244]: 2026/07/31 21:52:50 collector: data-source fetch failed (reduced harvest) service=prometheus rpc=envoy_lds_update_success: Get "http://127.0.0.1:9090/api/v1/query?query=max%28envoy_listener_manager_lds_update_success%29": context canceled
+Jul 31 21:52:50 node-4 cluster_doctor_server[244]: 2026/07/31 21:52:50 collector: data-source fetch failed (reduced harvest) service=prometheus rpc=workflow_active_runs: Get "http://127.0.0.1:9090/api/v1/query?query=globular_workflow_active_runs": context canceled
+Jul 31 21:52:50 node-4 cluster_doctor_server[244]: 2026/07/31 21:52:50 collector: data-source fetch failed (reduced harvest) service=prometheus rpc=drift_kind_mismatch: Get "http://127.0.0.1:9090/api/v1/query?query=globular_controller_drift_kind_mismatch_total": context canceled
+Jul 31 21:52:50 node-4 cluster_doctor_server[244]: 2026/07/31 21:52:50 collector: data-source fetch failed (reduced harvest) service=prometheus rpc=workflow_dispatch_rejected: Get "http://127.0.0.1:9090/api/v1/query?query=globular_controller_workflow_dispatch_rejected_total": context canceled
+Jul 31 21:52:50 node-4 cluster_doctor_server[244]: 2026/07/31 21:52:50 collector: data-source fetch failed (reduced harvest) service=prometheus rpc=release_transient_blocked: Get "http://127.0.0.1:9090/api/v1/query?query=globular_controller_release_transient_blocked": context canceled
+Jul 31 21:52:50 node-4 cluster_doctor_server[244]: 2026/07/31 21:52:50 collector: data-source fetch failed (reduced harvest) service=prometheus rpc=reconcile_lane_timeouts_projections: Get "http://127.0.0.1:9090/api/v1/query?query=sum%28globular_controller_reconcile_lane_timeouts_total%7Blane%3D%22projections%22%7D%29": context canceled
+Jul 31 21:52:50 node-4 cluster_doctor_server[244]: 2026/07/31 21:52:50 collector: data-source fetch failed (reduced harvest) service=ai_memory rpc=Query(seed): rpc error: code = Canceled desc = context canceled
+Jul 31 21:52:50 node-4 cluster_doctor_server[244]: 2026/07/31 21:52:50 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListServiceReleasesJson: rpc error: code = Canceled desc = context canceled
+Jul 31 21:52:50 node-4 cluster_doctor_server[244]: 2026/07/31 21:52:50 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListInfrastructureReleasesJson: rpc error: code = Canceled desc = context canceled
+Jul 31 21:52:55 node-4 cluster_doctor_server[244]: {"level":"warn","ts":"2026-07-31T21:52:55.008375Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000150780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}

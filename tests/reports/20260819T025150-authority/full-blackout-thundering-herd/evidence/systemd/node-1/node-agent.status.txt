@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-19 03:22:17 UTC; 59s ago
+    Process: 168 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 184 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 213 (node_agent_serv)
+      Tasks: 36 (limit: 8641)
+     Memory: 152.6M (peak: 1.3G)
+        CPU: 17.604s
+     CGroup: /system.slice/docker-ca280363fa2453665805d4ffe29b667a4fb9760e5edf5d71628a9f162a1884b1.scope/system.slice/globular-node-agent.service
+             └─213 /usr/lib/globular/bin/node_agent_server
+
+Aug 19 03:23:01 node-1 node_agent_server[213]: 2026/08/19 03:23:01 behavioral observation: infra_probe skipped component=etcd node=c777633e-6d07-5713-9c4c-deb3317eee25: behavioral-memory endpoint not resolvable
+Aug 19 03:23:01 node-1 node_agent_server[213]: 2026/08/19 03:23:01 behavioral observation: infra_probe skipped component=minio node=c777633e-6d07-5713-9c4c-deb3317eee25: behavioral-memory endpoint not resolvable
+Aug 19 03:23:01 node-1 node_agent_server[213]: 2026/08/19 03:23:01 behavioral observation: infra_probe skipped component=envoy node=c777633e-6d07-5713-9c4c-deb3317eee25: behavioral-memory endpoint not resolvable
+Aug 19 03:23:04 node-1 node_agent_server[213]: 2026/08/19 03:23:04 ERROR InitClient: failed to fetch configuration id=event.EventService address=10.10.0.11:443 err="context deadline exceeded"
+Aug 19 03:23:04 node-1 node_agent_server[213]: 2026/08/19 03:23:04 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.11:443 service=event.EventService err="InitClient: failed to fetch configuration id=event.EventService from 10.10.0.11:443: context deadline exceeded"
+Aug 19 03:23:04 node-1 node_agent_server[213]: 2026/08/19 03:23:04 event-handler: event service not found in registry, retrying in 10s (repeated 1 times)
+Aug 19 03:23:08 node-1 node_agent_server[213]: {"level":"warn","ts":"2026-08-19T03:23:08.426217Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003225a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:10 node-1 node_agent_server[213]: {"level":"warn","ts":"2026-08-19T03:23:10.427202Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003225a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 19 03:23:14 node-1 node_agent_server[213]: 2026/08/19 03:23:14 ERROR InitClient: failed to fetch configuration id=event.EventService address=10.10.0.11:443 err="context deadline exceeded"
+Aug 19 03:23:14 node-1 node_agent_server[213]: 2026/08/19 03:23:14 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.11:443 service=event.EventService err="InitClient: failed to fetch configuration id=event.EventService from 10.10.0.11:443: context deadline exceeded"

@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:56:30 UTC; 30s ago
+    Process: 54 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 82 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 103 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 28.9M (peak: 30.2M)
+        CPU: 1.536s
+     CGroup: /system.slice/docker-3564c5064ffb33643364e7ecc0470f65b9ba3d4c953a5a8ad793011efad31f6b.scope/system.slice/globular-repository.service
+             └─103 /usr/lib/globular/bin/repository_server
+
+Jul 31 21:56:40 node-2 repository_server[103]: 2026/07/31 21:56:40 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=node-4 method=repository.artifact.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:10002: connect: connection refused\""
+Jul 31 21:56:40 node-2 repository_server[103]: 2026/07/31 21:56:40 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Jul 31 21:56:41 node-2 repository_server[103]: 2026/07/31 21:56:41 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=node-4 method=repository.artifact.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:10002: connect: connection refused\""
+Jul 31 21:56:41 node-2 repository_server[103]: 2026/07/31 21:56:41 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: context canceled"
+Jul 31 21:56:41 node-2 repository_server[103]: 2026/07/31 21:56:41 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%event%1.2.288%linux_amd64%0 err="context canceled" finding=service.silent_fallback_active
+Jul 31 21:56:41 node-2 repository_server[103]: 2026/07/31 21:56:41 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%event%1.2.288%linux_amd64 err="context canceled" finding=service.silent_fallback_active
+Jul 31 21:56:41 node-2 repository_server[103]: 2026/07/31 21:56:41 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla list manifests: context canceled"
+Jul 31 21:56:41 node-2 repository_server[103]: 2026/07/31 21:56:41 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%event%v1.2.288%linux_amd64%0 err="context canceled" finding=service.silent_fallback_active
+Jul 31 21:56:41 node-2 repository_server[103]: 2026/07/31 21:56:41 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%event%v1.2.288%linux_amd64 err="context canceled" finding=service.silent_fallback_active
+Jul 31 21:56:54 node-2 repository_server[103]: 2026/07/31 21:56:54 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:10002: connect: connection refused\""

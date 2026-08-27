@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-24T16:25:43.452935Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/upgrade/package-upgrade-converges-on-all-nodes.yaml",
+  "scenario": "package-upgrade-converges-on-all-nodes",
+  "suite": "upgrade",
+  "source_revision": "0ebfb24869929a4efe528be32759f80589ff0ba5",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "A package upgrade must reach every node that requires it, and \"converged\"\nmust mean observed, not dispatched.\n\nWHY THIS EXISTS. The 2026-08-16 outage began as an ordinary package deploy.\nThe deploy reported success and the operator moved on; the rollout had not\nconverged, and the gap was found hours later through unrelated symptoms. The\nsuite had 68 scenarios at the time and not one of them exercised an upgrade,\nwhich is the single most frequent mutation this platform performs.\n\nTHE DISTINCTION THIS PINS. A child workflow reporting SUCCEEDED is a dispatch\nacknowledgement, not install proof\n(reconcile.terminal_success_requires_observed_convergence). A rollout is\nconverged only when every required node proves the expected artifact is\ninstalled AND running (rollout.convergence_requires_runtime_proof). Those two\nare routinely conflated, and the conflation is invisible while the cluster is\nhealthy \u2014 it only shows up when one node is slow, partitioned, or missing the\nblob, which is precisely when it matters.\n\nConvergence identity is the build_id, not the version-only summary hash\n(convergence.identity_is_build_id). A version that resolves to two build_ids\ncannot converge deterministically, so this scenario also refuses to call a\nrollout healthy while resolution is ambiguous.\n\nThis scenario observes the steady state rather than driving an upgrade\nitself: it asserts that whatever the cluster currently believes it has\ndeployed is actually deployed, uniformly, everywhere. Run it after any\ndeploy \u2014 that is the check the pipeline used to skip.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-24T16:26:12.383119Z",
+    "result": "FAIL",
+    "executor_exit": 1,
+    "proof_eligible": false
+  }
+}

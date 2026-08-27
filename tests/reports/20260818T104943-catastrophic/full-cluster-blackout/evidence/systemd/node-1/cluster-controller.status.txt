@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:56:22 UTC; 18s ago
+    Process: 6439 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 6451 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 6466 (cluster_control)
+      Tasks: 15 (limit: 8641)
+     Memory: 26.2M (peak: 27.6M)
+        CPU: 392ms
+     CGroup: /system.slice/docker-059225d7a49fdbb867afd4a4acd66baab01c465f6ce3c4b555ea76d934cd376b.scope/system.slice/globular-cluster-controller.service
+             └─6466 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 18 10:56:39 node-1 cluster_controller_server[6466]: 2026/08/18 10:56:39 dns reconciler: starting loop (interval=30s)
+Aug 18 10:56:39 node-1 cluster_controller_server[6466]: 2026/08/18 10:56:39 dns reconciler: generation changed 0 -> 3, reconciling...
+Aug 18 10:56:39 node-1 cluster_controller_server[6466]: 2026/08/18 10:56:39 external dns: DISABLED
+Aug 18 10:56:39 node-1 cluster_controller_server[6466]: 2026/08/18 10:56:39 dns reconciler: starting health check loop (interval=30s)
+Aug 18 10:56:39 node-1 cluster_controller_server[6466]: 2026/08/18 10:56:39 dns reconciler: applying to 5 DNS endpoints (healthy: 5/5)
+Aug 18 10:56:39 node-1 cluster_controller_server[6466]: 2026/08/18 10:56:39 dns reconciler: WARN - failed to apply to node-5.globular.internal:10007: dial node-5.globular.internal:10007: TLS probe to node-5.globular.internal:10007 (ServerName=node-5.globular.internal): tls: first record does not look like a TLS handshake
+Aug 18 10:56:39 node-1 cluster_controller_server[6466]: 2026/08/18 10:56:39 dns reconciler: WARN - failed to apply to node-4.globular.internal:10007: dial node-4.globular.internal:10007: TLS probe to node-4.globular.internal:10007 (ServerName=node-4.globular.internal): tls: first record does not look like a TLS handshake
+Aug 18 10:56:39 node-1 cluster_controller_server[6466]: 2026/08/18 10:56:39 cluster-controller: using cached MAC token for auth
+Aug 18 10:56:39 node-1 cluster_controller_server[6466]: time=2026-08-18T10:56:39.898Z level=INFO msg="cluster controller ready" address=:12000 config=/var/lib/globular/cluster-controller/config.json cluster_domain=globular.internal version=1.2.318
+Aug 18 10:56:40 node-1 cluster_controller_server[6466]: 2026/08/18 10:56:40 dns reconciler: applied to node-3.globular.internal:10007: A=18, AAAA=0, SRV=4 records

@@ -1,0 +1,21 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:26:49 UTC; 5s ago
+    Process: 8063 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 8098 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 8115 (monitoring_serv)
+      Tasks: 10 (limit: 8641)
+     Memory: 6.9M (peak: 7.3M)
+        CPU: 78ms
+     CGroup: /system.slice/docker-9cbf484db170ae0c2e7abe0b6ccaf6884f6851db1bc95966564d78bfe2964b8d.scope/system.slice/globular-monitoring.service
+             └─8115 /usr/lib/globular/bin/monitoring_server
+
+Aug 18 19:26:49 node-5 systemd[1]: globular-monitoring.service: Scheduled restart job, restart counter is at 18.
+Aug 18 19:26:49 node-5 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Aug 18 19:26:49 node-5 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 18 19:26:49 node-5 monitoring_server[8115]: 2026/08/18 19:26:49 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Aug 18 19:26:49 node-5 monitoring_server[8115]: 2026/08/18 19:26:49 INFO security: loaded cluster roles from external policy file roles=22
+Aug 18 19:26:49 node-5 monitoring_server[8115]: PortAllocator range: 10000 - 20000
+Aug 18 19:26:51 node-5 monitoring_server[8115]: {"level":"warn","ts":"2026-08-18T19:26:51.620602Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00013d860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \\\"crypto/rsa: verification error\\\" while trying to verify candidate authority certificate \\\"Globular Root CA\\\")\""}
+Aug 18 19:26:53 node-5 monitoring_server[8115]: {"level":"warn","ts":"2026-08-18T19:26:53.621748Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00013d860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = latest balancer error: connection error: desc = \"transport: authentication handshake failed: tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \\\"crypto/rsa: verification error\\\" while trying to verify candidate authority certificate \\\"Globular Root CA\\\")\""}
+Aug 18 19:26:53 node-5 monitoring_server[8115]: 2026/08/18 19:26:53 WARN NewDefaultPortAllocator: failed to load service configs from etcd; port allocation proceeds without service reservations (ports may collide) err="context deadline exceeded"

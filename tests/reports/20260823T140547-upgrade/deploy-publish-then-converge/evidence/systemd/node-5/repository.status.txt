@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 13:23:25 UTC; 43min ago
+    Process: 137 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 176 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 198 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 41.1M (peak: 50.5M)
+        CPU: 26.241s
+     CGroup: /system.slice/docker-156e583edb9bcb59992ce20066ba918f752fd2b2d1b9d0e78d3547d9f6cfbaaf.scope/system.slice/globular-repository.service
+             └─198 /usr/lib/globular/bin/repository_server
+
+Aug 23 13:58:26 node-5 repository_server[198]: time=2026-08-23T13:58:26.723Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 23 14:00:06 node-5 repository_server[198]: 2026/08/23 14:00:06 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 23 14:00:21 node-5 repository_server[198]: 2026/08/23 14:00:21 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=42 baseline_ms=20 window=1605 new_window=1444
+Aug 23 14:00:23 node-5 repository_server[198]: 2026/08/23 14:00:23 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=180 baseline_ms=20 window=1503 new_window=1352
+Aug 23 14:01:23 node-5 repository_server[198]: 2026/08/23 14:01:23 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=170 baseline_ms=20 window=1570 new_window=1413
+Aug 23 14:03:26 node-5 repository_server[198]: time=2026-08-23T14:03:26.722Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 23 14:05:06 node-5 repository_server[198]: 2026/08/23 14:05:06 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 23 14:05:08 node-5 repository_server[198]: 2026/08/23 14:05:08 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=176 baseline_ms=20 window=2000 new_window=1800
+Aug 23 14:06:15 node-5 repository_server[198]: 2026/08/23 14:06:15 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/repository.PackageRepository/ListRepositoryFindings action=repository.findings.list hint="globular rbac bind sa --role globular-controller-sa"
+Aug 23 14:06:15 node-5 repository_server[198]: 2026/08/23 14:06:15 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=186 baseline_ms=20 window=1984 new_window=1785

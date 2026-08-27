@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 15:15:24 UTC; 25min ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 62 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 82 (event_server)
+      Tasks: 22 (limit: 8641)
+     Memory: 26.5M (peak: 33.6M)
+        CPU: 11.408s
+     CGroup: /system.slice/docker-25e46c91acb1d80f7a6ccddd1d9fdc390e1ea9a0d8f96da7e5d5fc93ecb6dd1c.scope/system.slice/globular-event.service
+             └─82 /usr/lib/globular/bin/event_server
+
+Aug 24 15:32:24 node-4 event_server[82]: {"level":"info","ts":"2026-08-24T15:32:24.523308Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 15:33:42 node-4 event_server[82]: time=2026-08-24T15:33:42.229Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=node_agent_handler_c777633e-6d07-5713-9c4c-deb3317eee25
+Aug 24 15:33:42 node-4 event_server[82]: time=2026-08-24T15:33:42.229Z level=INFO msg=subscribed channel=operation.* uuid=node_agent_handler_c777633e-6d07-5713-9c4c-deb3317eee25 subscribers=1
+Aug 24 15:33:52 node-4 event_server[82]: {"level":"warn","ts":"2026-08-24T15:33:52.254292Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000404b40/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 15:33:52 node-4 event_server[82]: {"level":"info","ts":"2026-08-24T15:33:52.254359Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 15:34:07 node-4 event_server[82]: time=2026-08-24T15:34:07.877Z level=INFO msg="subscriber cleanup" uuid=node_agent_handler_c777633e-6d07-5713-9c4c-deb3317eee25
+Aug 24 15:34:30 node-4 event_server[82]: time=2026-08-24T15:34:30.863Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=node_agent_handler_c777633e-6d07-5713-9c4c-deb3317eee25
+Aug 24 15:34:30 node-4 event_server[82]: time=2026-08-24T15:34:30.863Z level=INFO msg=subscribed channel=operation.* uuid=node_agent_handler_c777633e-6d07-5713-9c4c-deb3317eee25 subscribers=1
+Aug 24 15:40:24 node-4 event_server[82]: time=2026-08-24T15:40:24.272Z level=INFO msg="Subscribe: ok" channel=operation.restart_requested uuid=2222d40d-cd61-4de9-8dd9-739d239b1246
+Aug 24 15:40:24 node-4 event_server[82]: time=2026-08-24T15:40:24.272Z level=INFO msg=subscribed channel=operation.restart_requested uuid=2222d40d-cd61-4de9-8dd9-739d239b1246 subscribers=1

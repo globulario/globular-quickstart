@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 02:22:06 UTC; 27min ago
+    Process: 541 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 575 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 605 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 36.1M (peak: 41.8M)
+        CPU: 18.310s
+     CGroup: /system.slice/docker-06e641380ccebeaf0e4edbf72d9d5837f80d5b64b34cd13adac2cc24c8cb20df.scope/system.slice/globular-repository.service
+             └─605 /usr/lib/globular/bin/repository_server
+
+Aug 26 02:43:11 node-1 repository_server[605]: 2026/08/26 02:43:11 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=43 baseline_ms=20 window=1570 new_window=1413
+Aug 26 02:44:23 node-1 repository_server[605]: {"level":"warn","ts":"2026-08-26T02:44:23.239035Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003aa960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 26 02:44:23 node-1 repository_server[605]: {"level":"info","ts":"2026-08-26T02:44:23.239108Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 26 02:44:40 node-1 repository_server[605]: 2026/08/26 02:44:40 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 26 02:46:11 node-1 repository_server[605]: 2026/08/26 02:46:11 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=180 baseline_ms=20 window=1822 new_window=1639
+Aug 26 02:47:09 node-1 repository_server[605]: time=2026-08-26T02:47:09.731Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 26 02:47:10 node-1 repository_server[605]: 2026/08/26 02:47:10 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=41 baseline_ms=20 window=1911 new_window=1719
+Aug 26 02:48:09 node-1 repository_server[605]: 2026/08/26 02:48:09 INFO acc: AIMD decrease method=/repository.PackageRepository/GetArtifactManifest rtt_ms=43 baseline_ms=20 window=1934 new_window=1740
+Aug 26 02:49:10 node-1 repository_server[605]: 2026/08/26 02:49:10 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=390 baseline_ms=20 window=2000 new_window=1800
+Aug 26 02:49:18 node-1 repository_server[605]: 2026/08/26 02:49:18 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=172 baseline_ms=20 window=1964 new_window=1767

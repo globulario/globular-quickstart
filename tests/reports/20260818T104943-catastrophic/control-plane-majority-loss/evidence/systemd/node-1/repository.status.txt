@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 10:52:47 UTC; 7s ago
+    Process: 4739 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 4765 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 4780 (repository_serv)
+      Tasks: 14 (limit: 8641)
+     Memory: 23.5M (peak: 25.3M)
+        CPU: 275ms
+     CGroup: /system.slice/docker-059225d7a49fdbb867afd4a4acd66baab01c465f6ce3c4b555ea76d934cd376b.scope/system.slice/globular-repository.service
+             └─4780 /usr/lib/globular/bin/repository_server
+
+Aug 18 10:52:48 node-1 repository_server[4780]: 2026/08/18 10:52:48 INFO scylladb connected hosts="[10.10.0.11 10.10.0.12 10.10.0.13 10.10.0.15]" keyspace=repository rf=3
+Aug 18 10:52:48 node-1 repository_server[4780]: time=2026-08-18T10:52:48.958Z level=INFO msg="repository storage initialized — local POSIX CAS only (MinIO is never used for packages)" local=/var/lib/globular/repository
+Aug 18 10:52:48 node-1 repository_server[4780]: 2026/08/18 10:52:48 INFO publish-reconciler: started interval=1m0s
+Aug 18 10:52:48 node-1 repository_server[4780]: time=2026-08-18T10:52:48.958Z level=INFO msg="service ready" service=repository.PackageRepository port=10008 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=584
+Aug 18 10:52:48 node-1 repository_server[4780]: time=2026-08-18T10:52:48.958Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10008
+Aug 18 10:52:48 node-1 repository_server[4780]: 2026/08/18 10:52:48 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 18 10:52:48 node-1 repository_server[4780]: time=2026-08-18T10:52:48.958Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 18 10:52:48 node-1 repository_server[4780]: time=2026-08-18T10:52:48.958Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10008
+Aug 18 10:52:48 node-1 repository_server[4780]: time=2026-08-18T10:52:48.960Z level=WARN msg="blob-seed: ListManifests failed — seeding skipped" err="scylla list manifests: Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Aug 18 10:52:49 node-1 repository_server[4780]: 2026/08/18 10:52:49 INFO metrics listening service=repository.PackageRepository addr=[::]:10001

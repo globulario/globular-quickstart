@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 07:51:27 UTC; 17min ago
+    Process: 416 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 423 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 441 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 586 (resource_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 25.8M (peak: 28.5M)
+        CPU: 2.305s
+     CGroup: /system.slice/docker-397e55c282c79081902ab126fff23289815f88f1c2098484b8470853bced6027.scope/system.slice/globular-resource.service
+             └─586 /usr/lib/globular/bin/resource_server
+
+Aug 27 07:53:45 node-1 resource_server[586]: {"level":"warn","ts":"2026-08-27T07:53:45.879633Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000191860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 07:53:45 node-1 resource_server[586]: {"level":"info","ts":"2026-08-27T07:53:45.879715Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 07:54:07 node-1 resource_server[586]: {"level":"warn","ts":"2026-08-27T07:54:07.502789Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0001c9860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 07:54:07 node-1 resource_server[586]: {"level":"info","ts":"2026-08-27T07:54:07.50285Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 07:54:20 node-1 resource_server[586]: {"level":"warn","ts":"2026-08-27T07:54:20.880013Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000191860/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 07:54:20 node-1 resource_server[586]: {"level":"info","ts":"2026-08-27T07:54:20.880073Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 07:56:43 node-1 resource_server[586]: 2026/08/27 07:56:43 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 27 07:57:14 node-1 resource_server[586]: 2026/08/27 07:57:14 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=resource.session.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down"
+Aug 27 07:57:34 node-1 resource_server[586]: 2026/08/27 07:57:34 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=resource.session.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: failed (gocql: no hosts available in the pool)"
+Aug 27 07:58:34 node-1 resource_server[586]: 2026/08/27 07:58:34 INFO acc: warmup complete baseline_rtt_ms=20 samples=200 elapsed=6m54s

@@ -1,0 +1,33 @@
+● globular-minio.service - Globular MinIO
+     Loaded: loaded (/etc/systemd/system/globular-minio.service; enabled; preset: enabled)
+    Drop-In: /etc/systemd/system/globular-minio.service.d
+             └─distributed.conf
+     Active: active (running) since Sun 2026-08-23 18:48:44 UTC; 11s ago
+    Process: 50 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/minio /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 70 ExecStartPre=/usr/bin/chown -R globular:globular /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 91 ExecStartPre=/usr/bin/chown -R globular:globular /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 122 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/minio (code=exited, status=0/SUCCESS)
+    Process: 156 ExecStartPre=/usr/bin/chmod 0700 /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 163 ExecStartPre=/bin/sh -c chmod o+x "$(dirname /shared/minio/data)" "$(dirname "$(dirname /shared/minio/data)")" 2>/dev/null || true (code=exited, status=0/SUCCESS)
+    Process: 197 ExecStartPre=/usr/bin/test -w /shared/minio/data (code=exited, status=0/SUCCESS)
+    Process: 202 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 209 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data1 (code=exited, status=0/SUCCESS)
+    Process: 214 ExecStartPre=/usr/bin/mkdir -p /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+    Process: 223 ExecStartPre=/usr/bin/chown globular:globular /var/lib/minio/d1/data2 (code=exited, status=0/SUCCESS)
+   Main PID: 235 (minio)
+      Tasks: 21 (limit: 8641)
+     Memory: 76.2M (peak: 78.7M)
+        CPU: 1.005s
+     CGroup: /system.slice/docker-a613a18ab3a37109baeffa2b2373429836cf63f2fe449e1d1aad8a082e282255.scope/system.slice/globular-minio.service
+             └─235 /usr/lib/globular/bin/minio server https://10.10.0.11:9000/var/lib/minio/d1/data1 https://10.10.0.11:9000/var/lib/minio/d1/data2 https://10.10.0.12:9000/var/lib/minio/d1/data1 https://10.10.0.12:9000/var/lib/minio/d1/data2 https://10.10.0.13:9000/var/lib/minio/d1/data1 https://10.10.0.13:9000/var/lib/minio/d1/data2 --address 10.10.0.13:9000 --console-address 10.10.0.13:9001
+
+Aug 23 18:48:46 node-3 minio[235]: API: SYSTEM.grid
+Aug 23 18:48:46 node-3 minio[235]: Time: 18:48:46 UTC 08/23/2026
+Aug 23 18:48:46 node-3 minio[235]: DeploymentID: 5fca3f29-a6e5-4a3c-8e0f-1a542368bf46
+Aug 23 18:48:46 node-3 minio[235]: Error: grid: https://10.10.0.13:9000 re-connecting to https://10.10.0.12:9000: dial tcp 10.10.0.12:9000: connect: connection refused (*net.OpError) Sleeping 1.331s (3) (*fmt.wrapError)
+Aug 23 18:48:46 node-3 minio[235]:        6: internal/logger/logonce.go:118:logger.(*logOnceType).logOnceIf()
+Aug 23 18:48:46 node-3 minio[235]:        5: internal/logger/logonce.go:149:logger.LogOnceIf()
+Aug 23 18:48:46 node-3 minio[235]:        4: internal/grid/connection.go:59:grid.gridLogOnceIf()
+Aug 23 18:48:46 node-3 minio[235]:        3: internal/grid/connection.go:669:grid.(*Connection).connect.func1()
+Aug 23 18:48:46 node-3 minio[235]:        2: internal/grid/connection.go:675:grid.(*Connection).connect()
+Aug 23 18:48:46 node-3 minio[235]:        1: internal/grid/connection.go:275:grid.newConnection.func3()

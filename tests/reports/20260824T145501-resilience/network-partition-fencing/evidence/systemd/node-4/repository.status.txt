@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 15:15:24 UTC; 25min ago
+    Process: 154 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 192 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 221 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 47.6M (peak: 49.7M)
+        CPU: 15.342s
+     CGroup: /system.slice/docker-25e46c91acb1d80f7a6ccddd1d9fdc390e1ea9a0d8f96da7e5d5fc93ecb6dd1c.scope/system.slice/globular-repository.service
+             └─221 /usr/lib/globular/bin/repository_server
+
+Aug 24 15:33:02 node-4 repository_server[221]: {"level":"info","ts":"2026-08-24T15:33:02.241333Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 15:34:29 node-4 repository_server[221]: {"level":"warn","ts":"2026-08-24T15:34:29.718027Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00024c780/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 24 15:34:29 node-4 repository_server[221]: {"level":"info","ts":"2026-08-24T15:34:29.718096Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 24 15:35:25 node-4 repository_server[221]: time=2026-08-24T15:35:25.388Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 24 15:36:26 node-4 repository_server[221]: 2026/08/24 15:36:26 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=171 baseline_ms=20 window=747 new_window=672
+Aug 24 15:37:54 node-4 repository_server[221]: 2026/08/24 15:37:54 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 24 15:38:18 node-4 repository_server[221]: 2026/08/24 15:38:18 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=177 baseline_ms=20 window=1161 new_window=1044
+Aug 24 15:39:08 node-4 repository_server[221]: 2026/08/24 15:39:08 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=193 baseline_ms=20 window=1401 new_window=1260
+Aug 24 15:40:18 node-4 repository_server[221]: 2026/08/24 15:40:18 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=194 baseline_ms=20 window=1604 new_window=1443
+Aug 24 15:40:25 node-4 repository_server[221]: time=2026-08-24T15:40:25.388Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"

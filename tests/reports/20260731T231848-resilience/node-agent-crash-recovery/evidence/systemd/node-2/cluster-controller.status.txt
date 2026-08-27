@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:21:31 UTC; 31min ago
+    Process: 17069 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 17073 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 17076 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 43.0M (peak: 45.9M)
+        CPU: 3min 20.016s
+     CGroup: /system.slice/docker-9d4b8e2a20ac1e6d6bf99864bf71926d1af05ff60dfd285e1db1bf7a32bc2282.scope/system.slice/globular-cluster-controller.service
+             └─17076 /usr/lib/globular/bin/cluster_controller_server
+
+Jul 31 23:52:55 node-2 cluster_controller_server[17076]: {"level":"warn","ts":"2026-07-31T23:52:55.853218Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006703c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:52:59 node-2 cluster_controller_server[17076]: {"level":"warn","ts":"2026-07-31T23:52:59.876328Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0006703c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 23:52:59 node-2 cluster_controller_server[17076]: 2026/07/31 23:52:59 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Jul 31 23:52:59 node-2 cluster_controller_server[17076]: 2026/07/31 23:52:59 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Jul 31 23:52:59 node-2 cluster_controller_server[17076]: 2026/07/31 23:52:59 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Jul 31 23:52:59 node-2 cluster_controller_server[17076]: 2026/07/31 23:52:59 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Jul 31 23:52:59 node-2 cluster_controller_server[17076]: 2026/07/31 23:52:59 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Jul 31 23:53:00 node-2 cluster_controller_server[17076]: 2026/07/31 23:53:00 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10004 host=10.10.0.11 port=10004
+Jul 31 23:53:01 node-2 cluster_controller_server[17076]: 2026/07/31 23:53:01 minio-creds: generated fresh credentials (user=gl-499a7a4894)
+Jul 31 23:53:01 node-2 cluster_controller_server[17076]: 2026/07/31 23:53:01 leader: reloaded state from etcd (5 nodes, cluster=globular.internal)

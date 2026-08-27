@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 19:33:32 UTC; 5min ago
+    Process: 572 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 612 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 655 (repository_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 58.1M (peak: 62.1M)
+        CPU: 14.854s
+     CGroup: /system.slice/docker-9a67632422a5502a1d64625e1932bb8e76fae6f90cdee0187c70d84ee68d0231.scope/system.slice/globular-repository.service
+             └─655 /usr/lib/globular/bin/repository_server
+
+Aug 18 19:37:37 node-1 repository_server[655]: 2026/08/18 19:37:37 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%torrent%v1.2.312%linux_amd64 err="scylla: not connected" finding=service.silent_fallback_active
+Aug 18 19:37:37 node-1 repository_server[655]: 2026/08/18 19:37:37 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%sidekick%7.0.0%linux_amd64%0 err="scylla: not connected" finding=service.silent_fallback_active
+Aug 18 19:37:37 node-1 repository_server[655]: 2026/08/18 19:37:37 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%sidekick%7.0.0%linux_amd64 err="scylla: not connected" finding=service.silent_fallback_active
+Aug 18 19:37:37 node-1 repository_server[655]: 2026/08/18 19:37:37 WARN resolveLatestBuildNumber: scylla unavailable, falling back to minio err="scylla: not connected"
+Aug 18 19:37:37 node-1 repository_server[655]: 2026/08/18 19:37:37 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%sidekick%v7.0.0%linux_amd64%0 err="scylla: not connected" finding=service.silent_fallback_active
+Aug 18 19:37:37 node-1 repository_server[655]: 2026/08/18 19:37:37 WARN ledger read failed, falling back to minio (degraded mode) key=core@globular.io%sidekick%v7.0.0%linux_amd64 err="scylla: not connected" finding=service.silent_fallback_active
+Aug 18 19:37:37 node-1 repository_server[655]: 2026/08/18 19:37:37 INFO scylladb connected hosts="[10.10.0.12 10.10.0.13]" keyspace=repository rf=2
+Aug 18 19:37:37 node-1 repository_server[655]: 2026/08/18 19:37:37 INFO scylladb reconnected hosts="[10.10.0.12 10.10.0.13]" keyspace=repository rf=2
+Aug 18 19:37:37 node-1 repository_server[655]: time=2026-08-18T19:37:37.353Z level=INFO msg="scylladb reconnected after health check failure"
+Aug 18 19:37:41 node-1 repository_server[655]: 2026/08/18 19:37:41 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=node-1 method=repository.artifact.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down"

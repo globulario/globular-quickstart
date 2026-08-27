@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 01:26:07 UTC; 31min ago
+    Process: 421 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 428 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 442 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 598 (resource_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 25.4M (peak: 28.3M)
+        CPU: 3.898s
+     CGroup: /system.slice/docker-06e641380ccebeaf0e4edbf72d9d5837f80d5b64b34cd13adac2cc24c8cb20df.scope/system.slice/globular-resource.service
+             └─598 /usr/lib/globular/bin/resource_server
+
+Aug 26 01:27:13 node-1 resource_server[598]: {"level":"warn","ts":"2026-08-26T01:27:13.086815Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003865a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 26 01:27:13 node-1 resource_server[598]: {"level":"info","ts":"2026-08-26T01:27:13.086882Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 26 01:27:18 node-1 resource_server[598]: {"level":"warn","ts":"2026-08-26T01:27:18.166527Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000570f00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 26 01:27:18 node-1 resource_server[598]: {"level":"info","ts":"2026-08-26T01:27:18.166584Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 26 01:27:48 node-1 resource_server[598]: {"level":"warn","ts":"2026-08-26T01:27:48.087811Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003865a0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 26 01:27:48 node-1 resource_server[598]: {"level":"info","ts":"2026-08-26T01:27:48.087893Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 26 01:29:22 node-1 resource_server[598]: 2026/08/26 01:29:22 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/resource.ResourceService/GetAccounts
+Aug 26 01:31:10 node-1 resource_server[598]: 2026/08/26 01:31:10 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 26 01:31:54 node-1 resource_server[598]: 2026/08/26 01:31:54 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=resource.session.read reason=get_role_binding_failed error="rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+Aug 26 01:32:51 node-1 resource_server[598]: 2026/08/26 01:32:51 INFO acc: warmup complete baseline_rtt_ms=20 samples=211 elapsed=6m39s

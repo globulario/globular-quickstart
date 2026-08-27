@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-25 11:21:31 UTC; 15s ago
+    Process: 149 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 188 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 208 (node_agent_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 23.5M (peak: 35.0M)
+        CPU: 17.853s
+     CGroup: /system.slice/docker-e677b584469e8271f65f3c9189d5ca0c28e6b6ae0447af2f4d1e2b41a93429ad.scope/system.slice/globular-node-agent.service
+             └─208 /usr/lib/globular/bin/node_agent_server
+
+Aug 25 11:21:32 node-4 node_agent_server[208]: 2026/08/25 11:21:32 INFO etcd.maintenance_started endpoint=https://10.10.0.14:2379 interval=1m0s min_file_bytes=268435456 min_reclaim_bytes=67108864
+Aug 25 11:21:32 node-4 node_agent_server[208]: 2026/08/25 11:21:32 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Aug 25 11:21:32 node-4 node_agent_server[208]: 2026/08/25 11:21:32 node agent listening on 0.0.0.0:11000
+Aug 25 11:21:32 node-4 node_agent_server[208]: 2026/08/25 11:21:32 metrics listening on 0.0.0.0:11001 (saved=11001, default=11001)
+Aug 25 11:21:33 node-4 node_agent_server[208]: {"level":"warn","ts":"2026-08-25T11:21:33.226029Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000c5a3c0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 25 11:21:34 node-4 node_agent_server[208]: {"level":"warn","ts":"2026-08-25T11:21:34.004156Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000c5a3c0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 25 11:21:34 node-4 node_agent_server[208]: {"level":"warn","ts":"2026-08-25T11:21:34.00445Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000c5a3c0/10.10.0.14:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 25 11:21:46 node-4 node_agent_server[208]: 2026/08/25 11:21:46 event-publisher: connected to event service
+Aug 25 11:21:46 node-4 node_agent_server[208]: 2026/08/25 11:21:46 event-handler: connected to event service
+Aug 25 11:21:46 node-4 node_agent_server[208]: 2026/08/25 11:21:46 event-handler: subscribed to operation.*

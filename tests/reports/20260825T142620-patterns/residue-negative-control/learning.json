@@ -1,0 +1,66 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-25T14:37:07.848833Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "residue-negative-control",
+  "suite": "patterns",
+  "result": "FAIL",
+  "source_revision": "07afa9e72caf0ffc533a3233aa20064d6425e91e",
+  "proof": {
+    "claim": "NEGATIVE CONTROL for the harness restoration law.\n\nThis scenario deliberately leaves residue: it stops a node and never restores\nit \u2014 there is no `start_node` in steps and no cleanup section at all. It is\nthe test that proves the detector can fire.\n\nExpected behaviour of the RUNNER (not of the product):\n  1. the mutation ledger records node_stopped(node-5);\n  2. teardown finds it outstanding after cleanup;\n  3. teardown reverses it (docker start) and verifies the container is running;\n  4. the scenario is marked FAILED with \"RESIDUE: scenario left unrestored\n     mutations\", even though every assertion in it passes.\n\nA scenario whose assertions all pass but which leaks state MUST fail. If this\nscenario ever reports PASS, the restoration law is not being enforced and\nevery other destructive scenario is free to contaminate its successors \u2014\nwhich is exactly what happened on 2026-08-05, when a detached etcd member and\na root-owned service key rode silently into three later suites.\n\nThis is intentionally the only scenario in the tree that is SUPPOSED to fail.\nDo not \"fix\" it by adding cleanup \u2014 that would delete the control.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "restoration",
+        "id": "enforce_restoration",
+        "probe_or_action": "restoration",
+        "result": {
+          "outstanding_at_teardown": [
+            {
+              "kind": "node_stopped",
+              "node": "node-5"
+            }
+          ],
+          "reversed": [
+            {
+              "kind": "node_stopped",
+              "node": "node-5"
+            }
+          ],
+          "discharged": [],
+          "failed": [],
+          "unrestorable": []
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

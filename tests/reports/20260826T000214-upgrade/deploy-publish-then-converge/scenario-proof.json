@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-26T00:02:15.123759Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/upgrade/deploy-publish-then-converge.yaml",
+  "scenario": "deploy-publish-then-converge",
+  "suite": "upgrade",
+  "source_revision": "f74014a77246bf13da82dcf4aa40c105e1b21f6c",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "A publish must produce an artifact the whole cluster can resolve, serve, and\nconverge on \u2014 and must not report a success it has not achieved.\n\nWHY THIS EXISTS. The suite already asserts on the STATE of the repository\nafter a publish, but never executed one: the bundle arrives pre-published, so\nevery upgrade scenario until now observed the aftermath of a pipeline it did\nnot drive. desired-state-refuses-what-it-cannot-resolve covers the operator\nhalf (`services desired set`) and names this scenario for the other half. The\npath that failed roughly one run in two on 2026-08-16 is the publish itself,\nand it had zero coverage of its execution.\n\nTHE TWO FAILURE SHAPES, both from that incident:\n\n1. PUBLISHED but not servable. The manifest authority is cluster-wide, the\n   blob store is per-node. A publish materializes bytes only in the CAS of\n   the instance that received them; every other node reads the same manifest,\n   reports PUBLISHED, and cannot serve it. Whether a deploy worked depended on\n   which repository instance served the install \u2014 not something the operator\n   controls or can see.\n\n2. PUBLISHED twice, resolvable never. Re-publishing an unchanged version\n   minted a second build_id for it. The resolver requires exactly one, so the\n   version went ambiguous and the rollout stalled \u2014 reported as converging,\n   forever.\n\nWHY RE-PUBLISHING A STAGED ARCHIVE IS THE RIGHT DRIVER. This is not a\nshortcut around building a new binary; it is the exact operation that broke.\nThe platform's own local-deploy model is \"reuse an existing published release\nversion and advance only the build identity\", so a second publish of one\nversion is the normal case, not an abuse of it. Building a genuinely new\nbinary would require a Go toolchain in the node image and would test the\ncompiler rather than the pipeline. The archive is taken from\n/var/lib/globular/packages/ \u2014 the staged CAS is the only sanctioned package\nsource (repository.minio_is_not_valid_package_source).\n\nWHY dns. `desired set` is known to refuse `blog` with a kind error its own\nresolver contradicts (desired_state.refusal_message_misattributes_cause).\ndesired-state-refuses-what-it-cannot-resolve settled on dns as a target the\nplatform genuinely accepts; reusing it here keeps this scenario failing on\nthe property under test rather than on a known diagnostic bug.\n\nWHY candidate, AND WHY NOT A local@ PUBLISHER. Identity lanes are enforced in\nlocal_publish_guard.go: stable is publisher=core@globular.io + channel=STABLE\n+ clean semver and is SEALED; dev is publisher=local@<id> + channel=DEV + a\n+local./-dev. version suffix; hotfix is any publisher + CANDIDATE + a -hotfix.\nsuffix. This scenario publishes to CANDIDATE under the archive's own\npublisher, which is what `globular deploy` itself does by default\n(\"candidate; stable forbidden\") \u2014 it is the real deploy lane, and it trips\nnone of the four identity rules.\n\nIt deliberately does NOT publish as local@<cluster-id>. That lane is correct\nfor a developer testing an unreleased binary, but it MINTS A PUBLISHER\nNAMESPACE as a side effect of publishing, and a publisher namespace is an\nRBAC-owned resource, not a free string\n(package.publisher_namespace_is_rbac_resource). A scenario that ran on every\nsuite execution would accumulate unclaimed namespaces in the repository it is\nsupposed to be validating. Re-publishing identical bytes under the existing\npublisher creates no new identity at all, which is the property that makes\nthis safe to run repeatedly.\n\nWHAT THIS PINS. After a publish: the blob is reachable from every node, the\nversion still resolves to exactly one artifact, desired state can be pointed\nat it, and every node reports that version installed. The publish reports\nSUCCESS only when it achieved one \u2014 exit code alone is not accepted as proof.\n\nNOT COVERED HERE, and worth stating plainly: the desired-state REGRESSION\nfloor, which needs two published versions of one package. A bundle ships one\nversion per package, so a second version cannot be produced without building\none \u2014 see the note in desired-state-refuses-what-it-cannot-resolve. This\nscenario advances build identity, not release version, and asserts nothing\nabout rollback.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-26T00:02:35.063749Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

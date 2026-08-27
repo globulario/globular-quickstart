@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:57:29 UTC; 1min 33s ago
+    Process: 206 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 236 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 258 (cluster_doctor_)
+      Tasks: 19 (limit: 8641)
+     Memory: 21.1M (peak: 27.3M)
+        CPU: 444ms
+     CGroup: /system.slice/docker-17ec3f2e1e37566654af55f19a2d297a6df71a8aa1ee623b5bb287edb4f66d98.scope/system.slice/globular-cluster-doctor.service
+             └─258 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 17 23:58:33 node-1 cluster_doctor_server[258]: 2026/08/17 23:58:33 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListInfrastructureReleasesJson: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: i/o timeout"
+Aug 17 23:58:35 node-1 cluster_doctor_server[258]: time=2026-08-17T23:58:35.365Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="rpc error: code = Unknown desc = Operation timed out for globular_events.events - received only 0 responses from 1 CL=QUORUM."
+Aug 17 23:58:35 node-1 cluster_doctor_server[258]: time=2026-08-17T23:58:35.365Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 17 23:58:35 node-1 cluster_doctor_server[258]: time=2026-08-17T23:58:35.365Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 17 23:58:35 node-1 cluster_doctor_server[258]: time=2026-08-17T23:58:35.365Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 17 23:58:35 node-1 cluster_doctor_server[258]: time=2026-08-17T23:58:35.365Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 17 23:58:35 node-1 cluster_doctor_server[258]: time=2026-08-17T23:58:35.365Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 17 23:58:35 node-1 cluster_doctor_server[258]: time=2026-08-17T23:58:35.365Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 17 23:58:40 node-1 cluster_doctor_server[258]: time=2026-08-17T23:58:40.367Z level=WARN msg="learning: promotion candidate not queued; hint lost, cluster behavior unaffected" theme=remediation.node.systemd.units_running err="generate promotion candidate: rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"
+Aug 17 23:58:42 node-1 cluster_doctor_server[258]: time=2026-08-17T23:58:42.477Z level=WARN msg="learning: promotion candidate not queued; hint lost, cluster behavior unaffected" theme=remediation.cluster.desired_state.absent err="generate promotion candidate: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:443: connect: no route to host\""

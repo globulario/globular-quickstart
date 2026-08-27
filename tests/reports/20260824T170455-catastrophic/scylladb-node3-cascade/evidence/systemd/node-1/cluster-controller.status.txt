@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 17:07:36 UTC; 3min 0s ago
+    Process: 145 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 181 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 205 (cluster_control)
+      Tasks: 21 (limit: 8641)
+     Memory: 36.3M (peak: 43.3M)
+        CPU: 16.105s
+     CGroup: /system.slice/docker-132f316b761e19b341cb3599f86ce40d781792bff8b801029cd06da093b8fd9e.scope/system.slice/globular-cluster-controller.service
+             └─205 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 24 17:10:26 node-1 cluster_controller_server[205]: 2026/08/24 17:10:26 InfrastructureRelease core@globular.io/gateway: skipping node a166b992-b66d-53cb-b7c7-61dfa4dd5a36/node-3 (stale heartbeat: last seen 5m58s ago)
+Aug 24 17:10:26 node-1 cluster_controller_server[205]: 2026/08/24 17:10:26 InfrastructureRelease core@globular.io/gateway: skipping node c777633e-6d07-5713-9c4c-deb3317eee25/node-1 (stale heartbeat: last seen 5m42s ago)
+Aug 24 17:10:26 node-1 cluster_controller_server[205]: 2026/08/24 17:10:26 InfrastructureRelease core@globular.io/gateway: skipping node c8a09d9e-3813-5357-ab58-93aa410f27fb/node-2 (stale heartbeat: last seen 5m0s ago)
+Aug 24 17:10:26 node-1 cluster_controller_server[205]: 2026/08/24 17:10:26 InfrastructureRelease core@globular.io/gateway: skipping node a166b992-b66d-53cb-b7c7-61dfa4dd5a36/node-3 (stale heartbeat: last seen 5m58s ago)
+Aug 24 17:10:26 node-1 cluster_controller_server[205]: 2026/08/24 17:10:26 InfrastructureRelease core@globular.io/gateway: skipping node c777633e-6d07-5713-9c4c-deb3317eee25/node-1 (stale heartbeat: last seen 5m42s ago)
+Aug 24 17:10:26 node-1 cluster_controller_server[205]: 2026/08/24 17:10:26 InfrastructureRelease core@globular.io/gateway: skipping node c8a09d9e-3813-5357-ab58-93aa410f27fb/node-2 (stale heartbeat: last seen 5m0s ago)
+Aug 24 17:10:26 node-1 cluster_controller_server[205]: 2026/08/24 17:10:26 InfrastructureRelease core@globular.io/gateway: skip node 35ac3821-6b90-52eb-a800-41130471770b, profiles [compute core] don't match catalog [control-plane gateway]
+Aug 24 17:10:26 node-1 cluster_controller_server[205]: 2026/08/24 17:10:26 InfrastructureRelease core@globular.io/gateway: skip node 6400b443-cf38-52da-a683-de2fc5103c0b, profiles [compute core] don't match catalog [control-plane gateway]
+Aug 24 17:10:34 node-1 cluster_controller_server[205]: 2026/08/24 17:10:34 drift-reconciler: topology preflight violation (safe actions continue): topology safety [objectstore_topology_mismatch]: drift preflight: controller minio pool [10.10.0.11 10.10.0.12 10.10.0.13] differs from desired objectstore nodes [10.10.0.12]
+Aug 24 17:10:34 node-1 cluster_controller_server[205]: 2026/08/24 17:10:34 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003

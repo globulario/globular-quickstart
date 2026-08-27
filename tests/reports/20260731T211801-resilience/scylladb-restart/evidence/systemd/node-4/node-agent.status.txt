@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:40:39 UTC; 12min ago
+    Process: 204 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 227 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 245 (node_agent_serv)
+      Tasks: 24 (limit: 8641)
+     Memory: 1.1G (peak: 1.1G)
+        CPU: 7min 19.562s
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-node-agent.service
+             └─245 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 21:53:06 node-4 node_agent_server[245]: 2026/07/31 21:53:06 event-publisher: publish service.exited failed: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused" (will reconnect)
+Jul 31 21:53:11 node-4 node_agent_server[245]: 2026/07/31 21:53:11 event-publisher: connected to event service
+Jul 31 21:53:11 node-4 node_agent_server[245]: 2026/07/31 21:53:11 ingress: keepalived disabled on node 6400b443-cf38-52da-a683-de2fc5103c0b
+Jul 31 21:53:11 node-4 node_agent_server[245]: 2026/07/31 21:53:11 event-publisher: publish service.started failed: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused" (will reconnect)
+Jul 31 21:53:12 node-4 node_agent_server[245]: 2026/07/31 21:53:12 behavioral observation: infra_probe skipped component=scylladb node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused"
+Jul 31 21:53:12 node-4 node_agent_server[245]: 2026/07/31 21:53:12 behavioral observation: infra_probe skipped component=etcd node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.15:443: connect: connection refused"
+Jul 31 21:53:12 node-4 node_agent_server[245]: 2026/07/31 21:53:12 behavioral observation: infra_probe skipped component=minio node=6400b443-cf38-52da-a683-de2fc5103c0b: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs"
+Jul 31 21:53:14 node-4 node_agent_server[245]: 2026/07/31 21:53:14 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Jul 31 21:53:16 node-4 node_agent_server[245]: 2026/07/31 21:53:16 nodeagent: reporting 41 installed services (hash=0850d5d5c9405c3f43d36c9d06676c74e34ebdd391dc4bac490c2d006e9759b7, sample=[libnss-resolve rclone event globular-cli cluster-doctor])
+Jul 31 21:53:16 node-4 node_agent_server[245]: 2026/07/31 21:53:16 event-publisher: connected to event service

@@ -1,0 +1,196 @@
+version: 1
+name: rejoin-with-stale-membership-state-is-bounded
+description: |
+  A node re-entering a cluster while still holding state from a PREVIOUS
+  membership must reach a terminal outcome inside the install budget — joined,
+  or failed with a diagnosis. It must never wait forever.
+
+  WHY THIS EXISTS. On 2026-08-19 a Day-0 install was run on a machine whose
+  ScyllaDB data directory still held the previous cluster's Raft group0: five
+  voters, four of them long gone. The install reached
+
+    "Waiting for ScyllaDB write readiness (DDL probe) on 10.0.0.63:9042..."
+
+  and stopped there. CREATE KEYSPACE is a schema change, schema changes take a
+  group0 read barrier, and a barrier needs 3 of 5 voters. One was alive. The
+  probe could never succeed, and nothing bounded it: install-day0.sh advertises
+  a 120s budget as `for _i in $(seq 1 60)` with `sleep 2`, but invokes cqlsh
+  with no client-side timeout, so a single attempt blocks indefinitely and the
+  loop never reaches iteration 2. The operator saw one line and no error, for
+  as long as they were willing to wait.
+
+  The four peers were reachable by ICMP but had 9042 and 7000 closed — already
+  cleaned — so quorum was unrecoverable by restarting them. The install could
+  not have succeeded; it simply never said so.
+
+  THE PROPERTY. Bounded failure, not success. This scenario does not assert
+  that a dirty node rejoins — that may legitimately be refused. It asserts that
+  the attempt CONCLUDES, and that the rest of the cluster is not degraded while
+  it runs. A hang is caught structurally: the bounded wait below expires, the
+  node has not registered, and the scenario fails on that.
+
+  WHY THIS SHAPE OF DIRTY. The node is removed from the cluster and then
+  restarted WITHOUT wiping its state volume, so its persisted identity and
+  membership refer to a cluster that no longer lists it. That is the same class
+  of state as the incident — local evidence of a membership the cluster has
+  moved past — reachable with existing primitives.
+
+  RELATIONSHIP TO first-join-from-clean-node. That scenario proves the CLEAN
+  path works: detach, remove, WIPE, restart, rejoin. This one is deliberately
+  the same sequence with the wipe removed, so a diff between the two isolates
+  exactly one variable: whether prior state was cleared. Passing clean while
+  hanging dirty is the defect, and only the pair can show it.
+
+  NOT COVERED HERE: the cqlsh timeout itself. Reproducing the original hang
+  needs a ScyllaDB whose group0 cannot reach quorum, which a healthy sim
+  cluster does not offer without building a foreign ring first. This pins the
+  boundedness property that the missing timeout violated, at the layer the
+  harness can actually drive.
+
+suite: upgrade
+tags:
+  - day0
+  - join
+  - bounded-wait
+  - stale-state
+  - incident-2026-08-19
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: true
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # node-5 must actually be a member before it can be given stale membership
+  # state. Without this the scenario would "remove" a node that was already
+  # gone and then prove that nothing hung, which is trivially true.
+  - type: probe
+    id: node5_is_a_member
+    probe: node.etcd_registered
+    params:
+      node: node-5
+    expect:
+      registered: true
+
+  - type: probe
+    id: node5_has_packages_installed
+    probe: node.installed_packages
+    params:
+      node: node-5
+    expect:
+      count_gte: 1
+
+baseline:
+  - type: probe
+    id: liveness_before
+    probe: state.liveness_freshness
+
+  - type: probe
+    id: doctor_before
+    probe: doctor.report_severity
+
+steps:
+  # ── Make node-5's local state stale relative to the cluster ───────────────
+  # Detach then remove, exactly as first-join-from-clean-node does — but the
+  # wipe that follows there is omitted here. node-5 keeps believing it belongs
+  # to a cluster that has stopped listing it.
+  - type: action
+    id: detach_node5_etcd
+    action: chaos.detach_node_etcd
+    params:
+      node: node-5
+
+  - type: action
+    id: remove_node5_from_cluster
+    action: ops.remove_node
+    params:
+      node: node-5
+
+  - type: action
+    id: stop_node5
+    action: chaos.stop_node
+    params:
+      node: node-5
+
+  # NO chaos.wipe_node_state here. That omission IS the scenario.
+
+  - type: action
+    id: start_node5_dirty
+    action: chaos.start_node
+    params:
+      node: node-5
+
+  # ── The bound ─────────────────────────────────────────────────────────────
+  # 900s matches the budget first-join-from-clean-node allows for a full join
+  # that installs every service. A dirty node may take longer to decide than a
+  # clean one, but it may not take unboundedly longer: if it has neither joined
+  # nor given up in the time a complete clean install takes, it is not
+  # deciding, it is hanging — which is the defect.
+  #
+  # Polled rather than slept so a node that concludes early does not burn the
+  # remaining budget, and so the evidence records WHEN it concluded.
+  - type: action
+    id: bounded_attempt_window
+    action: wait
+    params:
+      timeout: 900
+      poll_interval: 30
+      reason: "the dirty node must reach a terminal outcome within a full clean-install budget"
+      until:
+        probe: node.etcd_registered
+        params:
+          node: node-5
+        expect:
+          registered: true
+
+assertions:
+  # ── It concluded ──────────────────────────────────────────────────────────
+  # If the install hung, the poll above ran out and this fails — which is the
+  # signal. Registration is the terminal outcome the harness can observe; a
+  # refusal that left the node out would fail here too, and that is accepted:
+  # this scenario is paired with first-join-from-clean-node precisely so that a
+  # failure here can be read as "dirty differs from clean", not as "join is
+  # broken".
+  - type: probe
+    id: node5_reached_a_terminal_outcome
+    probe: node.etcd_registered
+    params:
+      node: node-5
+    expect:
+      registered: true
+
+  # ── The attempt did not damage the cluster it rejoined ────────────────────
+  - type: probe
+    id: cluster_healthy_after
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: no_identity_collision_from_stale_state
+    probe: cluster.node_identity_collisions
+    expect:
+      collisions: 0
+
+  - type: probe
+    id: liveness_unaffected
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+
+  - type: probe
+    id: reconcile_clean
+    probe: cluster.reconcile_clean
+    params:
+      since: "30 min ago"
+    expect:
+      clean: true
+
+cleanup: []

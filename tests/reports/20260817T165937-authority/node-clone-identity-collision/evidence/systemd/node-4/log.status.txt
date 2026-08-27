@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 17:18:18 UTC; 5min ago
+    Process: 134 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 159 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 198 (log_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 26.2M (peak: 27.0M)
+        CPU: 718ms
+     CGroup: /system.slice/docker-cfd5ada68a3ca339623f6df7921f9fd5ffefba9fbd39d2998331bb23e8ac8901.scope/system.slice/globular-log.service
+             └─198 /usr/lib/globular/bin/log_server
+
+Aug 17 17:18:22 node-4 log_server[198]: 2026/08/17 17:18:22 INFO policy: loaded permissions from file service=log path=/var/lib/globular/policy/services/log/permissions.generated.json count=4
+Aug 17 17:18:22 node-4 log_server[198]: time=2026-08-17T17:18:22.177Z level=INFO msg="authz: permission mappings loaded" service=log count=4 action_mappings=4
+Aug 17 17:18:22 node-4 log_server[198]: time=2026-08-17T17:18:22.177Z level=INFO msg="service started successfully" name=log.LogService id=5cb3840f-089b-3e7c-98bd-4cfbed1c445f port=10100
+Aug 17 17:18:22 node-4 log_server[198]: 2026/08/17 17:18:22 INFO metrics listening service=log.LogService addr=[::]:10101
+Aug 17 17:20:04 node-4 log_server[198]: 2026/08/17 17:20:04 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 17 17:20:04 node-4 log_server[198]: 2026/08/17 17:20:04 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 17 17:20:04 node-4 log_server[198]: 2026/08/17 17:20:04 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 17 17:21:07 node-4 log_server[198]: time=2026-08-17T17:21:07.748Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.14:9042: connect: connection refused"
+Aug 17 17:22:42 node-4 log_server[198]: 2026/08/17 17:22:42 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 17 17:23:45 node-4 log_server[198]: time=2026-08-17T17:23:45.540Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.14:9042: connect: connection refused"

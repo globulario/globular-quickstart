@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 20:04:58 UTC; 1min 17s ago
+    Process: 149 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 177 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 203 (cluster_control)
+      Tasks: 18 (limit: 8641)
+     Memory: 30.0M (peak: 31.0M)
+        CPU: 838ms
+     CGroup: /system.slice/docker-9e575d08069298e7cc4546f8bf434e849bf1fb07fa8830021eea8927024e1d2e.scope/system.slice/globular-cluster-controller.service
+             └─203 /usr/lib/globular/bin/cluster_controller_server
+
+Aug 27 20:06:07 node-2 cluster_controller_server[203]: {"level":"warn","ts":"2026-08-27T20:06:07.20431Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00027d860/10.10.0.12:2379","attempt":0,"error":"rpc error: code = Unavailable desc = etcdserver: leader changed"}
+Aug 27 20:06:07 node-2 cluster_controller_server[203]: {"level":"warn","ts":"2026-08-27T20:06:07.205406Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0007925a0/10.10.0.12:2379","attempt":0,"error":"rpc error: code = Unavailable desc = etcdserver: leader changed"}
+Aug 27 20:06:07 node-2 cluster_controller_server[203]: 2026/08/27 20:06:07 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Aug 27 20:06:08 node-2 cluster_controller_server[203]: 2026/08/27 20:06:08 release core@globular.io/workflow: AVAILABLE but build_id drift detected (resolved=01a04444) — re-queuing
+Aug 27 20:06:08 node-2 cluster_controller_server[203]: 2026/08/27 20:06:08 watch-service-release: started
+Aug 27 20:06:08 node-2 cluster_controller_server[203]: 2026/08/27 20:06:08 gocql: unable to dial control conn 10.10.0.13:9042: dial tcp 10.10.0.13:9042: connect: connection refused
+Aug 27 20:06:12 node-2 cluster_controller_server[203]: 2026/08/27 20:06:12 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Aug 27 20:06:12 node-2 cluster_controller_server[203]: time=2026-08-27T20:06:12.608Z level=WARN msg="readiness-gate: hard predicates still unmet, continuing to wait" hard_unmet=[not_leader] soft_unmet=[]
+Aug 27 20:06:14 node-2 cluster_controller_server[203]: 2026/08/27 20:06:14 INFO resolveRepositoryInfo: resolved addr=10.10.0.11:10003 host=10.10.0.11 port=10003
+Aug 27 20:06:15 node-2 cluster_controller_server[203]: 2026/08/27 20:06:15 projections: ALTER KEYSPACE globular_projections RF=3 applied at startup

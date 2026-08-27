@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-24 08:11:15 UTC; 1min 46s ago
+    Process: 126 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 260 (envoy)
+      Tasks: 40 (limit: 8641)
+     Memory: 27.3M (peak: 29.1M)
+        CPU: 723ms
+     CGroup: /system.slice/docker-3b7a2d146aaf6c064bd61ba2fa998a6bcedeb6739a900979311ca567bc40dc0b.scope/system.slice/globular-envoy.service
+             └─260 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Aug 24 08:12:18 node-4 envoy[260]: [2026-08-24 08:12:18.129][260][info][upstream] [source/common/listener_manager/lds_api.cc:109] lds: add/update listener 'ingress_listener_443'
+Aug 24 08:12:18 node-4 envoy[260]: [2026-08-24 08:12:18.133][260][info][config] [source/common/listener_manager/listener_manager_impl.cc:1003] all dependencies initialized. starting workers
+Aug 24 08:12:25 node-4 envoy[260]: [2026-08-24T08:12:22.362Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 762042 17 - "10.10.0.14" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 24 08:12:45 node-4 envoy[260]: [2026-08-24T08:12:37.362Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 763372 16 - "10.10.0.14" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 24 08:12:45 node-4 envoy[260]: [2026-08-24T08:12:45.440Z] "GET /ready HTTP/1.1" 200 - 0 5 0 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 24 08:12:45 node-4 envoy[260]: [2026-08-24T08:12:45.440Z] "GET /server_info HTTP/1.1" 200 - 0 98002 3 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 24 08:12:45 node-4 envoy[260]: [2026-08-24T08:12:45.445Z] "GET /stats?format=json HTTP/1.1" 200 - 0 520326 11 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Aug 24 08:12:55 node-4 envoy[260]: [2026-08-24T08:12:52.362Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 763861 24 - "10.10.0.14" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Aug 24 08:12:56 node-4 envoy[260]: [2026-08-24 08:12:56.894][260][info][upstream] [source/common/upstream/cds_api_helper.cc:34] cds: response indicates 33 added/updated cluster(s), 1 removed cluster(s); applying changes
+Aug 24 08:12:56 node-4 envoy[260]: [2026-08-24 08:12:56.900][260][info][upstream] [source/common/upstream/cds_api_helper.cc:87] cds: added/updated 2 cluster(s) (skipped 31 unmodified cluster(s)); removed 0 cluster(s)

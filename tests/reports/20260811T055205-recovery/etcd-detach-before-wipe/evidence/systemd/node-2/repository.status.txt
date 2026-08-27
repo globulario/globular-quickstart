@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:53:50 UTC; 1min 46s ago
+    Process: 467 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 486 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 500 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 30.5M (peak: 31.2M)
+        CPU: 1.494s
+     CGroup: /system.slice/docker-2c3e1df9b00a56d277665fa4fc05d2f1b3851a0074ffa6d89c2beb01aae9b7ce.scope/system.slice/globular-repository.service
+             └─500 /usr/lib/globular/bin/repository_server
+
+Aug 11 05:53:50 node-2 repository_server[500]: 2026/08/11 05:53:50 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 11 05:53:50 node-2 repository_server[500]: time=2026-08-11T05:53:50.933Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 11 05:53:50 node-2 repository_server[500]: time=2026-08-11T05:53:50.933Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 11 05:53:50 node-2 repository_server[500]: time=2026-08-11T05:53:50.938Z level=WARN msg="blob-seed: ListManifests failed — seeding skipped" err="scylla list manifests: Cannot achieve consistency level for cl ONE. Requires 1, alive 0"
+Aug 11 05:53:51 node-2 repository_server[500]: 2026/08/11 05:53:51 INFO metrics listening service=repository.PackageRepository addr=[::]:10001
+Aug 11 05:54:00 node-2 repository_server[500]: 2026/08/11 05:54:00 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 11 05:54:03 node-2 repository_server[500]: 2026/08/11 05:54:03 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Aug 11 05:54:03 node-2 repository_server[500]: 2026/08/11 05:54:03 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 11 05:54:42 node-2 repository_server[500]: 2026/08/11 05:54:42 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Aug 11 05:54:42 node-2 repository_server[500]: 2026/08/11 05:54:42 INFO mesh: gRPC connection established target=node-2.globular.internal:443

@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:52:32 UTC; 2min 5s ago
+    Process: 9209 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 9238 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 9260 (repository_serv)
+      Tasks: 15 (limit: 8641)
+     Memory: 25.7M (peak: 26.7M)
+        CPU: 904ms
+     CGroup: /system.slice/docker-b8fa6aca9bb82e631ce89b654ed458dabe59ec9fe67bf982b77e3cf43dab10a6.scope/system.slice/globular-repository.service
+             └─9260 /usr/lib/globular/bin/repository_server
+
+Jul 31 23:53:01 node-5 repository_server[9260]: time=2026-07-31T23:53:01.541Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Jul 31 23:53:01 node-5 repository_server[9260]: 2026/07/31 23:53:01 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Jul 31 23:53:01 node-5 repository_server[9260]: time=2026-07-31T23:53:01.549Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Jul 31 23:53:01 node-5 repository_server[9260]: time=2026-07-31T23:53:01.549Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Jul 31 23:53:01 node-5 repository_server[9260]: 2026/07/31 23:53:01 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=37849
+Jul 31 23:53:01 node-5 repository_server[9260]: 2026/07/31 23:53:01 INFO metrics listening service=repository.PackageRepository addr=[::]:37849
+Jul 31 23:53:47 node-5 repository_server[9260]: 2026/07/31 23:53:47 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=repository.artifact.list reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""
+Jul 31 23:54:33 node-5 repository_server[9260]: 2026/07/31 23:54:33 WARN port/proxy change detected in desired; restart required to take effect service=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 old_port=10004 new_port=10004 old_proxy=37849 new_proxy=10001
+Jul 31 23:54:33 node-5 repository_server[9260]: 2026/07/31 23:54:33 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Jul 31 23:54:33 node-5 repository_server[9260]: 2026/07/31 23:54:33 INFO mesh: gRPC connection established target=node-5.globular.internal:443

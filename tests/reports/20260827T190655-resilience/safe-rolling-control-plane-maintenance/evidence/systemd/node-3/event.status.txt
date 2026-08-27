@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 20:06:04 UTC; 13s ago
+    Process: 48 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 72 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 96 (event_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 25.4M (peak: 32.2M)
+        CPU: 483ms
+     CGroup: /system.slice/docker-686e08c30f8397aeb316fbd344b32a3b480a30818af99daf150a3df2727e8c11.scope/system.slice/globular-event.service
+             └─96 /usr/lib/globular/bin/event_server
+
+Aug 27 20:06:09 node-3 event_server[96]: time=2026-08-27T20:06:09.547Z level=INFO msg="stream registered" uuid=c9f338fe-f9cf-454d-bb8e-3e027343783f
+Aug 27 20:06:09 node-3 event_server[96]: 2026/08/27 20:06:09 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.13:10004: connect: connection refused\""
+Aug 27 20:06:09 node-3 event_server[96]: time=2026-08-27T20:06:09.943Z level=INFO msg="Subscribe: ok" channel=operation.restart_requested uuid=c9f338fe-f9cf-454d-bb8e-3e027343783f
+Aug 27 20:06:09 node-3 event_server[96]: time=2026-08-27T20:06:09.943Z level=INFO msg=subscribed channel=operation.restart_requested uuid=c9f338fe-f9cf-454d-bb8e-3e027343783f subscribers=1
+Aug 27 20:06:15 node-3 event_server[96]: time=2026-08-27T20:06:15.202Z level=INFO msg="Subscribe: ok" channel=index_file_event uuid=4acfc324-7835-4ea1-b524-5df1a8570165
+Aug 27 20:06:15 node-3 event_server[96]: time=2026-08-27T20:06:15.202Z level=INFO msg=subscribed channel=index_file_event uuid=4acfc324-7835-4ea1-b524-5df1a8570165 subscribers=1
+Aug 27 20:06:15 node-3 event_server[96]: time=2026-08-27T20:06:15.208Z level=INFO msg="OnEvent: registered" uuid=4acfc324-7835-4ea1-b524-5df1a8570165
+Aug 27 20:06:15 node-3 event_server[96]: time=2026-08-27T20:06:15.208Z level=INFO msg="stream registered" uuid=4acfc324-7835-4ea1-b524-5df1a8570165
+Aug 27 20:06:15 node-3 event_server[96]: time=2026-08-27T20:06:15.215Z level=INFO msg="Subscribe: ok" channel=create_account_evt uuid=4acfc324-7835-4ea1-b524-5df1a8570165
+Aug 27 20:06:15 node-3 event_server[96]: time=2026-08-27T20:06:15.215Z level=INFO msg=subscribed channel=create_account_evt uuid=4acfc324-7835-4ea1-b524-5df1a8570165 subscribers=1

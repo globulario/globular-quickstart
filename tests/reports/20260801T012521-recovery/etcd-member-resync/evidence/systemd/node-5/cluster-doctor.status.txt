@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:12:53 UTC; 14min ago
+    Process: 170 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 205 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 235 (cluster_doctor_)
+      Tasks: 15 (limit: 8641)
+     Memory: 22.3M (peak: 23.0M)
+        CPU: 923ms
+     CGroup: /system.slice/docker-90c13a2e49466a72ab3c3683d19907de7e768a425d5abd8d672f5b03af3de399.scope/system.slice/globular-cluster-doctor.service
+             └─235 /usr/lib/globular/bin/cluster_doctor_server
+
+Aug 01 01:25:29 node-5 cluster_doctor_server[235]: 2026/08/01 01:25:29 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=GetClusterHealthV1: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: i/o timeout"
+Aug 01 01:25:29 node-5 cluster_doctor_server[235]: 2026/08/01 01:25:29 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListDesiredBuildIDs: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: i/o timeout"
+Aug 01 01:25:29 node-5 cluster_doctor_server[235]: 2026/08/01 01:25:29 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=GetDesiredState: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: i/o timeout"
+Aug 01 01:25:33 node-5 cluster_doctor_server[235]: 2026/08/01 01:25:33 collector: data-source fetch failed (reduced harvest) service=repository rpc=ListArtifacts: rpc error: code = Unavailable desc = artifact ledger unavailable: scylla list manifests: Cannot achieve consistency level for cl ONE. Requires 1, alive 0
+Aug 01 01:25:33 node-5 cluster_doctor_server[235]: 2026/08/01 01:25:33 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListServiceReleasesJson: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: i/o timeout"
+Aug 01 01:25:33 node-5 cluster_doctor_server[235]: 2026/08/01 01:25:33 collector: data-source fetch failed (reduced harvest) service=cluster_controller rpc=ListInfrastructureReleasesJson: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.14:443: i/o timeout"
+Aug 01 01:25:33 node-5 cluster_doctor_server[235]: time=2026-08-01T01:25:33.755Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="rpc error: code = Unavailable desc = error reading from server: read tcp 10.10.0.15:45930->10.10.0.13:10050: read: connection reset by peer"
+Aug 01 01:25:33 node-5 cluster_doctor_server[235]: time=2026-08-01T01:25:33.755Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 01 01:25:33 node-5 cluster_doctor_server[235]: time=2026-08-01T01:25:33.755Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"
+Aug 01 01:25:33 node-5 cluster_doctor_server[235]: time=2026-08-01T01:25:33.755Z level=WARN msg="publish finding event failed" topic=cluster.finding.created err="event publish circuit breaker open"

@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:01:14 UTC; 15min ago
+    Process: 5196 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 5199 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 5203 (cluster_doctor_)
+      Tasks: 16 (limit: 8641)
+     Memory: 17.4M (peak: 24.8M)
+        CPU: 1.076s
+     CGroup: /system.slice/docker-3564c5064ffb33643364e7ecc0470f65b9ba3d4c953a5a8ad793011efad31f6b.scope/system.slice/globular-cluster-doctor.service
+             └─5203 /usr/lib/globular/bin/cluster_doctor_server
+
+Jul 31 21:01:14 node-2 systemd[1]: Started globular-cluster-doctor.service - Globular cluster_doctor.
+Jul 31 21:01:14 node-2 cluster_doctor_server[5203]: 2026/07/31 21:01:14 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Jul 31 21:01:14 node-2 cluster_doctor_server[5203]: 2026/07/31 21:01:14 INFO security: loaded cluster roles from external policy file roles=22
+Jul 31 21:01:15 node-2 cluster_doctor_server[5203]: 2026/07/31 21:01:15 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Jul 31 21:01:15 node-2 cluster_doctor_server[5203]: 2026/07/31 21:01:15 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Jul 31 21:01:15 node-2 cluster_doctor_server[5203]: time=2026-07-31T21:01:15.085Z level=INFO msg="TLS enabled" cert=/var/lib/globular/pki/issued/services/service.crt key=/var/lib/globular/pki/issued/services/service.key ca=/var/lib/globular/pki/ca.crt
+Jul 31 21:01:15 node-2 cluster_doctor_server[5203]: time=2026-07-31T21:01:15.310Z level=INFO msg="metrics/pprof listening" addr=[::]:34663
+Jul 31 21:01:15 node-2 cluster_doctor_server[5203]: time=2026-07-31T21:01:15.339Z level=INFO msg="healer: background loop starting" mode=observe interval=1m0s max_actions=10
+Jul 31 21:01:15 node-2 cluster_doctor_server[5203]: time=2026-07-31T21:01:15.372Z level=INFO msg="doctor leader election: campaigning" candidate=doctor:node-2:5203:897501ff-b8fc-4ed0-a164-98308610f064
+Jul 31 21:01:15 node-2 cluster_doctor_server[5203]: time=2026-07-31T21:01:15.455Z level=INFO msg="cluster doctor ready" address=:12005 controller=10.10.0.14:443 version=1.2.288

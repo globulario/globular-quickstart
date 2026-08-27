@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 21:40:52 UTC; 12min ago
+    Process: 640 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 663 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 675 (ai_executor_ser)
+      Tasks: 17 (limit: 8641)
+     Memory: 31.6M (peak: 34.5M)
+        CPU: 1.655s
+     CGroup: /system.slice/docker-dca123fdadbf68bfa4dec3e82e4c495a18c5fdc9804f674ba95736e53a26d74d.scope/system.slice/globular-ai-executor.service
+             └─675 /usr/lib/globular/bin/ai_executor_server
+
+Jul 31 21:52:13 node-4 ai_executor_server[675]: {"level":"warn","ts":"2026-07-31T21:52:13.437525Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc000254f00/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:13 node-4 ai_executor_server[675]: {"level":"info","ts":"2026-07-31T21:52:13.437591Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 21:52:27 node-4 ai_executor_server[675]: {"level":"warn","ts":"2026-07-31T21:52:27.535034Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003423c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:27 node-4 ai_executor_server[675]: {"level":"info","ts":"2026-07-31T21:52:27.535122Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Jul 31 21:52:48 node-4 ai_executor_server[675]: time=2026-07-31T21:52:48.494Z level=INFO msg="processing incident" incident_id=2b999708-8d2a-11f1-bae3-02420a0a000f rule_id=error-rate-spike tier=0 trigger=alert.error.spike batch_size=1
+Jul 31 21:52:52 node-4 ai_executor_server[675]: {"level":"warn","ts":"2026-07-31T21:52:52.495544Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0003423c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Jul 31 21:52:52 node-4 ai_executor_server[675]: time=2026-07-31T21:52:52.527Z level=INFO msg="diagnosis complete" incident_id=2b999708-8d2a-11f1-bae3-02420a0a000f root_cause="service_overload_or_cascade_failure (rbac.RbacService)" confidence=0.5 proposed_action=tighten_circuit_breaker job_state=JOB_DIAGNOSED
+Jul 31 21:52:52 node-4 ai_executor_server[675]: time=2026-07-31T21:52:52.527Z level=INFO msg="INCIDENT RESOLVED" incident_id=2b999708-8d2a-11f1-bae3-02420a0a000f summary="error-rate-spike triggered by alert.error.spike on rbac.RbacService (1 events in batch)" root_cause="service_overload_or_cascade_failure (rbac.RbacService)"
+Jul 31 21:52:52 node-4 ai_executor_server[675]: time=2026-07-31T21:52:52.531Z level=WARN msg="behavioral feed signal record failed" incident=2b999708-8d2a-11f1-bae3-02420a0a000f err="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: failed to verify certificate: x509: cannot validate certificate for 10.10.0.13 because it doesn't contain any IP SANs\""
+Jul 31 21:52:52 node-4 ai_executor_server[675]: 2026/07/31 21:52:52 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=4048 baseline_ms=20 window=101 new_window=90

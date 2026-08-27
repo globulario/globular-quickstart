@@ -1,0 +1,149 @@
+version: 1
+name: platform-upgrade-release-boundary
+description: |
+  A platform upgrade must be decided by the release manifest, and one odd
+  package must not fail the whole platform.
+
+  PLATFORM VERSION IS NOT PACKAGE VERSION. release-index.json is the platform
+  truth; the version of any individual package is not. Collapsing the two is a
+  standing rule violation, and it is easy to do accidentally because most
+  packages happen to move together.
+
+  THE FAILURE THIS ENCODES. platform_upgrade.dispatch parsed EVERY package
+  version as strict semver and failed the entire step when one did not parse —
+  ffmpeg, which is versioned by its upstream and never agreed to semver
+  (release.platform_upgrade_dispatch_rejects_non_semver_versions). One
+  third-party package with an unusual version string blocked the platform
+  upgrade for every service in the release. This is a dependency-shaped bug:
+  something non-critical placed on the critical path.
+
+  Day-0 reads release-index.json. Day-1 joins from the ACTIVE BOM, not from
+  latest — a node joining mid-upgrade must land on the release the cluster is
+  actually running, or it arrives already drifted and the first reconcile
+  fights the join.
+
+  Truth comes from the manifest, never from filenames. A directory listing that
+  looks like a version is not a version.
+
+  WHAT THIS PINS. The release boundary is intact: the platform has exactly one
+  active release, every node agrees on it, and the packages inside it resolve.
+  It is deliberately an observation of the steady state — a platform upgrade is
+  too destructive to drive from a test suite against a live cluster, and the
+  property worth guarding is that the boundary never goes ambiguous, not that a
+  particular upgrade succeeds.
+suite: upgrade
+tags:
+  - platform-upgrade
+  - release-index
+  - bom
+  - day-1
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+baseline:
+  - type: probe
+    id: release_audit_at_start
+    probe: release.audit
+
+steps:
+  # Let in-flight releases reach a terminal state before judging the boundary.
+  #
+  # The assertion below asks whether the release boundary is UNAMBIGUOUS. A
+  # release still in flight is not an ambiguous boundary, it is an unfinished
+  # one — and sampling once cannot tell them apart. On 2026-08-23 this scenario
+  # failed with pending=2 of 24 on a cluster where the same probe returned
+  # 24 succeeded / 0 pending a few minutes later: it had run right behind
+  # package-upgrade-converges-on-all-nodes and caught that rollout mid-flight.
+  #
+  # Polled, not slept: a boundary that never resolves still fails, and the
+  # assertion below is unchanged, so a genuinely ambiguous boundary is still
+  # caught.
+  - type: action
+    id: let_in_flight_releases_settle
+    action: wait
+    params:
+      timeout: 600
+      poll_interval: 20
+      reason: "wait for the boundary to be unambiguous — the same condition the assertion checks"
+      # Wait for the predicate this scenario ASSERTS, not a weaker one.
+      #
+      # This waited on pending:0 alone while the assertion below requires
+      # failed:0 AND pending:0. FAILED is itself a terminal state, so the wait
+      # was satisfied the moment nothing was in flight — with failed releases
+      # still on the books — and the assertion then failed on a condition the
+      # settle step had never actually waited for.
+      #
+      # That is not a hypothetical: on a pristine 5-node cluster whose baseline
+      # was 24/24 succeeded / 0 failed / 0 pending, running ONLY this suite,
+      # the settle passed and the assertion failed with failed=3. The releases
+      # were not stuck — the controller self-heals them
+      # (FAILED -> PENDING "all nodes converged, clearing failure" -> AVAILABLE)
+      # on a releaseRetryBackoff of 5 minutes. The settle simply stopped waiting
+      # before that had happened.
+      #
+      # The assertion is UNCHANGED. If the cluster genuinely cannot reach
+      # failed:0, this wait times out and the scenario still fails.
+      until:
+        probe: release.audit
+        expect:
+          failed: 0
+          pending: 0
+
+assertions:
+  # ── One active release, cluster-wide ──────────────────────────────────────
+  # Two "active" releases is not a slow rollout, it is an undecidable one:
+  # nothing can say which artifact a node should be converging on.
+  - type: probe
+    id: release_boundary_is_unambiguous
+    probe: release.audit
+    expect:
+      failed: 0
+      pending: 0
+
+  # ── Desired state resolves ────────────────────────────────────────────────
+  # Every active desired build_id MUST resolve to an installable repository
+  # artifact (repository.desired_build_id_must_resolve). A desired state
+  # pointing at something unresolvable is a rollout that can never finish, and
+  # it fails silently — the controller keeps trying.
+  - type: probe
+    id: desired_state_is_present
+    probe: cluster.desired_state
+    expect:
+      count_gte: 1
+
+  # ── The packages in the release are actually installable ──────────────────
+  # A release whose members cannot be served is a boundary that exists only on
+  # paper. This is the platform-level form of
+  # published-artifact-is-installable-everywhere.
+  - type: probe
+    id: release_packages_have_blobs
+    probe: repository.identity_findings
+    expect:
+      missing_blob: 0
+      ambiguous: 0
+
+  # ── Installed inventory agrees across nodes ───────────────────────────────
+  - type: probe
+    id: installed_packages_present_on_every_node
+    probe: cluster.installed_packages
+    expect:
+      node_count_gte: 5
+
+  - type: probe
+    id: no_drift
+    probe: cluster.reconcile_clean
+    expect:
+      clean: true
+
+cleanup: []

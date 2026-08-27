@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 05:40:00 UTC; 9min ago
+    Process: 9517 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 9521 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 9524 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 9530 (workflow_server)
+      Tasks: 19 (limit: 8641)
+     Memory: 28.5M (peak: 30.3M)
+        CPU: 1.083s
+     CGroup: /system.slice/docker-6e5bc4d77400581f103d67b94812dab7611412457ec3496f96f69356e4c17bcf.scope/system.slice/globular-workflow.service
+             └─9530 /usr/lib/globular/bin/workflow_server
+
+Aug 11 05:47:39 node-3 workflow_server[9530]: 2026/08/11 05:47:39 gocql: unable to dial control conn 10.10.0.11:9042: dial tcp 10.10.0.11:9042: connect: connection refused
+Aug 11 05:47:46 node-3 workflow_server[9530]: 2026/08/11 05:47:46 WARN executor lease: orphan scan iteration error err="Cannot achieve consistency level for cl LOCAL_ONE. Requires 1, alive 0"
+Aug 11 05:47:46 node-3 workflow_server[9530]: 2026/08/11 05:47:46 WARN executor lease: orphan scanner backing off consecutive_failures=1 backoff=1s next_scan_after=2026-08-11T05:47:47Z
+Aug 11 05:48:01 node-3 workflow_server[9530]: 2026/08/11 05:48:01 WARN executor lease: orphan scan iteration error err="Cannot achieve consistency level for cl LOCAL_ONE. Requires 1, alive 0"
+Aug 11 05:48:01 node-3 workflow_server[9530]: 2026/08/11 05:48:01 WARN executor lease: orphan scanner backing off consecutive_failures=2 backoff=2s next_scan_after=2026-08-11T05:48:03Z
+Aug 11 05:48:14 node-3 workflow_server[9530]: 2026/08/11 05:48:14 INFO acc: warmup complete baseline_rtt_ms=20 samples=218 elapsed=8m13s
+Aug 11 05:48:14 node-3 workflow_server[9530]: 2026/08/11 05:48:14 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListWorkflowSummaries
+Aug 11 05:48:14 node-3 workflow_server[9530]: 2026/08/11 05:48:14 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListWorkflowSummaries rtt_ms=77 baseline_ms=20 window=100 new_window=90
+Aug 11 05:48:15 node-3 workflow_server[9530]: 2026/08/11 05:48:15 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/workflow.WorkflowService/ListCorrelationDeferState
+Aug 11 05:48:16 node-3 workflow_server[9530]: 2026/08/11 05:48:16 INFO executor lease: orphan scanner recovered previous_failures=2

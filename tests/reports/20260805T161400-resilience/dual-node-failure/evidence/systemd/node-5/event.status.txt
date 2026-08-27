@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-05 16:36:21 UTC; 10s ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 56 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 80 (event_server)
+      Tasks: 12 (limit: 8641)
+     Memory: 20.7M (peak: 23.0M)
+        CPU: 303ms
+     CGroup: /system.slice/docker-5d41c244d63fdf110484c187a88324bad4f368046e8c066d557e163129a4efee.scope/system.slice/globular-event.service
+             └─80 /usr/lib/globular/bin/event_server
+
+Aug 05 16:36:22 node-5 event_server[80]: time=2026-08-05T16:36:22.796Z level=INFO msg="service started successfully" name=event.EventService id=ae220301-9352-393b-be03-90707f486149 port=10050
+Aug 05 16:36:22 node-5 event_server[80]: time=2026-08-05T16:36:22.950Z level=INFO msg="resumed from durable cursor" instance=event-node-5.globular.internal cursor_time=2026-08-05T16:18:09Z
+Aug 05 16:36:22 node-5 event_server[80]: time=2026-08-05T16:36:22.950Z level=INFO msg="scylla event bus connected" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=globular_events
+Aug 05 16:36:22 node-5 event_server[80]: time=2026-08-05T16:36:22.951Z level=INFO msg="event loop started" service=event.EventService id=ae220301-9352-393b-be03-90707f486149
+Aug 05 16:36:23 node-5 event_server[80]: 2026/08/05 16:36:23 INFO metrics listening service=event.EventService addr=[::]:10051
+Aug 05 16:36:23 node-5 event_server[80]: time=2026-08-05T16:36:23.151Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=14
+Aug 05 16:36:23 node-5 event_server[80]: time=2026-08-05T16:36:23.351Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=12
+Aug 05 16:36:23 node-5 event_server[80]: time=2026-08-05T16:36:23.551Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=8
+Aug 05 16:36:23 node-5 event_server[80]: time=2026-08-05T16:36:23.751Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=3
+Aug 05 16:36:23 node-5 event_server[80]: time=2026-08-05T16:36:23.952Z level=INFO msg="catch-up mode: scanning partial bucket range" scanning=5 remaining=3

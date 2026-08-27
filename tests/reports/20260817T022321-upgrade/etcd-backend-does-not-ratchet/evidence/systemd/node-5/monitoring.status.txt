@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-15 04:25:51 UTC; 1 day 21h ago
+    Process: 134 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 183 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 219 (monitoring_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 34.2M (peak: 48.4M swap: 476.0K swap peak: 476.0K)
+        CPU: 40.451s
+     CGroup: /system.slice/docker-fb802df329b89bb5f754bfa3e8bda2c2d49532b0e37f80ed1c287425d9ce8a76.scope/system.slice/globular-monitoring.service
+             └─219 /usr/lib/globular/bin/monitoring_server
+
+Aug 15 04:26:06 node-5 monitoring_server[219]: 2026/08/15 04:26:06 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 15 04:26:08 node-5 monitoring_server[219]: time=2026-08-15T04:26:08.360Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=12156
+Aug 15 04:26:08 node-5 monitoring_server[219]: 2026/08/15 04:26:08 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 15 04:26:19 node-5 monitoring_server[219]: 2026/08/15 04:26:19 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 15 04:26:19 node-5 monitoring_server[219]: 2026/08/15 04:26:19 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 15 13:30:23 node-5 monitoring_server[219]: 2026/08/15 13:30:23 INFO acc: warmup complete baseline_rtt_ms=20 samples=150 elapsed=30m0s
+Aug 17 02:00:58 node-5 monitoring_server[219]: {"level":"warn","ts":"2026-08-17T02:00:58.245828Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00059e960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 17 02:00:58 node-5 monitoring_server[219]: {"level":"info","ts":"2026-08-17T02:00:58.245952Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 17 02:03:03 node-5 monitoring_server[219]: {"level":"warn","ts":"2026-08-17T02:03:03.252516Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00059e960/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 17 02:03:03 node-5 monitoring_server[219]: {"level":"info","ts":"2026-08-17T02:03:03.252608Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}

@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-31 23:55:40 UTC; 59s ago
+    Process: 192 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 213 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 233 (node_agent_serv)
+      Tasks: 22 (limit: 8641)
+     Memory: 101.4M (peak: 109.8M)
+        CPU: 25.227s
+     CGroup: /system.slice/docker-9d4b8e2a20ac1e6d6bf99864bf71926d1af05ff60dfd285e1db1bf7a32bc2282.scope/system.slice/globular-node-agent.service
+             └─233 /usr/lib/globular/bin/node_agent_server
+
+Jul 31 23:56:11 node-2 node_agent_server[233]: 2026/07/31 23:56:11 event-publisher: service.started unit=globular-scylla-manager.service (inactive/dead → active/running)
+Jul 31 23:56:11 node-2 node_agent_server[233]: 2026/07/31 23:56:11 event-publisher: service.started unit=globular-search.service (inactive/dead → active/running)
+Jul 31 23:56:11 node-2 node_agent_server[233]: 2026/07/31 23:56:11 event-publisher: service.started unit=globular-workflow.service (inactive/dead → active/running)
+Jul 31 23:56:12 node-2 node_agent_server[233]: 2026/07/31 23:56:12 webroot-sync: synced=0 skipped=0 removed=0 (0.1s)
+Jul 31 23:56:13 node-2 node_agent_server[233]: 2026/07/31 23:56:13 behavioral observation: infra_probe skipped component=etcd node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Jul 31 23:56:15 node-2 node_agent_server[233]: 2026/07/31 23:56:15 ingress: spec changed (type: PUT), triggering reconciliation
+Jul 31 23:56:15 node-2 node_agent_server[233]: 2026/07/31 23:56:15 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Jul 31 23:56:15 node-2 node_agent_server[233]: 2026/07/31 23:56:15 probe-scylla-health: [mode=NORMAL bootstrap=100%]
+Jul 31 23:56:39 node-2 node_agent_server[233]: 2026/07/31 23:56:39 nodeagent: reporting 40 installed services (hash=87e55d2330bc1cddfd37083aeb1f7c324d9dad5ce8cc34a06a49f0b9331cee7a, sample=[log persistence etcdctl scylla-manager backup-manager])
+Jul 31 23:56:39 node-2 node_agent_server[233]: 2026/07/31 23:56:39 node heartbeat failed (state=degraded): TLS probe to 10.10.0.12:443 (ServerName=10.10.0.12): dial tcp 10.10.0.12:443: connect: connection refused

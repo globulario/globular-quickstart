@@ -1,0 +1,22 @@
+● globular-log.service - Globular log
+     Loaded: loaded (/etc/systemd/system/globular-log.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 16:51:54 UTC; 24min ago
+    Process: 127 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/log && chown globular:globular /var/lib/globular/log (code=exited, status=0/SUCCESS)
+    Process: 163 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 181 (log_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 21.8M (peak: 28.7M)
+        CPU: 1.351s
+     CGroup: /system.slice/docker-dab92beb975aa2797386e297c00d0bcba2ce8ae5ebc37c549fdba7e1f57d8454.scope/system.slice/globular-log.service
+             └─181 /usr/lib/globular/bin/log_server
+
+Aug 17 16:54:29 node-5 log_server[181]: 2026/08/17 16:54:29 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 17 16:54:29 node-5 log_server[181]: 2026/08/17 16:54:29 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 17 16:54:29 node-5 log_server[181]: 2026/08/17 16:54:29 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 17 16:55:32 node-5 log_server[181]: time=2026-08-17T16:55:32.292Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 17 16:57:30 node-5 log_server[181]: 2026/08/17 16:57:30 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 17 16:58:33 node-5 log_server[181]: time=2026-08-17T16:58:33.901Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 17 16:59:29 node-5 log_server[181]: 2026/08/17 16:59:29 WARN authz: sa superadmin bypass active — bind sa to a role to enforce RBAC method=/log.LogService/Log action=log.write hint="globular rbac bind sa --role globular-controller-sa"
+Aug 17 17:00:32 node-5 log_server[181]: time=2026-08-17T17:00:32.365Z level=WARN msg="store open failed" store=log_entries err="scylla connect (system): failed to connect after 7 attempts: gocql: unable to create session: unable to discover protocol version: dial tcp 10.10.0.15:9042: connect: connection refused"
+Aug 17 17:00:32 node-5 log_server[181]: 2026/08/17 17:00:32 INFO acc: warmup complete baseline_rtt_ms=20 samples=229 elapsed=8m36s
+Aug 17 17:00:32 node-5 log_server[181]: 2026/08/17 17:00:32 INFO acc: AIMD decrease method=/log.LogService/Log rtt_ms=63017 baseline_ms=20 window=100 new_window=90

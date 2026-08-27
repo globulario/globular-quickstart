@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-08-26 17:22:21 UTC; 28min ago
+    Process: 731 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 741 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 747 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 35.3M (peak: 41.0M)
+        CPU: 3.455s
+     CGroup: /system.slice/docker-1a67bc533cf1057423c06ee241b688433eff61a2db6d73b4bfd0f73230762cce.scope/system.slice/globular-ai-executor.service
+             └─747 /usr/lib/globular/bin/ai_executor_server
+
+Aug 26 17:34:15 node-1 ai_executor_server[747]: time=2026-08-26T17:34:15.855Z level=INFO msg="processing incident" incident_id=5c1280a3-a174-11f1-b317-02420a0a000c rule_id=auth-denial tier=0 trigger=alert.auth.denied batch_size=6
+Aug 26 17:34:15 node-1 ai_executor_server[747]: time=2026-08-26T17:34:15.970Z level=INFO msg="diagnosis complete" incident_id=5c1280a3-a174-11f1-b317-02420a0a000c root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)" confidence=0.4000000059604645 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 26 17:34:15 node-1 ai_executor_server[747]: time=2026-08-26T17:34:15.970Z level=INFO msg="INCIDENT RESOLVED" incident_id=5c1280a3-a174-11f1-b317-02420a0a000c summary="auth-denial triggered by alert.auth.denied on repository.PackageRepository (6 events in batch)" root_cause="rbac_misconfiguration_or_unauthorized_access (repository.PackageRepository)"
+Aug 26 17:37:23 node-1 ai_executor_server[747]: time=2026-08-26T17:37:23.464Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 26 17:37:23 node-1 ai_executor_server[747]: time=2026-08-26T17:37:23.493Z level=INFO msg="codex: no credentials found"
+Aug 26 17:42:23 node-1 ai_executor_server[747]: time=2026-08-26T17:42:23.580Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 26 17:42:23 node-1 ai_executor_server[747]: time=2026-08-26T17:42:23.640Z level=INFO msg="codex: no credentials found"
+Aug 26 17:42:50 node-1 ai_executor_server[747]: 2026/08/26 17:42:50 INFO acc: warmup complete baseline_rtt_ms=20 samples=323 elapsed=20m0s
+Aug 26 17:47:23 node-1 ai_executor_server[747]: time=2026-08-26T17:47:23.469Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Aug 26 17:47:23 node-1 ai_executor_server[747]: time=2026-08-26T17:47:23.513Z level=INFO msg="codex: no credentials found"

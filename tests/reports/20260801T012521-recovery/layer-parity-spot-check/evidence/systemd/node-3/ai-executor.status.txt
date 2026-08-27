@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-01 01:26:48 UTC; 34s ago
+    Process: 664 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 690 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 694 (ai_executor_ser)
+      Tasks: 15 (limit: 8641)
+     Memory: 25.8M (peak: 27.0M)
+        CPU: 389ms
+     CGroup: /system.slice/docker-2206a9848d7057d723137cf808b7918b201d11357dec3e1e80cb2d0a702c0d6b.scope/system.slice/globular-ai-executor.service
+             └─694 /usr/lib/globular/bin/ai_executor_server
+
+Aug 01 01:26:49 node-3 ai_executor_server[694]: time=2026-08-01T01:26:49.513Z level=INFO msg="ai-executor backend readiness" context=startup mode=deterministic_fallback backend="" claude_binary_present=false codex_binary_present=false credentials_present=false backend_ready=false analysis_available=false
+Aug 01 01:26:49 node-3 ai_executor_server[694]: time=2026-08-01T01:26:49.513Z level=WARN msg="authz: no permission mappings registered — RBAC will resolve raw method paths and deny role-based calls" service=ai_executor expected_path=/var/lib/globular/policy/services/ai_executor/permissions.generated.json
+Aug 01 01:26:49 node-3 ai_executor_server[694]: time=2026-08-01T01:26:49.513Z level=INFO msg="service started successfully" name=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd port=10010
+Aug 01 01:26:49 node-3 ai_executor_server[694]: time=2026-08-01T01:26:49.537Z level=INFO msg="job_store: connected to etcd"
+Aug 01 01:26:49 node-3 ai_executor_server[694]: time=2026-08-01T01:26:49.609Z level=INFO msg="job_store: loaded jobs from etcd" count=42
+Aug 01 01:26:49 node-3 ai_executor_server[694]: time=2026-08-01T01:26:49.635Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.14]"
+Aug 01 01:26:49 node-3 ai_executor_server[694]: 2026/08/01 01:26:49 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 01 01:27:19 node-3 ai_executor_server[694]: time=2026-08-01T01:27:19.544Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 01 01:27:19 node-3 ai_executor_server[694]: time=2026-08-01T01:27:19.554Z level=INFO msg="peer: connected" node=node-4 endpoint=10.10.0.14:10010
+Aug 01 01:27:19 node-3 ai_executor_server[694]: time=2026-08-01T01:27:19.565Z level=INFO msg="peer: connected" node=node-5 endpoint=10.10.0.15:10010

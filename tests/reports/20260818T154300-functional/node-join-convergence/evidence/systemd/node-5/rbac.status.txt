@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-18 15:45:15 UTC; 52s ago
+    Process: 1438 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 1442 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1445 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1448 (rbac_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 123.2M (peak: 123.9M)
+        CPU: 573ms
+     CGroup: /system.slice/docker-3b1033bce5a3d34cb62d7cfeab87772acf96a463ce7d7baaa5d874c03a504cb3.scope/system.slice/globular-rbac.service
+             └─1448 /usr/lib/globular/bin/rbac_server
+
+Aug 18 15:45:15 node-5 rbac_server[1448]: time=2026-08-18T15:45:15.882Z level=INFO msg="starting grpc server" port=10001
+Aug 18 15:45:15 node-5 rbac_server[1448]: 2026/08/18 15:45:15 INFO metrics: proxy port conflict, using free port service=rbac.RbacService wanted=10001 actual=35545
+Aug 18 15:45:15 node-5 rbac_server[1448]: 2026/08/18 15:45:15 INFO metrics listening service=rbac.RbacService addr=[::]:35545
+Aug 18 15:45:19 node-5 rbac_server[1448]: 2026/08/18 15:45:19 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 18 15:45:21 node-5 rbac_server[1448]: 2026/08/18 15:45:21 INFO addResourceOwner call path=/users/sa resourceType=file subject=sa subjectType=ACCOUNT
+Aug 18 15:45:21 node-5 rbac_server[1448]: 2026/08/18 15:45:21 WARN no path found  /users/sa The specified key does not exist.
+Aug 18 15:45:21 node-5 rbac_server[1448]: 2026/08/18 15:45:21 WARN fail to remove key  /users/sa :  Entry not found
+Aug 18 15:45:21 node-5 rbac_server[1448]: 2026/08/18 15:45:21 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 15:45:21 node-5 rbac_server[1448]: 2026/08/18 15:45:21 INFO rbac: flushed permission cache on cross-instance RBAC change
+Aug 18 15:45:21 node-5 rbac_server[1448]: 2026/08/18 15:45:21 INFO rbac: flushed permission cache on cross-instance RBAC change

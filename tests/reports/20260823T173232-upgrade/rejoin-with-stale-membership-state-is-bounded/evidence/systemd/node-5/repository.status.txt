@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-08-23 18:36:21 UTC; 5min ago
+    Process: 6230 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 6234 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 6237 (repository_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 38.0M (peak: 42.2M)
+        CPU: 4.731s
+     CGroup: /system.slice/docker-c062e81b61a677cb7dc6d48b8ad6e600ee7ef4e27637645956f4d0b0c1de1534.scope/system.slice/globular-repository.service
+             └─6237 /usr/lib/globular/bin/repository_server
+
+Aug 23 18:36:21 node-5 repository_server[6237]: time=2026-08-23T18:36:21.756Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 23 18:36:21 node-5 repository_server[6237]: 2026/08/23 18:36:21 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 23 18:36:21 node-5 repository_server[6237]: time=2026-08-23T18:36:21.757Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 23 18:36:21 node-5 repository_server[6237]: time=2026-08-23T18:36:21.757Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10004
+Aug 23 18:36:21 node-5 repository_server[6237]: 2026/08/23 18:36:21 INFO metrics: proxy port conflict, using free port service=repository.PackageRepository wanted=10001 actual=33513
+Aug 23 18:36:21 node-5 repository_server[6237]: 2026/08/23 18:36:21 INFO metrics listening service=repository.PackageRepository addr=[::]:33513
+Aug 23 18:36:25 node-5 repository_server[6237]: 2026/08/23 18:36:25 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 23 18:41:21 node-5 repository_server[6237]: time=2026-08-23T18:41:21.674Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 23 18:41:23 node-5 repository_server[6237]: 2026/08/23 18:41:23 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 23 18:41:25 node-5 repository_server[6237]: 2026/08/23 18:41:25 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest

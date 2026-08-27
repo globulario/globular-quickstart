@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "scenario": "mtls-mesh-connectivity",
+  "suite": "security",
+  "start_time": "2026-08-11T12:26:04.496630Z",
+  "end_time": "2026-08-11T12:26:13.035546Z",
+  "passed": true,
+  "item_count": 14,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:05.396699Z"
+    },
+    {
+      "id": "pki_ca_valid",
+      "section": "preconditions",
+      "probe": "pki.ca_valid",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {
+        "valid": true
+      },
+      "result": {
+        "valid": true,
+        "days_remaining": 3649,
+        "not_after": "Aug  8 11:48:44 2036 GMT",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:05.626876Z"
+    },
+    {
+      "id": "cert_info_baseline",
+      "section": "baseline",
+      "probe": "pki.cert_info",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {},
+      "result": {
+        "valid": true,
+        "days_remaining": 364,
+        "has_vip": false,
+        "vip_configured": false,
+        "vip_san_ok": true,
+        "not_after": "Aug 11 11:48:44 2027 GMT",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:11.048048Z"
+    },
+    {
+      "id": "node1_to_controller_node2",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-1",
+        "target_ip": "10.10.0.12",
+        "target_port": "12000"
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.12:12000",
+        "ports_tried": "12000",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:11.145220Z"
+    },
+    {
+      "id": "node1_to_doctor_node2",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-1",
+        "target_ip": "10.10.0.12",
+        "target_service": "cluster-doctor",
+        "target_node": "node-2"
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.12:12005",
+        "ports_tried": "12005 33189",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:11.381448Z"
+    },
+    {
+      "id": "node2_to_rbac_node1",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-2",
+        "target_ip": "10.10.0.11",
+        "target_port": "10004"
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:10004",
+        "ports_tried": "10004",
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:11.482635Z"
+    },
+    {
+      "id": "node2_to_etcd_node1",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-2",
+        "target_ip": "10.10.0.11",
+        "target_port": "2379"
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:2379",
+        "ports_tried": "2379",
+        "node": "node-2"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:11.582520Z"
+    },
+    {
+      "id": "node3_to_authentication_node1",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-3",
+        "target_ip": "10.10.0.11",
+        "target_port": "10005"
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:10005",
+        "ports_tried": "10005",
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:11.684200Z"
+    },
+    {
+      "id": "node3_to_etcd_node1",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-3",
+        "target_ip": "10.10.0.11",
+        "target_port": "2379"
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:2379",
+        "ports_tried": "2379",
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:11.788893Z"
+    },
+    {
+      "id": "node4_to_etcd_node1",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-4",
+        "target_ip": "10.10.0.11",
+        "target_port": "2379"
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:2379",
+        "ports_tried": "2379",
+        "node": "node-4"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:11.889485Z"
+    },
+    {
+      "id": "node5_to_etcd_node1",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-5",
+        "target_ip": "10.10.0.11",
+        "target_port": "2379"
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:2379",
+        "ports_tried": "2379",
+        "node": "node-5"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:11.986786Z"
+    },
+    {
+      "id": "node1_to_self_etcd",
+      "section": "assertions",
+      "probe": "pki.mtls_connect",
+      "params": {
+        "node": "node-1",
+        "target_ip": "10.10.0.11",
+        "target_port": "2379"
+      },
+      "expect": {
+        "connected": true
+      },
+      "result": {
+        "connected": true,
+        "target": "10.10.0.11:2379",
+        "ports_tried": "2379",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:12.093411Z"
+    },
+    {
+      "id": "final_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:12.399996Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-11T12:26:13.035438Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

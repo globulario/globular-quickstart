@@ -1,0 +1,23 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-08-17 23:58:55 UTC; 8s ago
+    Process: 210 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 235 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 253 (node_agent_serv)
+      Tasks: 19 (limit: 8641)
+     Memory: 23.1M (peak: 32.9M)
+        CPU: 6.826s
+     CGroup: /system.slice/docker-9222800d3a47ca13f196913e2ca4b66dc75c10e92e0db6dc29b6567ac0cd909e.scope/system.slice/globular-node-agent.service
+             ├─253 /usr/lib/globular/bin/node_agent_server
+             └─818 systemctl disable keepalived
+
+Aug 17 23:58:56 node-2 node_agent_server[253]: 2026/08/17 23:58:56 INFO etcd.maintenance_started endpoint=https://10.10.0.12:2379 interval=1m0s min_file_bytes=268435456 min_reclaim_bytes=67108864
+Aug 17 23:58:56 node-2 node_agent_server[253]: 2026/08/17 23:58:56 ingress: keepalived disabled on node c8a09d9e-3813-5357-ab58-93aa410f27fb
+Aug 17 23:58:56 node-2 node_agent_server[253]: 2026/08/17 23:58:56 node agent listening on 0.0.0.0:11000
+Aug 17 23:58:56 node-2 node_agent_server[253]: 2026/08/17 23:58:56 behavioral observation: infra_probe skipped component=scylladb node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record signal: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
+Aug 17 23:58:56 node-2 node_agent_server[253]: 2026/08/17 23:58:56 metrics listening on 0.0.0.0:11001 (saved=11001, default=11001)
+Aug 17 23:58:57 node-2 node_agent_server[253]: {"level":"warn","ts":"2026-08-17T23:58:57.330596Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc0004350e0/10.10.0.12:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded while waiting for connections to become ready"}
+Aug 17 23:58:58 node-2 node_agent_server[253]: 2026/08/17 23:58:58 behavioral observation: infra_probe skipped component=etcd node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.12:443: connect: connection refused"
+Aug 17 23:58:58 node-2 node_agent_server[253]: 2026/08/17 23:58:58 behavioral observation: infra_probe skipped component=minio node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record signal: rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp 10.10.0.13:443: connect: connection refused"
+Aug 17 23:58:58 node-2 node_agent_server[253]: 2026/08/17 23:58:58 behavioral observation: infra_probe skipped component=envoy node=c8a09d9e-3813-5357-ab58-93aa410f27fb: record signal: rpc error: code = Unavailable desc = upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
+Aug 17 23:59:04 node-2 node_agent_server[253]: 2026/08/17 23:59:04 ingress: spec changed (type: PUT), triggering reconciliation

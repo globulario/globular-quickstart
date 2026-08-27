@@ -1,0 +1,148 @@
+version: 1
+name: parity-runtime
+description: |
+  Verify the full service stack is registered and converged after cluster boot.
+
+  Checks that every expected service (from the V1 service manifest) is present
+  in etcd — meaning it started, connected, and announced itself. Also validates
+  that all 5 nodes are heartbeating and at least 15 services are registered.
+
+  This is the functional-level complement to service-health-minimal (smoke).
+  Smoke checks "is anything alive?". Parity checks "is everything alive?".
+
+suite: functional
+tags:
+  - services
+  - parity
+  - convergence
+  - core-stack
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: all_nodes_heartbeating
+    probe: cluster.health
+    expect:
+      nodes_gte: 5
+
+baseline:
+  - type: probe
+    id: baseline_service_matrix
+    probe: cluster.service_matrix
+    # Capture for evidence — no expect (baseline only)
+
+# ── wait for full convergence ─────────────────────────────────────────────────
+steps:
+  - id: wait_full_convergence
+    action: wait
+    params:
+      timeout: 300
+      poll_interval: 15
+      until:
+        probe: cluster.service_matrix
+        expect:
+          count_gte: 15
+
+# ── assert V1 required services registered ───────────────────────────────────
+assertions:
+  - type: probe
+    id: service_count_sufficient
+    probe: cluster.service_matrix
+    expect:
+      count_gte: 15
+
+  - type: probe
+    id: cluster_controller_present
+    probe: service.registered
+    params:
+      service: cluster_controller
+    expect:
+      registered: true
+
+  - type: probe
+    id: node_agent_present
+    probe: service.registered
+    params:
+      service: node_agent
+    expect:
+      registered: true
+
+  - type: probe
+    id: workflow_present
+    probe: service.registered
+    params:
+      service: workflow
+    expect:
+      registered: true
+
+  - type: probe
+    id: cluster_doctor_present
+    probe: service.registered
+    params:
+      service: cluster_doctor
+    expect:
+      registered: true
+
+  - type: probe
+    id: authentication_present
+    probe: service.registered
+    params:
+      service: authentication
+    expect:
+      registered: true
+
+  - type: probe
+    id: rbac_present
+    probe: service.registered
+    params:
+      service: rbac
+    expect:
+      registered: true
+
+  - type: probe
+    id: repository_present
+    probe: service.registered
+    params:
+      service: repository
+    expect:
+      registered: true
+
+  - type: probe
+    id: dns_present
+    probe: service.registered
+    params:
+      service: dns
+    expect:
+      registered: true
+
+  - type: probe
+    id: all_nodes_still_heartbeating
+    probe: cluster.health
+    expect:
+      nodes_gte: 5
+      status: healthy
+
+artifacts:
+  collect:
+    - type: logs
+      node: node-1
+      service: cluster-controller
+    - type: logs
+      node: node-1
+      service: node-agent
+
+cleanup:
+  - type: probe
+    id: final_service_count
+    probe: cluster.service_matrix

@@ -242,13 +242,20 @@ evidence_collect_systemd() {
 # ── journal evidence ──────────────────────────────────────────────────────────
 
 # _JOURNAL_UNITS: units whose full journal is worth keeping. Deliberately short.
+#
+# cluster-doctor earns its place: scenario assertions read doctor FINDINGS
+# (doctor_reports_no_errors, no_doctor_errors), so when one fails the question is
+# always "which finding, and on what evidence" — and that reasoning lives only in
+# the doctor's own journal. Captured after three upgrade scenarios failed on
+# "error: expected 0, got 1" in the 2026-08 campaign and the finding could not be
+# identified from the bundle, which is the very gap this collector exists to close.
 # systemctl status retains only the last ~10 journal lines, which is why a
 # control-plane failure could not be root-caused from a bundle after the fact:
 # twice in one session the line that explained a failure (a 'circuit OPEN' after
 # a controller thaw, and the release-workflow skip reason behind a DEFERRED
 # release) existed only in the live journal and was gone by the time the bundle
 # was read. Evidence that cannot answer "why" is not evidence.
-_JOURNAL_UNITS=(cluster-controller node-agent workflow)
+_JOURNAL_UNITS=(cluster-controller node-agent workflow cluster-doctor)
 
 # evidence_collect_journals <out_dir>
 # Writes per-node unit journals under evidence/journal/<node>/<unit>.log

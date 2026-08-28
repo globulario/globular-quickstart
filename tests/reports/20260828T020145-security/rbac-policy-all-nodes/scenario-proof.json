@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-28T02:03:40.286010Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/security/rbac-policy-all-nodes.yaml",
+  "scenario": "rbac-policy-all-nodes",
+  "suite": "security",
+  "source_revision": "da18582fe69618fb6c9ab0b9f809e96aa9c16d3e",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that the RBAC cluster-roles policy file is deployed and valid on all\ncontrol-plane nodes.\n\nThe cluster-roles.json file defines the permission model for all cluster\noperations. The RBAC service reads this file at startup to populate its\nin-memory policy engine. If the file is missing, the RBAC service either\nrefuses to start or starts with no permissions \u2014 making all operations\neither universally blocked or universally allowed.\n\nFailure modes caught:\n- Policy file not deployed (entrypoint.sh copy step failed)\n- Policy file is invalid JSON (RBAC service logs JSON parse errors silently)\n- Policy file has zero roles (permissions not seeded)\n- Policy file not present on a specific node (node-specific deployment failure)\n- etcd role bindings not seeded after RBAC service started\n\nInvariant checked:\n- /var/lib/globular/policy/rbac/cluster-roles.json exists\n- File contains valid JSON\n- File defines 3+ roles (cluster-admin, service-account, read-only at minimum)\n\nIndustry known problem: \"permission policy drift\" \u2014 ops teams update the\npolicy file on some nodes but not all. When the active RBAC service leader\nfailovers to a node with an old policy, permissions silently change.\nAll control-plane nodes must have the same policy version.\n\nThis test checks structural validity only (file present, valid JSON, role count).\nFull authz correctness (allow/deny decisions) is tested in the security suite's\nauthz-decisions scenario.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-28T02:03:44.114935Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

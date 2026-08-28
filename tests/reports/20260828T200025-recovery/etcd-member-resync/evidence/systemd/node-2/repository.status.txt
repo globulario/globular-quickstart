@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-28 20:29:11 UTC; 5s ago
+    Process: 444 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 454 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 470 (repository_serv)
+      Tasks: 13 (limit: 8641)
+     Memory: 23.8M (peak: 26.1M)
+        CPU: 407ms
+     CGroup: /system.slice/docker-e0a847d8764e89437a8b06289b84ba864373c28a151cf0783ee3295475aef7a8.scope/system.slice/globular-repository.service
+             └─470 /usr/lib/globular/bin/repository_server
+
+Aug 28 20:29:12 node-2 repository_server[470]: 2026/08/28 20:29:12 INFO build_id alias migration complete aliased=0 skipped_no_import=56 skipped_no_build_id=0 conflicts=0 errors=0
+Aug 28 20:29:12 node-2 repository_server[470]: time=2026-08-28T20:29:12.234Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 28 20:29:12 node-2 repository_server[470]: 2026/08/28 20:29:12 INFO release ledger migration complete entries=56
+Aug 28 20:29:12 node-2 repository_server[470]: 2026/08/28 20:29:12 INFO publish-reconciler: started interval=1m0s
+Aug 28 20:29:12 node-2 repository_server[470]: time=2026-08-28T20:29:12.323Z level=INFO msg="service ready" service=repository.PackageRepository port=10003 proxy=10001 protocol=grpc domain=globular.internal scylladb=true minio=true init_ms=653
+Aug 28 20:29:12 node-2 repository_server[470]: time=2026-08-28T20:29:12.323Z level=INFO msg="starting service" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 28 20:29:12 node-2 repository_server[470]: 2026/08/28 20:29:12 INFO policy: loaded permissions from file service=repository path=/var/lib/globular/policy/services/repository/permissions.generated.json count=41
+Aug 28 20:29:12 node-2 repository_server[470]: time=2026-08-28T20:29:12.325Z level=INFO msg="authz: permission mappings loaded" service=repository count=41 action_mappings=41
+Aug 28 20:29:12 node-2 repository_server[470]: time=2026-08-28T20:29:12.325Z level=INFO msg="service started successfully" name=repository.PackageRepository id=c5f8d601-bb57-3220-8a20-2f1f34dac0a5 port=10003
+Aug 28 20:29:12 node-2 repository_server[470]: 2026/08/28 20:29:12 INFO metrics listening service=repository.PackageRepository addr=[::]:10001

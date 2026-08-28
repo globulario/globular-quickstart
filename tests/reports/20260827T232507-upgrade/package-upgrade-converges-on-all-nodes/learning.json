@@ -1,0 +1,58 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-28T00:04:45.881871Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "package-upgrade-converges-on-all-nodes",
+  "suite": "upgrade",
+  "result": "FAIL",
+  "source_revision": "da18582fe69618fb6c9ab0b9f809e96aa9c16d3e",
+  "proof": {
+    "claim": "A package upgrade must reach every node that requires it, and \"converged\"\nmust mean observed, not dispatched.\n\nWHY THIS EXISTS. The 2026-08-16 outage began as an ordinary package deploy.\nThe deploy reported success and the operator moved on; the rollout had not\nconverged, and the gap was found hours later through unrelated symptoms. The\nsuite had 68 scenarios at the time and not one of them exercised an upgrade,\nwhich is the single most frequent mutation this platform performs.\n\nTHE DISTINCTION THIS PINS. A child workflow reporting SUCCEEDED is a dispatch\nacknowledgement, not install proof\n(reconcile.terminal_success_requires_observed_convergence). A rollout is\nconverged only when every required node proves the expected artifact is\ninstalled AND running (rollout.convergence_requires_runtime_proof). Those two\nare routinely conflated, and the conflation is invisible while the cluster is\nhealthy \u2014 it only shows up when one node is slow, partitioned, or missing the\nblob, which is precisely when it matters.\n\nConvergence identity is the build_id, not the version-only summary hash\n(convergence.identity_is_build_id). A version that resolves to two build_ids\ncannot converge deterministically, so this scenario also refuses to call a\nrollout healthy while resolution is ambiguous.\n\nThis scenario observes the steady state rather than driving an upgrade\nitself: it asserts that whatever the cluster currently believes it has\ndeployed is actually deployed, uniformly, everywhere. Run it after any\ndeploy \u2014 that is the check the pipeline used to skip.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "assertions",
+        "id": "doctor_reports_no_errors",
+        "probe_or_action": "doctor.report_severity",
+        "result": {
+          "reachable": true,
+          "info": 0,
+          "warn": 3,
+          "error": 1,
+          "total": 4,
+          "worst": "CRITICAL",
+          "reduced_harvest": false
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

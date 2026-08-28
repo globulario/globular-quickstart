@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-28T17:40:51.217380Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/authority/full-blackout-thundering-herd.yaml",
+  "scenario": "full-blackout-thundering-herd",
+  "suite": "authority",
+  "source_revision": "da18582fe69618fb6c9ab0b9f809e96aa9c16d3e",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "When every node starts at once from identical conditions, exactly one\nauthority must emerge.\n\nTHE FAULT. Stop all five nodes, then start all five simultaneously \u2014 one\ndocker invocation, not a sequence.\n\nWHY SIMULTANEITY IS THE POINT. full-cluster-blackout already stops all three\netcd nodes and checks the cluster comes back. But a staggered restart lets one\nnode establish leadership before the others finish booting, which is the easy\ncase and the one that usually happens in practice. Starting together removes\nthat accident: five controllers race from the same starting line, every one of\nthem with a valid local view, none of them with any reason to defer.\n\nThat is when election races, duplicate join requests, duplicate workflow\ndispatch and registration corruption become reachable. Each node has a\ncomplete local state directory and no evidence that anyone else is also\nstarting.\n\nWHAT MUST HOLD. One leader address, not several. Every node registered exactly\nonce. No duplicate or ambiguous artifacts from concurrent publish or\nregistration. No drift storm from several controllers each deciding the cluster\nneeds converging. And the cluster genuinely healthy afterwards rather than\nmerely responsive.\n\nThis is the most destructive scenario in the suite: it stops the entire\ncluster. It is also the closest thing to a real datacentre power event, which\nis exactly why staggering it would be testing the wrong thing.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-28T17:57:00.536037Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

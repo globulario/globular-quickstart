@@ -1,8 +1,8 @@
 # Scenario proof record
 
-- Generated: `2026-08-27T21:37:03Z`
-- Release under test: `1.2.345`
-- Scenarios: **72/81 PASS**, 1161 individual checks recorded
+- Generated: `2026-08-28T21:00:27Z`
+- Release under test: `1.2.346`
+- Scenarios: **75/81 PASS**, 1169 individual checks recorded
 
 Every row names the evidence bundle it was read from — open that
 directory to re-check the claim without re-running anything. A scenario
@@ -13,94 +13,94 @@ Regenerate with `tests/harness/bin/globular-proof`.
 
 | Suite | Scenario | Result | Checks | Verdict | Evidence |
 |---|---|---|---|---|---|
-| authority | controller-zombie-after-lease-loss | **PASS** | 19/19 | ✅ | `tests/reports/20260827T174828-authority/controller-zombie-after-lease-loss` |
-| authority | crash-during-mutation-is-atomic | **PASS** | 19/19 | ✅ | `tests/reports/20260827T174828-authority/crash-during-mutation-is-atomic` |
-| authority | etcd-enospc-during-state-commit | **PASS** | 18/18 | ✅ | `tests/reports/20260827T174828-authority/etcd-enospc-during-state-commit` |
-| authority | full-blackout-thundering-herd | **PASS** | 18/18 | ✅ | `tests/reports/20260827T174828-authority/full-blackout-thundering-herd` |
-| authority | node-clone-identity-collision | **POSTCONDITION** | 19/20 | ❌ | `tests/reports/20260827T174828-authority/node-clone-identity-collision` |
-| authority | rejoin-after-missed-generations | **FAIL** | 19/20 | ❌ | `tests/reports/20260827T174828-authority/rejoin-after-missed-generations` |
-| catastrophic | control-plane-majority-loss | **PASS** | 24/24 | ✅ | `tests/reports/20260827T204512-catastrophic/control-plane-majority-loss` |
-| catastrophic | controller-leadership-vacuum | **PASS** | 20/20 | ✅ | `tests/reports/20260827T204512-catastrophic/controller-leadership-vacuum` |
-| catastrophic | full-cluster-blackout | **PASS** | 30/30 | ✅ | `tests/reports/20260827T204512-catastrophic/full-cluster-blackout` |
-| catastrophic | rolling-quorum-collapse | **PASS** | 30/30 | ✅ | `tests/reports/20260827T204512-catastrophic/rolling-quorum-collapse` |
-| catastrophic | scylladb-node3-cascade | **PASS** | 30/30 | ✅ | `tests/reports/20260827T204512-catastrophic/scylladb-node3-cascade` |
-| functional | doctor-node-report-agrees-with-cluster-report | **PASS** | 10/10 | ✅ | `tests/reports/20260827T163028-functional/doctor-node-report-agrees-with-cluster-report` |
-| functional | doctor-report-clean | **PASS** | 9/9 | ✅ | `tests/reports/20260827T163028-functional/doctor-report-clean` |
-| functional | etcd-write-verified | **PASS** | 9/9 | ✅ | `tests/reports/20260827T163028-functional/etcd-write-verified` |
-| functional | node-join-convergence | **PASS** | 17/17 | ✅ | `tests/reports/20260827T163028-functional/node-join-convergence` |
-| functional | parity-runtime | **PASS** | 16/16 | ✅ | `tests/reports/20260827T163028-functional/parity-runtime` |
-| functional | pki-mesh-valid | **PASS** | 17/17 | ✅ | `tests/reports/20260827T163028-functional/pki-mesh-valid` |
-| functional | reconcile-clean | **PASS** | 8/8 | ✅ | `tests/reports/20260827T163028-functional/reconcile-clean` |
-| functional | repository-lifecycle | **PASS** | 10/10 | ✅ | `tests/reports/20260827T163028-functional/repository-lifecycle` |
-| functional | service-registration-all | **PASS** | 23/23 | ✅ | `tests/reports/20260827T163028-functional/service-registration-all` |
-| functional | workflow-basic | **PASS** | 10/10 | ✅ | `tests/reports/20260827T163028-functional/workflow-basic` |
-| patterns | absence-is-not-destructive-intent | **PASS** | 8/8 | ✅ | `tests/reports/20260827T164008-patterns/absence-is-not-destructive-intent` |
-| patterns | bootstrap-then-promote-day1 | **PASS** | 8/8 | ✅ | `tests/reports/20260827T164008-patterns/bootstrap-then-promote-day1` |
-| patterns | desired-state-reconciliation | **PASS** | 8/8 | ✅ | `tests/reports/20260827T164008-patterns/desired-state-reconciliation` |
-| patterns | health-gate-circuit-breaker | **PASS** | 7/7 | ✅ | `tests/reports/20260827T164008-patterns/health-gate-circuit-breaker` |
-| patterns | objectstore-authority-generation | **PASS** | 7/7 | ✅ | `tests/reports/20260827T164008-patterns/objectstore-authority-generation` |
-| patterns | residue-negative-control | **RESIDUE** | 4/5 | 🟦 expected-fail | `tests/reports/20260827T164008-patterns/residue-negative-control` |
-| recovery | compute-node-rejoin | **PASS** | 20/20 | ✅ | `tests/reports/20260827T200853-recovery/compute-node-rejoin` |
-| recovery | etcd-detach-before-wipe | **POSTCONDITION** | 7/13 | ❌ | `tests/reports/20260827T200853-recovery/etcd-detach-before-wipe` |
-| recovery | etcd-member-resync | **PASS** | 24/24 | ✅ | `tests/reports/20260827T200853-recovery/etcd-member-resync` |
-| recovery | installed-packages-audit | **PASS** | 8/8 | ✅ | `tests/reports/20260827T200853-recovery/installed-packages-audit` |
-| recovery | layer-parity-spot-check | **PASS** | 10/10 | ✅ | `tests/reports/20260827T200853-recovery/layer-parity-spot-check` |
-| recovery | release-failure-audit | **PASS** | 4/4 | ✅ | `tests/reports/20260827T200853-recovery/release-failure-audit` |
-| recovery | service-crash-autostart | **PASS** | 20/20 | ✅ | `tests/reports/20260827T200853-recovery/service-crash-autostart` |
-| resilience | compute-node-stop-restart | **PASS** | 20/20 | ✅ | `tests/reports/20260827T190655-resilience/compute-node-stop-restart` |
-| resilience | control-plane-single-member-loss | **PARTIAL** | 19/20 | ❌ | `tests/reports/20260827T190655-resilience/control-plane-single-member-loss` |
-| resilience | control-plane-transient-asymmetric-partition | **PARTIAL** | 15/19 | ❌ | `tests/reports/20260827T190655-resilience/control-plane-transient-asymmetric-partition` |
-| resilience | controller-service-crash | **PASS** | 17/17 | ✅ | `tests/reports/20260827T190655-resilience/controller-service-crash` |
-| resilience | disk-pressure-detection | **PASS** | 10/10 | ✅ | `tests/reports/20260827T190655-resilience/disk-pressure-detection` |
-| resilience | dual-node-failure | **FAIL** | 17/18 | ❌ | `tests/reports/20260827T190655-resilience/dual-node-failure` |
-| resilience | etcd-quorum-resilience | **PASS** | 12/12 | ✅ | `tests/reports/20260827T190655-resilience/etcd-quorum-resilience` |
-| resilience | network-partition-fencing | **PASS** | 14/14 | ✅ | `tests/reports/20260827T190655-resilience/network-partition-fencing` |
-| resilience | node-agent-crash-recovery | **PASS** | 18/18 | ✅ | `tests/reports/20260827T190655-resilience/node-agent-crash-recovery` |
-| resilience | safe-rolling-control-plane-maintenance | **PARTIAL** | 24/28 | ❌ | `tests/reports/20260827T190655-resilience/safe-rolling-control-plane-maintenance` |
-| resilience | scylladb-restart | **PASS** | 25/25 | ✅ | `tests/reports/20260827T190655-resilience/scylladb-restart` |
-| resilience | service-crash-recovery | **PASS** | 14/14 | ✅ | `tests/reports/20260827T190655-resilience/service-crash-recovery` |
-| resilience | worker-node-failure | **PASS** | 13/13 | ✅ | `tests/reports/20260827T190655-resilience/worker-node-failure` |
-| security | authz-scope-unavailable | **PASS** | 21/21 | ✅ | `tests/reports/20260827T163809-security/authz-scope-unavailable` |
-| security | cert-expiry-detection | **PASS** | 12/12 | ✅ | `tests/reports/20260827T163809-security/cert-expiry-detection` |
-| security | mtls-connectivity | **PASS** | 10/10 | ✅ | `tests/reports/20260827T163809-security/mtls-connectivity` |
-| security | mtls-mesh-connectivity | **PASS** | 14/14 | ✅ | `tests/reports/20260827T163809-security/mtls-mesh-connectivity` |
-| security | pki-cert-health | **PASS** | 12/12 | ✅ | `tests/reports/20260827T163809-security/pki-cert-health` |
-| security | pki-cert-validity-all-nodes | **PASS** | 14/14 | ✅ | `tests/reports/20260827T163809-security/pki-cert-validity-all-nodes` |
-| security | rbac-policy-all-nodes | **PASS** | 13/13 | ✅ | `tests/reports/20260827T163809-security/rbac-policy-all-nodes` |
-| security | rbac-policy-integrity | **PASS** | 10/10 | ✅ | `tests/reports/20260827T163809-security/rbac-policy-integrity` |
-| security | signing-keys-distribution | **PASS** | 9/9 | ✅ | `tests/reports/20260827T163809-security/signing-keys-distribution` |
-| smoke | authz-basic | **PASS** | 10/10 | ✅ | `tests/reports/20260827T162959-smoke/authz-basic` |
-| smoke | cluster-cold-boot | **PASS** | 10/10 | ✅ | `tests/reports/20260827T162959-smoke/cluster-cold-boot` |
-| smoke | service-health-minimal | **PASS** | 13/13 | ✅ | `tests/reports/20260827T162959-smoke/service-health-minimal` |
-| soak | cluster-health-stability | **PASS** | 14/14 | ✅ | `tests/reports/20260827T205425-soak/cluster-health-stability` |
-| soak | etcd-backend-growth-trend | **PASS** | 12/12 | ✅ | `tests/reports/20260827T205425-soak/etcd-backend-growth-trend` |
-| soak | heartbeat-age-stays-under-threshold | **PASS** | 12/12 | ✅ | `tests/reports/20260827T205425-soak/heartbeat-age-stays-under-threshold` |
-| soak | node-agent-uptime | **PASS** | 25/25 | ✅ | `tests/reports/20260827T205425-soak/node-agent-uptime` |
-| soak | service-registry-stability | **PASS** | 16/16 | ✅ | `tests/reports/20260827T205425-soak/service-registry-stability` |
-| training | day0-single-node-awareness | **PASS** | 8/8 | ✅ | `tests/reports/20260827T164050-training/day0-single-node-awareness` |
-| training | day1-join-second-node-awareness | **PASS** | 9/9 | ✅ | `tests/reports/20260827T164050-training/day1-join-second-node-awareness` |
-| training | install-loop-awareness | **PASS** | 10/10 | ✅ | `tests/reports/20260827T164050-training/install-loop-awareness` |
-| training | missing-state-awareness | **PASS** | 9/9 | ✅ | `tests/reports/20260827T164050-training/missing-state-awareness` |
-| training | restart-storm-awareness | **PASS** | 13/13 | ✅ | `tests/reports/20260827T164050-training/restart-storm-awareness` |
-| upgrade | deploy-publish-then-converge | **PASS** | 18/18 | ✅ | `tests/reports/20260827T164156-upgrade/deploy-publish-then-converge` |
-| upgrade | desired-state-refuses-what-it-cannot-resolve | **PASS** | 13/13 | ✅ | `tests/reports/20260827T164156-upgrade/desired-state-refuses-what-it-cannot-resolve` |
-| upgrade | etcd-backend-does-not-ratchet | **PASS** | 9/9 | ✅ | `tests/reports/20260827T164156-upgrade/etcd-backend-does-not-ratchet` |
-| upgrade | etcd-defrag-actually-reclaims | **PASS** | 15/15 | ✅ | `tests/reports/20260827T164156-upgrade/etcd-defrag-actually-reclaims` |
-| upgrade | first-join-from-clean-node | **PASS** | 19/19 | ✅ | `tests/reports/20260827T164156-upgrade/first-join-from-clean-node` |
-| upgrade | liveness-survives-state-writes | **PASS** | 8/8 | ✅ | `tests/reports/20260827T164156-upgrade/liveness-survives-state-writes` |
-| upgrade | package-upgrade-converges-on-all-nodes | **PASS** | 11/11 | ✅ | `tests/reports/20260827T164156-upgrade/package-upgrade-converges-on-all-nodes` |
-| upgrade | platform-upgrade-release-boundary | **PASS** | 9/9 | ✅ | `tests/reports/20260827T164156-upgrade/platform-upgrade-release-boundary` |
-| upgrade | published-artifact-is-installable-everywhere | **PASS** | 8/8 | ✅ | `tests/reports/20260827T164156-upgrade/published-artifact-is-installable-everywhere` |
-| upgrade | rejoin-with-stale-membership-state-is-bounded | **PASS** | 16/16 | ✅ | `tests/reports/20260827T164156-upgrade/rejoin-with-stale-membership-state-is-bounded` |
-| upgrade | rollback-guard-refuses-silent-regression | **FAIL** | 2/3 | ❌ | `tests/reports/20260827T164156-upgrade/rollback-guard-refuses-silent-regression` |
-| upgrade | service-restart-reports-truthfully | **PASS** | 9/9 | ✅ | `tests/reports/20260827T164156-upgrade/service-restart-reports-truthfully` |
+| authority | controller-zombie-after-lease-loss | **PASS** | 19/19 | ✅ | `tests/reports/20260828T170705-authority/controller-zombie-after-lease-loss` |
+| authority | crash-during-mutation-is-atomic | **PASS** | 19/19 | ✅ | `tests/reports/20260828T170705-authority/crash-during-mutation-is-atomic` |
+| authority | etcd-enospc-during-state-commit | **PASS** | 18/18 | ✅ | `tests/reports/20260828T170705-authority/etcd-enospc-during-state-commit` |
+| authority | full-blackout-thundering-herd | **PASS** | 18/18 | ✅ | `tests/reports/20260828T170705-authority/full-blackout-thundering-herd` |
+| authority | node-clone-identity-collision | **POSTCONDITION** | 19/20 | ❌ | `tests/reports/20260828T170705-authority/node-clone-identity-collision` |
+| authority | rejoin-after-missed-generations | **PARTIAL** | 16/20 | ❌ | `tests/reports/20260828T170705-authority/rejoin-after-missed-generations` |
+| catastrophic | control-plane-majority-loss | **PASS** | 24/24 | ✅ | `tests/reports/20260828T205040-catastrophic/control-plane-majority-loss` |
+| catastrophic | controller-leadership-vacuum | **PASS** | 20/20 | ✅ | `tests/reports/20260828T205040-catastrophic/controller-leadership-vacuum` |
+| catastrophic | full-cluster-blackout | **PASS** | 30/30 | ✅ | `tests/reports/20260828T205040-catastrophic/full-cluster-blackout` |
+| catastrophic | rolling-quorum-collapse | **PASS** | 30/30 | ✅ | `tests/reports/20260828T205040-catastrophic/rolling-quorum-collapse` |
+| catastrophic | scylladb-node3-cascade | **PASS** | 30/30 | ✅ | `tests/reports/20260828T205040-catastrophic/scylladb-node3-cascade` |
+| functional | doctor-node-report-agrees-with-cluster-report | **PASS** | 10/10 | ✅ | `tests/reports/20260828T125502-functional/doctor-node-report-agrees-with-cluster-report` |
+| functional | doctor-report-clean | **PASS** | 9/9 | ✅ | `tests/reports/20260828T125502-functional/doctor-report-clean` |
+| functional | etcd-write-verified | **PASS** | 9/9 | ✅ | `tests/reports/20260828T125502-functional/etcd-write-verified` |
+| functional | node-join-convergence | **PASS** | 17/17 | ✅ | `tests/reports/20260828T125502-functional/node-join-convergence` |
+| functional | parity-runtime | **PASS** | 16/16 | ✅ | `tests/reports/20260828T125502-functional/parity-runtime` |
+| functional | pki-mesh-valid | **PASS** | 17/17 | ✅ | `tests/reports/20260828T125502-functional/pki-mesh-valid` |
+| functional | reconcile-clean | **PASS** | 8/8 | ✅ | `tests/reports/20260828T125502-functional/reconcile-clean` |
+| functional | repository-lifecycle | **PASS** | 10/10 | ✅ | `tests/reports/20260828T125502-functional/repository-lifecycle` |
+| functional | service-registration-all | **PASS** | 23/23 | ✅ | `tests/reports/20260828T125502-functional/service-registration-all` |
+| functional | workflow-basic | **PASS** | 10/10 | ✅ | `tests/reports/20260828T125502-functional/workflow-basic` |
+| patterns | absence-is-not-destructive-intent | **PASS** | 8/8 | ✅ | `tests/reports/20260828T134832-patterns/absence-is-not-destructive-intent` |
+| patterns | bootstrap-then-promote-day1 | **PASS** | 8/8 | ✅ | `tests/reports/20260828T134832-patterns/bootstrap-then-promote-day1` |
+| patterns | desired-state-reconciliation | **PASS** | 8/8 | ✅ | `tests/reports/20260828T134832-patterns/desired-state-reconciliation` |
+| patterns | health-gate-circuit-breaker | **PASS** | 7/7 | ✅ | `tests/reports/20260828T134832-patterns/health-gate-circuit-breaker` |
+| patterns | objectstore-authority-generation | **PASS** | 7/7 | ✅ | `tests/reports/20260828T134832-patterns/objectstore-authority-generation` |
+| patterns | residue-negative-control | **RESIDUE** | 4/5 | 🟦 expected-fail | `tests/reports/20260828T134832-patterns/residue-negative-control` |
+| recovery | compute-node-rejoin | **PASS** | 20/20 | ✅ | `tests/reports/20260828T200025-recovery/compute-node-rejoin` |
+| recovery | etcd-detach-before-wipe | **PASS** | 13/13 | ✅ | `tests/reports/20260828T200025-recovery/etcd-detach-before-wipe` |
+| recovery | etcd-member-resync | **FAIL** | 23/24 | ❌ | `tests/reports/20260828T200025-recovery/etcd-member-resync` |
+| recovery | installed-packages-audit | **PASS** | 8/8 | ✅ | `tests/reports/20260828T200025-recovery/installed-packages-audit` |
+| recovery | layer-parity-spot-check | **PASS** | 10/10 | ✅ | `tests/reports/20260828T200025-recovery/layer-parity-spot-check` |
+| recovery | release-failure-audit | **PASS** | 4/4 | ✅ | `tests/reports/20260828T200025-recovery/release-failure-audit` |
+| recovery | service-crash-autostart | **PASS** | 20/20 | ✅ | `tests/reports/20260828T200025-recovery/service-crash-autostart` |
+| resilience | compute-node-stop-restart | **PASS** | 20/20 | ✅ | `tests/reports/20260828T184646-resilience/compute-node-stop-restart` |
+| resilience | control-plane-single-member-loss | **PASS** | 20/20 | ✅ | `tests/reports/20260828T184646-resilience/control-plane-single-member-loss` |
+| resilience | control-plane-transient-asymmetric-partition | **PASS** | 19/19 | ✅ | `tests/reports/20260828T184646-resilience/control-plane-transient-asymmetric-partition` |
+| resilience | controller-service-crash | **PASS** | 17/17 | ✅ | `tests/reports/20260828T184646-resilience/controller-service-crash` |
+| resilience | disk-pressure-detection | **PASS** | 10/10 | ✅ | `tests/reports/20260828T184646-resilience/disk-pressure-detection` |
+| resilience | dual-node-failure | **PASS** | 18/18 | ✅ | `tests/reports/20260828T184646-resilience/dual-node-failure` |
+| resilience | etcd-quorum-resilience | **PASS** | 12/12 | ✅ | `tests/reports/20260828T184646-resilience/etcd-quorum-resilience` |
+| resilience | network-partition-fencing | **PASS** | 14/14 | ✅ | `tests/reports/20260828T184646-resilience/network-partition-fencing` |
+| resilience | node-agent-crash-recovery | **PASS** | 18/18 | ✅ | `tests/reports/20260828T184646-resilience/node-agent-crash-recovery` |
+| resilience | safe-rolling-control-plane-maintenance | **PASS** | 28/28 | ✅ | `tests/reports/20260828T184646-resilience/safe-rolling-control-plane-maintenance` |
+| resilience | scylladb-restart | **PASS** | 25/25 | ✅ | `tests/reports/20260828T184646-resilience/scylladb-restart` |
+| resilience | service-crash-recovery | **PASS** | 14/14 | ✅ | `tests/reports/20260828T184646-resilience/service-crash-recovery` |
+| resilience | worker-node-failure | **PASS** | 13/13 | ✅ | `tests/reports/20260828T184646-resilience/worker-node-failure` |
+| security | authz-scope-unavailable | **PASS** | 21/21 | ✅ | `tests/reports/20260828T132519-security/authz-scope-unavailable` |
+| security | cert-expiry-detection | **PASS** | 12/12 | ✅ | `tests/reports/20260828T132519-security/cert-expiry-detection` |
+| security | mtls-connectivity | **PASS** | 10/10 | ✅ | `tests/reports/20260828T132519-security/mtls-connectivity` |
+| security | mtls-mesh-connectivity | **PASS** | 14/14 | ✅ | `tests/reports/20260828T132519-security/mtls-mesh-connectivity` |
+| security | pki-cert-health | **PASS** | 12/12 | ✅ | `tests/reports/20260828T132519-security/pki-cert-health` |
+| security | pki-cert-validity-all-nodes | **PASS** | 14/14 | ✅ | `tests/reports/20260828T132519-security/pki-cert-validity-all-nodes` |
+| security | rbac-policy-all-nodes | **PASS** | 13/13 | ✅ | `tests/reports/20260828T132519-security/rbac-policy-all-nodes` |
+| security | rbac-policy-integrity | **PASS** | 10/10 | ✅ | `tests/reports/20260828T132519-security/rbac-policy-integrity` |
+| security | signing-keys-distribution | **PASS** | 9/9 | ✅ | `tests/reports/20260828T132519-security/signing-keys-distribution` |
+| smoke | authz-basic | **PASS** | 10/10 | ✅ | `tests/reports/20260828T123505-smoke/authz-basic` |
+| smoke | cluster-cold-boot | **PASS** | 10/10 | ✅ | `tests/reports/20260828T123505-smoke/cluster-cold-boot` |
+| smoke | service-health-minimal | **PASS** | 13/13 | ✅ | `tests/reports/20260828T123505-smoke/service-health-minimal` |
+| soak | cluster-health-stability | **PASS** | 14/14 | ✅ | `tests/reports/20260828T143144-soak/cluster-health-stability` |
+| soak | etcd-backend-growth-trend | **PASS** | 12/12 | ✅ | `tests/reports/20260828T143144-soak/etcd-backend-growth-trend` |
+| soak | heartbeat-age-stays-under-threshold | **PASS** | 12/12 | ✅ | `tests/reports/20260828T143144-soak/heartbeat-age-stays-under-threshold` |
+| soak | node-agent-uptime | **PASS** | 25/25 | ✅ | `tests/reports/20260828T143144-soak/node-agent-uptime` |
+| soak | service-registry-stability | **PASS** | 16/16 | ✅ | `tests/reports/20260828T143144-soak/service-registry-stability` |
+| training | day0-single-node-awareness | **PASS** | 8/8 | ✅ | `tests/reports/20260828T140959-training/day0-single-node-awareness` |
+| training | day1-join-second-node-awareness | **PASS** | 9/9 | ✅ | `tests/reports/20260828T140959-training/day1-join-second-node-awareness` |
+| training | install-loop-awareness | **PASS** | 10/10 | ✅ | `tests/reports/20260828T140959-training/install-loop-awareness` |
+| training | missing-state-awareness | **PASS** | 9/9 | ✅ | `tests/reports/20260828T140959-training/missing-state-awareness` |
+| training | restart-storm-awareness | **PASS** | 13/13 | ✅ | `tests/reports/20260828T140959-training/restart-storm-awareness` |
+| upgrade | deploy-publish-then-converge | **PASS** | 18/18 | ✅ | `tests/reports/20260828T153039-upgrade/deploy-publish-then-converge` |
+| upgrade | desired-state-refuses-what-it-cannot-resolve | **PASS** | 13/13 | ✅ | `tests/reports/20260828T153039-upgrade/desired-state-refuses-what-it-cannot-resolve` |
+| upgrade | etcd-backend-does-not-ratchet | **PASS** | 9/9 | ✅ | `tests/reports/20260828T153039-upgrade/etcd-backend-does-not-ratchet` |
+| upgrade | etcd-defrag-actually-reclaims | **PASS** | 15/15 | ✅ | `tests/reports/20260828T153039-upgrade/etcd-defrag-actually-reclaims` |
+| upgrade | first-join-from-clean-node | **PASS** | 19/19 | ✅ | `tests/reports/20260828T153039-upgrade/first-join-from-clean-node` |
+| upgrade | liveness-survives-state-writes | **PASS** | 8/8 | ✅ | `tests/reports/20260828T153039-upgrade/liveness-survives-state-writes` |
+| upgrade | package-upgrade-converges-on-all-nodes | **PASS** | 11/11 | ✅ | `tests/reports/20260828T153039-upgrade/package-upgrade-converges-on-all-nodes` |
+| upgrade | platform-upgrade-release-boundary | **PARTIAL** | 7/9 | ❌ | `tests/reports/20260828T153039-upgrade/platform-upgrade-release-boundary` |
+| upgrade | published-artifact-is-installable-everywhere | **PASS** | 8/8 | ✅ | `tests/reports/20260828T153039-upgrade/published-artifact-is-installable-everywhere` |
+| upgrade | rejoin-with-stale-membership-state-is-bounded | **PARTIAL** | 15/16 | ❌ | `tests/reports/20260828T153039-upgrade/rejoin-with-stale-membership-state-is-bounded` |
+| upgrade | rollback-guard-refuses-silent-regression | **PASS** | 11/11 | ✅ | `tests/reports/20260828T153039-upgrade/rollback-guard-refuses-silent-regression` |
+| upgrade | service-restart-reports-truthfully | **PASS** | 9/9 | ✅ | `tests/reports/20260828T153039-upgrade/service-restart-reports-truthfully` |
 
 ## Totals
 
-- `FAIL`: 3
+- `FAIL`: 1
 - `PARTIAL`: 3
-- `PASS`: 72
-- `POSTCONDITION`: 2
+- `PASS`: 75
+- `POSTCONDITION`: 1
 - `RESIDUE`: 1
 
 ## Scenarios that are supposed to fail

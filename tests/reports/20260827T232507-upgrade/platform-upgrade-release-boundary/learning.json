@@ -1,0 +1,66 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-28T00:15:13.032985Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "platform-upgrade-release-boundary",
+  "suite": "upgrade",
+  "result": "PARTIAL",
+  "source_revision": "da18582fe69618fb6c9ab0b9f809e96aa9c16d3e",
+  "proof": {
+    "claim": "A platform upgrade must be decided by the release manifest, and one odd\npackage must not fail the whole platform.\n\nPLATFORM VERSION IS NOT PACKAGE VERSION. release-index.json is the platform\ntruth; the version of any individual package is not. Collapsing the two is a\nstanding rule violation, and it is easy to do accidentally because most\npackages happen to move together.\n\nTHE FAILURE THIS ENCODES. platform_upgrade.dispatch parsed EVERY package\nversion as strict semver and failed the entire step when one did not parse \u2014\nffmpeg, which is versioned by its upstream and never agreed to semver\n(release.platform_upgrade_dispatch_rejects_non_semver_versions). One\nthird-party package with an unusual version string blocked the platform\nupgrade for every service in the release. This is a dependency-shaped bug:\nsomething non-critical placed on the critical path.\n\nDay-0 reads release-index.json. Day-1 joins from the ACTIVE BOM, not from\nlatest \u2014 a node joining mid-upgrade must land on the release the cluster is\nactually running, or it arrives already drifted and the first reconcile\nfights the join.\n\nTruth comes from the manifest, never from filenames. A directory listing that\nlooks like a version is not a version.\n\nWHAT THIS PINS. The release boundary is intact: the platform has exactly one\nactive release, every node agrees on it, and the packages inside it resolve.\nIt is deliberately an observation of the steady state \u2014 a platform upgrade is\ntoo destructive to drive from a test suite against a live cluster, and the\nproperty worth guarding is that the boundary never goes ambiguous, not that a\nparticular upgrade succeeds.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "steps",
+        "id": "let_in_flight_releases_settle",
+        "probe_or_action": "release.audit",
+        "result": {
+          "total": 24,
+          "succeeded": 23,
+          "failed": 0,
+          "pending": 1
+        }
+      },
+      {
+        "section": "assertions",
+        "id": "release_boundary_is_unambiguous",
+        "probe_or_action": "release.audit",
+        "result": {
+          "total": 24,
+          "succeeded": 23,
+          "failed": 0,
+          "pending": 1
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

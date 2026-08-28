@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-28T10:03:24.937654Z",
+  "scenario_file": "tests/scenarios/upgrade/etcd-backend-does-not-ratchet.yaml",
+  "scenario": "etcd-backend-does-not-ratchet",
+  "suite": "upgrade",
+  "source_revision": "da18582fe69618fb6c9ab0b9f809e96aa9c16d3e",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "etcd's backend file must be able to give space back, not only take it.\n\nTHE INCIDENT (2026-08-16). etcd reached its 2 GiB backend quota and raised\nNOSPACE on 4 of 5 members. The control plane went read-only: no desired state\ncould be written, no workflow dispatched, no service registered. Recovery was\na manual compact + defrag + alarm disarm, which took the backend from 2.1 GB\nto 4.2 MB.\n\nTHE WRONG DIAGNOSIS. The obvious suspect was write volume, and the controller\nrewriting its whole state blob on every heartbeat looked like the culprit. An\noptimization was written and shipped on that theory. It caused a second, worse\noutage (see liveness-survives-state-writes) and did not stop the growth: the\nbackend was back to 236 MB within hours, WITH the optimization live.\n\nTHE ACTUAL CAUSE. auto-compaction was already configured \u2014 periodic, 1h\nretention \u2014 so MVCC history was bounded the whole time. What was missing was\ndefragmentation. Compaction frees pages logically but the backend file only\nratchets upward; without a defrag the high-water mark is never returned. The\nfile therefore grows to whatever the busiest hour demanded and stays there\nforever, and any burst that pushes one hour past the quota is permanent.\n\nTwo configuration facts made that fatal rather than merely untidy:\nquota-backend-bytes was 0, meaning etcd's 2 GiB default, on a cluster whose\nsteady state is a few hundred MB; and nothing anywhere \u2014 no systemd timer, no\ncron entry \u2014 ever ran a defrag.\n\nTHE LESSON. The measurement that settles \"is this writer the problem?\" is\nwrites-per-prefix over a window, and it was never taken. The optimization was\nbuilt on a read of the code instead. This scenario asserts the structural\nproperty that makes write volume survivable in the first place, so the\ncluster does not depend on anyone diagnosing correctly under pressure.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-28T10:03:30.484275Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

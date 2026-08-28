@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-28 06:08:36 UTC; 27min ago
+    Process: 1329 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 1333 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1339 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1413 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 35.8M (peak: 39.2M)
+        CPU: 5.686s
+     CGroup: /system.slice/docker-9c354d9249194039f33beff5ad1bb19359349029a573c70efbae6d39ee196be6.scope/system.slice/globular-workflow.service
+             └─1413 /usr/lib/globular/bin/workflow_server
+
+Aug 28 06:34:52 node-1 workflow_server[1413]: 2026/08/28 06:34:52 WARN executor lease: orphan scanner backing off consecutive_failures=3 backoff=4s next_scan_after=2026-08-28T06:34:56Z
+Aug 28 06:34:52 node-1 workflow_server[1413]: time=2026-08-28T06:34:52.971Z level=WARN msg="dependency health check failed" dep=scylladb err="gocql: no hosts available in the pool"
+Aug 28 06:34:52 node-1 workflow_server[1413]: time=2026-08-28T06:34:52.971Z level=INFO msg="scylla_reconnect: stale session closed — rebuilding pool"
+Aug 28 06:34:53 node-1 workflow_server[1413]: time=2026-08-28T06:34:53.972Z level=INFO msg="scylla_reconnect: attempting reconnect" attempt=1 backoff=1s
+Aug 28 06:34:53 node-1 workflow_server[1413]: time=2026-08-28T06:34:53.975Z level=INFO msg=workflow.scylla_reconnected scylla_session_generation=2 scylla_reconnect_attempts=1
+Aug 28 06:35:07 node-1 workflow_server[1413]: 2026/08/28 06:35:07 INFO executor lease: orphan scanner recovered previous_failures=3
+Aug 28 06:35:07 node-1 workflow_server[1413]: time=2026-08-28T06:35:07.972Z level=INFO msg="dependencies recovered — service is SERVING"
+Aug 28 06:35:37 node-1 workflow_server[1413]: 2026/08/28 06:35:37 INFO executor lease: orphan detected run_id=InfrastructureRelease/core@globular.io/xds stale_executor=executor:node-1:23919 heartbeat_age_ms=3912455
+Aug 28 06:35:38 node-1 workflow_server[1413]: 2026/08/28 06:35:38 INFO executor lease: orphan detected run_id=InfrastructureRelease/core@globular.io/prometheus stale_executor=executor:node-1:23919 heartbeat_age_ms=3913042
+Aug 28 06:35:38 node-1 workflow_server[1413]: 2026/08/28 06:35:38 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=351 baseline_ms=20 window=72 new_window=64

@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-28T08:26:42.563511Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/recovery/compute-node-rejoin.yaml",
+  "scenario": "compute-node-rejoin",
+  "suite": "recovery",
+  "source_revision": "da18582fe69618fb6c9ab0b9f809e96aa9c16d3e",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that a stopped compute node fully rejoins the cluster after restart.\n\n\"Rejoin\" means more than just the container coming back up \u2014 the node agent\nmust restart, re-read its config from etcd, and re-register its heartbeat.\nThis test specifically validates the rejoin protocol, not just container\nlifecycle.\n\nRejoin sequence:\n1. Container stops \u2192 node agent process killed by Docker\n2. Container restarts \u2192 systemd starts, entrypoint.sh runs (PKI already done)\n3. systemd starts node-agent.service\n4. Node agent reads config.json \u2192 connects to etcd endpoints\n5. Node agent writes node_agent_metrics_port key to etcd \u2192 heartbeat\n6. Controller sees new heartbeat, node is back in the pool\n7. Convergence: controller compares installed packages vs desired state\n\nThis differs from compute-node-stop-restart in its assertion focus:\n- That test verifies cluster health during the outage\n- This test verifies the REJOIN PROTOCOL works correctly\n\nFailure modes caught:\n- Node agent starts but cannot connect to etcd (TLS cert mismatch after restart)\n- Node agent connects but fails to write heartbeat (RBAC permission missing)\n- etcd key written but controller doesn't detect it (watch subscription issue)\n- Node agent starts in a bad state (stale tokens from previous session)\n- Convergence doesn't trigger after rejoin (AppliedServicesHash not reported)\n\nNote: Token clearing \u2014 entrypoint.sh clears stale tokens on each boot:\n\"rm -f $STATE/tokens/*_token\" \u2014 this prevents auth failures from stale JWTs.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-28T08:27:09.094201Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

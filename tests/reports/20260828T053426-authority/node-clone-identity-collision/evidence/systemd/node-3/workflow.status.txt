@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-28 06:31:39 UTC; 4min 55s ago
+    Process: 10356 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 10361 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 10364 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10375 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 27.3M (peak: 33.1M)
+        CPU: 2.784s
+     CGroup: /system.slice/docker-b189830d768fd0b58843bcf3c8ac82ff3d3b252bd638e0d0315bf2686eae91f4.scope/system.slice/globular-workflow.service
+             └─10375 /usr/lib/globular/bin/workflow_server
+
+Aug 28 06:36:17 node-3 workflow_server[10375]: 2026/08/28 06:36:17 workflow: step repair_disk_space skipped (condition not met)
+Aug 28 06:36:17 node-3 workflow_server[10375]: 2026/08/28 06:36:17 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 28 06:36:17 node-3 workflow_server[10375]: 2026/08/28 06:36:17 workflow: step repair_minio_storage SUCCEEDED (attempt 1)
+Aug 28 06:36:17 node-3 workflow_server[10375]: 2026/08/28 06:36:17 workflow: step fence_unreachable_nodes SUCCEEDED (attempt 1)
+Aug 28 06:36:17 node-3 workflow_server[10375]: 2026/08/28 06:36:17 workflow: step emit_report starting (actor=cluster-controller action=controller.invariant.emit_report)
+Aug 28 06:36:17 node-3 workflow_server[10375]: 2026/08/28 06:36:17 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 28 06:36:17 node-3 workflow_server[10375]: 2026/08/28 06:36:17 workflow: step emit_report SUCCEEDED (attempt 1)
+Aug 28 06:36:17 node-3 workflow_server[10375]: 2026/08/28 06:36:17 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 28 06:36:17 node-3 workflow_server[10375]: time=2026-08-28T06:36:17.997Z level=INFO msg="executor: engine.Execute completed" run_id=invariant:1787898977
+Aug 28 06:36:18 node-3 workflow_server[10375]: time=2026-08-28T06:36:18.021Z level=INFO msg="executor: workflow finished" workflow=cluster.invariant.enforcement run_id=invariant:1787898977 status=RUN_STATUS_SUCCEEDED

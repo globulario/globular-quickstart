@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-28 17:42:17 UTC; 44min ago
+    Process: 1576 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 1592 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1606 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 35.8M (peak: 40.0M)
+        CPU: 5.490s
+     CGroup: /system.slice/docker-a1488b7dd50479e5e3f048236df39ae26c93f9d649e244c7f0331057724fdaa5.scope/system.slice/globular-ai-executor.service
+             └─1606 /usr/lib/globular/bin/ai_executor_server
+
+Aug 28 18:22:19 node-1 ai_executor_server[1606]: time=2026-08-28T18:22:19.869Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Aug 28 18:22:19 node-1 ai_executor_server[1606]: time=2026-08-28T18:22:19.875Z level=INFO msg="codex: no credentials found"
+Aug 28 18:24:04 node-1 ai_executor_server[1606]: time=2026-08-28T18:24:04.972Z level=INFO msg="processing incident" incident_id=a690b605-a30d-11f1-b6be-02420a0a000f rule_id=service-stopped tier=0 trigger=service.stopped batch_size=2
+Aug 28 18:24:05 node-1 ai_executor_server[1606]: time=2026-08-28T18:24:05.084Z level=INFO msg="diagnosis complete" incident_id=a690b605-a30d-11f1-b6be-02420a0a000f root_cause="unknown_anomaly (etcd)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 28 18:24:05 node-1 ai_executor_server[1606]: time=2026-08-28T18:24:05.084Z level=INFO msg="INCIDENT RESOLVED" incident_id=a690b605-a30d-11f1-b6be-02420a0a000f summary="service-stopped triggered by service.stopped on etcd (2 events in batch)" root_cause="unknown_anomaly (etcd)"
+Aug 28 18:24:05 node-1 ai_executor_server[1606]: 2026/08/28 18:24:05 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=123 baseline_ms=20 window=47 new_window=42
+Aug 28 18:24:45 node-1 ai_executor_server[1606]: time=2026-08-28T18:24:45.788Z level=INFO msg="processing incident" incident_id=bee317e3-a30d-11f1-814b-02420a0a000c rule_id=workflow-run-failed tier=0 trigger=workflow.run.failed batch_size=2
+Aug 28 18:24:45 node-1 ai_executor_server[1606]: time=2026-08-28T18:24:45.890Z level=INFO msg="diagnosis complete" incident_id=bee317e3-a30d-11f1-814b-02420a0a000c root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 28 18:24:45 node-1 ai_executor_server[1606]: time=2026-08-28T18:24:45.890Z level=INFO msg="INCIDENT RESOLVED" incident_id=bee317e3-a30d-11f1-814b-02420a0a000c summary="workflow-run-failed triggered by workflow.run.failed (2 events in batch)" root_cause=unknown_anomaly
+Aug 28 18:24:45 node-1 ai_executor_server[1606]: 2026/08/28 18:24:45 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=112 baseline_ms=20 window=42 new_window=37

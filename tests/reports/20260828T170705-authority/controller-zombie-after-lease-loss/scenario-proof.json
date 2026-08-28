@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-28T17:07:06.070577Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/authority/controller-zombie-after-lease-loss.yaml",
+  "scenario": "controller-zombie-after-lease-loss",
+  "suite": "authority",
+  "source_revision": "da18582fe69618fb6c9ab0b9f809e96aa9c16d3e",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "A controller that loses authority must never regain it by waking up.\n\nTHE FAULT. SIGSTOP the controller holding the leadership lease. Its lease is\nnot renewed, so it expires; another controller wins the election and changes\ndesired state. Then SIGCONT the original process.\n\n    controller A holds the lease, instance 73781e90\u2026\n          \u2193  SIGSTOP  \u2014 process frozen, memory intact\n    lease expires, key disappears\n          \u2193\n    controller B wins the election, becomes leader\n          \u2193\n    B mutates desired state\n          \u2193  SIGCONT  \u2014 A wakes with perfectly coherent pre-freeze memory\n\nWHY SIGKILL CANNOT REACH THIS. A killed process loses its memory and comes\nback as a new instance that must re-elect from scratch \u2014 the safe path, and the\nonly one the existing crash scenarios exercise. A STOPPED process keeps every\nbyte: it wakes up still believing it is leader, still holding what it thinks is\na valid lease, mid-way through whatever it was doing. Every existing crash\ndrill tests that leader election WORKS. This tests something strictly harder:\n\n    is losing authority IRREVERSIBLE for the instance that lost it?\n\nnetwork-partition-fencing attacks the spatial side of that invariant \u2014 an\nisolated node must be fenced. This attacks the temporal side, which is the\nhalf that survives a working fencing implementation: A is not isolated when it\nwakes. It can reach etcd, it can reach every service, and it has no local\nevidence that anything happened. Only the cluster knows.\n\nWHAT MUST HOLD. Exactly one leader, and it is not the resurrected instance.\nThe zombie's own instance UUID must not reappear as leader_instance, and the\ndesired state B wrote must survive untouched. A must either observe that its\nlease is gone and stand down, or be refused by the generation guard \u2014 but from\noutside, the requirement is simply that nothing it believed becomes true again.\n\nA NOTE ON WHAT THIS CAN OBSERVE. Proving \"A performed no externally visible\nmutation\" in full needs write attribution per authority instance. What is\nobservable here is: leadership did not return to A's instance, desired state\nis byte-identical to what B wrote, no split-brain or drift findings appeared,\nand the cluster stayed healthy. Those are consequences of correct fencing\nrather than the fencing itself, and the scenario says so rather than\noverclaiming.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-28T17:13:15.997051Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

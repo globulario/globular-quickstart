@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-28 17:42:17 UTC; 27min ago
+    Process: 1333 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 1341 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1349 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1370 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 34.2M (peak: 37.7M)
+        CPU: 4.370s
+     CGroup: /system.slice/docker-a1488b7dd50479e5e3f048236df39ae26c93f9d649e244c7f0331057724fdaa5.scope/system.slice/globular-workflow.service
+             └─1370 /usr/lib/globular/bin/workflow_server
+
+Aug 28 18:07:26 node-1 workflow_server[1370]: 2026/08/28 18:07:26 workflow: step apply_per_node foreach-with-substeps SUCCEEDED (1/1 items)
+Aug 28 18:07:26 node-1 workflow_server[1370]: 2026/08/28 18:07:26 workflow: step aggregate_outcome starting (actor=cluster-controller action=controller.release.aggregate_direct_apply_results)
+Aug 28 18:07:26 node-1 workflow_server[1370]: 2026/08/28 18:07:26 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 28 18:07:26 node-1 workflow_server[1370]: 2026/08/28 18:07:26 workflow: step aggregate_outcome SUCCEEDED (attempt 1)
+Aug 28 18:07:26 node-1 workflow_server[1370]: 2026/08/28 18:07:26 workflow: step finalize_release starting (actor=cluster-controller action=controller.release.finalize_direct_apply)
+Aug 28 18:07:26 node-1 workflow_server[1370]: 2026/08/28 18:07:26 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 28 18:07:26 node-1 workflow_server[1370]: 2026/08/28 18:07:26 workflow: step finalize_release SUCCEEDED (attempt 1)
+Aug 28 18:07:26 node-1 workflow_server[1370]: 2026/08/28 18:07:26 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 28 18:07:26 node-1 workflow_server[1370]: time=2026-08-28T18:07:26.800Z level=INFO msg="executor: engine.Execute completed" run_id=InfrastructureRelease/core@globular.io/scylladb
+Aug 28 18:07:26 node-1 workflow_server[1370]: time=2026-08-28T18:07:26.831Z level=INFO msg="executor: workflow finished" workflow=release.apply.package run_id=InfrastructureRelease/core@globular.io/scylladb status=RUN_STATUS_SUCCEEDED

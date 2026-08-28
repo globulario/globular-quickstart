@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 23:11:55 UTC; 52min ago
+    Process: 5513 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 5517 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 5520 (monitoring_serv)
+      Tasks: 18 (limit: 8641)
+     Memory: 18.1M (peak: 24.3M)
+        CPU: 1.781s
+     CGroup: /system.slice/docker-ae73b7b699a75f00db1ecb56e618f968184b926fcd5e80e97e3ed0f18cb3281a.scope/system.slice/globular-monitoring.service
+             └─5520 /usr/lib/globular/bin/monitoring_server
+
+Aug 27 23:11:55 node-4 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Aug 27 23:11:55 node-4 monitoring_server[5520]: PortAllocator range: 10000 - 20000
+Aug 27 23:11:55 node-4 monitoring_server[5520]: 2026/08/27 23:11:55 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Aug 27 23:11:55 node-4 monitoring_server[5520]: time=2026-08-27T23:11:55.648Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=76
+Aug 27 23:11:55 node-4 monitoring_server[5520]: 2026/08/27 23:11:55 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Aug 27 23:12:05 node-4 monitoring_server[5520]: 2026/08/27 23:12:05 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 27 23:12:05 node-4 monitoring_server[5520]: 2026/08/27 23:12:05 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 27 23:31:03 node-4 monitoring_server[5520]: {"level":"warn","ts":"2026-08-27T23:31:03.253808Z","logger":"etcd-client","caller":"v3@v3.5.14/retry_interceptor.go:63","msg":"retrying of unary invoker failed","target":"etcd-endpoints://0xc00002e3c0/10.10.0.11:2379","attempt":0,"error":"rpc error: code = DeadlineExceeded desc = context deadline exceeded"}
+Aug 27 23:31:03 node-4 monitoring_server[5520]: {"level":"info","ts":"2026-08-27T23:31:03.253892Z","logger":"etcd-client","caller":"v3@v3.5.14/client.go:210","msg":"Auto sync endpoints failed.","error":"context deadline exceeded"}
+Aug 27 23:42:44 node-4 monitoring_server[5520]: 2026/08/27 23:42:44 INFO acc: warmup complete baseline_rtt_ms=20 samples=155 elapsed=30m0s

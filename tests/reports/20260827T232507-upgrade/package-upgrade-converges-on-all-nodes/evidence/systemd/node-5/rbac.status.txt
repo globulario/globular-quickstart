@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-08-27 23:53:18 UTC; 11min ago
+    Process: 9779 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 9783 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 9786 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 9792 (rbac_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 95.9M (peak: 96.8M)
+        CPU: 2.033s
+     CGroup: /system.slice/docker-b079d88ade89a6f7a0d08e52b69dabf51f4c9ae2f11f27ad52d586a61a0962ea.scope/system.slice/globular-rbac.service
+             └─9792 /usr/lib/globular/bin/rbac_server
+
+Aug 27 23:57:56 node-5 rbac_server[9792]: 2026/08/27 23:57:56 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 27 23:57:58 node-5 rbac_server[9792]: 2026/08/27 23:57:58 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 27 23:57:58 node-5 rbac_server[9792]: 2026/08/27 23:57:58 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 27 23:57:58 node-5 rbac_server[9792]: 2026/08/27 23:57:58 WARN keystore: failed to write legacy private key issuer=02:42:0a:0a:00:0f path=/var/lib/globular/keys/02_42_0a_0a_00_0f_private err="open /var/lib/globular/keys/02_42_0a_0a_00_0f_private: permission denied"
+Aug 27 23:57:58 node-5 rbac_server[9792]: 2026/08/27 23:57:58 WARN keystore: failed to write legacy public key issuer=02:42:0a:0a:00:0f path=/var/lib/globular/keys/02_42_0a_0a_00_0f_public err="open /var/lib/globular/keys/02_42_0a_0a_00_0f_public: permission denied"
+Aug 27 23:58:20 node-5 rbac_server[9792]: 2026/08/27 23:58:20 INFO acc: warmup complete baseline_rtt_ms=20 samples=328 elapsed=5m0s
+Aug 28 00:00:12 node-5 rbac_server[9792]: 2026/08/28 00:00:12 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 28 00:01:59 node-5 rbac_server[9792]: 2026/08/28 00:01:59 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 28 00:02:58 node-5 rbac_server[9792]: 2026/08/28 00:02:58 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Aug 28 00:04:13 node-5 rbac_server[9792]: 2026/08/28 00:04:13 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

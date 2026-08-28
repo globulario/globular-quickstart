@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-28 18:07:45 UTC; 2min 19s ago
+    Process: 4704 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 4709 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 4716 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 30.5M (peak: 32.9M)
+        CPU: 688ms
+     CGroup: /system.slice/docker-9302c4c8e78b107f45e3faa52b232c3db46208c6c0147d6e274df08975b4d4a9.scope/system.slice/globular-ai-executor.service
+             └─4716 /usr/lib/globular/bin/ai_executor_server
+
+Aug 28 18:07:45 node-5 ai_executor_server[4716]: time=2026-08-28T18:07:45.360Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.12 10.10.0.13 10.10.0.15]"
+Aug 28 18:07:45 node-5 ai_executor_server[4716]: 2026/08/28 18:07:45 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 28 18:07:55 node-5 ai_executor_server[4716]: 2026/08/28 18:07:55 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Aug 28 18:07:55 node-5 ai_executor_server[4716]: 2026/08/28 18:07:55 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Aug 28 18:08:15 node-5 ai_executor_server[4716]: time=2026-08-28T18:08:15.349Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 28 18:08:15 node-5 ai_executor_server[4716]: time=2026-08-28T18:08:15.359Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10010
+Aug 28 18:08:15 node-5 ai_executor_server[4716]: time=2026-08-28T18:08:15.369Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010
+Aug 28 18:08:46 node-5 ai_executor_server[4716]: time=2026-08-28T18:08:46.627Z level=INFO msg="processing incident" incident_id=832c6a97-a30b-11f1-bd93-02420a0a000b rule_id=workflow-run-failed tier=0 trigger=workflow.run.failed batch_size=2
+Aug 28 18:08:46 node-5 ai_executor_server[4716]: time=2026-08-28T18:08:46.689Z level=INFO msg="diagnosis complete" incident_id=832c6a97-a30b-11f1-bd93-02420a0a000b root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 28 18:08:46 node-5 ai_executor_server[4716]: time=2026-08-28T18:08:46.689Z level=INFO msg="INCIDENT RESOLVED" incident_id=832c6a97-a30b-11f1-bd93-02420a0a000b summary="workflow-run-failed triggered by workflow.run.failed (2 events in batch)" root_cause=unknown_anomaly

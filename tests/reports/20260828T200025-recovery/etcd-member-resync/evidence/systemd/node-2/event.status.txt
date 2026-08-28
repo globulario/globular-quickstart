@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-28 20:29:06 UTC; 10s ago
+    Process: 48 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 67 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 89 (event_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 25.9M (peak: 27.7M)
+        CPU: 434ms
+     CGroup: /system.slice/docker-e0a847d8764e89437a8b06289b84ba864373c28a151cf0783ee3295475aef7a8.scope/system.slice/globular-event.service
+             └─89 /usr/lib/globular/bin/event_server
+
+Aug 28 20:29:06 node-2 event_server[89]: 2026/08/28 20:29:06 INFO metrics listening service=event.EventService addr=[::]:10051
+Aug 28 20:29:08 node-2 event_server[89]: 2026/08/28 20:29:08 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:10001: connect: connection refused\""
+Aug 28 20:29:08 node-2 event_server[89]: time=2026-08-28T20:29:08.982Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=ai_router_operation.*
+Aug 28 20:29:08 node-2 event_server[89]: time=2026-08-28T20:29:08.982Z level=INFO msg="OnEvent: registered" uuid=8442af1a-ea92-44e3-882b-788f7c30682e
+Aug 28 20:29:08 node-2 event_server[89]: time=2026-08-28T20:29:08.982Z level=INFO msg=subscribed channel=operation.* uuid=ai_router_operation.* subscribers=1
+Aug 28 20:29:08 node-2 event_server[89]: time=2026-08-28T20:29:08.982Z level=INFO msg="stream registered" uuid=8442af1a-ea92-44e3-882b-788f7c30682e
+Aug 28 20:29:08 node-2 event_server[89]: 2026/08/28 20:29:08 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:10001: connect: connection refused\""
+Aug 28 20:29:08 node-2 event_server[89]: time=2026-08-28T20:29:08.988Z level=INFO msg="Subscribe: ok" channel=operation.restart_requested uuid=8442af1a-ea92-44e3-882b-788f7c30682e
+Aug 28 20:29:08 node-2 event_server[89]: time=2026-08-28T20:29:08.988Z level=INFO msg=subscribed channel=operation.restart_requested uuid=8442af1a-ea92-44e3-882b-788f7c30682e subscribers=1
+Aug 28 20:29:12 node-2 event_server[89]: 2026/08/28 20:29:12 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.publish reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.12:10002: connect: connection refused\""

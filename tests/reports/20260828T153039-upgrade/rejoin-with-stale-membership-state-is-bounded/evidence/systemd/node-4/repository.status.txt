@@ -1,0 +1,22 @@
+● globular-repository.service - Globular repository
+     Loaded: loaded (/etc/systemd/system/globular-repository.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-28 16:37:15 UTC; 9min ago
+    Process: 6730 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/repository && chown globular:globular /var/lib/globular/repository (code=exited, status=0/SUCCESS)
+    Process: 6734 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 6738 (repository_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 788.8M (peak: 790.6M)
+        CPU: 7.184s
+     CGroup: /system.slice/docker-078e595544f8b1d6dd8f1ce96642129422d44c43fba475132d8252fa7ad76080.scope/system.slice/globular-repository.service
+             └─6738 /usr/lib/globular/bin/repository_server
+
+Aug 28 16:37:33 node-4 repository_server[6738]: time=2026-08-28T16:37:33.634Z level=INFO msg="blob-seed: materialized blob into local CAS from staged join package" artifact=core@globular.io%resource%1.2.317%linux_amd64%1 staged=/var/lib/globular/packages/resource_1.2.317_linux_amd64.tgz checksum=sha256:cd17bd0d9
+Aug 28 16:37:33 node-4 repository_server[6738]: time=2026-08-28T16:37:33.809Z level=INFO msg="blob-seed: materialized blob into local CAS from staged join package" artifact=core@globular.io%ai-executor%1.2.317%linux_amd64%1 staged=/var/lib/globular/packages/ai-executor_1.2.317_linux_amd64.tgz checksum=sha256:2327ea12c
+Aug 28 16:37:34 node-4 repository_server[6738]: time=2026-08-28T16:37:34.930Z level=INFO msg="blob-seed: materialized blob into local CAS from staged join package" artifact=core@globular.io%prometheus%3.5.1%linux_amd64%1 staged=/var/lib/globular/packages/pinned/prometheus_3.5.1_linux_amd64.tgz checksum=sha256:8c878815a
+Aug 28 16:37:35 node-4 repository_server[6738]: time=2026-08-28T16:37:35.177Z level=INFO msg="blob-seed: materialized blob into local CAS from staged join package" artifact=core@globular.io%title%1.2.317%linux_amd64%1 staged=/var/lib/globular/packages/title_1.2.317_linux_amd64.tgz checksum=sha256:868794a40
+Aug 28 16:37:35 node-4 repository_server[6738]: time=2026-08-28T16:37:35.177Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=0 seeded_from_staged=56 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 28 16:38:01 node-4 repository_server[6738]: 2026/08/28 16:38:01 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 28 16:42:19 node-4 repository_server[6738]: 2026/08/28 16:42:19 INFO acc: warmup complete baseline_rtt_ms=20 samples=512 elapsed=5m0s
+Aug 28 16:42:35 node-4 repository_server[6738]: time=2026-08-28T16:42:35.181Z level=INFO msg="blob-seed: local CAS seeding pass complete" published_manifests=112 already_present=56 seeded_from_staged=0 no_staged_match=0 scope="this node's local POSIX CAS only"
+Aug 28 16:43:02 node-4 repository_server[6738]: 2026/08/28 16:43:02 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/repository.PackageRepository/GetArtifactManifest
+Aug 28 16:45:26 node-4 repository_server[6738]: 2026/08/28 16:45:26 INFO acc: AIMD decrease method=/repository.PackageRepository/ListRepositoryFindings rtt_ms=171 baseline_ms=20 window=772 new_window=694

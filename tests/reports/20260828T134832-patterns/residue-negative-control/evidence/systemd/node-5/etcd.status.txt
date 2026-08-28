@@ -1,0 +1,24 @@
+● globular-etcd.service - Globular etcd
+     Loaded: loaded (/etc/systemd/system/globular-etcd.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-28 13:49:01 UTC; 11s ago
+    Process: 45 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 56 ExecStartPre=/usr/bin/chown globular:globular /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 85 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 97 ExecStartPre=/bin/sh -c chown globular:globular /var/lib/globular/pki/issued/services/service.key /var/lib/globular/pki/issued/services/service.crt 2>/dev/null || true (code=exited, status=0/SUCCESS)
+   Main PID: 155 (etcd)
+      Tasks: 23 (limit: 8641)
+     Memory: 132.6M (peak: 133.6M)
+        CPU: 3.026s
+     CGroup: /system.slice/docker-8eb1343305ee44b25f51d113c436e7b90ca564e0473df6b057e68a5d1a37ce30.scope/system.slice/globular-etcd.service
+             └─155 /usr/lib/globular/bin/etcd --config-file /var/lib/globular/config/etcd.yaml
+
+Aug 28 13:49:02 node-5 etcd[155]: {"level":"info","ts":"2026-08-28T13:49:02.884346Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"7a06e8ea3dca4118 switched to configuration voters=(2156584048653177030 2804488540499303624 6567159750191196142 8792971415244128536 14405981539457625878)"}
+Aug 28 13:49:02 node-5 etcd[155]: {"level":"info","ts":"2026-08-28T13:49:02.884725Z","caller":"membership/cluster.go:535","msg":"promote member","cluster-id":"494c0d2663880d1","local-member-id":"7a06e8ea3dca4118"}
+Aug 28 13:49:02 node-5 etcd[155]: {"level":"info","ts":"2026-08-28T13:49:02.975769Z","caller":"etcdserver/server.go:2118","msg":"published local member to cluster through raft","local-member-id":"7a06e8ea3dca4118","local-member-attributes":"{Name:node-5 ClientURLs:[https://10.10.0.15:2379]}","request-path":"/0/members/7a06e8ea3dca4118/attributes","cluster-id":"494c0d2663880d1","publish-timeout":"7s"}
+Aug 28 13:49:02 node-5 etcd[155]: {"level":"info","ts":"2026-08-28T13:49:02.975976Z","caller":"embed/serve.go:103","msg":"ready to serve client requests"}
+Aug 28 13:49:02 node-5 etcd[155]: {"level":"info","ts":"2026-08-28T13:49:02.976159Z","caller":"etcdmain/main.go:44","msg":"notifying init daemon"}
+Aug 28 13:49:02 node-5 etcd[155]: {"level":"info","ts":"2026-08-28T13:49:02.976191Z","caller":"etcdmain/main.go:50","msg":"successfully notified init daemon"}
+Aug 28 13:49:02 node-5 etcd[155]: {"level":"info","ts":"2026-08-28T13:49:02.979842Z","caller":"v3rpc/health.go:61","msg":"grpc service status changed","service":"","status":"SERVING"}
+Aug 28 13:49:02 node-5 etcd[155]: {"level":"info","ts":"2026-08-28T13:49:02.981017Z","caller":"embed/serve.go:250","msg":"serving client traffic securely","traffic":"grpc+http","address":"[::]:2379"}
+Aug 28 13:49:03 node-5 etcd[155]: {"level":"warn","ts":"2026-08-28T13:49:03.184418Z","caller":"etcdserver/util.go:170","msg":"apply request took too long","took":"114.75146ms","expected-duration":"100ms","prefix":"read-only range ","request":"key:\"health\" ","response":"range_response_count:0 size:5"}
+Aug 28 13:49:03 node-5 etcd[155]: {"level":"info","ts":"2026-08-28T13:49:03.184501Z","caller":"traceutil/trace.go:171","msg":"trace[448516718] range","detail":"{range_begin:health; range_end:; response_count:0; response_revision:16284; }","duration":"114.869458ms","start":"2026-08-28T13:49:03.069615Z","end":"2026-08-28T13:49:03.184484Z","steps":["trace[448516718] 'agreement among raft nodes before linearized reading'  (duration: 114.238247ms)"],"step_count":1}

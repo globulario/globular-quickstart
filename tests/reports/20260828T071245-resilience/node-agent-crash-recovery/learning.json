@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-28T08:02:10.474217Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "node-agent-crash-recovery",
+  "suite": "resilience",
+  "result": "PASS",
+  "source_revision": "da18582fe69618fb6c9ab0b9f809e96aa9c16d3e",
+  "proof": {
+    "claim": "Verify that the node agent recovers after a hard crash (SIGKILL) on a\ncompute node, and that the cluster remains healthy throughout.\n\nThe node agent is the execution layer \u2014 it receives workflow steps,\ninstalls packages, starts/stops services, and heartbeats to the controller.\nA hard crash (SIGKILL) simulates an OOM kill, kernel panic recovery, or\nabrupt process termination where no cleanup is possible.\n\nRecovery sequence:\n1. SIGKILL terminates node agent immediately (no graceful shutdown)\n2. systemd detects exit and marks unit as failed\n3. Restart=on-failure triggers restart after RestartSec delay\n4. Node agent restarts, re-reads config from etcd\n5. Node agent re-registers heartbeat and resumes processing\n\nWhat this validates:\n- systemd Restart=on-failure works for hard crashes (SIGKILL)\n- Node agent is stateless enough to recover without persistent cleanup\n- Heartbeat registration resumes after restart\n- Cluster remains healthy \u2014 no cascading failure from one node agent down\n- Services on the affected node continue running (systemd supervises them\n  independently of the node agent)\n\nIndustry known problem: \"cascading failure from agent loss\" \u2014 if the\ncontroller aggressively reschedules when a node goes silent, it can\noverwhelm the remaining nodes. The stale threshold (5 minutes) and\nworkflow semaphore prevent this.\n\nNote: We test on node-4 (compute) to avoid impacting etcd quorum.\nThe test demonstrates the pattern \u2014 the same applies to any node.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

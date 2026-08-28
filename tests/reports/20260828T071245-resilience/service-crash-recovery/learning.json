@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-28T08:06:06.837597Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "service-crash-recovery",
+  "suite": "resilience",
+  "result": "PASS",
+  "source_revision": "da18582fe69618fb6c9ab0b9f809e96aa9c16d3e",
+  "proof": {
+    "claim": "Verify that a crashed service is automatically restarted by systemd and\nre-registers in etcd within 60 seconds.\n\nTest sequence:\n  1. Confirm DNS service is active on node-3 (baseline)\n  2. Kill the DNS systemd unit (simulates process crash / OOM kill)\n  3. Wait up to 60s for systemd to restart it (Restart=on-failure in unit file)\n  4. Assert: DNS unit is active again\n  5. Assert: DNS service is still registered in etcd\n\nDNS is chosen because:\n  - It runs on node-3 (not a control-plane node) \u2014 safe to interrupt\n  - It has no quorum requirements \u2014 a brief outage won't cascade\n  - Its re-registration in etcd proves the full restart path works end-to-end\n\nThis test proves the Restart=on-failure systemd policy is correctly configured\nand that the service reconnects to etcd after restart without operator intervention.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

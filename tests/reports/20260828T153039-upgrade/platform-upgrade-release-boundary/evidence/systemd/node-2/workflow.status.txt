@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-28 15:51:40 UTC; 27min ago
+    Process: 14085 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 14089 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 14092 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 14098 (workflow_server)
+      Tasks: 16 (limit: 8641)
+     Memory: 27.0M (peak: 29.4M)
+        CPU: 2.183s
+     CGroup: /system.slice/docker-38639cd567c7712cc53027c9b932c6a3ca250750fbf1b8f9faddeaa94c945ebd.scope/system.slice/globular-workflow.service
+             └─14098 /usr/lib/globular/bin/workflow_server
+
+Aug 28 15:52:10 node-2 workflow_server[14098]: time=2026-08-28T15:52:10.513Z level=INFO msg="retention: startup delay elapsed, running first prune"
+Aug 28 15:52:10 node-2 workflow_server[14098]: time=2026-08-28T15:52:10.513Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 28 15:52:10 node-2 workflow_server[14098]: time=2026-08-28T15:52:10.521Z level=INFO msg="retention: pruning old workflow runs" total_terminal=1009 keep=1000 deleting=9
+Aug 28 15:52:10 node-2 workflow_server[14098]: time=2026-08-28T15:52:10.690Z level=INFO msg="retention: pruning complete" deleted=9 remaining=1000
+Aug 28 16:02:10 node-2 workflow_server[14098]: time=2026-08-28T16:02:10.691Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 28 16:02:10 node-2 workflow_server[14098]: time=2026-08-28T16:02:10.698Z level=INFO msg="retention: pruning old workflow runs" total_terminal=1051 keep=1000 deleting=51
+Aug 28 16:02:11 node-2 workflow_server[14098]: time=2026-08-28T16:02:11.679Z level=INFO msg="retention: pruning complete" deleted=51 remaining=1000
+Aug 28 16:12:10 node-2 workflow_server[14098]: time=2026-08-28T16:12:10.691Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 28 16:12:10 node-2 workflow_server[14098]: time=2026-08-28T16:12:10.698Z level=INFO msg="retention: pruning old workflow runs" total_terminal=1030 keep=1000 deleting=30
+Aug 28 16:12:11 node-2 workflow_server[14098]: time=2026-08-28T16:12:11.268Z level=INFO msg="retention: pruning complete" deleted=30 remaining=1000

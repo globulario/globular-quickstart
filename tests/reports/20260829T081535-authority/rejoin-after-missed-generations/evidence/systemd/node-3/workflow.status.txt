@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 09:11:53 UTC; 20min ago
+    Process: 10564 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 10568 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 10571 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10577 (workflow_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 27.3M (peak: 33.2M)
+        CPU: 2.256s
+     CGroup: /system.slice/docker-dcbc31235197868c7b33716bdce39ea34ee19ea146c5980b38560563d0ad69cd.scope/system.slice/globular-workflow.service
+             └─10577 /usr/lib/globular/bin/workflow_server
+
+Aug 29 09:15:12 node-3 workflow_server[10577]: time=2026-08-29T09:15:12.031Z level=INFO msg="scylla_reconnect: attempting reconnect" attempt=1 backoff=1s
+Aug 29 09:15:12 node-3 workflow_server[10577]: time=2026-08-29T09:15:12.034Z level=INFO msg=workflow.scylla_reconnected scylla_session_generation=2 scylla_reconnect_attempts=1
+Aug 29 09:15:26 node-3 workflow_server[10577]: 2026/08/29 09:15:26 INFO executor lease: orphan scanner recovered previous_failures=3
+Aug 29 09:15:26 node-3 workflow_server[10577]: time=2026-08-29T09:15:26.032Z level=INFO msg="dependencies recovered — service is SERVING"
+Aug 29 09:22:28 node-3 workflow_server[10577]: time=2026-08-29T09:22:28.062Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 29 09:22:28 node-3 workflow_server[10577]: time=2026-08-29T09:22:28.071Z level=INFO msg="retention: pruning old workflow runs" total_terminal=1008 keep=1000 deleting=8
+Aug 29 09:22:28 node-3 workflow_server[10577]: time=2026-08-29T09:22:28.250Z level=INFO msg="retention: pruning complete" deleted=8 remaining=1000
+Aug 29 09:32:28 node-3 workflow_server[10577]: time=2026-08-29T09:32:28.062Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 29 09:32:28 node-3 workflow_server[10577]: time=2026-08-29T09:32:28.070Z level=INFO msg="retention: pruning old workflow runs" total_terminal=1026 keep=1000 deleting=26
+Aug 29 09:32:28 node-3 workflow_server[10577]: time=2026-08-29T09:32:28.779Z level=INFO msg="retention: pruning complete" deleted=26 remaining=1000

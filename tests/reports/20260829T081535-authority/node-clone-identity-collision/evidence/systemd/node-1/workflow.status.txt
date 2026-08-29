@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 08:48:55 UTC; 27min ago
+    Process: 1642 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 1646 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1649 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1655 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 38.9M (peak: 41.6M)
+        CPU: 8.804s
+     CGroup: /system.slice/docker-73910d4fd249b6f6a820d8b975719c05570437ed83207b930af96c4ac37086d7.scope/system.slice/globular-workflow.service
+             └─1655 /usr/lib/globular/bin/workflow_server
+
+Aug 29 09:16:20 node-1 workflow_server[1655]: 2026/08/29 09:16:20 workflow: dispatch_remediations[1] sub-DAG SUCCEEDED
+Aug 29 09:16:20 node-1 workflow_server[1655]: 2026/08/29 09:16:20 workflow: dispatch_remediations[5] starting sub-DAG (parallel)
+Aug 29 09:16:20 node-1 workflow_server[1655]: 2026/08/29 09:16:20 workflow: step mark_item_started starting (actor=cluster-controller action=controller.reconcile.mark_item_started)
+Aug 29 09:16:20 node-1 workflow_server[1655]: 2026/08/29 09:16:20 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 29 09:16:20 node-1 workflow_server[1655]: 2026/08/29 09:16:20 workflow: step mark_item_started SUCCEEDED (attempt 1)
+Aug 29 09:16:20 node-1 workflow_server[1655]: 2026/08/29 09:16:20 workflow: step choose_workflow starting (actor=cluster-controller action=controller.reconcile.choose_workflow)
+Aug 29 09:16:20 node-1 workflow_server[1655]: 2026/08/29 09:16:20 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Aug 29 09:16:20 node-1 workflow_server[1655]: 2026/08/29 09:16:20 workflow: step choose_workflow SUCCEEDED (attempt 1)
+Aug 29 09:16:20 node-1 workflow_server[1655]: 2026/08/29 09:16:20 workflow: step launch_remediation starting (actor=workflow-service action=workflow.start_child)
+Aug 29 09:16:20 node-1 workflow_server[1655]: 2026/08/29 09:16:20 INFO executor: dispatching action actor=workflow-service run_id="" step_id=""

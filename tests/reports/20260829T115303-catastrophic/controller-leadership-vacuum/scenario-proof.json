@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-29T11:53:04.029907Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/catastrophic/controller-leadership-vacuum.yaml",
+  "scenario": "controller-leadership-vacuum",
+  "suite": "catastrophic",
+  "source_revision": "70081be4efb5018479c4ae6ee7ed82e3d6b0effb",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Simultaneously SIGKILL the cluster_controller process on ALL three control-plane\nnodes, creating a complete leadership vacuum \u2014 no instance holds the etcd lease,\nno controller loop is running, and the cluster is temporarily ungoverned.\n\nUnlike a single-controller crash (covered in controller-service-crash.yaml),\nthis test removes every leader and every standby at once. There is no warm\nstandby to immediately take over; a full election cycle must complete from\nscratch.\n\nWhat this stresses:\n  - Raft-backed lease expiry: the dead leader's etcd lease expires after its\n    TTL (typically 5-15s). Only after expiry can a new leader acquire it.\n  - Race-free election: all three nodes compete to acquire the leadership\n    lease simultaneously. Only one should win; others must recognize the\n    winner and park as standbys.\n  - systemd restart: each SIGKILL triggers Restart=on-failure, so all three\n    binary instances restart ~5s after the kill.\n  - Re-registration: the winner must re-write its service config and leader\n    addr to etcd before the harness considers it registered.\n\nExpected outcome (SELF-HEALING \u2014 this test should PASS):\n  - Within 60s of the kill: at least one controller acquires the lease.\n  - Within 90s: controller is re-registered in etcd, cluster health restores.\n  - etcd quorum is UNAFFECTED (we kill the controller process, not etcd).\n  - No data is lost \u2014 etcd durability is independent of controller liveness.\n\nIf this test FAILS it means the election mechanism is broken: no instance\ncan acquire the lease after simultaneous SIGKILL. That would be a critical\nself-healing regression.\n\nThis is the boundary between \"catastrophic\" and \"self-healing\": the\ncontroller vacuum is a catastrophe the system IS designed to recover from.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-29T11:53:48.901779Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

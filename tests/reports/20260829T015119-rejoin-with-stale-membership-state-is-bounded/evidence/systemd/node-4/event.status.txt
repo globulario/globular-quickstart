@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 02:10:03 UTC; 9min ago
+    Process: 6261 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 6265 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 6268 (event_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 24.2M (peak: 27.6M)
+        CPU: 3.714s
+     CGroup: /system.slice/docker-c527e2820396693ae7d5b8ef0a644e81c3b7881e73beeed0063b408fc3017b16.scope/system.slice/globular-event.service
+             └─6268 /usr/lib/globular/bin/event_server
+
+Aug 29 02:10:03 node-4 event_server[6268]: time=2026-08-29T02:10:03.677Z level=INFO msg="resumed from durable cursor" instance=event-node-4.globular.internal cursor_time=2026-08-29T02:10:03Z
+Aug 29 02:10:03 node-4 event_server[6268]: time=2026-08-29T02:10:03.677Z level=INFO msg="scylla event bus connected" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=globular_events
+Aug 29 02:10:03 node-4 event_server[6268]: time=2026-08-29T02:10:03.677Z level=INFO msg="event loop started" service=event.EventService id=ae220301-9352-393b-be03-90707f486149
+Aug 29 02:10:03 node-4 event_server[6268]: 2026/08/29 02:10:03 INFO metrics listening service=event.EventService addr=[::]:10051
+Aug 29 02:10:07 node-4 event_server[6268]: 2026/08/29 02:10:07 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Aug 29 02:10:07 node-4 event_server[6268]: 2026/08/29 02:10:07 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Aug 29 02:10:26 node-4 event_server[6268]: time=2026-08-29T02:10:26.397Z level=INFO msg="Subscribe: ok" channel=cluster.* uuid=1dd46bba-0798-4582-86a5-43e20096110e
+Aug 29 02:10:26 node-4 event_server[6268]: time=2026-08-29T02:10:26.397Z level=INFO msg=subscribed channel=cluster.* uuid=1dd46bba-0798-4582-86a5-43e20096110e subscribers=1
+Aug 29 02:10:27 node-4 event_server[6268]: time=2026-08-29T02:10:27.480Z level=INFO msg="subscriber cleanup" uuid=1dd46bba-0798-4582-86a5-43e20096110e
+Aug 29 02:15:04 node-4 event_server[6268]: 2026/08/29 02:15:04 INFO acc: warmup complete baseline_rtt_ms=20 samples=275 elapsed=5m0s

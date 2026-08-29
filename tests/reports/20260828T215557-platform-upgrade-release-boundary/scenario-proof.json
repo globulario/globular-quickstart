@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-28T21:55:57.198220Z",
+  "scenario_file": "tests/scenarios/upgrade/platform-upgrade-release-boundary.yaml",
+  "scenario": "platform-upgrade-release-boundary",
+  "suite": "upgrade",
+  "source_revision": "e9564ad0046f43f203848435e9baf6d810420732",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "A platform upgrade must be decided by the release manifest, and one odd\npackage must not fail the whole platform.\n\nPLATFORM VERSION IS NOT PACKAGE VERSION. release-index.json is the platform\ntruth; the version of any individual package is not. Collapsing the two is a\nstanding rule violation, and it is easy to do accidentally because most\npackages happen to move together.\n\nTHE FAILURE THIS ENCODES. platform_upgrade.dispatch parsed EVERY package\nversion as strict semver and failed the entire step when one did not parse \u2014\nffmpeg, which is versioned by its upstream and never agreed to semver\n(release.platform_upgrade_dispatch_rejects_non_semver_versions). One\nthird-party package with an unusual version string blocked the platform\nupgrade for every service in the release. This is a dependency-shaped bug:\nsomething non-critical placed on the critical path.\n\nDay-0 reads release-index.json. Day-1 joins from the ACTIVE BOM, not from\nlatest \u2014 a node joining mid-upgrade must land on the release the cluster is\nactually running, or it arrives already drifted and the first reconcile\nfights the join.\n\nTruth comes from the manifest, never from filenames. A directory listing that\nlooks like a version is not a version.\n\nWHAT THIS PINS. The release boundary is intact: the platform has exactly one\nactive release, every node agrees on it, and the packages inside it resolve.\nIt is deliberately an observation of the steady state \u2014 a platform upgrade is\ntoo destructive to drive from a test suite against a live cluster, and the\nproperty worth guarding is that the boundary never goes ambiguous, not that a\nparticular upgrade succeeds.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-28T21:56:02.149046Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

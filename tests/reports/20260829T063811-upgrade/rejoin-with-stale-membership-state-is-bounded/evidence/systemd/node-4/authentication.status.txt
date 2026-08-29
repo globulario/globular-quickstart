@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 07:42:07 UTC; 11min ago
+    Process: 6093 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 6097 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 6100 (authentication_)
+      Tasks: 18 (limit: 8641)
+     Memory: 24.9M (peak: 28.2M)
+        CPU: 741ms
+     CGroup: /system.slice/docker-95cd515826c300c1e37e89c0c30ec3121230e22aba610204f2d69e503e25d92e.scope/system.slice/globular-authentication.service
+             └─6100 /usr/lib/globular/bin/authentication_server
+
+Aug 29 07:42:07 node-4 authentication_server[6100]: time=2026-08-29T07:42:07.497Z level=INFO msg=setKey:generate mac=02:42:0a:0a:00:0e
+Aug 29 07:42:08 node-4 authentication_server[6100]: time=2026-08-29T07:42:08.011Z level=INFO msg="metrics: proxy port conflict, using free port" service=authentication.AuthenticationService wanted=10001 actual=46805
+Aug 29 07:42:08 node-4 authentication_server[6100]: time=2026-08-29T07:42:08.011Z level=INFO msg="metrics listening" service=authentication.AuthenticationService addr=[::]:46805
+Aug 29 07:42:38 node-4 authentication_server[6100]: time=2026-08-29T07:42:38.229Z level=ERROR msg="InitClient: InstallClientCertificates failed (gateway unavailable?)" domain=10.10.0.15 base=/var/lib/globular/.config/globular/tls err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"
+Aug 29 07:42:38 node-4 authentication_server[6100]: time=2026-08-29T07:42:38.229Z level=ERROR msg="GetClient: constructor returned error" function=NewEventService_Client address=10.10.0.15:443 service=event.EventService err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"
+Aug 29 07:43:04 node-4 authentication_server[6100]: time=2026-08-29T07:43:04.573Z level=WARN msg="port/proxy change detected in desired; restart required to take effect" service=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f old_port=10002 new_port=10002 old_proxy=46805 new_proxy=10001
+Aug 29 07:43:08 node-4 authentication_server[6100]: time=2026-08-29T07:43:08.171Z level=INFO msg="mesh: Envoy available, routing through mesh" target=node-4.globular.internal:443
+Aug 29 07:43:08 node-4 authentication_server[6100]: time=2026-08-29T07:43:08.173Z level=INFO msg="mesh: gRPC connection established" target=node-4.globular.internal:443
+Aug 29 07:43:08 node-4 authentication_server[6100]: time=2026-08-29T07:43:08.482Z level=ERROR msg="InitClient: InstallClientCertificates failed (gateway unavailable?)" domain=10.10.0.15 base=/var/lib/globular/.config/globular/tls err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"
+Aug 29 07:43:08 node-4 authentication_server[6100]: time=2026-08-29T07:43:08.482Z level=ERROR msg="GetClient: constructor returned error" function=NewEventService_Client address=10.10.0.15:443 service=event.EventService err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.15/.cert.lock"

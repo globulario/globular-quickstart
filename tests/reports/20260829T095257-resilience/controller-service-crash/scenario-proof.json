@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-29T09:53:10.194902Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/resilience/controller-service-crash.yaml",
+  "scenario": "controller-service-crash",
+  "suite": "resilience",
+  "source_revision": "70081be4efb5018479c4ae6ee7ed82e3d6b0effb",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that the cluster controller recovers after a service crash.\n\nThe cluster_controller holds the leadership lease in etcd. When it crashes:\n1. SIGKILL terminates the process immediately (non-zero exit)\n2. Restart=on-failure triggers systemd to restart the controller\n3. etcd lease expires or is released; a standby controller on another node\n   acquires the lease within the TTL window\n4. The restarted instance starts as a follower (lease already taken)\n5. The controller re-registers in etcd to confirm functional recovery\n\nThis test simulates a controller crash via SIGKILL (hard kill of the process,\nas in an OOM kill or kernel fault). SIGKILL produces a non-zero exit code,\ntriggering systemd's Restart=on-failure policy.\n\nIMPORTANT: The cluster_controller unit uses Type=notify with WatchdogSec.\nThis means systemd waits for sd_notify(READY=1) before marking the unit\nas 'active'. If the binary does not call sd_notify, the unit stays in\n'activating' state indefinitely \u2014 a known issue in the current build.\nFor this reason, assertions check etcd registration (functional state)\nrather than unit_state (systemd protocol state).\n\nWhat this validates:\n- Leader election resilience: cluster does not stall on controller crash\n- State recovery: new leader reads desired state from etcd correctly\n- systemd restart policy: Restart=on-failure brings the service back after SIGKILL\n- etcd lease protection: only one leader holds the lease at a time (no split-brain)\n- Service re-registration: after restart, controller re-registers in etcd\n\nIndustry known problem: \"zombie leader\" \u2014 a controller that holds a lease\nbut is not actually processing. Globular's liveness watchdog monitors actual\nprocessing and forces lease expiry if stuck. This test validates the normal\ncrash path (watchdog not needed here, SIGKILL is immediate).\n\nNote: The test ensures node-2's controller is running before killing it by\nrestarting it as a setup step. This makes the test idempotent regardless of\nwhat previous chaos tests left behind.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-29T09:53:30.575315Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

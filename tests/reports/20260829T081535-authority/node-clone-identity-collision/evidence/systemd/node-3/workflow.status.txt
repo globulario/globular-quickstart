@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 09:11:53 UTC; 4min 59s ago
+    Process: 10564 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 10568 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 10571 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10577 (workflow_server)
+      Tasks: 18 (limit: 8641)
+     Memory: 24.8M (peak: 28.9M)
+        CPU: 938ms
+     CGroup: /system.slice/docker-dcbc31235197868c7b33716bdce39ea34ee19ea146c5980b38560563d0ad69cd.scope/system.slice/globular-workflow.service
+             └─10577 /usr/lib/globular/bin/workflow_server
+
+Aug 29 09:14:56 node-3 workflow_server[10577]: 2026/08/29 09:14:56 WARN executor lease: orphan scanner backing off consecutive_failures=2 backoff=2s next_scan_after=2026-08-29T09:14:58Z
+Aug 29 09:14:56 node-3 workflow_server[10577]: time=2026-08-29T09:14:56.030Z level=WARN msg="dependency health check failed" dep=scylladb err="gocql: no hosts available in the pool"
+Aug 29 09:15:11 node-3 workflow_server[10577]: 2026/08/29 09:15:11 WARN executor lease: orphan scan iteration error err="gocql: no hosts available in the pool"
+Aug 29 09:15:11 node-3 workflow_server[10577]: 2026/08/29 09:15:11 WARN executor lease: orphan scanner backing off consecutive_failures=3 backoff=4s next_scan_after=2026-08-29T09:15:15Z
+Aug 29 09:15:11 node-3 workflow_server[10577]: time=2026-08-29T09:15:11.030Z level=WARN msg="dependency health check failed" dep=scylladb err="gocql: no hosts available in the pool"
+Aug 29 09:15:11 node-3 workflow_server[10577]: time=2026-08-29T09:15:11.030Z level=INFO msg="scylla_reconnect: stale session closed — rebuilding pool"
+Aug 29 09:15:12 node-3 workflow_server[10577]: time=2026-08-29T09:15:12.031Z level=INFO msg="scylla_reconnect: attempting reconnect" attempt=1 backoff=1s
+Aug 29 09:15:12 node-3 workflow_server[10577]: time=2026-08-29T09:15:12.034Z level=INFO msg=workflow.scylla_reconnected scylla_session_generation=2 scylla_reconnect_attempts=1
+Aug 29 09:15:26 node-3 workflow_server[10577]: 2026/08/29 09:15:26 INFO executor lease: orphan scanner recovered previous_failures=3
+Aug 29 09:15:26 node-3 workflow_server[10577]: time=2026-08-29T09:15:26.032Z level=INFO msg="dependencies recovered — service is SERVING"

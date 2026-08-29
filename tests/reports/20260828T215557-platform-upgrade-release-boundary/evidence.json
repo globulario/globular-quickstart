@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "scenario": "platform-upgrade-release-boundary",
+  "suite": "upgrade",
+  "start_time": "2026-08-28T21:55:57.364965Z",
+  "end_time": "2026-08-28T21:56:01.966392Z",
+  "passed": true,
+  "item_count": 9,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-28T21:55:58.655233Z"
+    },
+    {
+      "id": "release_audit_at_start",
+      "section": "baseline",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 24,
+        "succeeded": 24,
+        "failed": 0,
+        "pending": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-28T21:55:58.782077Z"
+    },
+    {
+      "id": "let_in_flight_releases_settle",
+      "section": "steps",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {
+        "failed": 0,
+        "pending": 0
+      },
+      "result": {
+        "total": 24,
+        "succeeded": 24,
+        "failed": 0,
+        "pending": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-28T21:55:58.902860Z"
+    },
+    {
+      "id": "release_boundary_is_unambiguous",
+      "section": "assertions",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {
+        "failed": 0,
+        "pending": 0
+      },
+      "result": {
+        "total": 24,
+        "succeeded": 24,
+        "failed": 0,
+        "pending": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-28T21:55:59.024700Z"
+    },
+    {
+      "id": "desired_state_is_present",
+      "section": "assertions",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {
+        "count_gte": 1
+      },
+      "result": {
+        "count": 24,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "dns",
+          "event",
+          "file",
+          "log",
+          "mcp",
+          "media",
+          "monitoring",
+          "node-agent",
+          "persistence",
+          "rbac",
+          "repository",
+          "resource",
+          "search",
+          "title",
+          "torrent",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-08-28T21:55:59.190872Z"
+    },
+    {
+      "id": "release_packages_have_blobs",
+      "section": "assertions",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {
+        "missing_blob": 0,
+        "ambiguous": 0
+      },
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-08-28T21:55:59.860922Z"
+    },
+    {
+      "id": "installed_packages_present_on_every_node",
+      "section": "assertions",
+      "probe": "cluster.installed_packages",
+      "params": {},
+      "expect": {
+        "node_count_gte": 5
+      },
+      "result": {
+        "total": 196,
+        "node_count": 5
+      },
+      "passed": true,
+      "timestamp": "2026-08-28T21:56:00.922658Z"
+    },
+    {
+      "id": "no_drift",
+      "section": "assertions",
+      "probe": "cluster.reconcile_clean",
+      "params": {},
+      "expect": {
+        "clean": true
+      },
+      "result": {
+        "clean": true,
+        "error_count": 0,
+        "kinds": "",
+        "sample": "",
+        "node": "node-1"
+      },
+      "passed": true,
+      "timestamp": "2026-08-28T21:56:01.070330Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-08-28T21:56:01.966257Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

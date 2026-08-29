@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-29T10:42:07.633581Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/resilience/worker-node-failure.yaml",
+  "scenario": "worker-node-failure",
+  "suite": "resilience",
+  "source_revision": "70081be4efb5018479c4ae6ee7ed82e3d6b0effb",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that the cluster remains healthy when a worker node (no etcd) fails,\nand that the node can rejoin after being restarted.\n\nTest sequence:\n  1. Confirm 5 nodes heartbeating and cluster healthy (baseline)\n  2. Stop node-4 container (docker stop \u2014 simulates node crash/power loss)\n  3. Assert cluster is still healthy with 4 nodes heartbeating\n  4. Assert etcd quorum is maintained (3 members still active)\n  5. Restart node-4\n  6. Wait for node-4 to rejoin (heartbeat re-appears in etcd)\n  7. Assert 5 nodes heartbeating again\n\nnode-4 is chosen because:\n  - It does NOT run etcd \u2014 stopping it cannot break quorum\n  - It's a worker node \u2014 no critical control-plane services\n  - Stopping it simulates the most common failure mode (node crash)\n\nThis test proves the cluster can survive single-node worker failures without\noperator intervention, and that nodes self-heal on restart.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-29T10:42:27.799616Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

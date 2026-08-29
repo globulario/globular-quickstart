@@ -1,0 +1,24 @@
+● globular-etcd.service - Globular etcd
+     Loaded: loaded (/etc/systemd/system/globular-etcd.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 04:56:07 UTC; 11s ago
+    Process: 45 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 54 ExecStartPre=/usr/bin/chown globular:globular /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 76 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 90 ExecStartPre=/bin/sh -c chown globular:globular /var/lib/globular/pki/issued/services/service.key /var/lib/globular/pki/issued/services/service.crt 2>/dev/null || true (code=exited, status=0/SUCCESS)
+   Main PID: 113 (etcd)
+      Tasks: 29 (limit: 8641)
+     Memory: 106.6M (peak: 107.3M)
+        CPU: 2.983s
+     CGroup: /system.slice/docker-7dae87876cedb1cbc13d5fb689ee452d88a28a9d089d041ad0164f4490f2371c.scope/system.slice/globular-etcd.service
+             └─113 /usr/lib/globular/bin/etcd --config-file /var/lib/globular/config/etcd.yaml
+
+Aug 29 04:56:08 node-5 etcd[113]: {"level":"info","ts":"2026-08-29T04:56:08.493547Z","caller":"etcdserver/server.go:790","msg":"initialized peer connections; fast-forwarding election ticks","local-member-id":"af1614397c37618a","forward-ticks":8,"forward-duration":"800ms","election-ticks":10,"election-timeout":"1s","active-remote-members":4}
+Aug 29 04:56:08 node-5 etcd[113]: {"level":"info","ts":"2026-08-29T04:56:08.593248Z","caller":"etcdserver/server.go:2118","msg":"published local member to cluster through raft","local-member-id":"af1614397c37618a","local-member-attributes":"{Name:node-5 ClientURLs:[https://10.10.0.15:2379]}","request-path":"/0/members/af1614397c37618a/attributes","cluster-id":"494c0d2663880d1","publish-timeout":"7s"}
+Aug 29 04:56:08 node-5 etcd[113]: {"level":"info","ts":"2026-08-29T04:56:08.593269Z","caller":"embed/serve.go:103","msg":"ready to serve client requests"}
+Aug 29 04:56:08 node-5 etcd[113]: {"level":"info","ts":"2026-08-29T04:56:08.593412Z","caller":"etcdmain/main.go:44","msg":"notifying init daemon"}
+Aug 29 04:56:08 node-5 etcd[113]: {"level":"info","ts":"2026-08-29T04:56:08.593456Z","caller":"etcdmain/main.go:50","msg":"successfully notified init daemon"}
+Aug 29 04:56:08 node-5 etcd[113]: {"level":"info","ts":"2026-08-29T04:56:08.594386Z","caller":"v3rpc/health.go:61","msg":"grpc service status changed","service":"","status":"SERVING"}
+Aug 29 04:56:08 node-5 etcd[113]: {"level":"info","ts":"2026-08-29T04:56:08.59537Z","caller":"embed/serve.go:250","msg":"serving client traffic securely","traffic":"grpc+http","address":"[::]:2379"}
+Aug 29 04:56:14 node-5 etcd[113]: {"level":"warn","ts":"2026-08-29T04:56:14.714734Z","caller":"etcdserver/util.go:170","msg":"apply request took too long","took":"148.662105ms","expected-duration":"100ms","prefix":"read-only range ","request":"key:\"/globular/resources/ServiceDesiredVersion/\" range_end:\"/globular/resources/ServiceDesiredVersion0\" ","response":"range_response_count:24 size:5866"}
+Aug 29 04:56:14 node-5 etcd[113]: {"level":"info","ts":"2026-08-29T04:56:14.714821Z","caller":"traceutil/trace.go:171","msg":"trace[1794407504] range","detail":"{range_begin:/globular/resources/ServiceDesiredVersion/; range_end:/globular/resources/ServiceDesiredVersion0; response_count:24; response_revision:14969; }","duration":"148.771924ms","start":"2026-08-29T04:56:14.566032Z","end":"2026-08-29T04:56:14.714804Z","steps":["trace[1794407504] 'range keys from in-memory index tree'  (duration: 147.94769ms)"],"step_count":1}
+Aug 29 04:56:14 node-5 etcd[113]: {"level":"info","ts":"2026-08-29T04:56:14.715077Z","caller":"traceutil/trace.go:171","msg":"trace[1575421526] put","detail":"{key:/globular/cluster/minio/config; req_size:249; response_revision:14970; }","duration":"113.41685ms","start":"2026-08-29T04:56:14.601645Z","end":"2026-08-29T04:56:14.715062Z","steps":["trace[1575421526] 'process raft request'  (duration: 113.269361ms)"],"step_count":1}

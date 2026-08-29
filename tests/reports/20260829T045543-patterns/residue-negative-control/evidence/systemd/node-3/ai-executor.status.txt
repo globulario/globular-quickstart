@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 04:52:55 UTC; 3min 20s ago
+    Process: 6594 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 6609 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 6616 (ai_executor_ser)
+      Tasks: 15 (limit: 8641)
+     Memory: 28.4M (peak: 29.1M)
+        CPU: 715ms
+     CGroup: /system.slice/docker-207e937a0b0bd7b318e3b40a7c5cd74eca452143eb6384a561fd0cb21c46f7d0.scope/system.slice/globular-ai-executor.service
+             └─6616 /usr/lib/globular/bin/ai_executor_server
+
+Aug 29 04:53:01 node-3 ai_executor_server[6616]: time=2026-08-29T04:53:01.743Z level=INFO msg="job_store: loaded jobs from etcd" count=8
+Aug 29 04:53:01 node-3 ai_executor_server[6616]: 2026/08/29 04:53:01 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Aug 29 04:53:02 node-3 ai_executor_server[6616]: time=2026-08-29T04:53:02.007Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]"
+Aug 29 04:53:13 node-3 ai_executor_server[6616]: 2026/08/29 04:53:13 INFO mesh: Envoy available, routing through mesh target=node-3.globular.internal:443
+Aug 29 04:53:13 node-3 ai_executor_server[6616]: 2026/08/29 04:53:13 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Aug 29 04:53:30 node-3 ai_executor_server[6616]: time=2026-08-29T04:53:30.893Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Aug 29 04:53:30 node-3 ai_executor_server[6616]: time=2026-08-29T04:53:30.902Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10013
+Aug 29 04:56:11 node-3 ai_executor_server[6616]: time=2026-08-29T04:56:11.662Z level=INFO msg="processing incident" incident_id=f49f9114-a365-11f1-813d-02420a0a000b rule_id=service-stopped tier=0 trigger=service.stopped batch_size=18
+Aug 29 04:56:11 node-3 ai_executor_server[6616]: time=2026-08-29T04:56:11.725Z level=INFO msg="diagnosis complete" incident_id=f49f9114-a365-11f1-813d-02420a0a000b root_cause="unknown_anomaly (ai_router.AiRouterService)" confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Aug 29 04:56:11 node-3 ai_executor_server[6616]: time=2026-08-29T04:56:11.725Z level=INFO msg="INCIDENT RESOLVED" incident_id=f49f9114-a365-11f1-813d-02420a0a000b summary="service-stopped triggered by service.stopped on ai_router.AiRouterService (18 events in batch)" root_cause="unknown_anomaly (ai_router.AiRouterService)"

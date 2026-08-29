@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-29T04:35:06.395206Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/security/mtls-mesh-connectivity.yaml",
+  "scenario": "mtls-mesh-connectivity",
+  "suite": "security",
+  "source_revision": "70081be4efb5018479c4ae6ee7ed82e3d6b0effb",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that mTLS connections succeed between cluster nodes (the service mesh).\n\nAll inter-service gRPC in Globular uses mutual TLS: both sides present their\ncertificate and verify the peer's certificate against the cluster CA. A broken\nmTLS mesh means services cannot communicate even if they're all \"running\".\n\nFailure modes caught by this test:\n- CA certificate mismatch between nodes (nodes can't verify each other's certs)\n- Service cert not signed by the cluster CA (wrong CA was used)\n- TLS version mismatch or cipher suite incompatibility\n- Network connectivity issue between specific node pairs\n- Certificate revocation (if CRL checking is enabled)\n\nTest coverage:\n- Cross-node: node-1 \u2192 node-2 (controller port 12000)\n- Cross-node: node-1 \u2192 node-2 (cluster doctor port 12100)\n- Cross-node: node-2 \u2192 node-1 (rbac, port resolved at runtime)\n- Cross-node: node-3 \u2192 node-1 (authentication, port resolved at runtime)\n- Same-node: node-1 \u2192 node-1 (etcd port 2379) \u2014 tests loopback mTLS\n- Compute-to-control: node-4 \u2192 node-1 (etcd port 2379)\n\nAll connections use the service certificate + cluster CA, matching what\nrunning services use for their actual gRPC calls.\n\nIndustry known problem: \"TLS works on some paths but not others\" \u2014 typically\ncaused by asymmetric CA distribution or per-node cert generation using\ndifferent CA snapshots. Testing all directions catches this.\n\nPorts used are from confirmed service registrations:\n- cluster_controller: 12000 on node-2 (10.10.0.12)\n- cluster_doctor: 12100 on node-2 (10.10.0.12)\n- rbac: on node-1 (10.10.0.11), port resolved from the running process\n- authentication: 10005 on node-1 (10.10.0.11)\n- etcd client: 2379 on node-1 (10.10.0.11)",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-29T04:35:16.136247Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

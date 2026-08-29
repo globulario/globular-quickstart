@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; disabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 04:56:07 UTC; 10s ago
+    Process: 46 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 64 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 84 (event_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 22.4M (peak: 23.9M)
+        CPU: 442ms
+     CGroup: /system.slice/docker-7dae87876cedb1cbc13d5fb689ee452d88a28a9d089d041ad0164f4490f2371c.scope/system.slice/globular-event.service
+             └─84 /usr/lib/globular/bin/event_server
+
+Aug 29 04:56:08 node-5 event_server[84]: time=2026-08-29T04:56:08.084Z level=INFO msg="resumed from durable cursor" instance=event-node-5.globular.internal cursor_time=2026-08-29T04:56:01Z
+Aug 29 04:56:08 node-5 event_server[84]: time=2026-08-29T04:56:08.085Z level=INFO msg="scylla event bus connected" hosts="[10.10.0.11 10.10.0.12 10.10.0.13]" keyspace=globular_events
+Aug 29 04:56:08 node-5 event_server[84]: time=2026-08-29T04:56:08.086Z level=INFO msg="event loop started" service=event.EventService id=ae220301-9352-393b-be03-90707f486149
+Aug 29 04:56:08 node-5 event_server[84]: 2026/08/29 04:56:08 INFO metrics listening service=event.EventService addr=[::]:10051
+Aug 29 04:56:09 node-5 event_server[84]: 2026/08/29 04:56:09 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.15:10001: connect: connection refused\""
+Aug 29 04:56:09 node-5 event_server[84]: time=2026-08-29T04:56:09.028Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=ai_router_operation.*
+Aug 29 04:56:09 node-5 event_server[84]: time=2026-08-29T04:56:09.028Z level=INFO msg=subscribed channel=operation.* uuid=ai_router_operation.* subscribers=1
+Aug 29 04:56:09 node-5 event_server[84]: 2026/08/29 04:56:09 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=event.subscribe reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing: dial tcp 10.10.0.15:10001: connect: connection refused\""
+Aug 29 04:56:09 node-5 event_server[84]: time=2026-08-29T04:56:09.036Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=node_agent_handler_a166b992-b66d-53cb-b7c7-61dfa4dd5a36
+Aug 29 04:56:09 node-5 event_server[84]: time=2026-08-29T04:56:09.036Z level=INFO msg=subscribed channel=operation.* uuid=node_agent_handler_a166b992-b66d-53cb-b7c7-61dfa4dd5a36 subscribers=2

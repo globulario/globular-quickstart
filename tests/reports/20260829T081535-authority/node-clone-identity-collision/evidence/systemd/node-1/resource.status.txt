@@ -1,0 +1,23 @@
+● globular-resource.service - Globular resource
+     Loaded: loaded (/etc/systemd/system/globular-resource.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 08:48:54 UTC; 27min ago
+    Process: 1356 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/resource && chown globular:globular /var/lib/globular/resource (code=exited, status=0/SUCCESS)
+    Process: 1361 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1367 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1386 (resource_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 27.7M (peak: 30.9M)
+        CPU: 3.117s
+     CGroup: /system.slice/docker-73910d4fd249b6f6a820d8b975719c05570437ed83207b930af96c4ac37086d7.scope/system.slice/globular-resource.service
+             └─1386 /usr/lib/globular/bin/resource_server
+
+Aug 29 08:48:57 node-1 resource_server[1386]: 2026/08/29 08:48:57 INFO scylla: connected id=local_resource hosts=[10.10.0.11] port=9042 keyspace=local_resource
+Aug 29 08:48:57 node-1 resource_server[1386]: time=2026-08-29T08:48:57.765Z level=INFO msg="store is running and ready to be used" address=10.10.0.11:9042
+Aug 29 08:48:59 node-1 resource_server[1386]: 2026/08/29 08:48:59 WARN scylla: Count fallback to scan; consider raw CQL with PK WHERE table=local_resource.accounts
+Aug 29 08:48:59 node-1 resource_server[1386]: time=2026-08-29T08:48:59.838Z level=ERROR msg="fail to create account dir" error="failed to seed sa account: account with name sa already exist!"
+Aug 29 08:49:00 node-1 resource_server[1386]: 2026/08/29 08:49:00 INFO metrics listening service=resource.ResourceService addr=[::]:10011
+Aug 29 08:49:10 node-1 resource_server[1386]: 2026/08/29 08:49:10 INFO mesh: Envoy available, routing through mesh target=node-1.globular.internal:443
+Aug 29 08:49:10 node-1 resource_server[1386]: 2026/08/29 08:49:10 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Aug 29 08:53:18 node-1 resource_server[1386]: 2026/08/29 08:53:18 WARN AuthContext: ClusterID sourced from unverified gRPC metadata — not suitable for authorization cluster_id=globular.internal method=/resource.ResourceService/GetAccounts
+Aug 29 08:56:26 node-1 resource_server[1386]: 2026/08/29 08:56:26 INFO acc: warmup complete baseline_rtt_ms=20 samples=269 elapsed=6m27s
+Aug 29 09:11:55 node-1 resource_server[1386]: 2026/08/29 09:11:55 WARN port/proxy change detected in desired; restart required to take effect service=resource.ResourceService id=f8b714a7-2c0f-39ff-8bf1-f627649c2df6 old_port=10008 new_port=10003 old_proxy=10011 new_proxy=10011

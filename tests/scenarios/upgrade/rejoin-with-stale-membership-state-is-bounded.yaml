@@ -197,11 +197,30 @@ assertions:
     expect:
       stale_nodes: 0
 
+  # Post-recovery cleanliness, not "did anything go wrong while I was
+  # deliberately destroying a node".
+  #
+  # This asserted a 30-minute window, which necessarily spans this scenario's
+  # OWN disruption: it removes a node, so the workflow service legitimately
+  # becomes unreachable, reconcile correctly declines, and the workflow health
+  # gate correctly opens its circuit at the 5-failures-in-5-minutes threshold.
+  # The probe greps the controller journal for those signatures, so correct
+  # protective behaviour was counted as reconcile uncleanliness and the
+  # assertion failed for doing its job.
+  #
+  # 2 min matches the convention every other post-disruption reconcile check
+  # already uses — functional/node-join-convergence.yaml does exactly this after
+  # a join, and functional/reconcile-clean.yaml uses 2 min for
+  # reconcile_clean_recent and 5 min for final_reconcile_state, reserving the
+  # 30-minute window for a BASELINE taken before any disruption.
+  #
+  # This narrows WHEN the assertion looks, never WHAT it accepts: a genuine
+  # reconcile failure after recovery still fails the scenario.
   - type: probe
     id: reconcile_clean
     probe: cluster.reconcile_clean
     params:
-      since: "30 min ago"
+      since: "2 min ago"
     expect:
       clean: true
 

@@ -231,6 +231,35 @@ def _cli_failure_summary(out: str, limit: int = 400) -> str:
     return "\n".join(lines)[:limit]
 
 
+def _is_transient_control_plane_refusal(out: str) -> bool:
+    """Is this refusal a condition that clears on its own?
+
+    A refusal is only worth retrying when the control plane is mid-transition.
+    Retrying a real refusal would mask the defect the scenario exists to find,
+    so this list stays explicit — every entry names a condition the cluster
+    resolves without help:
+
+      resolvable kind   a repository instance had not synced its artifact index
+      stale leader      a leadership handover is in flight; the new leader
+                        accepts the same write moments later
+      re-campaigning    the same handover, seen from the losing side
+      upstream connect  the mesh is re-routing to the new leader
+
+    On 2026-08-25 authority/rejoin-after-missed-generations failed on
+    "stale leader: my_epoch=5, current_epoch=6 — re-campaigning" at attempt 1
+    of 6: the retry budget existed but only "resolvable kind" could reach it,
+    so a self-healing leadership transition was recorded as a control-plane
+    refusal.
+    """
+    low = (out or "").lower()
+    return any(marker in low for marker in (
+        "resolvable kind",
+        "stale leader",
+        "re-campaigning",
+        "upstream connect error",
+    ))
+
+
 class Evidence:
     def __init__(self, scenario_name: str, suite: str):
         self.scenario_name = scenario_name
@@ -1384,8 +1413,8 @@ class ScenarioExecutor:
                     accepted = proc.returncode == 0
                     if accepted or expect == "refused":
                         break
-                    if "resolvable kind" not in out:
-                        break  # a real refusal, not the known transient
+                    if not _is_transient_control_plane_refusal(out):
+                        break  # a real refusal, not a passing condition
                     time.sleep(10)
                 # expect: accepted | refused | any
                 #
@@ -1936,7 +1965,21 @@ class ScenarioExecutor:
                 proc = subprocess.run(
                     ["docker", "exec", node_c, "bash", "-c",
                      GLOBULAR_CLI_RESOLVER +
-                     f'"$G" cluster nodes remove {node_id} --force --drain=false 2>&1'],
+                     # --timeout 60s, matching the nodes-list call above.
+                     # RemoveNode is not a cheap RPC: the controller runs
+                     # preflight, etcd membership removal and per-node state
+                     # deletion INLINE before the repair workflow starts (see
+                     # hidden_workflow.controller_remove_node_inline_preflight_
+                     # and_drain). The CLI's 5s default deadline is provisioned
+                     # for a read, so this timed out with DeadlineExceeded while
+                     # the removal itself was proceeding normally — failing the
+                     # scenario for an operation that was working, just slower
+                     # than a read.
+                     #
+                     # The inversion was the tell: the cheap nodes-list call
+                     # above already asked for 60s while the expensive mutation
+                     # below inherited 5s.
+                     f'"$G" cluster nodes remove {node_id} --force --drain=false --timeout 60s 2>&1'],
                     capture_output=True, text=True, timeout=300)
                 out = (proc.stdout or "").strip()
                 ok = proc.returncode == 0

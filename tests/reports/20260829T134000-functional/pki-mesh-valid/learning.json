@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-29T13:48:00.427960Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "pki-mesh-valid",
+  "suite": "functional",
+  "result": "PASS",
+  "source_revision": "3da194eb40979394a59ca74cd54c83a1b042241a",
+  "proof": {
+    "claim": "Verify that the cluster PKI is correctly bootstrapped across all nodes.\n\nThis test checks four PKI invariants that are prerequisites for all\ninter-service mTLS communication:\n\n1. CA certificate is valid and has 30+ days remaining (root of trust)\n2. Service TLS certificate is valid on each control-plane node\n3. Ed25519 signing keys are present on each node (JWT signing)\n4. Peer public keys have been distributed (cross-node JWT verification)\n\nFailure modes detected:\n- CA regenerated on restart but old service certs still referencing it\n- Service cert expired or about to expire (< 30 days)\n- Ed25519 key not generated before services started (JWT issuance fails)\n- Peer key exchange didn't complete (cross-node auth fails)\n- Certificate path mismatch (/var/lib/globular/pki/ vs /etc/globular/creds/)",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

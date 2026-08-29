@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 16:39:05 UTC; 16min ago
+    Process: 5596 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 5600 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 5603 (event_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 30.0M (peak: 30.8M)
+        CPU: 6.981s
+     CGroup: /system.slice/docker-3d4c8cdb01fd15088592c15a31ad70e98dcc7821c49cd5ce903b0fc11ce132b6.scope/system.slice/globular-event.service
+             └─5603 /usr/lib/globular/bin/event_server
+
+Aug 29 16:39:45 node-5 event_server[5603]: 2026/08/29 16:39:45 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.14:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-5.globular.internal:8443: Get \"http://node-5.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.15:8443: connect: connection refused"
+Aug 29 16:40:15 node-5 event_server[5603]: 2026/08/29 16:40:15 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-5.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-5.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.15:8443: connect: connection refused"
+Aug 29 16:40:15 node-5 event_server[5603]: 2026/08/29 16:40:15 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.13 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-5.globular.internal:8443: Get \"http://node-5.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.15:8443: connect: connection refused"
+Aug 29 16:40:15 node-5 event_server[5603]: 2026/08/29 16:40:15 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.13:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-5.globular.internal:8443: Get \"http://node-5.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.15:8443: connect: connection refused"
+Aug 29 16:40:55 node-5 event_server[5603]: 2026/08/29 16:40:55 ERROR httpGetBootstrap: HTTPS (system-trust and insecure) both failed, falling back to plain HTTP url=https://node-5.globular.internal:8443/get_ca_certificate insecure_err="Get \"https://node-5.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.15:8443: connect: connection refused"
+Aug 29 16:40:55 node-5 event_server[5603]: 2026/08/29 16:40:55 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.12 base=/var/lib/globular/.config/globular/tls err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-5.globular.internal:8443: Get \"http://node-5.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.15:8443: connect: connection refused"
+Aug 29 16:40:55 node-5 event_server[5603]: 2026/08/29 16:40:55 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.12:443 service=event.EventService err="client creds: get ca.crt from gateway: get CA certificate: unable to retrieve from node-5.globular.internal:8443: Get \"http://node-5.globular.internal:8443/get_ca_certificate\": dial tcp 10.10.0.15:8443: connect: connection refused"
+Aug 29 16:44:06 node-5 event_server[5603]: 2026/08/29 16:44:06 INFO acc: warmup complete baseline_rtt_ms=20 samples=312 elapsed=5m0s
+Aug 29 16:53:00 node-5 event_server[5603]: time=2026-08-29T16:53:00.470Z level=INFO msg="OnEvent: registered" uuid=2eba1b43-0b8c-4ac3-910b-c2f391abd890
+Aug 29 16:53:00 node-5 event_server[5603]: time=2026-08-29T16:53:00.470Z level=INFO msg="stream registered" uuid=2eba1b43-0b8c-4ac3-910b-c2f391abd890

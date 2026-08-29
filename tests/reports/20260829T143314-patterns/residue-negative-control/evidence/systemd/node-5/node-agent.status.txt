@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 14:33:40 UTC; 10s ago
+    Process: 94 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 118 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 144 (node_agent_serv)
+      Tasks: 17 (limit: 8641)
+     Memory: 20.7M (peak: 30.4M)
+        CPU: 9.504s
+     CGroup: /system.slice/docker-10351712d3fef5c8a94e90cd7c7d388c8cc35697aabcc071c4bd48438fac5d4f.scope/system.slice/globular-node-agent.service
+             └─144 /usr/lib/globular/bin/node_agent_server
+
+Aug 29 14:33:40 node-5 systemd[1]: Starting globular-node-agent.service - Globular node_agent...
+Aug 29 14:33:40 node-5 systemd[1]: Started globular-node-agent.service - Globular node_agent.
+Aug 29 14:33:40 node-5 node_agent_server[144]: 2026/08/29 14:33:40 etcd bootstrap skipped; globular-etcd.service should be managed by systemd
+Aug 29 14:33:40 node-5 node_agent_server[144]: 2026/08/29 14:33:40 TLS enabled: cert=/var/lib/globular/pki/issued/services/service.crt key=/var/lib/globular/pki/issued/services/service.key ca=/var/lib/globular/pki/ca.crt
+Aug 29 14:33:40 node-5 node_agent_server[144]: 2026/08/29 14:33:40 ca-key-sync: DISABLED by default (CA private key must stay on signer authority; enable with EnableCAKeySync())
+Aug 29 14:33:40 node-5 node_agent_server[144]: 2026/08/29 14:33:40 ingress: starting reconciliation loop (interval: 30s)
+Aug 29 14:33:40 node-5 node_agent_server[144]: 2026/08/29 14:33:40 INFO etcd.maintenance_started endpoint=https://10.10.0.15:2379 interval=1m0s min_file_bytes=268435456 min_reclaim_bytes=67108864
+Aug 29 14:33:40 node-5 node_agent_server[144]: 2026/08/29 14:33:40 ingress: keepalived disabled on node 35ac3821-6b90-52eb-a800-41130471770b
+Aug 29 14:33:40 node-5 node_agent_server[144]: 2026/08/29 14:33:40 node agent listening on 0.0.0.0:11000
+Aug 29 14:33:40 node-5 node_agent_server[144]: 2026/08/29 14:33:40 metrics listening on 0.0.0.0:11001 (saved=11001, default=11001)

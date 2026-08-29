@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-29T18:33:53.815179Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "full-blackout-thundering-herd",
+  "suite": "authority",
+  "result": "PASS",
+  "source_revision": "f43653b825d6490c6780df2efccd4dfd6e5fb8f8",
+  "proof": {
+    "claim": "When every node starts at once from identical conditions, exactly one\nauthority must emerge.\n\nTHE FAULT. Stop all five nodes, then start all five simultaneously \u2014 one\ndocker invocation, not a sequence.\n\nWHY SIMULTANEITY IS THE POINT. full-cluster-blackout already stops all three\netcd nodes and checks the cluster comes back. But a staggered restart lets one\nnode establish leadership before the others finish booting, which is the easy\ncase and the one that usually happens in practice. Starting together removes\nthat accident: five controllers race from the same starting line, every one of\nthem with a valid local view, none of them with any reason to defer.\n\nThat is when election races, duplicate join requests, duplicate workflow\ndispatch and registration corruption become reachable. Each node has a\ncomplete local state directory and no evidence that anyone else is also\nstarting.\n\nWHAT MUST HOLD. One leader address, not several. Every node registered exactly\nonce. No duplicate or ambiguous artifacts from concurrent publish or\nregistration. No drift storm from several controllers each deciding the cluster\nneeds converging. And the cluster genuinely healthy afterwards rather than\nmerely responsive.\n\nThis is the most destructive scenario in the suite: it stops the entire\ncluster. It is also the closest thing to a real datacentre power event, which\nis exactly why staggering it would be testing the wrong thing.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

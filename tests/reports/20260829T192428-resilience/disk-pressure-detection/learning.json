@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-08-29T19:28:18.791469Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "disk-pressure-detection",
+  "suite": "resilience",
+  "result": "PASS",
+  "source_revision": "f43653b825d6490c6780df2efccd4dfd6e5fb8f8",
+  "proof": {
+    "claim": "Verify that Globular's invariant enforcement detects and reports disk pressure.\n\nThis test fills the /var/lib/globular directory on node-3 to >90% capacity using\na chaos fill file, then verifies that:\n  1. The cluster controller's reconcile loop logs disk pressure (WARN or CRITICAL)\n  2. Prometheus metrics reflect the disk pressure via the invariant enforcement workflow\n  3. After cleanup, the pressure is cleared\n\nWhat Globular does automatically:\n  - The reconcile loop (fast path) checks DiskFreeBytes from heartbeat every ~30s\n  - At <20% free: logs WARN per node\n  - At <5% free: logs CRITICAL per node + emits cluster event controller.invariant.disk_pressure_critical\n  - The invariant enforcement workflow (auditable path) emits structured events\n  - Best effort: journal vacuum can be requested but cannot add disk\n\nWhat requires operator action:\n  - Actual disk cleanup (rm large files, journal purge)\n  - Adding storage capacity",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

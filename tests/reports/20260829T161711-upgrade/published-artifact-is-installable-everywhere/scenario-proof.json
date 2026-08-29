@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-08-29T16:56:04.325664Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/upgrade/published-artifact-is-installable-everywhere.yaml",
+  "scenario": "published-artifact-is-installable-everywhere",
+  "suite": "upgrade",
+  "source_revision": "3da194eb40979394a59ca74cd54c83a1b042241a",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "PUBLISHED must mean installable from every node, not from the node that\nhappened to handle the upload.\n\nTHE PROBLEM. The manifest authority is cluster-wide but the blob store is\nper-node: a publish materializes bytes only in the local CAS of the instance\nthat received them. Every other node reads the same manifest, reports the\nartifact as PUBLISHED, and cannot serve it. Nothing re-ran the seeder to fix\nthis, because seeding was a one-shot startup goroutine \u2014 so the gap persisted\nuntil that node's repository happened to restart.\n\nObserved 2026-08-16: cluster-controller@1.2.317's blob existed only on\nglobule-ryzen and ai-memory@1.2.317's only on globule-dell. The remaining\nnodes raised repository.identity.missing_blob_for_published_manifest as an\nERROR while the staged archives that would have healed them sat unused in\n/var/lib/globular/packages/ on those same nodes. An install routed to any of\nthem failed on an artifact the cluster insisted was published.\n\nThis is the single largest contributor to the deploy pipeline failing about\nhalf the time: whether a deploy worked depended on which repository instance\nserved the install, which is not something the operator controls or can see.\n\nWHY THE OBVIOUS FIX IS FORBIDDEN. Healing package bytes from the MinIO mirror\nis ruled out (heal_published_artifacts_from_minio_mirror,\nrepository.minio_is_not_valid_package_source) \u2014 packages do not live in\nMinIO. The only sanctioned source is the staged archive, and only when its\nsha256 matches the manifest checksum: the manifest is authority, the file on\ndisk is evidence, and filenames never decide identity.\n\nWHAT THIS PINS. After a publish, every node can serve the artifact. The\nseeding pass repeats for the life of the process rather than running once at\nstartup, so a node that loses its CAS mid-life heals without a restart.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-08-29T16:56:10.113934Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

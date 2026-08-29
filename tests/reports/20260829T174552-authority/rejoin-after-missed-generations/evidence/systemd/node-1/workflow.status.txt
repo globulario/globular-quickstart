@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 18:19:10 UTC; 44min ago
+    Process: 1377 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 1397 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1403 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1523 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 32.0M (peak: 37.3M)
+        CPU: 6.946s
+     CGroup: /system.slice/docker-ced7420a9fa86a94c27930f0b7ba089ca8f8f0d719bdadbf9a876d620d0ff75c.scope/system.slice/globular-workflow.service
+             └─1523 /usr/lib/globular/bin/workflow_server
+
+Aug 29 18:55:14 node-1 workflow_server[1523]: 2026/08/29 18:55:14 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=215 baseline_ms=20 window=51 new_window=45
+Aug 29 18:56:14 node-1 workflow_server[1523]: 2026/08/29 18:56:14 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=218 baseline_ms=20 window=49 new_window=44
+Aug 29 18:57:14 node-1 workflow_server[1523]: 2026/08/29 18:57:14 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=213 baseline_ms=20 window=48 new_window=43
+Aug 29 18:58:14 node-1 workflow_server[1523]: 2026/08/29 18:58:14 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=213 baseline_ms=20 window=47 new_window=42
+Aug 29 18:59:14 node-1 workflow_server[1523]: 2026/08/29 18:59:14 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=198 baseline_ms=20 window=46 new_window=41
+Aug 29 18:59:44 node-1 workflow_server[1523]: time=2026-08-29T18:59:44.134Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Aug 29 19:00:15 node-1 workflow_server[1523]: 2026/08/29 19:00:15 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=310 baseline_ms=20 window=45 new_window=40
+Aug 29 19:01:14 node-1 workflow_server[1523]: 2026/08/29 19:01:14 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=203 baseline_ms=20 window=44 new_window=39
+Aug 29 19:02:14 node-1 workflow_server[1523]: 2026/08/29 19:02:14 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=217 baseline_ms=20 window=43 new_window=38
+Aug 29 19:03:14 node-1 workflow_server[1523]: 2026/08/29 19:03:14 INFO acc: AIMD decrease method=/workflow.WorkflowService/ListRuns rtt_ms=203 baseline_ms=20 window=42 new_window=37

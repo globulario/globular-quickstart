@@ -1,0 +1,23 @@
+● globular-ai-memory.service - Globular ai_memory
+     Loaded: loaded (/etc/systemd/system/globular-ai-memory.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-08-29 18:19:10 UTC; 27min ago
+    Process: 1412 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-memory && chown globular:globular /var/lib/globular/ai-memory (code=exited, status=0/SUCCESS)
+    Process: 1435 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1458 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1577 (ai_memory_serve)
+      Tasks: 21 (limit: 8641)
+     Memory: 43.5M (peak: 50.7M)
+        CPU: 8.842s
+     CGroup: /system.slice/docker-ced7420a9fa86a94c27930f0b7ba089ca8f8f0d719bdadbf9a876d620d0ff75c.scope/system.slice/globular-ai-memory.service
+             └─1577 /usr/lib/globular/bin/ai_memory_server
+
+Aug 29 18:43:42 node-1 ai_memory_server[1577]: 2026/08/29 18:43:42 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=101 baseline_ms=20 window=18 new_window=16
+Aug 29 18:43:55 node-1 ai_memory_server[1577]: 2026/08/29 18:43:55 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=56 baseline_ms=20 window=19 new_window=17
+Aug 29 18:43:56 node-1 ai_memory_server[1577]: 2026/08/29 18:43:56 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/RecordEvidence rtt_ms=75 baseline_ms=20 window=22 new_window=19
+Aug 29 18:44:47 node-1 ai_memory_server[1577]: 2026/08/29 18:44:47 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=50 baseline_ms=20 window=80 new_window=72
+Aug 29 18:44:47 node-1 ai_memory_server[1577]: time=2026-08-29T18:44:47.365Z level=INFO msg="memory updated" id=b268f4f0-a3d0-11f1-ab1b-02420a0a000b project=globular-services
+Aug 29 18:44:50 node-1 ai_memory_server[1577]: 2026/08/29 18:44:50 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=61 baseline_ms=20 window=75 new_window=67
+Aug 29 18:46:01 node-1 ai_memory_server[1577]: time=2026-08-29T18:46:01.897Z level=INFO msg="memory updated" id=8fe3bbd5-a3cf-11f1-9c55-02420a0a000b project=globular-services
+Aug 29 18:46:04 node-1 ai_memory_server[1577]: time=2026-08-29T18:46:04.880Z level=INFO msg="memory stored" id=e3b5076a-a3d9-11f1-97c0-02420a0a000b project=globular-services type=debug title="incident: service_crash: globular-scylla-manager-agent.service → ACTION_RESTART_SERVICE (ACTION_FAILED)"
+Aug 29 18:46:04 node-1 ai_memory_server[1577]: time=2026-08-29T18:46:04.937Z level=INFO msg="memory stored" id=e3bc8436-a3d9-11f1-97c1-02420a0a000b project=globular-services type=debug title="incident: service_crash: globular-scylla-manager-agent.service → ACTION_RESTART_SERVICE (ACTION_FAILED)"
+Aug 29 18:46:08 node-1 ai_memory_server[1577]: 2026/08/29 18:46:08 INFO acc: AIMD decrease method=/behavioral_memory.BehavioralMemoryService/CheckAction rtt_ms=58 baseline_ms=20 window=147 new_window=132

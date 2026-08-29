@@ -97,6 +97,37 @@ steps:
       seconds: 210
       reason: "let the cluster idle — no semantic state change, the exact condition under which the 1.2.317 dedup stopped persisting liveness"
 
+  # Let convergence settle before the assertions sample global health.
+  #
+  # These scenarios run after a disruptive predecessor (first-join-from-clean-node
+  # wipes and rejoins a node), so the cluster is still converging when the
+  # assertions begin: releases are in flight and installed-state is still being
+  # written. Asserting doctor error:0 at that instant samples a converging
+  # system, which is non-deterministic by construction — the same 1.2.352 build
+  # PASSED this assertion in one certification run and FAILED it in the next,
+  # and a doctor sweep taken minutes later showed zero errors both times.
+  #
+  # Recorded class: failure.scenarios_asserting_a_global_instantaneous_release_audit_are
+  #
+  # Waits on the SAME predicate the assertion checks, following the pattern and
+  # reasoning already documented in platform-upgrade-release-boundary. Polled,
+  # not slept: if the doctor never reaches error:0 within the timeout the wait
+  # FAILS and the scenario fails with it, and the assertion itself is unchanged.
+  # This changes WHEN health is sampled, never WHAT counts as healthy — a
+  # genuinely unhealthy cluster is still caught.
+  - type: action
+    id: let_convergence_settle
+    action: wait
+    params:
+      timeout: 300
+      poll_interval: 15
+      reason: "wait for the doctor to report no errors — the same condition the assertion checks"
+      until:
+        probe: doctor.report_severity
+        expect:
+          error: 0
+          reachable: true
+
 assertions:
   # ── The property the outage violated ──────────────────────────────────────
   # 90s is generous against a sub-minute agent heartbeat. Under 1.2.317 this

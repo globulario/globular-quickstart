@@ -319,9 +319,23 @@ evidence_collect_globular_state() {
         _ev_etcdctl get /globular/workflows/ --prefix --keys-only
 
     # ── cluster doctor ───────────────────────────────────────────────────────
+    #
+    # Ask the doctor, do not read etcd. Findings are COMPUTED per request and
+    # are not persisted under /globular/doctor/, so the previous etcd read
+    # produced a 0-byte findings.txt on every single bundle. That is the worst
+    # possible failure for this file: several scenarios assert
+    # doctor_reports_no_errors, and when one failed the bundle recorded the
+    # count but not a single finding, so the cause could only be recovered by
+    # reproducing the failure live.
+    #
+    # --fresh forces a new sweep rather than a cached snapshot, matching what
+    # the cluster.doctor_* probes assert against. Timeout is generous because a
+    # full sweep queries every node; the bundle is written after the scenario,
+    # so the cost is not on the scenario's critical path.
     local dr_dir; dr_dir="$(_ev_dir "$out_dir" "doctor")"
     _ev_run_to_file "$dr_dir" "doctor-findings" "$dr_dir/findings.txt" \
-        _ev_etcdctl get /globular/doctor/ --prefix --print-value-only
+        _ev_exec "$EVIDENCE_ETCD_NODE" bash -lc \
+        'globular doctor report cluster --fresh --json --timeout 180s 2>/dev/null'
 
     # ── controller state ─────────────────────────────────────────────────────
     local ctrl_dir; ctrl_dir="$(_ev_dir "$out_dir" "controller")"

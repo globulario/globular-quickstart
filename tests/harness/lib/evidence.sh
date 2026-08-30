@@ -204,6 +204,12 @@ _SYSTEMD_SERVICES=(
     authentication rbac resource discovery event log dns
     repository monitoring ai-memory ai-executor
     minio sidekick scylla-manager etcd xds envoy
+    # scylla-manager-agent: the only ERROR-severity finding left in the
+    # 1.2.353 upgrade suite is installed_state_runtime_mismatch on this unit
+    # ("runtime unit state=activating"). Type=simple + Restart=on-failure means
+    # a lingering "activating" is auto-restart — a crash loop — and the loop's
+    # cause lives in this unit's status/journal, which no bundle captured.
+    scylla-manager-agent
 )
 
 # evidence_collect_systemd <out_dir>
@@ -255,7 +261,11 @@ evidence_collect_systemd() {
 # a controller thaw, and the release-workflow skip reason behind a DEFERRED
 # release) existed only in the live journal and was gone by the time the bundle
 # was read. Evidence that cannot answer "why" is not evidence.
-_JOURNAL_UNITS=(cluster-controller node-agent workflow cluster-doctor)
+# scylla-manager-agent joins the list for the same reason cluster-doctor did:
+# it is the subject of the last unresolved ERROR class, its failure mode is a
+# restart loop, and systemctl status keeps only the last ~10 lines — far too
+# few to see why a loop started when the loop has been running for minutes.
+_JOURNAL_UNITS=(cluster-controller node-agent workflow cluster-doctor scylla-manager-agent)
 
 # evidence_collect_journals <out_dir>
 # Writes per-node unit journals under evidence/journal/<node>/<unit>.log

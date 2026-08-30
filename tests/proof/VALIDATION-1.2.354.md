@@ -51,23 +51,42 @@ still fail for that reason, with the same symptoms as before.
 No node hit the unreadable-domain/CA path in these runs, so the change is
 unvalidated in the field. It stands on its unit test and on reasoning.
 
-## Open: crash-during-mutation-is-atomic
+## Resolved: crash-during-mutation-is-atomic is NOT a regression
 
-Newly failing on 1.2.354 (`let_interrupted_release_reach_terminal_state` timed out,
-3 releases pending), having passed on 1.2.353. **Attribution is unresolved.**
+Newly failing on 1.2.354 having passed on 1.2.353, so it was treated as a
+suspected regression from the settle change and chased until settled.
 
-Against it being the settle change: `upgrade` is 12/12 including the release-heavy
-scenarios (`package-upgrade`, `platform-upgrade`, `rollback-guard`,
-`deploy-publish-then-converge`), so release convergence is not broadly slowed.
+**It is not.** Two independent lines of evidence:
 
-Not yet ruled out: this scenario kills the controller mid-mutation, a path the
-upgrade suite does not exercise, and it is inherently timing-sensitive.
+*The settle code never ran.* In an isolated repeat on a fresh 1.2.354 cluster
+(which reproduced the failure, so it is not carryover), all 8 repair attempts in
+the window were `minio` and all 8 took the early-return "topology hold — leaving
+held, not repairing" branch. None reached `supervisor.Start`, so `holdsActive`
+was never called. That journal covers 18:20–18:39, spanning the 18:35–18:40
+scenario — unlike an earlier count of mine, which was taken over a window ending
+before the failure and proved nothing.
 
-An early count of "0 settle events in this scenario" is NOT evidence — that
-scenario's journal capture ends at 14:26, before the failure window, so the count
-was taken over the wrong interval. An isolated repeat is running to get a second
-data point; one observation of a timing-sensitive scenario is not enough to call it
-either way.
+*The mechanism predates the fixes.* The controller blocks release phase
+transitions its own callers attempt, and the same blocks appear throughout the
+1.2.353 bundles (00:10, 03:18, 09:39), all before the node-agent commits:
+
+    AVAILABLE → RESOLVED   109        FAILED → RESOLVED    14
+    FAILED    → AVAILABLE   23        RESOLVED → PENDING    5
+
+`MarkReleaseResolved` patches straight to RESOLVED from whatever phase a release
+is in, but `validPhaseTransitions` only allows `FAILED → PENDING` ("re-apply").
+So a FAILED release given a fresh workflow can never record progress and stays
+FAILED — which is the assertion that fails: `no_release_left_failed` "expected 0,
+got 15", with all fifteen already FAILED at the instant the scenario began.
+
+The scenario passed on 1.2.353 by timing, not because the defect was absent. A
+single green run had been read as evidence the path was sound; it was not.
+
+Recorded as `failure.release_phase_machine_rejects_transitions_its_own_callers_ro`.
+Not fixed: choosing between "dispatch routes FAILED→PENDING first" and "the
+machine admits what its callers need" is a release-lifecycle decision with real
+blast radius, and it should be made on those counts rather than as a fourth
+unvalidated change.
 
 ## Net
 

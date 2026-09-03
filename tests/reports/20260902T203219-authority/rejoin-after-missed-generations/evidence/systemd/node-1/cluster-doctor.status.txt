@@ -1,0 +1,22 @@
+● globular-cluster-doctor.service - Globular cluster_doctor
+     Loaded: loaded (/etc/systemd/system/globular-cluster-doctor.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-09-02 21:04:28 UTC; 44min ago
+    Process: 1361 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-doctor && chown globular:globular /var/lib/globular/cluster-doctor (code=exited, status=0/SUCCESS)
+    Process: 1364 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1367 (cluster_doctor_)
+      Tasks: 23 (limit: 8641)
+     Memory: 45.4M (peak: 51.0M)
+        CPU: 39.645s
+     CGroup: /system.slice/docker-d363ae44dcd92408d823cf43837e6ad28c0655e7b73161cf25280c6adbf7c096.scope/system.slice/globular-cluster-doctor.service
+             └─1367 /usr/lib/globular/bin/cluster_doctor_server
+
+Sep 02 21:48:31 node-1 cluster_doctor_server[1367]: 2026/09/02 21:48:31 collector: VerifyPackageIntegrity on node=35ac3821-6b90-52eb-a800-41130471770b stored report (checked=48, findings=3) in 1.546169053s
+Sep 02 21:48:31 node-1 cluster_doctor_server[1367]: 2026/09/02 21:48:31 collector: VerifyPackageIntegrity on node=c777633e-6d07-5713-9c4c-deb3317eee25 stored report (checked=47, findings=4) in 1.724899291s
+Sep 02 21:48:36 node-1 cluster_doctor_server[1367]: 2026/09/02 21:48:36 verification: 195/207 verdicts unchanged since last write (skipped)
+Sep 02 21:48:45 node-1 cluster_doctor_server[1367]: 2026/09/02 21:48:45 actor[controller]: doctor remediation FAILED for finding acf8d59c8b2abeae
+Sep 02 21:48:45 node-1 cluster_doctor_server[1367]: 2026/09/02 21:48:45 WARN remediate.doctor.finding workflow failed finding_id=acf8d59c8b2abeae
+Sep 02 21:48:45 node-1 cluster_doctor_server[1367]: 2026/09/02 21:48:45 healer: dispatch restart_drifted_unit PROPOSED for 35ac3821-6b90-52eb-a800-41130471770b/globular-etcd.service (audit=, no execution)
+Sep 02 21:48:45 node-1 cluster_doctor_server[1367]: 2026/09/02 21:48:45 actor[controller]: doctor remediation FAILED for finding 6d17f011403712a4
+Sep 02 21:48:45 node-1 cluster_doctor_server[1367]: 2026/09/02 21:48:45 WARN remediate.doctor.finding workflow failed finding_id=6d17f011403712a4
+Sep 02 21:48:45 node-1 cluster_doctor_server[1367]: 2026/09/02 21:48:45 healer: dispatch restart_drifted_unit PROPOSED for 6400b443-cf38-52da-a683-de2fc5103c0b/globular-etcd.service (audit=, no execution)
+Sep 02 21:48:45 node-1 cluster_doctor_server[1367]: 2026/09/02 21:48:45 healer: cycle complete mode=observe findings=52 auto=0 executed=0 proposed=2 errors=0

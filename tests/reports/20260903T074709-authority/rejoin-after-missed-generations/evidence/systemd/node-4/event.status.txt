@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 08:22:41 UTC; 44min ago
+    Process: 824 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 829 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 836 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 31.1M (peak: 33.4M)
+        CPU: 18.934s
+     CGroup: /system.slice/docker-651351a04d6c0baf78144aa7bd39ef1728f6aa3bf706de80db91cbe0daaf1eab.scope/system.slice/globular-event.service
+             └─836 /usr/lib/globular/bin/event_server
+
+Sep 03 08:56:18 node-4 event_server[836]: time=2026-09-03T08:56:18.874Z level=WARN msg="poll events error" bucket=2026-09-03T08:56 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Sep 03 08:56:18 node-4 event_server[836]: time=2026-09-03T08:56:18.876Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Sep 03 08:56:19 node-4 event_server[836]: time=2026-09-03T08:56:19.073Z level=WARN msg="poll events error" bucket=2026-09-03T08:55 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Sep 03 08:56:19 node-4 event_server[836]: time=2026-09-03T08:56:19.075Z level=WARN msg="poll events error" bucket=2026-09-03T08:56 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Sep 03 08:56:19 node-4 event_server[836]: time=2026-09-03T08:56:19.076Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Sep 03 08:56:19 node-4 event_server[836]: time=2026-09-03T08:56:19.275Z level=WARN msg="poll events error" bucket=2026-09-03T08:56 err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Sep 03 08:56:19 node-4 event_server[836]: time=2026-09-03T08:56:19.276Z level=WARN msg="save cursor failed" err="Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1"
+Sep 03 08:56:37 node-4 event_server[836]: 2026/09/03 08:56:37 ERROR Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1 (repeated 2 times in 28s) domain=10.10.0.14:8443 application=event.EventService user="" method=/event.EventService/Publish function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Sep 03 09:03:06 node-4 event_server[836]: time=2026-09-03T09:03:06.248Z level=INFO msg="OnEvent: registered" uuid=f12009e2-e7c9-4a84-a529-039f912d6ef0
+Sep 03 09:03:06 node-4 event_server[836]: time=2026-09-03T09:03:06.248Z level=INFO msg="stream registered" uuid=f12009e2-e7c9-4a84-a529-039f912d6ef0

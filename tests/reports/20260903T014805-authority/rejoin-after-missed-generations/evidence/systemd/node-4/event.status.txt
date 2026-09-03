@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 02:27:48 UTC; 41min ago
+    Process: 831 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 836 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 844 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 27.5M (peak: 31.2M)
+        CPU: 19.394s
+     CGroup: /system.slice/docker-1684ee2361aa9a04180b42d1eefe6b8f05dbf23fbeab2e4196b75036558dca6c.scope/system.slice/globular-event.service
+             └─844 /usr/lib/globular/bin/event_server
+
+Sep 03 02:59:21 node-4 event_server[844]: time=2026-09-03T02:59:21.457Z level=INFO msg=subscribed channel=service.* uuid=5199b5e4-4fc6-4db5-86de-54c199fde815 subscribers=1
+Sep 03 02:59:21 node-4 event_server[844]: time=2026-09-03T02:59:21.458Z level=INFO msg="Subscribe: ok" channel=cluster.* uuid=5199b5e4-4fc6-4db5-86de-54c199fde815
+Sep 03 02:59:21 node-4 event_server[844]: time=2026-09-03T02:59:21.458Z level=INFO msg=subscribed channel=cluster.* uuid=5199b5e4-4fc6-4db5-86de-54c199fde815 subscribers=1
+Sep 03 02:59:21 node-4 event_server[844]: time=2026-09-03T02:59:21.459Z level=INFO msg="Subscribe: ok" channel=operation.* uuid=5199b5e4-4fc6-4db5-86de-54c199fde815
+Sep 03 02:59:21 node-4 event_server[844]: time=2026-09-03T02:59:21.460Z level=INFO msg=subscribed channel=operation.* uuid=5199b5e4-4fc6-4db5-86de-54c199fde815 subscribers=4
+Sep 03 03:00:08 node-4 event_server[844]: time=2026-09-03T03:00:08.525Z level=INFO msg="subscriber cleanup" uuid=dcf8c8e1-d550-4b13-b768-47d591e13688
+Sep 03 03:00:08 node-4 event_server[844]: time=2026-09-03T03:00:08.525Z level=INFO msg="subscriber cleanup" uuid=985e9c50-efef-463c-bc93-8bd1e9429545
+Sep 03 03:03:19 node-4 event_server[844]: time=2026-09-03T03:03:19.323Z level=WARN msg="keepalive send failed; will drop stream" uuid=d2213d14-806a-457a-b17a-1f34b1861176 err="rpc error: code = Canceled desc = context canceled"
+Sep 03 03:03:19 node-4 event_server[844]: time=2026-09-03T03:03:19.323Z level=INFO msg="subscriber cleanup" uuid=d2213d14-806a-457a-b17a-1f34b1861176
+Sep 03 03:03:19 node-4 event_server[844]: time=2026-09-03T03:03:19.323Z level=INFO msg="OnEvent: stream ended" uuid=d2213d14-806a-457a-b17a-1f34b1861176

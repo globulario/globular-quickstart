@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 08:45:41 UTC; 4min 56s ago
+    Process: 10861 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 10865 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 10868 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10874 (workflow_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 25.8M (peak: 30.1M)
+        CPU: 916ms
+     CGroup: /system.slice/docker-a1469d416d7d23e59c1904efd932b6a2684358b78909b665bcbe3252121f8910.scope/system.slice/globular-workflow.service
+             └─10874 /usr/lib/globular/bin/workflow_server
+
+Sep 03 08:47:59 node-3 workflow_server[10874]: 2026/09/03 08:47:59 workflow: step short_circuit_if_no_targets pre-completed (SKIPPED) from prior execution
+Sep 03 08:47:59 node-3 workflow_server[10874]: 2026/09/03 08:47:59 workflow: step mark_applying pre-completed (SUCCEEDED) from prior execution
+Sep 03 08:47:59 node-3 workflow_server[10874]: 2026/09/03 08:47:59 workflow: step apply_per_node skipped (condition not met)
+Sep 03 08:47:59 node-3 workflow_server[10874]: 2026/09/03 08:47:59 INFO resume: step done run_id=reconcile-35ac3821-6b90-52eb-a800-41130471770b-workflow-1788425166 step=apply_per_node status=SKIPPED
+Sep 03 08:47:59 node-3 workflow_server[10874]: 2026/09/03 08:47:59 workflow: step aggregate_outcome skipped (condition not met)
+Sep 03 08:47:59 node-3 workflow_server[10874]: 2026/09/03 08:47:59 INFO resume: step done run_id=reconcile-35ac3821-6b90-52eb-a800-41130471770b-workflow-1788425166 step=aggregate_outcome status=SKIPPED
+Sep 03 08:47:59 node-3 workflow_server[10874]: 2026/09/03 08:47:59 workflow: step finalize_release skipped (condition not met)
+Sep 03 08:47:59 node-3 workflow_server[10874]: 2026/09/03 08:47:59 INFO resume: step done run_id=reconcile-35ac3821-6b90-52eb-a800-41130471770b-workflow-1788425166 step=finalize_release status=SKIPPED
+Sep 03 08:47:59 node-3 workflow_server[10874]: 2026/09/03 08:47:59 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Sep 03 08:47:59 node-3 workflow_server[10874]: 2026/09/03 08:47:59 INFO resume: re-execution succeeded run_id=reconcile-35ac3821-6b90-52eb-a800-41130471770b-workflow-1788425166

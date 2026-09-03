@@ -1,0 +1,91 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-02T22:52:18.530005Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "node-clone-identity-collision",
+  "suite": "authority",
+  "result": "FAIL",
+  "source_revision": "ae70deeda627db274f9b1be50fbb3dd4fcc68ea5",
+  "proof": {
+    "claim": "Two machines must never both hold the same node identity.\n\nTHE FAULT. Copy one node's entire persisted state onto another node's volume,\nthen start it. Two containers now present the same node_id, the same keys and\nthe same certificates, each with a complete and internally consistent claim.\n\n    node-4 state  \u2500\u2500copy\u2500\u2500\u25b6  node-5 volume\n          \u2193\n    node-5 starts, presenting node-4's identity\n\nWHY THIS IS REACHABLE IN PRACTICE. This is not an exotic attack; it is what\nrestoring a backup onto replacement hardware does, and what cloning a VM does.\nIt is also what happens when a node is rebuilt from a snapshot taken before it\nwas decommissioned. No packet is dropped and no process crashes \u2014 the fault is\npurely that two actors hold identical evidence of being the same node.\n\nWHY EXISTING SCENARIOS CANNOT REACH IT. Every node-level scenario in the suite\nmoves one node between up and down. None creates a second claimant. Identity\ncollision is invisible to availability testing because nothing is unavailable.\n\nWHAT MUST HOLD. The cluster must not end up with two members sharing one\nidentity: either the impostor is refused before it can register, or it is\nadmitted only as a distinct identity. What is forbidden is a cluster that\naccepts both and then quietly interleaves their heartbeats, installed-state\nwrites and runtime proofs under one node_id \u2014 because from then on every\nper-node record has two writers and no way to tell them apart.\n\nThis scenario is destructive and its cleanup is deliberately thorough: it wipes\nthe impostor's state and removes any duplicate record so the cluster is left\nwith exactly the identities it started with.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "postconditions",
+        "id": "cluster_returned_to_baseline",
+        "probe_or_action": "health.fingerprint",
+        "result": {
+          "baseline": {
+            "containers_running": [
+              "globular-node-1",
+              "globular-node-2",
+              "globular-node-3",
+              "globular-node-4",
+              "globular-node-5"
+            ],
+            "etcd_healthy_endpoints": 5,
+            "etcd_member_count": "5",
+            "pki": {
+              "node-1": "globular:globular/400 readable backups=0",
+              "node-2": "globular:globular/600 readable backups=0",
+              "node-3": "globular:globular/600 readable backups=0",
+              "node-4": "globular:globular/600 readable backups=0",
+              "node-5": "globular:globular/600 readable backups=0"
+            }
+          },
+          "final": {
+            "containers_running": [
+              "globular-node-1",
+              "globular-node-2",
+              "globular-node-3",
+              "globular-node-4",
+              "globular-node-5"
+            ],
+            "etcd_healthy_endpoints": 3,
+            "etcd_member_count": "4",
+            "pki": {
+              "node-1": "globular:globular/400 readable backups=0",
+              "node-2": "globular:globular/600 readable backups=0",
+              "node-3": "globular:globular/600 readable backups=0",
+              "node-4": "globular:globular/600 readable backups=0",
+              "node-5": "globular:globular/600 readable backups=0"
+            }
+          },
+          "diffs": [
+            "etcd_healthy_endpoints: baseline=5 now=3",
+            "etcd_member_count: baseline='5' now='4'"
+          ]
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

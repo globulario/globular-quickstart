@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 02:50:55 UTC; 18min ago
+    Process: 14426 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 14430 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 14433 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 14439 (workflow_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 28.0M (peak: 33.8M)
+        CPU: 3.016s
+     CGroup: /system.slice/docker-c40d32ac0c95f2d946f1aa9649aeee02daded77d9515dd2f82efd2470ee471d5.scope/system.slice/globular-workflow.service
+             └─14439 /usr/lib/globular/bin/workflow_server
+
+Sep 03 02:51:27 node-1 workflow_server[14439]: 2026/09/03 02:51:27 workflow: step verify_runtime DEFERRED after 5 attempts: controller actor=node-agent action=node.verify_package_runtime failed: verify runtime etcd: health check etcd on node 35ac3821-6b90-52eb-a800-41130471770b: status=inactive (want active)
+Sep 03 02:51:27 node-1 workflow_server[14439]: 2026/09/03 02:51:27 workflow: apply_per_node[0] sub-DAG FAILED: step verify_runtime deferred after retries: controller actor=node-agent action=node.verify_package_runtime failed: verify runtime etcd: health check etcd on node 35ac3821-6b90-52eb-a800-41130471770b: status=inactive (want active)
+Sep 03 02:51:27 node-1 workflow_server[14439]: 2026/09/03 02:51:27 INFO executor: dispatching action actor=cluster-controller run_id="" step_id=""
+Sep 03 02:51:27 node-1 workflow_server[14439]: time=2026-09-03T02:51:27.588Z level=INFO msg="executor: engine.Execute completed" run_id=InfrastructureRelease/core@globular.io/etcd
+Sep 03 02:51:27 node-1 workflow_server[14439]: time=2026-09-03T02:51:27.629Z level=INFO msg="executor: defer state updated" correlation_id=InfrastructureRelease/core@globular.io/etcd defer_count=1 max_defers=5 abandoned=false last_step_id=verify_runtime last_blocker_tags="[runtime.active:35ac3821-6b90-52eb-a800-41130471770b:etcd deps.installed:35ac3821-6b90-52eb-a800-41130471770b:etcd]"
+Sep 03 02:51:27 node-1 workflow_server[14439]: time=2026-09-03T02:51:27.630Z level=INFO msg="executor: workflow finished" workflow=release.apply.package run_id=InfrastructureRelease/core@globular.io/etcd status=RUN_STATUS_DEFERRED
+Sep 03 02:51:35 node-1 workflow_server[14439]: 2026/09/03 02:51:35 ERROR run InfrastructureRelease/core@globular.io/scylladb already owned by another executor (repeated 4 times in 30s) domain=10.10.0.11:8443 application=workflow.WorkflowService user="" method=/workflow.WorkflowService/ExecuteWorkflow function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Sep 03 02:51:35 node-1 workflow_server[14439]: time=2026-09-03T02:51:35.280Z level=INFO msg="retention: pruning complete" deleted=84 remaining=1000
+Sep 03 02:57:26 node-1 workflow_server[14439]: time=2026-09-03T02:57:26.141Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+Sep 03 03:01:35 node-1 workflow_server[14439]: time=2026-09-03T03:01:35.280Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000

@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-03T07:27:53.987145Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "safe-rolling-control-plane-maintenance",
+  "suite": "resilience",
+  "result": "PASS",
+  "source_revision": "ae70deeda627db274f9b1be50fbb3dd4fcc68ea5",
+  "proof": {
+    "claim": "Verify the safe rolling-maintenance discipline for a three-member control\nplane: remove exactly one member, prove majority writes still work, restore\nfull quorum, and only then remove the next member.\n\nThis is the safety-dual of catastrophic/rolling-quorum-collapse.yaml. That\nscenario proves that taking a second member down before the first member has\nrecovered destroys quorum. This scenario proves the intended operator rule:\nnever advance a control-plane maintenance window until the previous member is\nhealthy and caught up.\n\nnode-1 remains running because the harness uses node-1 as its etcd probe\nanchor. The scenario rolls node-2 and node-3 and requires full 3/3 health\nbetween disruptions.\n\nWhat this validates:\n  - 2/3 Raft quorum remains writable during each single-member outage\n  - a restarted member catches up before the next maintenance step begins\n  - repeated membership turnover does not leave stale health or registration\n    state behind\n  - the cluster finishes with full quorum and write availability",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

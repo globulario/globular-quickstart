@@ -1,0 +1,24 @@
+● globular-etcd.service - Globular etcd
+     Loaded: loaded (/etc/systemd/system/globular-etcd.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 04:50:58 UTC; 12s ago
+    Process: 45 ExecStartPre=/usr/bin/mkdir -p /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 58 ExecStartPre=/usr/bin/chown globular:globular /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 83 ExecStartPre=/usr/bin/chmod 0700 /var/lib/globular/etcd (code=exited, status=0/SUCCESS)
+    Process: 93 ExecStartPre=/bin/sh -c chown globular:globular /var/lib/globular/pki/issued/services/service.key /var/lib/globular/pki/issued/services/service.crt 2>/dev/null || true (code=exited, status=0/SUCCESS)
+   Main PID: 121 (etcd)
+      Tasks: 24 (limit: 8641)
+     Memory: 137.7M (peak: 138.9M)
+        CPU: 3.767s
+     CGroup: /system.slice/docker-ea8fb9ca14eb70effdd0d232e5134ea9cd7b75a2b71e2b7338ff0feb5d671806.scope/system.slice/globular-etcd.service
+             └─121 /usr/lib/globular/bin/etcd --config-file /var/lib/globular/config/etcd.yaml
+
+Sep 03 04:50:59 node-5 etcd[121]: {"level":"info","ts":"2026-09-03T04:50:59.848225Z","caller":"rafthttp/stream.go:274","msg":"established TCP streaming connection with remote peer","stream-writer-type":"stream Message","local-member-id":"c34ebc0e26aba45a","remote-peer-id":"5b3403391f05057d"}
+Sep 03 04:50:59 node-5 etcd[121]: {"level":"info","ts":"2026-09-03T04:50:59.967996Z","caller":"etcdserver/server.go:2118","msg":"published local member to cluster through raft","local-member-id":"c34ebc0e26aba45a","local-member-attributes":"{Name:node-5 ClientURLs:[https://10.10.0.15:2379]}","request-path":"/0/members/c34ebc0e26aba45a/attributes","cluster-id":"494c0d2663880d1","publish-timeout":"7s"}
+Sep 03 04:50:59 node-5 etcd[121]: {"level":"info","ts":"2026-09-03T04:50:59.968539Z","caller":"embed/serve.go:103","msg":"ready to serve client requests"}
+Sep 03 04:50:59 node-5 etcd[121]: {"level":"info","ts":"2026-09-03T04:50:59.968684Z","caller":"etcdmain/main.go:44","msg":"notifying init daemon"}
+Sep 03 04:50:59 node-5 etcd[121]: {"level":"info","ts":"2026-09-03T04:50:59.968728Z","caller":"etcdmain/main.go:50","msg":"successfully notified init daemon"}
+Sep 03 04:50:59 node-5 etcd[121]: {"level":"info","ts":"2026-09-03T04:50:59.971144Z","caller":"v3rpc/health.go:61","msg":"grpc service status changed","service":"","status":"SERVING"}
+Sep 03 04:50:59 node-5 etcd[121]: {"level":"info","ts":"2026-09-03T04:50:59.972753Z","caller":"embed/serve.go:250","msg":"serving client traffic securely","traffic":"grpc+http","address":"[::]:2379"}
+Sep 03 04:51:00 node-5 etcd[121]: {"level":"info","ts":"2026-09-03T04:51:00.338716Z","caller":"traceutil/trace.go:171","msg":"trace[775283541] linearizableReadLoop","detail":"{readStateIndex:85597; appliedIndex:85601; }","duration":"104.123763ms","start":"2026-09-03T04:51:00.234561Z","end":"2026-09-03T04:51:00.338685Z","steps":["trace[775283541] 'read index received'  (duration: 104.113875ms)","trace[775283541] 'applied index is now lower than readState.Index'  (duration: 8.546µs)"],"step_count":2}
+Sep 03 04:51:00 node-5 etcd[121]: {"level":"warn","ts":"2026-09-03T04:51:00.338966Z","caller":"etcdserver/util.go:170","msg":"apply request took too long","took":"109.130763ms","expected-duration":"100ms","prefix":"read-only range ","request":"key:\"/globular/services/8b384839-8473-3b00-9ccc-7cb36fe97836/runtime\" ","response":"range_response_count:1 size:140"}
+Sep 03 04:51:00 node-5 etcd[121]: {"level":"info","ts":"2026-09-03T04:51:00.33902Z","caller":"traceutil/trace.go:171","msg":"trace[1642026459] range","detail":"{range_begin:/globular/services/8b384839-8473-3b00-9ccc-7cb36fe97836/runtime; range_end:; response_count:1; response_revision:14603; }","duration":"109.210491ms","start":"2026-09-03T04:51:00.2298Z","end":"2026-09-03T04:51:00.33901Z","steps":["trace[1642026459] 'agreement among raft nodes before linearized reading'  (duration: 109.006402ms)"],"step_count":1}

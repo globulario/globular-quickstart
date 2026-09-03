@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 08:22:43 UTC; 44min ago
+    Process: 1501 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 1543 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1581 (monitoring_serv)
+      Tasks: 18 (limit: 8641)
+     Memory: 19.8M (peak: 28.1M)
+        CPU: 1.558s
+     CGroup: /system.slice/docker-f6794f4b169bba098abf4a57bb720698f46edb0eac950f53114f596b2c245f8c.scope/system.slice/globular-monitoring.service
+             └─1581 /usr/lib/globular/bin/monitoring_server
+
+Sep 03 08:22:43 node-1 monitoring_server[1581]: 2026/09/03 08:22:43 INFO security: loaded cluster roles from external policy file roles=22
+Sep 03 08:22:43 node-1 monitoring_server[1581]: PortAllocator range: 10000 - 20000
+Sep 03 08:22:44 node-1 monitoring_server[1581]: 2026/09/03 08:22:44 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Sep 03 08:22:44 node-1 monitoring_server[1581]: time=2026-09-03T08:22:44.775Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=1327
+Sep 03 08:22:45 node-1 monitoring_server[1581]: 2026/09/03 08:22:45 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Sep 03 08:22:55 node-1 monitoring_server[1581]: 2026/09/03 08:22:55 INFO mesh: Envoy available, routing through mesh target=node-1.globular.internal:443
+Sep 03 08:22:55 node-1 monitoring_server[1581]: 2026/09/03 08:22:55 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Sep 03 08:27:09 node-1 monitoring_server[1581]: 2026/09/03 08:27:09 WARN port/proxy change detected in desired; restart required to take effect service=monitoring.MonitoringService id=2bfada01-cac5-3bd2-baa1-e56defbc9ff9 old_port=10005 new_port=10008 old_proxy=10020 new_proxy=10020
+Sep 03 08:39:15 node-1 monitoring_server[1581]: 2026/09/03 08:39:15 WARN port/proxy change detected in desired; restart required to take effect service=monitoring.MonitoringService id=2bfada01-cac5-3bd2-baa1-e56defbc9ff9 old_port=10008 new_port=10002 old_proxy=10020 new_proxy=10020
+Sep 03 08:53:42 node-1 monitoring_server[1581]: 2026/09/03 08:53:42 INFO acc: warmup complete baseline_rtt_ms=20 samples=159 elapsed=30m0s

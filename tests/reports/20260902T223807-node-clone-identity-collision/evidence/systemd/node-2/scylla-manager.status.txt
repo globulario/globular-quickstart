@@ -1,0 +1,23 @@
+● globular-scylla-manager.service - Globular Scylla Manager
+     Loaded: loaded (/etc/systemd/system/globular-scylla-manager.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-09-02 22:47:13 UTC; 4min 50s ago
+    Process: 10764 ExecStartPre=/bin/sh -c for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "scylla 9042 not ready"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 10769 ExecStartPre=/usr/lib/globular/bin/scylla-manager-configure (code=exited, status=0/SUCCESS)
+    Process: 10773 ExecStartPost=/usr/lib/globular/bin/scylla-manager-register-cluster (code=exited, status=7)
+   Main PID: 10772 (scylla-manager)
+      Tasks: 14 (limit: 8641)
+     Memory: 13.1M (peak: 14.1M)
+        CPU: 398ms
+     CGroup: /system.slice/docker-ff061d7f5af21079448e0eb1e0727b09cd32344666e5b1df1ac2c5afaed58aa7.scope/system.slice/globular-scylla-manager.service
+             └─10772 /usr/bin/scylla-manager --config-file /var/lib/globular/scylla-manager/scylla-manager.yaml
+
+Sep 02 22:47:21 node-2 scylla_manager[10772]: {"L":"INFO","T":"2026-09-02T22:47:21.118Z","N":"scheduler","M":"All tasks scheduled","_trace_id":"62QkBgwsRIWOYAj8u63_fQ"}
+Sep 02 22:47:21 node-2 scylla_manager[10772]: {"L":"INFO","T":"2026-09-02T22:47:21.118Z","M":"Starting HTTP server","address":"10.10.0.12:5080","_trace_id":"62QkBgwsRIWOYAj8u63_fQ"}
+Sep 02 22:47:21 node-2 scylla_manager[10772]: {"L":"INFO","T":"2026-09-02T22:47:21.118Z","M":"Starting HTTPS server","address":"10.10.0.12:5443","client_ca":"","_trace_id":"62QkBgwsRIWOYAj8u63_fQ"}
+Sep 02 22:47:21 node-2 scylla_manager[10772]: {"L":"INFO","T":"2026-09-02T22:47:21.118Z","M":"Starting Prometheus server","address":":5090","_trace_id":"62QkBgwsRIWOYAj8u63_fQ"}
+Sep 02 22:47:21 node-2 scylla_manager[10772]: {"L":"INFO","T":"2026-09-02T22:47:21.118Z","M":"Starting debug server","address":"127.0.0.1:5112","_trace_id":"62QkBgwsRIWOYAj8u63_fQ"}
+Sep 02 22:47:21 node-2 scylla_manager[10772]: {"L":"INFO","T":"2026-09-02T22:47:21.118Z","M":"Service started","_trace_id":"62QkBgwsRIWOYAj8u63_fQ"}
+Sep 02 22:48:00 node-2 scylla_manager[10772]: {"L":"INFO","T":"2026-09-02T22:48:00.041Z","N":"cluster","M":"Creating new Scylla HTTP client","cluster_id":"75c4acee-b7c5-4965-affb-866eee2c02af","_trace_id":"hJO9alZySuCa4zoUrgpWyg"}
+Sep 02 22:50:00 node-2 scylla_manager[10772]: {"L":"INFO","T":"2026-09-02T22:50:00.023Z","N":"cluster","M":"Creating new Scylla HTTP client","cluster_id":"75c4acee-b7c5-4965-affb-866eee2c02af","_trace_id":"lyd4pLZoSbuXXP3kDCj0_w"}
+Sep 02 22:51:16 node-2 scylla_manager[10772]: {"L":"INFO","T":"2026-09-02T22:51:16.317Z","N":"http","M":"GET /api/v1/clusters","from":"10.10.0.13:47444","status":200,"bytes":247,"duration":"9ms","_trace_id":"wR9mmstgSEaU7LAUTOfGEQ"}
+Sep 02 22:52:00 node-2 scylla_manager[10772]: {"L":"INFO","T":"2026-09-02T22:52:00.018Z","N":"cluster.client","M":"HTTP retry now","operation":"StorageServiceHostIdGet","error":"dial tcp 10.10.0.15:5612: connect: connection refused","_trace_id":"r-BCtXdBRMOtFz56EsB1DA"}

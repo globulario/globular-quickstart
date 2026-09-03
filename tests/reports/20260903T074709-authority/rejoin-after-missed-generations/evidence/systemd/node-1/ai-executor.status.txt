@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 08:22:43 UTC; 44min ago
+    Process: 1658 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 1682 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1691 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 35.0M (peak: 40.6M)
+        CPU: 4.949s
+     CGroup: /system.slice/docker-f6794f4b169bba098abf4a57bb720698f46edb0eac950f53114f596b2c245f8c.scope/system.slice/globular-ai-executor.service
+             └─1691 /usr/lib/globular/bin/ai_executor_server
+
+Sep 03 08:57:45 node-1 ai_executor_server[1691]: time=2026-09-03T08:57:45.994Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Sep 03 08:57:46 node-1 ai_executor_server[1691]: time=2026-09-03T08:57:46.003Z level=INFO msg="codex: no credentials found"
+Sep 03 09:02:45 node-1 ai_executor_server[1691]: time=2026-09-03T09:02:45.976Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Sep 03 09:02:45 node-1 ai_executor_server[1691]: time=2026-09-03T09:02:45.989Z level=INFO msg="anthropic: no credentials found (provision a Max subscription credential, or set APIKey in config as a metered fallback)"
+Sep 03 09:02:46 node-1 ai_executor_server[1691]: time=2026-09-03T09:02:46.030Z level=INFO msg="anthropic: loaded cluster rules from MinIO" size=5404
+Sep 03 09:02:46 node-1 ai_executor_server[1691]: time=2026-09-03T09:02:46.041Z level=INFO msg="codex: no credentials found"
+Sep 03 09:06:14 node-1 ai_executor_server[1691]: time=2026-09-03T09:06:14.110Z level=INFO msg="processing incident" incident_id=b6d9afe4-a776-11f1-8102-02420a0a000f rule_id=workflow-run-failed tier=0 trigger=workflow.run.failed batch_size=1
+Sep 03 09:06:14 node-1 ai_executor_server[1691]: time=2026-09-03T09:06:14.190Z level=INFO msg="diagnosis complete" incident_id=b6d9afe4-a776-11f1-8102-02420a0a000f root_cause=unknown_anomaly confidence=0.20000000298023224 proposed_action=observe_and_record job_state=JOB_DIAGNOSED
+Sep 03 09:06:14 node-1 ai_executor_server[1691]: time=2026-09-03T09:06:14.190Z level=INFO msg="INCIDENT RESOLVED" incident_id=b6d9afe4-a776-11f1-8102-02420a0a000f summary="workflow-run-failed triggered by workflow.run.failed (1 events in batch)" root_cause=unknown_anomaly
+Sep 03 09:06:14 node-1 ai_executor_server[1691]: 2026/09/03 09:06:14 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=90 baseline_ms=20 window=65 new_window=58

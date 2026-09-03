@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 04:48:32 UTC; 2min 33s ago
+    Process: 12080 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 12084 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 12086 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 12093 (rbac_server)
+      Tasks: 16 (limit: 8641)
+     Memory: 81.1M (peak: 81.7M)
+        CPU: 768ms
+     CGroup: /system.slice/docker-7e96972d3ab252c597a9e40cee25acb4ad330a0f49ef9437dd69f6759886daf5.scope/system.slice/globular-rbac.service
+             └─12093 /usr/lib/globular/bin/rbac_server
+
+Sep 03 04:48:32 node-2 rbac_server[12093]: time=2026-09-03T04:48:32.492Z level=INFO msg="minio storage configured" endpoint=10.10.0.11:9000 bucket=globular secure=true
+Sep 03 04:48:32 node-2 rbac_server[12093]: time=2026-09-03T04:48:32.492Z level=INFO msg="dependency health watchdog started" deps=1
+Sep 03 04:48:32 node-2 rbac_server[12093]: time=2026-09-03T04:48:32.492Z level=INFO msg="rbac permission-cache invalidation watcher started"
+Sep 03 04:48:32 node-2 rbac_server[12093]: time=2026-09-03T04:48:32.504Z level=INFO msg="rbac service ready" id=8b384839-8473-3b00-9ccc-7cb36fe97836 version=1.2.317 port=10004 proxy=10001 protocol=grpc domain=globular.internal address=10.10.0.11:10004 startup_ms=248
+Sep 03 04:48:32 node-2 rbac_server[12093]: time=2026-09-03T04:48:32.504Z level=INFO msg="starting grpc server" port=10004
+Sep 03 04:48:32 node-2 rbac_server[12093]: 2026/09/03 04:48:32 INFO metrics: proxy port conflict, using free port service=rbac.RbacService wanted=10001 actual=46603
+Sep 03 04:48:32 node-2 rbac_server[12093]: 2026/09/03 04:48:32 INFO metrics listening service=rbac.RbacService addr=[::]:46603
+Sep 03 04:48:42 node-2 rbac_server[12093]: 2026/09/03 04:48:42 INFO mesh: Envoy available, routing through mesh target=node-2.globular.internal:443
+Sep 03 04:48:42 node-2 rbac_server[12093]: 2026/09/03 04:48:42 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Sep 03 04:50:51 node-2 rbac_server[12093]: 2026/09/03 04:50:51 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10004 new_port=10004 old_proxy=46603 new_proxy=10001

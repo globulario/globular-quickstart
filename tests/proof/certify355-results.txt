@@ -1,0 +1,35 @@
+# 1.2.355 certification run — suite results as they land
+# Each line: CERT-RESULT <suite> | <proof classification line> | <run dir>
+# Clusters: C1 = cold boot 2026-09-02 11:11-11:23 (smoke..training)
+#           C2 = cold boot 2026-09-02 12:28-12:44 (recovery ...)
+CERT-RESULT smoke      | PASS=3  FAIL=0 UNSUPPORTED=0 PARTIAL=0 INFRA_ERROR=0 | 20260902T152322-smoke      | C1
+CERT-RESULT functional | PASS=10 FAIL=0 UNSUPPORTED=0 PARTIAL=0 INFRA_ERROR=0 | 20260902T152526-functional | C1
+CERT-RESULT security   | PASS=9  FAIL=0 UNSUPPORTED=0 PARTIAL=0 INFRA_ERROR=0 | 20260902T153308-security   | C1
+CERT-RESULT patterns   | PASS=5  FAIL=1 UNSUPPORTED=0 PARTIAL=0 INFRA_ERROR=0 | 20260902T153500-patterns   | C1  (FAIL = residue-negative-control, the declared negative control)
+CERT-RESULT soak       | PASS=5  FAIL=0 UNSUPPORTED=0 PARTIAL=0 INFRA_ERROR=0 | 20260902T154632-soak       | C1
+CERT-RESULT training   | PASS=5  FAIL=0 UNSUPPORTED=0 PARTIAL=0 INFRA_ERROR=0 | 20260902T162*-training     | C1
+CERT-RESULT recovery   | PASS=7  FAIL=0 UNSUPPORTED=0 PARTIAL=0 INFRA_ERROR=0 | 20260902T164450-recovery | C2
+CERT-RESULT resilience | PASS=13 FAIL=0 UNSUPPORTED=0 PARTIAL=0 INFRA_ERROR=0 | 20260902T173716-resilience | C3
+CERT-RESULT upgrade    | PASS=11 FAIL=1 UNSUPPORTED=0 PARTIAL=1 INFRA_ERROR=0 | 20260902T185046-upgrade | C4  (PARTIAL = platform-upgrade-release-boundary: 5 releases parked DEFERRED, root-caused to the missing periodic requeue)
+CERT-RESULT authority  | PASS=4  FAIL=2 UNSUPPORTED=0 PARTIAL=1 INFRA_ERROR=0 | 20260902T203219-authority | C5
+  - node-clone-identity-collision  POSTCONDITION 19/20: all assertions pass, cluster does not return to 5 etcd members (member_count 5->4, healthy endpoints 5->3)
+  - rejoin-after-missed-generations PARTIAL 16/20: 3x ops.set_desired refused ("repository instance <ip>:443 reported no published version with a resolvable kind"), no_doctor_errors 6 ERROR
+    NOTE: ran immediately after node-clone-identity-collision left the cluster at 4 etcd members — must be re-run in isolation before it is attributed.
+CERT-RESULT catastrophic | PASS=5 FAIL=0 UNSUPPORTED=0 PARTIAL=0 INFRA_ERROR=0 | 20260902T220752-catastrophic | C6
+CERT-RESULT upgrade(1.2.357) | PASS=12 FAIL=0 UNSUPPORTED=0 PARTIAL=0 INFRA_ERROR=0 | 20260903T002024-upgrade | C7 — platform-upgrade-release-boundary PASS 9/9, release.audit 24 succeeded / 0 pending (1.2.355: 19/5)
+
+# ── 1.2.357 full re-run (all 81, fresh cold boot per destructive suite) ──
+CERT-RESULT smoke(357)        | PASS=3  FAIL=0 | 20260903T043716-smoke
+CERT-RESULT functional(357)   | PASS=10 FAIL=0 | 20260903T043810-functional
+CERT-RESULT security(357)     | PASS=9  FAIL=0 | 20260903T044829-security
+CERT-RESULT patterns(357)     | PASS=5  FAIL=1 | 20260903T045031-patterns   (FAIL = residue-negative-control, the declared control)
+CERT-RESULT soak(357)         | PASS=5  FAIL=0 | 20260903T045131-soak
+CERT-RESULT training(357)     | PASS=5  FAIL=0 | 20260903T053054-training
+CERT-RESULT recovery(357)     | PASS=7  FAIL=0 | 20260903T054902-recovery
+CERT-RESULT resilience(357)   | PASS=13 FAIL=0 | 20260903T063640-resilience
+CERT-RESULT upgrade(357)      | PASS=12 FAIL=0 | 20260903T002024-upgrade
+CERT-RESULT authority(357)    | PASS=4  FAIL=2 | 20260903T074709-authority  (node-clone POSTCONDITION + rejoin PARTIAL, both = open defect 2b)
+CERT-RESULT catastrophic(357) | PASS=5  FAIL=0 | 20260903T092522-catastrophic
+# Attribution: rejoin-after-missed-generations PASSES in isolation on a clean cluster
+#   -> 20260903T095501-rejoin-after-missed-generations. Its suite failure is carry-over.
+# TOTAL 1.2.357: 78/81 PASS, 1 expected-fail control, 2 non-PASS both tracing to defect 2b.

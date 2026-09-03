@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-09-02T16:46:59.610815Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/recovery/etcd-detach-before-wipe.yaml",
+  "scenario": "etcd-detach-before-wipe",
+  "suite": "recovery",
+  "source_revision": "ae70deeda627db274f9b1be50fbb3dd4fcc68ea5",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "A node removed from the cluster must take its etcd MEMBERSHIP with it.\n\nSCAR \u2014 2026-07-30, twice in one session, on the physical cluster.\n\nglobule-nuc was added to etcd during a Day-1 join and promoted to voter. Its\njoin then failed at a later phase (ScyllaDB), so the node was wiped. The wipe\ndid NOT remove its etcd member. The survivor was left with 2 registered voters\nand only 1 alive:\n\n    IS LEADER=false   ERRORS=\"etcdserver: no leader\"\n    raft index frozen; every etcd write hung\n\nThe whole control plane stalled behind it \u2014 13.7s page loads, cluster-doctor\ntiming out \u2014 because gateway, controller and doctor all resolve config from\netcd. MemberRemove could not repair it either: that call itself needs quorum.\nRecovery required restarting etcd with --force-new-cluster.\n\nTwo separate defects had to be fixed before the detach could work at all:\n\n  1. step 0.3 of clean-node.sh was gated on `systemctl is-active\n     globular-etcd`, and addressed only the LOCAL endpoint. A node is wiped\n     after a FAILED join, and the join's own preflight stops etcd \u2014 so the\n     guard was false in exactly the case the step exists for, and a dead local\n     etcd cannot serve its own removal anyway.   (services ba418f39)\n\n  2. it authenticated only with pki/issued/etcd/client.{crt,key}, which is\n     materialised LATER in the join than the phase-2 service cert. A node that\n     failed partway does not have it, so the step reported \"TLS certs missing\"\n     and skipped.                                 (services b82bcbf9)\n\nWHAT THIS ASSERTS \u2014 and why it is not the same as the existing\netcd-quorum-resilience scenario:\n\n  stopping a member  \u2192 quorum requirement UNCHANGED (it is expected back)\n  detaching a member \u2192 member list SHRINKS, so quorum requirement DROPS\n\nThat difference is the entire property. Here two of three etcd members are\ndecommissioned. Under correct behaviour the list shrinks 3 \u2192 1 and the single\nsurvivor still elects itself leader and accepts writes. With the pre-fix\nclean-node the list would stay at 3 with 1 alive \u2014 quorum 2 unreachable, no\nleader, writes hung.\n\nThe load-bearing assertion is etcd.write_test. Membership arithmetic can look\nplausible while the cluster is actually wedged; a completed write is the only\nproof that quorum is real.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-09-02T17:14:30.072571Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

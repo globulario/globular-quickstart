@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 08:22:42 UTC; 44min ago
+    Process: 862 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 885 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 902 (monitoring_serv)
+      Tasks: 21 (limit: 8641)
+     Memory: 19.9M (peak: 26.5M)
+        CPU: 1.497s
+     CGroup: /system.slice/docker-651351a04d6c0baf78144aa7bd39ef1728f6aa3bf706de80db91cbe0daaf1eab.scope/system.slice/globular-monitoring.service
+             └─902 /usr/lib/globular/bin/monitoring_server
+
+Sep 03 08:22:42 node-4 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Sep 03 08:22:42 node-4 monitoring_server[902]: PortAllocator range: 10000 - 20000
+Sep 03 08:22:42 node-4 monitoring_server[902]: 2026/09/03 08:22:42 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Sep 03 08:22:42 node-4 monitoring_server[902]: time=2026-09-03T08:22:42.976Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=582
+Sep 03 08:22:43 node-4 monitoring_server[902]: 2026/09/03 08:22:43 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Sep 03 08:22:53 node-4 monitoring_server[902]: 2026/09/03 08:22:53 INFO mesh: Envoy available, routing through mesh target=node-4.globular.internal:443
+Sep 03 08:22:53 node-4 monitoring_server[902]: 2026/09/03 08:22:53 INFO mesh: gRPC connection established target=node-4.globular.internal:443
+Sep 03 08:27:09 node-4 monitoring_server[902]: 2026/09/03 08:27:09 WARN port/proxy change detected in desired; restart required to take effect service=monitoring.MonitoringService id=2bfada01-cac5-3bd2-baa1-e56defbc9ff9 old_port=10005 new_port=10008 old_proxy=10020 new_proxy=10020
+Sep 03 08:39:15 node-4 monitoring_server[902]: 2026/09/03 08:39:15 WARN port/proxy change detected in desired; restart required to take effect service=monitoring.MonitoringService id=2bfada01-cac5-3bd2-baa1-e56defbc9ff9 old_port=10008 new_port=10002 old_proxy=10020 new_proxy=10020
+Sep 03 08:53:42 node-4 monitoring_server[902]: 2026/09/03 08:53:42 INFO acc: warmup complete baseline_rtt_ms=20 samples=159 elapsed=30m0s

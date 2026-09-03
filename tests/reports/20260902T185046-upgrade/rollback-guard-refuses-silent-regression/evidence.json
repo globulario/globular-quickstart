@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "scenario": "rollback-guard-refuses-silent-regression",
+  "suite": "upgrade",
+  "start_time": "2026-09-02T20:09:41.335745Z",
+  "end_time": "2026-09-02T20:10:31.198428Z",
+  "passed": true,
+  "item_count": 11,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-02T20:09:42.736336Z"
+    },
+    {
+      "id": "releases_are_clean",
+      "section": "preconditions",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {
+        "failed": 0
+      },
+      "result": {
+        "total": 24,
+        "succeeded": 24,
+        "failed": 0,
+        "pending": 0
+      },
+      "passed": true,
+      "timestamp": "2026-09-02T20:09:42.871371Z"
+    },
+    {
+      "id": "convergence_before",
+      "section": "baseline",
+      "probe": "cluster.installed_version_convergence",
+      "params": {
+        "package": "node-agent"
+      },
+      "expect": {},
+      "result": {
+        "nodes": 5,
+        "converged": 5,
+        "lagging": 0,
+        "versions": "1.2.331,1.2.331,1.2.331,1.2.331,1.2.331",
+        "unique": 1
+      },
+      "passed": true,
+      "timestamp": "2026-09-02T20:09:43.493254Z"
+    },
+    {
+      "id": "refuse_backwards_step",
+      "section": "steps",
+      "probe": "ops.set_desired",
+      "params": {
+        "node": "node-1",
+        "name": "node-agent",
+        "version": "1.2.300",
+        "expect": "refused"
+      },
+      "expect": {},
+      "result": {
+        "action": "ops.set_desired",
+        "service": "node-agent",
+        "version": "1.2.300",
+        "expect": "refused",
+        "accepted": false,
+        "exit_code": 1,
+        "attempts": 1,
+        "error": "Error: UpsertDesiredService: rpc error: code = NotFound desc = artifact node-agent@1.2.300 (build 0) not found in repository; cannot set desired state for non-existent artifact | Usage: |   globular services desired set <service> <version> [flags]",
+        "output": "Error: UpsertDesiredService: rpc error: code = NotFound desc = artifact node-agent@1.2.300 (build 0) not found in repository; cannot set desired state for non-existent artifact"
+      },
+      "passed": true,
+      "timestamp": "2026-09-02T20:09:43.713895Z"
+    },
+    {
+      "id": "override_does_not_bypass_resolvability",
+      "section": "steps",
+      "probe": "ops.set_desired",
+      "params": {
+        "node": "node-1",
+        "name": "node-agent",
+        "version": "1.2.300",
+        "allow_regression": true,
+        "expect": "refused"
+      },
+      "expect": {},
+      "result": {
+        "action": "ops.set_desired",
+        "service": "node-agent",
+        "version": "1.2.300",
+        "expect": "refused",
+        "accepted": false,
+        "exit_code": 1,
+        "attempts": 1,
+        "error": "Error: cannot verify node-agent is a SERVICE package: repository instance 10.10.0.13:443 reported no published version with a resolvable kind. `services desired set` fails closed on an unknown kind per desired.keyed_by_kind_and_name. Either the package is genuinely unpublished (publish it, then retry), or that instance has not finished syncing its artifact index \u2014 a repository on a recently joined",
+        "output": "Error: cannot verify node-agent is a SERVICE package: repository instance 10.10.0.13:443 reported no published version with a resolvable kind. `services desired set` fails closed on an unknown kind pe"
+      },
+      "passed": true,
+      "timestamp": "2026-09-02T20:09:43.968429Z"
+    },
+    {
+      "id": "installed_version_unchanged",
+      "section": "assertions",
+      "probe": "cluster.installed_version_convergence",
+      "params": {
+        "package": "node-agent"
+      },
+      "expect": {
+        "unique_lte": 1,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 5,
+        "converged": 5,
+        "lagging": 0,
+        "versions": "1.2.331,1.2.331,1.2.331,1.2.331,1.2.331",
+        "unique": 1
+      },
+      "passed": true,
+      "timestamp": "2026-09-02T20:10:29.563735Z"
+    },
+    {
+      "id": "no_release_failures_introduced",
+      "section": "assertions",
+      "probe": "release.audit",
+      "params": {},
+      "expect": {
+        "failed": 0
+      },
+      "result": {
+        "total": 24,
+        "succeeded": 24,
+        "failed": 0,
+        "pending": 0
+      },
+      "passed": true,
+      "timestamp": "2026-09-02T20:10:29.679130Z"
+    },
+    {
+      "id": "repository_identity_still_clean",
+      "section": "assertions",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-09-02T20:10:30.076182Z"
+    },
+    {
+      "id": "cluster_still_healthy",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-02T20:10:30.374243Z"
+    },
+    {
+      "id": "liveness_unaffected",
+      "section": "assertions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 37,
+        "stale_nodes": 0,
+        "oldest": "35ac3821-6b90-52eb-a800-41130471770b"
+      },
+      "passed": true,
+      "timestamp": "2026-09-02T20:10:30.525594Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-09-02T20:10:31.198289Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

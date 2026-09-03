@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-09-02 21:27:28 UTC; 22min ago
+    Process: 11055 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 11058 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 11062 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 11068 (workflow_server)
+      Tasks: 20 (limit: 8641)
+     Memory: 30.2M (peak: 32.4M)
+        CPU: 2.825s
+     CGroup: /system.slice/docker-1831aee4b9e5734d484353f435514b74bbea856721e02977d82e5eb6c5a040c4.scope/system.slice/globular-workflow.service
+             └─11068 /usr/lib/globular/bin/workflow_server
+
+Sep 02 21:34:00 node-2 workflow_server[11068]: time=2026-09-02T21:34:00.435Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+Sep 02 21:35:00 node-2 workflow_server[11068]: time=2026-09-02T21:35:00.435Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = stream terminated by RST_STREAM with error code: CANCEL"
+Sep 02 21:37:00 node-2 workflow_server[11068]: time=2026-09-02T21:37:00.436Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = context deadline exceeded"
+Sep 02 21:38:00 node-2 workflow_server[11068]: time=2026-09-02T21:38:00.382Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Sep 02 21:38:00 node-2 workflow_server[11068]: time=2026-09-02T21:38:00.389Z level=INFO msg="retention: pruning old workflow runs" total_terminal=1127 keep=1000 deleting=127
+Sep 02 21:38:00 node-2 workflow_server[11068]: time=2026-09-02T21:38:00.436Z level=WARN msg="incident scanner: cluster doctor unavailable" err="rpc error: code = DeadlineExceeded desc = stream terminated by RST_STREAM with error code: CANCEL"
+Sep 02 21:38:03 node-2 workflow_server[11068]: time=2026-09-02T21:38:03.774Z level=INFO msg="retention: pruning complete" deleted=127 remaining=1000
+Sep 02 21:48:00 node-2 workflow_server[11068]: time=2026-09-02T21:48:00.383Z level=INFO msg="retention: scanning for old runs" cluster_id=globular.internal keep=1000
+Sep 02 21:48:00 node-2 workflow_server[11068]: time=2026-09-02T21:48:00.389Z level=INFO msg="retention: pruning old workflow runs" total_terminal=1033 keep=1000 deleting=33
+Sep 02 21:48:01 node-2 workflow_server[11068]: time=2026-09-02T21:48:01.232Z level=INFO msg="retention: pruning complete" deleted=33 remaining=1000

@@ -1,0 +1,285 @@
+version: 1
+name: deploy-publish-then-converge
+description: |
+  A publish must produce an artifact the whole cluster can resolve, serve, and
+  converge on — and must not report a success it has not achieved.
+
+  WHY THIS EXISTS. The suite already asserts on the STATE of the repository
+  after a publish, but never executed one: the bundle arrives pre-published, so
+  every upgrade scenario until now observed the aftermath of a pipeline it did
+  not drive. desired-state-refuses-what-it-cannot-resolve covers the operator
+  half (`services desired set`) and names this scenario for the other half. The
+  path that failed roughly one run in two on 2026-08-16 is the publish itself,
+  and it had zero coverage of its execution.
+
+  THE TWO FAILURE SHAPES, both from that incident:
+
+  1. PUBLISHED but not servable. The manifest authority is cluster-wide, the
+     blob store is per-node. A publish materializes bytes only in the CAS of
+     the instance that received them; every other node reads the same manifest,
+     reports PUBLISHED, and cannot serve it. Whether a deploy worked depended on
+     which repository instance served the install — not something the operator
+     controls or can see.
+
+  2. PUBLISHED twice, resolvable never. Re-publishing an unchanged version
+     minted a second build_id for it. The resolver requires exactly one, so the
+     version went ambiguous and the rollout stalled — reported as converging,
+     forever.
+
+  WHY RE-PUBLISHING A STAGED ARCHIVE IS THE RIGHT DRIVER. This is not a
+  shortcut around building a new binary; it is the exact operation that broke.
+  The platform's own local-deploy model is "reuse an existing published release
+  version and advance only the build identity", so a second publish of one
+  version is the normal case, not an abuse of it. Building a genuinely new
+  binary would require a Go toolchain in the node image and would test the
+  compiler rather than the pipeline. The archive is taken from
+  /var/lib/globular/packages/ — the staged CAS is the only sanctioned package
+  source (repository.minio_is_not_valid_package_source).
+
+  WHY dns. `desired set` is known to refuse `blog` with a kind error its own
+  resolver contradicts (desired_state.refusal_message_misattributes_cause).
+  desired-state-refuses-what-it-cannot-resolve settled on dns as a target the
+  platform genuinely accepts; reusing it here keeps this scenario failing on
+  the property under test rather than on a known diagnostic bug.
+
+  WHY candidate, AND WHY NOT A local@ PUBLISHER. Identity lanes are enforced in
+  local_publish_guard.go: stable is publisher=core@globular.io + channel=STABLE
+  + clean semver and is SEALED; dev is publisher=local@<id> + channel=DEV + a
+  +local./-dev. version suffix; hotfix is any publisher + CANDIDATE + a -hotfix.
+  suffix. This scenario publishes to CANDIDATE under the archive's own
+  publisher, which is what `globular deploy` itself does by default
+  ("candidate; stable forbidden") — it is the real deploy lane, and it trips
+  none of the four identity rules.
+
+  It deliberately does NOT publish as local@<cluster-id>. That lane is correct
+  for a developer testing an unreleased binary, but it MINTS A PUBLISHER
+  NAMESPACE as a side effect of publishing, and a publisher namespace is an
+  RBAC-owned resource, not a free string
+  (package.publisher_namespace_is_rbac_resource). A scenario that ran on every
+  suite execution would accumulate unclaimed namespaces in the repository it is
+  supposed to be validating. Re-publishing identical bytes under the existing
+  publisher creates no new identity at all, which is the property that makes
+  this safe to run repeatedly.
+
+  WHAT THIS PINS. After a publish: the blob is reachable from every node, the
+  version still resolves to exactly one artifact, desired state can be pointed
+  at it, and every node reports that version installed. The publish reports
+  SUCCESS only when it achieved one — exit code alone is not accepted as proof.
+
+  NOT COVERED HERE, and worth stating plainly: the desired-state REGRESSION
+  floor, which needs two published versions of one package. A bundle ships one
+  version per package, so a second version cannot be produced without building
+  one — see the note in desired-state-refuses-what-it-cannot-resolve. This
+  scenario advances build identity, not release version, and asserts nothing
+  about rollback.
+
+suite: upgrade
+tags:
+  - repository
+  - cas
+  - publish
+  - deploy-pipeline
+  - convergence
+  - incident-2026-08-16
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # The repository must be clean BEFORE the publish, or "clean afterwards"
+  # proves nothing — a pre-existing ambiguity would be indistinguishable from
+  # one this scenario caused.
+  - type: probe
+    id: resolution_clean_before
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+      missing_blob: 0
+      conflict: 0
+
+  # Guard against a vacuous pass. If the harness cannot see all five nodes,
+  # "reachable from every node" is trivially satisfiable and proves nothing —
+  # which is exactly the shape of the bug: a blob present on one node while
+  # four others cannot serve it.
+  - type: probe
+    id: all_five_nodes_visible
+    probe: repository.blob_reachable_all_nodes
+    params:
+      name: dns
+    expect:
+      nodes_gte: 5
+
+baseline:
+  - type: probe
+    id: identity_findings_before
+    probe: repository.identity_findings
+
+  - type: probe
+    id: desired_state_before
+    probe: cluster.desired_state
+
+  - type: probe
+    id: convergence_before
+    probe: cluster.installed_version_convergence
+    params:
+      package: dns
+
+steps:
+  # ── The publish half ──────────────────────────────────────────────────────
+  # Published through node-1 specifically. The 2026-08-16 defect was that bytes
+  # landed only in the CAS of whichever instance received them, so the
+  # receiving instance must be a known quantity rather than whatever discovery
+  # happened to select — otherwise "the blob is missing on node 4" cannot be
+  # distinguished from "node 4 was the publisher and node 1 is the gap".
+  - type: action
+    id: publish_dns_again
+    action: ops.publish
+    params:
+      node: node-1
+      name: dns
+      channel: candidate
+      expect: accepted
+
+  # The seeding pass that copies blobs to the other nodes' CAS repeats for the
+  # life of the process rather than running once at startup
+  # (published-artifact-is-installable-everywhere). Give it a full cycle before
+  # asserting propagation, so a slow seed is not recorded as a missing one.
+  - type: action
+    id: let_seeding_propagate
+    action: wait
+    params:
+      timeout: 300
+      poll_interval: 15
+      reason: "let the repository seeding pass copy the blob into every node's CAS"
+      # Polled, not slept. A fixed sleep either wastes the difference or, worse,
+      # expires early and records a slow seed as a missing one — the assertion
+      # below would then report the propagation defect this scenario exists to
+      # detect, on a cluster that simply had not finished yet.
+      until:
+        probe: repository.blob_reachable_all_nodes
+        params:
+          name: dns
+        expect:
+          missing: 0
+          nodes_gte: 5
+
+  # ── The operator half ─────────────────────────────────────────────────────
+  # Same version, advanced build identity — the platform's own local-deploy
+  # model. This must be ACCEPTED: a control plane that refused it would be
+  # unable to adopt any locally published fix.
+  - type: action
+    id: point_desired_at_published_version
+    action: ops.set_desired
+    params:
+      node: node-1
+      name: dns
+      # @staged resolves to the version this release actually shipped, read from
+      # the node's staged CAS. Hardcoding 1.2.312 pinned this scenario to the
+      # cluster it was written against; on 1.2.328 (dns 1.2.317) it failed as
+      # "artifact not found", which reads like a repository defect rather than a
+      # stale literal in the test.
+      version: "@staged"
+      expect: accepted
+
+  - type: action
+    id: let_convergence_run
+    action: wait
+    params:
+      timeout: 600
+      poll_interval: 20
+      reason: "let the controller dispatch and every node prove the artifact installed and running"
+      # 600s because convergence is install + restart + runtime proof on five
+      # nodes, and the assertion that follows is worthless if it fires while the
+      # rollout is still legitimately in flight.
+      until:
+        probe: cluster.installed_version_convergence
+        params:
+          package: dns
+        expect:
+          lagging: 0
+          unique: 1
+
+assertions:
+  # ── Failure shape 1: PUBLISHED must mean servable everywhere ──────────────
+  - type: probe
+    id: blob_reachable_from_every_node
+    probe: repository.blob_reachable_all_nodes
+    params:
+      name: dns
+    expect:
+      missing: 0
+      nodes_gte: 5
+
+  # The repository's own verdict, rather than re-deriving it. A node
+  # advertising a manifest it cannot serve is exactly what this finding names,
+  # and it is the ERROR that fired across the cluster on 2026-08-16.
+  - type: probe
+    id: no_missing_blob_findings
+    probe: repository.identity_findings
+    expect:
+      missing_blob: 0
+
+  # ── Failure shape 2: one version, one artifact ────────────────────────────
+  # The publish above deliberately minted a second build of an existing
+  # version. That is the operation that produced two build_ids and stalled the
+  # resolver. If this fires, the pipeline still cannot be run twice.
+  - type: probe
+    id: republish_left_resolution_unambiguous
+    probe: repository.identity_findings
+    expect:
+      ambiguous: 0
+      conflict: 0
+
+  # ── The converge half: runtime proof, not dispatch ack ────────────────────
+  # lagging counts nodes that have not proven the artifact installed AND
+  # running; unique counts distinct installed versions. More than one means the
+  # rollout is still in flight or stuck — which is how the stalled rollout
+  # presented: healthy cluster, perpetual convergence, no error anywhere.
+  - type: probe
+    id: every_node_converged_on_the_published_version
+    probe: cluster.installed_version_convergence
+    params:
+      package: dns
+    expect:
+      lagging: 0
+      unique: 1
+      nodes_gte: 5
+
+  # ── The pipeline did not damage what it touched ───────────────────────────
+  # No explicit `since`: the runner scopes this to THIS scenario's execution.
+  #
+  # A fixed "15 min ago" was wrong in both directions. This assertion fires ~30s
+  # into the scenario, so the window reached ~14 minutes BEFORE the scenario
+  # started and read the cluster's own bring-up as this pipeline's damage — on
+  # 2026-08-23 it failed on "no workflow service instance is reachable" logged
+  # while the workflow service was still starting, minutes before the suite ran.
+  # A fixed window is also too SHORT for a long scenario, silently dropping the
+  # early half of its own effects.
+  - type: probe
+    id: reconcile_clean
+    probe: cluster.reconcile_clean
+    expect:
+      clean: true
+
+  - type: probe
+    id: cluster_still_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  - type: probe
+    id: liveness_unaffected
+    probe: state.liveness_freshness
+    expect:
+      stale_nodes: 0
+
+cleanup: []

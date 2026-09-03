@@ -1,0 +1,23 @@
+● globular-workflow.service - Globular workflow
+     Loaded: loaded (/etc/systemd/system/globular-workflow.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 02:50:55 UTC; 4min 50s ago
+    Process: 10861 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/workflow && chown globular:globular /var/lib/globular/workflow (code=exited, status=0/SUCCESS)
+    Process: 10864 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 10868 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 10873 (workflow_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 29.5M (peak: 31.1M)
+        CPU: 1.464s
+     CGroup: /system.slice/docker-4ac2edd355a16dd33d14fa8c9588814d5a3fcaeede72e8767b2d0718d144d466.scope/system.slice/globular-workflow.service
+             └─10873 /usr/lib/globular/bin/workflow_server
+
+Sep 03 02:55:09 node-3 workflow_server[10873]: time=2026-09-03T02:55:09.968Z level=INFO msg="executor: workflow finished" workflow=remediate.doctor.finding run_id=eed20b11-c158-408d-ba07-becaaee7ce46 status=RUN_STATUS_FAILED
+Sep 03 02:55:10 node-3 workflow_server[10873]: 2026/09/03 02:55:10 workflow: loaded "remediate.doctor.finding" from etcd (6247 bytes)
+Sep 03 02:55:10 node-3 workflow_server[10873]: time=2026-09-03T02:55:10.131Z level=INFO msg="workflow run started" run_id=358d1377-7b17-4c6e-a41c-1cc39a5bcce6 component="" node="" trigger=TRIGGER_REASON_UNKNOWN
+Sep 03 02:55:10 node-3 workflow_server[10873]: time=2026-09-03T02:55:10.138Z level=INFO msg="executor: starting workflow" workflow=remediate.doctor.finding run_id=358d1377-7b17-4c6e-a41c-1cc39a5bcce6 actors=[cluster-doctor]
+Sep 03 02:55:10 node-3 workflow_server[10873]: time=2026-09-03T02:55:10.138Z level=INFO msg="executor: engine.Execute starting" run_id=358d1377-7b17-4c6e-a41c-1cc39a5bcce6 steps=5
+Sep 03 02:55:10 node-3 workflow_server[10873]: 2026/09/03 02:55:10 workflow: step resolve_finding starting (actor=cluster-doctor action=doctor.resolve_finding)
+Sep 03 02:55:10 node-3 workflow_server[10873]: 2026/09/03 02:55:10 INFO executor: dispatching action actor=cluster-doctor run_id="" step_id=""
+Sep 03 02:55:10 node-3 workflow_server[10873]: 2026/09/03 02:55:10 INFO executor: dispatching action actor=cluster-doctor run_id="" step_id=""
+Sep 03 02:55:10 node-3 workflow_server[10873]: time=2026-09-03T02:55:10.172Z level=WARN msg="executor: engine.Execute returned error" run_id=358d1377-7b17-4c6e-a41c-1cc39a5bcce6 error="step resolve_finding failed: cluster-doctor action doctor.resolve_finding failed: resolve_finding: resolve_finding: cluster id unknown — refusing to resolve acf8d59c8b2abeae without cluster identity (verification evidence would be unattributable)"
+Sep 03 02:55:10 node-3 workflow_server[10873]: time=2026-09-03T02:55:10.200Z level=INFO msg="executor: workflow finished" workflow=remediate.doctor.finding run_id=358d1377-7b17-4c6e-a41c-1cc39a5bcce6 status=RUN_STATUS_FAILED

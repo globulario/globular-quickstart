@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-09-03T04:56:07.058929Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/soak/etcd-backend-growth-trend.yaml",
+  "scenario": "etcd-backend-growth-trend",
+  "suite": "soak",
+  "source_revision": "ae70deeda627db274f9b1be50fbb3dd4fcc68ea5",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Over a sustained window, etcd's backend must not be on a one-way trip to the\nquota.\n\nWHY THIS EXISTS. The soak suite had three scenarios and not one of them waited\nfor anything \u2014 every assertion was evaluated within seconds of the previous\none. A suite that samples an instant cannot observe a trend, and the failure\nthat took the cluster down on 2026-08-16 is purely a trend:\n\n    measured growth    ~55 MB/hour\n    live working set   1.7 MB\n    default quota      2 GiB\n    time to NOSPACE    ~39 hours\n\nNothing about that is visible in a snapshot. At any single moment the backend\nlooks fine, right up until the moment it is 99% full and etcd goes read-only.\nThe cluster had been up 46 hours.\n\nWHAT THIS PINS. Sample the backend across a real window and require that the\ncluster is either not growing meaningfully, or is growing slowly enough that\nreclamation keeps ahead of it. Both are acceptable outcomes; a steady climb\nwith nothing reclaiming is not.\n\nIt also requires that the maintenance loop is present AND has evidence of\nworking, because \"not growing\" is only reassuring if something is actually\ngiving space back. A cluster idle enough not to grow tells you nothing about\nwhat happens when it is busy.\n\nHONEST LIMITS. Twenty minutes cannot prove a 39-hour outcome; it can only\ncatch a cluster already climbing fast enough to matter, and confirm the\nmechanism that prevents the climb is alive. A true soak belongs on a\nlong-running cluster, and the real one is the only place that exists. Treat a\npass here as \"no acute leak and the brake is connected\", not as \"safe for 39\nhours\".",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-09-03T05:16:27.403833Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

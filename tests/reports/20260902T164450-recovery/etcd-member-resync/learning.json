@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-02T17:14:54.548659Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "etcd-member-resync",
+  "suite": "recovery",
+  "result": "PASS",
+  "source_revision": "ae70deeda627db274f9b1be50fbb3dd4fcc68ea5",
+  "proof": {
+    "claim": "Verify that an etcd member resyncs correctly after rejoining a cluster\nwhere writes occurred during its absence.\n\nThis is one of the most important resilience properties of etcd/Raft:\nwhen a member that was offline comes back, it must catch up with all\nwrites that occurred during its absence \u2014 without losing any data and\nwithout requiring manual intervention.\n\nThe resync mechanism:\n1. Rejoining member contacts the current leader\n2. Leader sends all missing log entries (from member's last known index)\n3. Member replays the log entries to rebuild its state\n4. Member reports as healthy once its index matches the leader's\n5. The cluster is now fully consistent across all 3 members\n\nThis test writes to etcd while a member is down, then verifies the\nkey is readable from all endpoints after the member rejoins. This\ndirectly tests Raft's log replication guarantee.\n\nFailure modes caught:\n- Member comes back but stays in \"learner\" state (doesn't vote)\n- WAL corruption during catch-up (member falls behind again)\n- etcd db size mismatch preventing sync (compaction needed)\n- Network partition during resync (incomplete catch-up)\n- TLS cert not accepted during peer reconnect (cert renewal conflict)\n\nIndustry known problem: \"lagging replicas after maintenance\" \u2014 a member\nthat was down for a long time (> snapshot interval) must receive a full\nsnapshot instead of just log entries. etcd's snapshot transfer is\nautomatic but can be slow for large databases.\n\nCAP theorem note: the write during member absence demonstrates C over A:\nthe write succeeds (majority partition = consistent), and when the minority\nmember rejoins, it receives the write (eventual consistency achieved via\nRaft log replication).",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

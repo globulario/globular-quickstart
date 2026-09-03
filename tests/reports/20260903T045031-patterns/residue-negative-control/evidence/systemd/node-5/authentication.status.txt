@@ -1,0 +1,22 @@
+● globular-authentication.service - Globular authentication
+     Loaded: loaded (/etc/systemd/system/globular-authentication.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 04:50:58 UTC; 11s ago
+    Process: 331 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/authentication && chown globular:globular /var/lib/globular/authentication (code=exited, status=0/SUCCESS)
+    Process: 345 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 356 (authentication_)
+      Tasks: 13 (limit: 8641)
+     Memory: 24.2M (peak: 25.3M)
+        CPU: 253ms
+     CGroup: /system.slice/docker-ea8fb9ca14eb70effdd0d232e5134ea9cd7b75a2b71e2b7338ff0feb5d671806.scope/system.slice/globular-authentication.service
+             └─356 /usr/lib/globular/bin/authentication_server
+
+Sep 03 04:50:58 node-5 authentication_server[356]: PortAllocator range: 10000 - 20000
+Sep 03 04:50:59 node-5 authentication_server[356]: time=2026-09-03T04:50:59.071Z level=INFO msg="starting authentication service" service=authentication.AuthenticationService version=1.2.317 domain=globular.internal address=10.10.0.15:8443 port=10026 session_timeout=15
+Sep 03 04:50:59 node-5 authentication_server[356]: time=2026-09-03T04:50:59.264Z level=INFO msg="InitGrpcServer: gRPC server initialized" service=authentication.AuthenticationService tls=true port=10002
+Sep 03 04:50:59 node-5 authentication_server[356]: time=2026-09-03T04:50:59.265Z level=INFO msg="service ready" service=authentication.AuthenticationService port=10002 proxy=10001 protocol=grpc domain=globular.internal startup_ms=193 version=1.2.317
+Sep 03 04:50:59 node-5 authentication_server[356]: time=2026-09-03T04:50:59.265Z level=INFO msg="starting service" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10002
+Sep 03 04:50:59 node-5 authentication_server[356]: time=2026-09-03T04:50:59.266Z level=INFO msg="policy: loaded permissions from file" service=authentication path=/var/lib/globular/policy/services/authentication/permissions.generated.json count=8
+Sep 03 04:50:59 node-5 authentication_server[356]: time=2026-09-03T04:50:59.266Z level=INFO msg="authz: permission mappings loaded" service=authentication count=8 action_mappings=8
+Sep 03 04:50:59 node-5 authentication_server[356]: time=2026-09-03T04:50:59.268Z level=INFO msg="service started successfully" name=authentication.AuthenticationService id=34c0fd47-fa40-3a81-bfdb-25757ad3080f port=10002
+Sep 03 04:50:59 node-5 authentication_server[356]: time=2026-09-03T04:50:59.362Z level=INFO msg=setKey:generate mac=02:42:0a:0a:00:0f
+Sep 03 04:50:59 node-5 authentication_server[356]: time=2026-09-03T04:50:59.583Z level=INFO msg="metrics listening" service=authentication.AuthenticationService addr=[::]:10001

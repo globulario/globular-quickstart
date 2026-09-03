@@ -28,7 +28,14 @@ source "$LIB_DIR/reports.sh"
 # All suite/single-scenario certification runs go through the proof boundary.
 # The lower-level globular-scenario remains the execution engine.
 SCENARIO_BIN="$SCRIPT_DIR/globular-scenario-proof"
-SCENARIO_CONTRACT="$LIB_DIR/scenario_contract.py"
+# The audit must ask the SAME capability set the proof boundary enforces.
+# scenario_contract.py is the base set; the runner goes through
+# scenario_contract_semantic.py, which additively registers the semantic-chaos
+# actions (chaos.pause_service / chaos.resume_service). Auditing against the
+# base set reported controller-zombie-after-lease-loss UNSUPPORTED while the
+# runner executed it fine — an audit that disagrees with the gate it audits is
+# worse than no audit.
+SCENARIO_CONTRACT="$LIB_DIR/scenario_contract_semantic.py"
 
 # ── dependency check ──────────────────────────────────────────────────────────
 

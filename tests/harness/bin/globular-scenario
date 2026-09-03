@@ -244,12 +244,26 @@ def _is_transient_control_plane_refusal(out: str) -> bool:
                         accepts the same write moments later
       re-campaigning    the same handover, seen from the losing side
       upstream connect  the mesh is re-routing to the new leader
+      upsert deadline   the same handover, seen as a timeout: a freshly elected
+                        controller is not yet serving mutations
 
     On 2026-08-25 authority/rejoin-after-missed-generations failed on
     "stale leader: my_epoch=5, current_epoch=6 — re-campaigning" at attempt 1
     of 6: the retry budget existed but only "resolvable kind" could reach it,
     so a self-healing leadership transition was recorded as a control-plane
     refusal.
+
+    On 2026-09-02 the same gap reappeared under a different surface message.
+    authority/controller-zombie-after-lease-loss freezes the leader, waits a
+    fixed 180s for re-election, then writes desired state — and the write came
+    back "UpsertDesiredService: rpc error: code = DeadlineExceeded" at attempt 1
+    of 6, because a leader elected moments earlier was not yet serving. The same
+    cluster answered the identical call in 0.22s once settled, and an isolated
+    repeat of the scenario passed, so the condition clears on its own. It is a
+    handover, not a refusal — the marker below is scoped to that one RPC so a
+    timeout anywhere else cannot be laundered through this list, and the attempt
+    count stays in the evidence so a deadline that STOPS clearing is still
+    visible as 6/6.
     """
     low = (out or "").lower()
     return any(marker in low for marker in (
@@ -257,6 +271,7 @@ def _is_transient_control_plane_refusal(out: str) -> bool:
         "stale leader",
         "re-campaigning",
         "upstream connect error",
+        "upsertdesiredservice: rpc error: code = deadlineexceeded",
     ))
 
 

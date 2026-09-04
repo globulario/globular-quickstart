@@ -26,7 +26,7 @@ separate from what it asserts.
 | **soak** | **3 / 5** | **5 / 5** | defect 4 fixed |
 | recovery | 7 / 7 | 7 / 7 | |
 | resilience | 13 / 13 | 13 / 13 | |
-| upgrade | 11 / 12 | 9 / 12, **0 failures on re-run so far** | see §4 |
+| upgrade | 11 / 12 | 9 / 12 → **11 / 12 on re-run** | see §4 |
 | **authority** | **4 / 6** | **5 / 6** | defects 5 + 6 fixed |
 | catastrophic | 5 / 5 | 5 / 5 | |
 
@@ -169,27 +169,50 @@ that intentionally removes storage quorum expect desired-state writes to
 succeed? Answering it is a decision, not a fix, so nothing here has been changed
 to make the row green.
 
-## 4. The three upgrade rows, and why they are contention
+## 4. The three upgrade rows: two were contention, one is reproducible
 
-The first `upgrade` run scored 9/12. All three non-passes were downstream of the
-workflow circuit breaker opening (`15 failures in 5m`), which blocked reconcile;
-the failing steps were MinIO/objectstore convergence, a subsystem none of these
-fixes touch.
+The first `upgrade` run scored 9/12. A re-run on a quiet host (load 5.6 vs 18+),
+same binary, scored **11/12**. So the rows split:
 
-Two measurements settle it:
+| row | first run | re-run | verdict |
+|---|---|---|---|
+| `deploy-publish-then-converge` | FAIL | **PASS** | contention |
+| `rejoin-with-stale-membership-state-is-bounded` | PARTIAL | **PASS** | contention |
+| `rollback-guard-refuses-silent-regression` | FAIL | **FAIL** | **reproducible — unexplained** |
 
-- The breaker opened **more** on the certified 1.2.360 run (13 events) than here
-  (6) — and that run still scored 11/12. The condition is pre-existing and
-  timing-sensitive.
-- Re-run on a quiet host (load 5.6 vs 18+), same binary:
-  `deploy-publish-then-converge` **FAIL → PASS**, and the suite reached
-  **9 PASS / 0 non-pass** before this document was written. The decisive row is
-  that one scenario flipping on an unchanged binary; the re-run's own final
-  tally is in `.runlogs/1.2.363-upgrade.log` and supersedes this line if it
-  differs.
+**Correction.** An earlier revision of this section claimed all three were
+contention. That was written before the re-run finished and is wrong for the
+third row. Two scenarios flipping to PASS on an unchanged binary establishes
+contention for those two and for nothing else.
 
-Contention, not regression. Recorded rather than silently re-run: the first
-result stands in the evidence, with the second beside it.
+### The reproducible one
+
+`rollback-guard-refuses-silent-regression` fails a single assertion:
+
+    FAIL: releases_are_clean — field 'failed': expected 0, got 1
+    {"total": 24, "succeeded": 23, "failed": 1, "pending": 0}
+
+The failed release is `core@globular.io/workflow`. A second release,
+`core@globular.io/authentication`, entered FAILED in the same window and
+recovered on its own — the journal records
+`FAILED → PENDING (all nodes converged, clearing failure)`. So the mechanism is
+visible: releases go transiently FAILED and self-heal, and this assertion is a
+point-in-time read against that. `ops.always.release.self-heal-backoff` states
+the same thing ("transient FAILED is normal — releases self-heal on a 5 minute
+backoff").
+
+**What is NOT established.** Whether this is (a) the scenario asserting too
+early against a documented self-heal, (b) the `workflow` release genuinely stuck
+rather than transiently failed, or (c) a regression from one of these fixes.
+Against (c): the release that stays FAILED is `workflow`, whose service was
+circuit-broken on MinIO/objectstore steps, and none of these fixes touch that
+subsystem. For (c) and against dismissing it: it reproduced on both 1.2.363 runs
+and passed on the single 1.2.360 run.
+
+That is not enough evidence to attribute it either way, so it is recorded as
+**open and unexplained** rather than explained away. It needs a dedicated
+investigation: run the suite against 1.2.360 and 1.2.363 back to back on an idle
+host, and capture whether `workflow` ever leaves FAILED.
 
 ## 5. Corrections made during this work
 
@@ -264,8 +287,9 @@ grep -rhc "circuit breaker open" tests/reports/20260903T201125-upgrade/*/evidenc
 
 - The `authority` PARTIAL is **not fixed**. It is understood, and the fix is a
   decision about scenario expectations that belongs to the owner.
-- The `upgrade` re-run is evidence of contention, not proof that no regression
-  exists anywhere in that suite. Both results are in the evidence.
+- The `upgrade` re-run establishes contention for two rows and **nothing for the
+  third**, which reproduced. §4 states what is and is not known about it. Both
+  runs are in the evidence; neither was discarded.
 - Nothing here says the system is defect-free. It says these seven defects are
   fixed, each with evidence a later reader can re-check, and that no scenario was
   skipped, quarantined, retried until green, or re-baselined to get there.

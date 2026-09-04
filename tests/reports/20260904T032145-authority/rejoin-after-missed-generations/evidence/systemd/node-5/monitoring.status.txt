@@ -1,0 +1,22 @@
+● globular-monitoring.service - Globular monitoring
+     Loaded: loaded (/etc/systemd/system/globular-monitoring.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-09-04 04:26:40 UTC; 11min ago
+    Process: 473 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/monitoring && chown globular:globular /var/lib/globular/monitoring (code=exited, status=0/SUCCESS)
+    Process: 512 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 530 (monitoring_serv)
+      Tasks: 16 (limit: 8641)
+     Memory: 20.1M (peak: 27.8M)
+        CPU: 611ms
+     CGroup: /system.slice/docker-6d5e8a33e7373a7be155dd7bc0d939698062a6ab05068abe46ebceca98bb8f72.scope/system.slice/globular-monitoring.service
+             └─530 /usr/lib/globular/bin/monitoring_server
+
+Sep 04 04:26:40 node-5 systemd[1]: Starting globular-monitoring.service - Globular monitoring...
+Sep 04 04:26:40 node-5 systemd[1]: Started globular-monitoring.service - Globular monitoring.
+Sep 04 04:26:40 node-5 monitoring_server[530]: 2026/09/04 04:26:40 INFO policy: loaded cluster roles from file path=/var/lib/globular/policy/rbac/cluster-roles.generated.json roles=22
+Sep 04 04:26:40 node-5 monitoring_server[530]: 2026/09/04 04:26:40 INFO security: loaded cluster roles from external policy file roles=22
+Sep 04 04:26:40 node-5 monitoring_server[530]: PortAllocator range: 10000 - 20000
+Sep 04 04:26:40 node-5 monitoring_server[530]: 2026/09/04 04:26:40 INFO InitGrpcServer: gRPC server initialized service=monitoring.MonitoringService tls=true port=10005
+Sep 04 04:26:40 node-5 monitoring_server[530]: time=2026-09-04T04:26:40.908Z level=INFO msg="service ready" service=monitoring.MonitoringService port=10005 proxy=10020 protocol=grpc domain=globular.internal listen_ms=449
+Sep 04 04:26:41 node-5 monitoring_server[530]: 2026/09/04 04:26:41 INFO metrics listening service=monitoring.MonitoringService addr=[::]:10020
+Sep 04 04:27:11 node-5 monitoring_server[530]: 2026/09/04 04:27:11 ERROR InitClient: InstallClientCertificates failed (gateway unavailable?) domain=10.10.0.13 base=/var/lib/globular/.config/globular/tls err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.13/.cert.lock"
+Sep 04 04:27:11 node-5 monitoring_server[530]: 2026/09/04 04:27:11 ERROR GetClient: constructor returned error function=NewEventService_Client address=10.10.0.13:443 service=event.EventService err="creds lock: timeout waiting for /var/lib/globular/.config/globular/tls/10.10.0.13/.cert.lock"

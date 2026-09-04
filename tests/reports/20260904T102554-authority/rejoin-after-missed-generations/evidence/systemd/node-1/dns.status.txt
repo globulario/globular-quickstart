@@ -1,0 +1,23 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-09-04 11:01:01 UTC; 39min ago
+    Process: 1416 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 1441 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 1455 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1612 (dns_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 27.1M (peak: 30.3M)
+        CPU: 10.950s
+     CGroup: /system.slice/docker-bd3ab25eea8fbbfa6fdef986fae02ae0ac70be8666403c3083f6f044f5eba2c0.scope/system.slice/globular-dns.service
+             └─1612 /usr/lib/globular/bin/dns_server
+
+Sep 04 11:40:28 node-1 dns_server[1612]: time=2026-09-04T11:40:28.390Z level=INFO msg="A record set" domain=dns.globular.internal. uuid=4f54ab5e-8681-370f-8d0f-ea0043a85335 ipv4=10.10.0.12 ttl=60
+Sep 04 11:40:28 node-1 dns_server[1612]: 2026/09/04 11:40:28 INFO acc: AIMD decrease method=/dns.DnsService/SetA rtt_ms=13 baseline_ms=1 window=11 new_window=10
+Sep 04 11:40:28 node-1 dns_server[1612]: time=2026-09-04T11:40:28.404Z level=INFO msg="SRV set" id=_cluster-controller._tcp.globular.internal. uuid=1eb4e1d5-3fa2-3cf8-936e-44ea7b645a88 target=node-5.globular.internal. port=12000 priority=10 weight=100 ttl=60
+Sep 04 11:40:28 node-1 dns_server[1612]: 2026/09/04 11:40:28 INFO acc: AIMD decrease method=/dns.DnsService/SetSrv rtt_ms=13 baseline_ms=1 window=10 new_window=10
+Sep 04 11:40:28 node-1 dns_server[1612]: time=2026-09-04T11:40:28.424Z level=INFO msg="SRV set" id=_cluster-controller._tcp.globular.internal. uuid=1eb4e1d5-3fa2-3cf8-936e-44ea7b645a88 target=node-3.globular.internal. port=12000 priority=10 weight=100 ttl=60
+Sep 04 11:40:28 node-1 dns_server[1612]: 2026/09/04 11:40:28 INFO acc: AIMD decrease method=/dns.DnsService/SetSrv rtt_ms=18 baseline_ms=1 window=10 new_window=10
+Sep 04 11:40:28 node-1 dns_server[1612]: time=2026-09-04T11:40:28.436Z level=INFO msg="SRV set" id=_cluster-controller._tcp.globular.internal. uuid=1eb4e1d5-3fa2-3cf8-936e-44ea7b645a88 target=node-1.globular.internal. port=12000 priority=10 weight=100 ttl=60
+Sep 04 11:40:28 node-1 dns_server[1612]: 2026/09/04 11:40:28 INFO acc: AIMD decrease method=/dns.DnsService/SetSrv rtt_ms=11 baseline_ms=1 window=10 new_window=10
+Sep 04 11:40:28 node-1 dns_server[1612]: time=2026-09-04T11:40:28.451Z level=INFO msg="SRV set" id=_cluster-controller._tcp.globular.internal. uuid=1eb4e1d5-3fa2-3cf8-936e-44ea7b645a88 target=node-2.globular.internal. port=12000 priority=10 weight=100 ttl=60
+Sep 04 11:40:28 node-1 dns_server[1612]: 2026/09/04 11:40:28 INFO acc: AIMD decrease method=/dns.DnsService/SetSrv rtt_ms=13 baseline_ms=1 window=10 new_window=10

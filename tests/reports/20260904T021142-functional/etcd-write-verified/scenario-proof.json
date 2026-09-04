@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-09-04T02:15:38.922221Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/functional/etcd-write-verified.yaml",
+  "scenario": "etcd-write-verified",
+  "suite": "functional",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that etcd write quorum is healthy by performing an actual write+read+delete.\n\netcd is the sole source of truth for the entire cluster. A cluster where etcd\nis read-only (quorum lost but reads still work) looks superficially healthy but\ncannot accept any state changes \u2014 no new desired state, no workflow dispatch,\nno service registration. This test catches that failure mode.\n\nThe probe writes a test key, reads it back to verify consistency, then deletes\nit. All three operations must succeed within a reasonable latency budget.\n\nDistributed failure modes caught:\n- Majority of etcd members unreachable (writes fail with \"no leader\")\n- etcd disk full (writes fail with \"etcdserver: mvcc: database space exceeded\")\n- etcd leader election in progress (writes time out briefly then succeed)\n- WAL corruption causing write rejection\n- Network partition leaving the primary node in a minority partition\n\nNote: This test complements cluster.health which only checks if etcd responds\nto health queries \u2014 not whether it can actually accept writes.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-09-04T02:15:43.339784Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

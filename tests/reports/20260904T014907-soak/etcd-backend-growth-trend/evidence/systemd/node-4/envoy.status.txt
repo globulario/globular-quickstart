@@ -1,0 +1,21 @@
+● globular-envoy.service - Globular Envoy Proxy
+     Loaded: loaded (/etc/systemd/system/globular-envoy.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-09-04 02:25:40 UTC; 1min 12s ago
+    Process: 125 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -s /run/globular/envoy/envoy-bootstrap.json ] && exit 0; sleep 1; done; echo "envoy-bootstrap.json not ready"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 260 (envoy)
+      Tasks: 40 (limit: 8641)
+     Memory: 27.2M (peak: 27.9M)
+        CPU: 539ms
+     CGroup: /system.slice/docker-f1bd6b9d2cd729457b697156a82838dbcc05bf8537ceb357b6b024668a28ccea.scope/system.slice/globular-envoy.service
+             └─260 /usr/lib/globular/bin/envoy -c /run/globular/envoy/envoy-bootstrap.json --log-level info
+
+Sep 04 02:26:30 node-4 envoy[260]: [2026-09-04T02:26:22.363Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 689471 15 - "10.10.0.14" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Sep 04 02:26:40 node-4 envoy[260]: [2026-09-04T02:26:37.363Z] "GET /stats/prometheus HTTP/1.1" 200 - 0 689471 17 - "10.10.0.14" "Prometheus/3.5.1" "-" "127.0.0.1:9901" "-"
+Sep 04 02:26:40 node-4 envoy[260]: [2026-09-04T02:26:40.109Z] "GET /ready HTTP/1.1" 503 - 0 17 0 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Sep 04 02:26:40 node-4 envoy[260]: [2026-09-04T02:26:40.109Z] "GET /server_info HTTP/1.1" 200 - 0 98014 5 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Sep 04 02:26:40 node-4 envoy[260]: [2026-09-04T02:26:40.119Z] "GET /stats?format=json HTTP/1.1" 200 - 0 482168 13 - "10.10.0.14" "Go-http-client/1.1" "-" "127.0.0.1:9901" "-"
+Sep 04 02:26:40 node-4 envoy[260]: [2026-09-04 02:26:40.443][260][info][upstream] [source/common/upstream/cluster_manager_impl.cc:248] cm init: all clusters initialized
+Sep 04 02:26:40 node-4 envoy[260]: [2026-09-04 02:26:40.444][260][info][main] [source/server/server.cc:1023] all clusters initialized. initializing init manager
+Sep 04 02:26:40 node-4 envoy[260]: [2026-09-04 02:26:40.447][260][info][upstream] [source/common/listener_manager/lds_api.cc:109] lds: add/update listener 'ingress_listener_443_http_80'
+Sep 04 02:26:40 node-4 envoy[260]: [2026-09-04 02:26:40.449][260][info][upstream] [source/common/listener_manager/lds_api.cc:109] lds: add/update listener 'ingress_listener_443'
+Sep 04 02:26:40 node-4 envoy[260]: [2026-09-04 02:26:40.453][260][info][config] [source/common/listener_manager/listener_manager_impl.cc:1003] all dependencies initialized. starting workers

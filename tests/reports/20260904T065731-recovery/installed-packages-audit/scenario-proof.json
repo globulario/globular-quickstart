@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-09-04T07:28:20.734839Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/recovery/installed-packages-audit.yaml",
+  "scenario": "installed-packages-audit",
+  "suite": "recovery",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that Layer 3 (installed packages) state is intact and queryable\nacross all cluster nodes after the resilience test suite.\n\nThe 4-layer truth model is:\n  Layer 1: Repository (artifact exists)\n  Layer 2: Desired (what should run)\n  Layer 3: Installed (what node agent recorded as installed in etcd)\n  Layer 4: Runtime (systemd active state)\n\nThis scenario asserts Layer 3 is populated and consistent:\n  - Per-node package counts are above minimums\n  - The cluster-wide total is above minimum\n  - Node 4 (the node crashed and restarted in resilience tests) still\n    has its full installed set in etcd (keys survive container restarts)\n\nThis is a non-destructive read-only audit \u2014 safe to run at any time.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-09-04T07:28:24.128112Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

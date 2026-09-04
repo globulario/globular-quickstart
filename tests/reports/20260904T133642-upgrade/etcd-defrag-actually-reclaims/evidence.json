@@ -1,0 +1,312 @@
+{
+  "schema_version": 1,
+  "scenario": "etcd-defrag-actually-reclaims",
+  "suite": "upgrade",
+  "start_time": "2026-09-04T13:40:11.137049Z",
+  "end_time": "2026-09-04T13:57:11.622982Z",
+  "passed": true,
+  "item_count": 15,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:40:12.674800Z"
+    },
+    {
+      "id": "maintenance_loop_is_running",
+      "section": "preconditions",
+      "probe": "etcd.defrag_evidence",
+      "params": {},
+      "expect": {
+        "loops_started_gte": 1,
+        "nodes_seen_gte": 5
+      },
+      "result": {
+        "nodes_seen": 5,
+        "loops_started": 7,
+        "defrags_run": 0,
+        "defrags_complete": 0,
+        "total_freed_bytes": 0,
+        "last": ""
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:40:13.262822Z"
+    },
+    {
+      "id": "etcd_accepts_writes",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 269
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:40:13.565870Z"
+    },
+    {
+      "id": "defrag_evidence_before",
+      "section": "baseline",
+      "probe": "etcd.defrag_evidence",
+      "params": {},
+      "expect": {},
+      "result": {
+        "nodes_seen": 5,
+        "loops_started": 7,
+        "defrags_run": 0,
+        "defrags_complete": 0,
+        "total_freed_bytes": 0,
+        "last": ""
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:40:14.112967Z"
+    },
+    {
+      "id": "backend_before",
+      "section": "baseline",
+      "probe": "etcd.backend_growth",
+      "params": {},
+      "expect": {},
+      "result": {
+        "max_db_bytes": 15364096,
+        "quota_bytes": 2147483648,
+        "pct_of_quota": 0,
+        "defrag_scheduled": true,
+        "compaction_configured": true,
+        "alarms": 0
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:40:14.575894Z"
+    },
+    {
+      "id": "inflate_backend_past_floor",
+      "section": "steps",
+      "probe": "chaos.inflate_etcd",
+      "params": {
+        "node": "node-1",
+        "mb": 320
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.inflate_etcd",
+        "container": "globular-node-1",
+        "mb": 320,
+        "exit_code": 0,
+        "db_size": "DBSIZE=484110336",
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:44:02.445052Z"
+    },
+    {
+      "id": "a_defrag_actually_ran",
+      "section": "assertions",
+      "probe": "etcd.defrag_evidence",
+      "params": {},
+      "expect": {
+        "defrags_run_gte": 1,
+        "defrags_complete_gte": 1
+      },
+      "result": {
+        "nodes_seen": 5,
+        "loops_started": 7,
+        "defrags_run": 2,
+        "defrags_complete": 2,
+        "total_freed_bytes": 964612096,
+        "last": "2026/09/04 13:44:50 INFO etcd.defrag_complete endpoint=10.10.0.15:2379 db_size_before_bytes=487104512 db_size_after_bytes=1835008 freed_bytes=485269504"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:57:03.773784Z"
+    },
+    {
+      "id": "space_was_actually_reclaimed",
+      "section": "assertions",
+      "probe": "etcd.defrag_evidence",
+      "params": {},
+      "expect": {
+        "total_freed_bytes_gte": 1
+      },
+      "result": {
+        "nodes_seen": 5,
+        "loops_started": 7,
+        "defrags_run": 2,
+        "defrags_complete": 2,
+        "total_freed_bytes": 964612096,
+        "last": "2026/09/04 13:44:50 INFO etcd.defrag_complete endpoint=10.10.0.15:2379 db_size_before_bytes=487104512 db_size_after_bytes=1835008 freed_bytes=485269504"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:57:04.992726Z"
+    },
+    {
+      "id": "etcd_still_accepts_writes",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 474
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:57:05.520455Z"
+    },
+    {
+      "id": "all_members_still_healthy",
+      "section": "assertions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "unhealthy": 0
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:57:06.227907Z"
+    },
+    {
+      "id": "cluster_still_healthy",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:57:06.879696Z"
+    },
+    {
+      "id": "liveness_unaffected_by_maintenance",
+      "section": "assertions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 37,
+        "stale_nodes": 0,
+        "oldest": "c8a09d9e-3813-5357-ab58-93aa410f27fb"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:57:07.217906Z"
+    },
+    {
+      "id": "deflate_backend",
+      "section": "cleanup",
+      "probe": "chaos.deflate_etcd",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.deflate_etcd",
+        "container": "globular-node-1",
+        "mb": null,
+        "exit_code": 0,
+        "db_size": "DBSIZE=1249280",
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:57:09.434858Z"
+    },
+    {
+      "id": "backend_returned_to_normal",
+      "section": "cleanup",
+      "probe": "etcd.backend_growth",
+      "params": {},
+      "expect": {
+        "alarms": 0
+      },
+      "result": {
+        "max_db_bytes": 1249280,
+        "quota_bytes": 2147483648,
+        "pct_of_quota": 0,
+        "defrag_scheduled": true,
+        "compaction_configured": true,
+        "alarms": 0
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:57:10.328839Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120,
+        "restoration_reason": ""
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T13:57:11.622762Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

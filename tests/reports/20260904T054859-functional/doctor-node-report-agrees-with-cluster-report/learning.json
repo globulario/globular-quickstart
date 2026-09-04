@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-04T05:51:14.908339Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "doctor-node-report-agrees-with-cluster-report",
+  "suite": "functional",
+  "result": "PASS",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "proof": {
+    "claim": "The two doctor surfaces must not contradict each other. A cluster-scoped\nfinding shown on a node's page must be one the cluster report actually holds.\n\nWHY THIS EXISTS. On 2026-08-19 globular-admin showed \"Worst Severity:\nCRITICAL\" on all five nodes of a completely healthy cluster. The finding was\nobjectstore.write_quorum_lost \u2014 \"active_drives=1 < write_quorum=3\" \u2014 against\na MinIO pool that was, at that moment, 4 drives online / 0 offline / EC:2,\nwith an object written on one node and read back byte-identical from all\nfour.\n\nThe tell was that the finding named a DIFFERENT sole survivor on every page:\n\n  viewing globule-ryzen   -> active_nodes=10.0.0.63,  down=[.102 .9 .8]\n  viewing globule-nuc     -> active_nodes=10.0.0.8,   down=[.63 .102 .9]\n  viewing globule-hp-01   -> active_nodes=10.0.0.9,   down=[.63 .102 .8]\n  viewing globule-lenovo  -> active_nodes=10.0.0.102, down=[.63 .9 .8]\n\nAll four cannot each be the last one standing. known_down_nodes was empty in\nevery case: nothing had ever been observed down.\n\nTHE CAUSE. EvaluateForNode builds a snapshot whose Nodes list is filtered to\nthe single node being reported on, then evaluates CLUSTER-scoped rules\nagainst that view. Rules that resolve membership see every other node as\nabsent \u2014 no NodeRecord, no inventory \u2014 and count them down. The verdict was\nassembled entirely from nodes missing from a deliberately narrowed snapshot,\nwhich is the shape ops.always.doctor.reduced-harvest-honesty exists to\nforbid: a reduced harvest is an UNKNOWN, never a FAIL.\n\nWHY THE CLUSTER REPORT ALONE CANNOT CATCH IT. `globular doctor report\ncluster` was clean throughout \u2014 it is the only surface that receives the full\nnode set. doctor-report-clean asks exactly that surface and would have passed\non every one of those days while every node page showed CRITICAL. The\ndivergence between the surfaces is the defect, so the divergence is what this\nasserts.\n\nDIRECTIONALITY. Only findings present in the NODE report and absent from the\nCLUSTER report fail this scenario. The reverse is legitimate \u2014 the cluster\nreport may hold cluster-scoped findings a node page does not surface \u2014 and is\nrecorded but never failed on.\n\nWHY ALL FIVE NODES. The defect was per-node by construction: each page\nindicted the other four. Checking one node would catch it here, but checking\nevery node is what distinguishes \"this surface is broken\" from \"this one node\nis odd\", and it costs one probe each.\n\nNOT COVERED HERE: whether either report is CORRECT about the cluster. This\npins agreement, not truth. A doctor that is wrong in the same way on both\nsurfaces passes this scenario and is caught by doctor-report-clean and by the\nobjectstore scenarios.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

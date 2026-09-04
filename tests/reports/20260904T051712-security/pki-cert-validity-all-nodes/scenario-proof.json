@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-09-04T05:18:40.736267Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/security/pki-cert-validity-all-nodes.yaml",
+  "scenario": "pki-cert-validity-all-nodes",
+  "suite": "security",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that TLS certificates are valid and not approaching expiry on all nodes.\n\nGlobular uses two certificate types:\n1. Cluster CA (10-year validity) \u2014 root of trust for all mTLS\n2. Service certificates (1-year validity) \u2014 per-node, signed by cluster CA\n\nCertificate expiry is a silent killer in distributed systems: everything\nworks perfectly until the moment a cert expires, then all mTLS connections\nimmediately fail. This test provides early warning before that happens.\n\nFailure modes caught:\n- Certificate expired (days_remaining = 0)\n- Certificate approaching expiry (< 30 days) \u2014 renewal window missed\n- Certificate file missing on a node (entrypoint.sh PKI step failed)\n- CA cert is different between nodes (concurrent CA generation on split boot)\n- Service cert issued by wrong CA (mTLS will fail between nodes)\n\nIndustry known problem: \"certificate expiry blindness\" \u2014 ops teams assume\ncerts are managed by automation, automation silently fails, certs expire in\nproduction. The 30-day threshold gives a recovery window even if a renewal\ncycle is missed.\n\nThreshold rationale:\n- Service certs: 365 days. Alert at 30 days (within one monthly check cycle).\n- CA cert: 3650 days. Alert at 30 days (same policy for consistency).\n- The quickstart cluster generates fresh certs at each cold boot, so fresh\n  clusters will always have 300+ days remaining.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-09-04T05:19:03.619465Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

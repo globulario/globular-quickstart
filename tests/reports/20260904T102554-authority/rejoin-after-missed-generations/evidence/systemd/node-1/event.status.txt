@@ -1,0 +1,22 @@
+● globular-event.service - Globular event
+     Loaded: loaded (/etc/systemd/system/globular-event.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-09-04 11:00:59 UTC; 39min ago
+    Process: 1299 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/event && chown globular:globular /var/lib/globular/event (code=exited, status=0/SUCCESS)
+    Process: 1303 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1311 (event_server)
+      Tasks: 21 (limit: 8641)
+     Memory: 33.8M (peak: 37.6M)
+        CPU: 20.197s
+     CGroup: /system.slice/docker-bd3ab25eea8fbbfa6fdef986fae02ae0ac70be8666403c3083f6f044f5eba2c0.scope/system.slice/globular-event.service
+             └─1311 /usr/lib/globular/bin/event_server
+
+Sep 04 11:29:57 node-1 event_server[1311]: time=2026-09-04T11:29:57.842Z level=INFO msg="subscriber cleanup" uuid=bf7c8774-ed61-43bd-bf2b-76c46364329d
+Sep 04 11:29:57 node-1 event_server[1311]: time=2026-09-04T11:29:57.842Z level=INFO msg="subscriber cleanup" uuid=node_agent_handler_6400b443-cf38-52da-a683-de2fc5103c0b
+Sep 04 11:29:58 node-1 event_server[1311]: 2026/09/04 11:29:58 ERROR Cannot achieve consistency level for cl QUORUM. Requires 2, alive 1 (repeated 2 times in 24s) domain=10.10.0.11:8443 application=event.EventService user="" method=/event.EventService/Publish function=logDeduped file=interceptors/ServerInterceptors.go:errDedupFlusher
+Sep 04 11:31:58 node-1 event_server[1311]: time=2026-09-04T11:31:58.984Z level=INFO msg="Subscribe: ok" channel=cluster.* uuid=1c974e5e-487e-4f37-bc88-20dcb5702ad9
+Sep 04 11:31:58 node-1 event_server[1311]: time=2026-09-04T11:31:58.984Z level=INFO msg=subscribed channel=cluster.* uuid=1c974e5e-487e-4f37-bc88-20dcb5702ad9 subscribers=1
+Sep 04 11:32:00 node-1 event_server[1311]: time=2026-09-04T11:32:00.043Z level=INFO msg="subscriber cleanup" uuid=1c974e5e-487e-4f37-bc88-20dcb5702ad9
+Sep 04 11:32:17 node-1 event_server[1311]: time=2026-09-04T11:32:17.640Z level=WARN msg="keepalive send failed; will drop stream" uuid=4177ffdf-04c0-41a1-876d-fbcd85e7656e err="rpc error: code = Canceled desc = context canceled"
+Sep 04 11:32:17 node-1 event_server[1311]: time=2026-09-04T11:32:17.640Z level=INFO msg="subscriber cleanup" uuid=4177ffdf-04c0-41a1-876d-fbcd85e7656e
+Sep 04 11:32:17 node-1 event_server[1311]: time=2026-09-04T11:32:17.641Z level=INFO msg="OnEvent: stream ended" uuid=4177ffdf-04c0-41a1-876d-fbcd85e7656e
+Sep 04 11:34:07 node-1 event_server[1311]: 2026/09/04 11:34:07 WARN acc: config watcher stopped, will retry err="rpc error: code = Unknown desc = unexpected HTTP status code received from server: 200 (OK); malformed header: missing HTTP content-type" backoff=5s

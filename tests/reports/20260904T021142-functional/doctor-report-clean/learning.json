@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-04T02:15:38.683908Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "doctor-report-clean",
+  "suite": "functional",
+  "result": "PASS",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "proof": {
+    "claim": "Verify that cluster-doctor reports no ERROR-severity findings against a\nsettled cluster.\n\nWhy this scenario exists:\n\nOn 2026-08-11 the certification suite scored 34/36 green while\ncluster-doctor simultaneously reported 39 findings, 20 of them ERROR \u2014 a\ncorrupted etcd member on node-2, a poisoned scylladb package digest, and\nnine units wedged in start-pre behind a failed ScyllaDB. Every one of those\ndefects was real, and the scenario suite sailed past all of them, because\nthe suite asserts almost entirely on PRESENCE (is the service registered? is\nthe unit active?) while the doctor asserts on COHERENCE ACROSS LAYERS (does\ninstalled state match the manifest? does runtime match installed?).\n\nA green suite alongside a 20-ERROR doctor report means the suite was not\nmeasuring the thing that was broken. This scenario closes that gap by making\nthe doctor's own verdict a gated assertion instead of something a human has\nto remember to read.\n\nWhat it asserts, and what it deliberately does not:\n\n- ERROR/CRITICAL count MUST be zero. These are coherence violations with an\n  identified owner and a remediation; none should survive a settled cluster.\n- WARN is recorded as evidence but NOT gated. The quickstart runs MinIO in\n  standalone mode across 5 nodes, which is a legitimate standing WARN for\n  this topology (objectstore.standalone_in_cluster). Gating on zero WARN\n  would make the scenario permanently red for a known, accepted condition,\n  and a permanently red test is one people learn to ignore.\n- reduced_harvest MUST be false. When collector sub-fetches fail, the doctor\n  marks its findings \"[reduced-harvest]\" and its verdict is bounded by\n  partial data. A zero-ERROR count harvested from partial data is absence of\n  evidence, not evidence of health \u2014 accepting it would rebuild the exact\n  false-green this scenario exists to prevent\n  (ops.always.doctor.reduced-harvest-honesty).\n- reachable MUST be true. An unreachable doctor is not a clean cluster; it\n  is an unknown one. Without this the probe's zero counts on a dead RPC\n  would read as perfect health.\n\nRun placement: functional, not resilience. The doctor legitimately reports\nERRORs while chaos is in flight (a stopped node IS unconverged), so this\nbelongs in a suite that runs against a settled cluster.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

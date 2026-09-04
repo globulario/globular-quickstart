@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; disabled; preset: enabled)
+     Active: active (running) since Fri 2026-09-04 02:20:44 UTC; 6min ago
+    Process: 12171 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 12175 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 12178 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 12184 (rbac_server)
+      Tasks: 14 (limit: 8641)
+     Memory: 166.7M (peak: 168.2M)
+        CPU: 1.294s
+     CGroup: /system.slice/docker-80b60381a714d085ef18e197daf446ec235ff7080e939eb378f67644937f26a8.scope/system.slice/globular-rbac.service
+             └─12184 /usr/lib/globular/bin/rbac_server
+
+Sep 04 02:20:54 node-2 rbac_server[12184]: 2026/09/04 02:20:54 INFO mesh: gRPC connection established target=node-2.globular.internal:443
+Sep 04 02:22:33 node-2 rbac_server[12184]: 2026/09/04 02:22:33 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Sep 04 02:24:10 node-2 rbac_server[12184]: 2026/09/04 02:24:10 WARN port/proxy change detected in desired; restart required to take effect service=rbac.RbacService id=8b384839-8473-3b00-9ccc-7cb36fe97836 old_port=10003 new_port=10003 old_proxy=37737 new_proxy=10001
+Sep 04 02:24:51 node-2 rbac_server[12184]: 2026/09/04 02:24:51 INFO rbac: flushed permission cache on cross-instance RBAC change
+Sep 04 02:25:00 node-2 rbac_server[12184]: 2026/09/04 02:25:00 INFO rbac: flushed permission cache on cross-instance RBAC change
+Sep 04 02:25:00 node-2 rbac_server[12184]: 2026/09/04 02:25:00 INFO rbac: flushed permission cache on cross-instance RBAC change
+Sep 04 02:25:10 node-2 rbac_server[12184]: 2026/09/04 02:25:10 INFO rbac: flushed permission cache on cross-instance RBAC change
+Sep 04 02:25:10 node-2 rbac_server[12184]: 2026/09/04 02:25:10 INFO rbac: flushed permission cache on cross-instance RBAC change
+Sep 04 02:25:45 node-2 rbac_server[12184]: 2026/09/04 02:25:45 INFO acc: warmup complete baseline_rtt_ms=20 samples=308 elapsed=5m0s
+Sep 04 02:26:35 node-2 rbac_server[12184]: 2026/09/04 02:26:35 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

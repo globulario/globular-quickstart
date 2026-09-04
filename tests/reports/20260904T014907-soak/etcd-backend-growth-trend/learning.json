@@ -1,0 +1,58 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-04T02:27:13.055836Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "etcd-backend-growth-trend",
+  "suite": "soak",
+  "result": "FAIL",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "proof": {
+    "claim": "Over a sustained window, etcd's backend must not be on a one-way trip to the\nquota.\n\nWHY THIS EXISTS. The soak suite had three scenarios and not one of them waited\nfor anything \u2014 every assertion was evaluated within seconds of the previous\none. A suite that samples an instant cannot observe a trend, and the failure\nthat took the cluster down on 2026-08-16 is purely a trend:\n\n    measured growth    ~55 MB/hour\n    live working set   1.7 MB\n    default quota      2 GiB\n    time to NOSPACE    ~39 hours\n\nNothing about that is visible in a snapshot. At any single moment the backend\nlooks fine, right up until the moment it is 99% full and etcd goes read-only.\nThe cluster had been up 46 hours.\n\nWHAT THIS PINS. Sample the backend across a real window and require that the\ncluster is either not growing meaningfully, or is growing slowly enough that\nreclamation keeps ahead of it. Both are acceptable outcomes; a steady climb\nwith nothing reclaiming is not.\n\nIt also requires that the maintenance loop is present AND has evidence of\nworking, because \"not growing\" is only reassuring if something is actually\ngiving space back. A cluster idle enough not to grow tells you nothing about\nwhat happens when it is busy.\n\nHONEST LIMITS. Twenty minutes cannot prove a 39-hour outcome; it can only\ncatch a cluster already climbing fast enough to matter, and confirm the\nmechanism that prevents the climb is alive. A true soak belongs on a\nlong-running cluster, and the real one is the only place that exists. Treat a\npass here as \"no acute leak and the brake is connected\", not as \"safe for 39\nhours\".",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "assertions",
+        "id": "no_doctor_errors_after_soak",
+        "probe_or_action": "doctor.report_severity",
+        "result": {
+          "reachable": true,
+          "info": 1,
+          "warn": 13,
+          "error": 2,
+          "total": 16,
+          "worst": "CRITICAL",
+          "reduced_harvest": false
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

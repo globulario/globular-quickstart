@@ -1,0 +1,23 @@
+● globular-rbac.service - Globular rbac
+     Loaded: loaded (/etc/systemd/system/globular-rbac.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-09-04 11:00:48 UTC; 40min ago
+    Process: 504 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/rbac && chown globular:globular /var/lib/globular/rbac (code=exited, status=0/SUCCESS)
+    Process: 534 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 555 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 659 (rbac_server)
+      Tasks: 17 (limit: 8641)
+     Memory: 156.8M (peak: 671.2M)
+        CPU: 7.803s
+     CGroup: /system.slice/docker-bd3ab25eea8fbbfa6fdef986fae02ae0ac70be8666403c3083f6f044f5eba2c0.scope/system.slice/globular-rbac.service
+             └─659 /usr/lib/globular/bin/rbac_server
+
+Sep 04 11:31:09 node-1 rbac_server[659]: 2026/09/04 11:31:09 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Sep 04 11:31:11 node-1 rbac_server[659]: 2026/09/04 11:31:11 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Sep 04 11:31:44 node-1 rbac_server[659]: 2026/09/04 11:31:44 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Sep 04 11:32:12 node-1 rbac_server[659]: 2026/09/04 11:32:12 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Sep 04 11:34:07 node-1 rbac_server[659]: 2026/09/04 11:34:07 WARN rbac: perm-cache invalidation watcher stopped, will retry err="rpc error: code = Unknown desc = unexpected HTTP status code received from server: 200 (OK); malformed header: missing HTTP content-type" backoff=5s
+Sep 04 11:36:09 node-1 rbac_server[659]: 2026/09/04 11:36:09 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Sep 04 11:36:11 node-1 rbac_server[659]: 2026/09/04 11:36:11 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Sep 04 11:36:44 node-1 rbac_server[659]: 2026/09/04 11:36:44 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Sep 04 11:37:12 node-1 rbac_server[659]: 2026/09/04 11:37:12 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+Sep 04 11:40:38 node-1 rbac_server[659]: 2026/09/04 11:40:38 INFO sa account RBAC bypass (no deny rule matched) permission=read path=/grpc.reflection.v1.ServerReflection/ServerReflectionInfo

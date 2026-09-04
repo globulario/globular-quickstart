@@ -1,0 +1,408 @@
+{
+  "schema_version": 1,
+  "scenario": "etcd-enospc-during-state-commit",
+  "suite": "authority",
+  "start_time": "2026-09-04T03:34:22.405007Z",
+  "end_time": "2026-09-04T03:56:33.962345Z",
+  "passed": true,
+  "item_count": 18,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:34:24.004325Z"
+    },
+    {
+      "id": "no_standing_alarms",
+      "section": "preconditions",
+      "probe": "etcd.backend_growth",
+      "params": {},
+      "expect": {
+        "alarms": 0
+      },
+      "result": {
+        "max_db_bytes": 21975040,
+        "quota_bytes": 2147483648,
+        "pct_of_quota": 1,
+        "defrag_scheduled": true,
+        "compaction_configured": true,
+        "alarms": 0
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:34:24.822460Z"
+    },
+    {
+      "id": "writes_work_before",
+      "section": "preconditions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 406
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:34:25.274334Z"
+    },
+    {
+      "id": "liveness_settled_before",
+      "section": "preconditions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0,
+        "nodes_gte": 5
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 25,
+        "stale_nodes": 0,
+        "oldest": "c8a09d9e-3813-5357-ab58-93aa410f27fb"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:34:25.438381Z"
+    },
+    {
+      "id": "desired_state_before",
+      "section": "baseline",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {},
+      "result": {
+        "count": 24,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "dns",
+          "event",
+          "file",
+          "log",
+          "mcp",
+          "media",
+          "monitoring",
+          "node-agent",
+          "persistence",
+          "rbac",
+          "repository",
+          "resource",
+          "search",
+          "title",
+          "torrent",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:34:25.632971Z"
+    },
+    {
+      "id": "identity_findings_before",
+      "section": "baseline",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {},
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:34:26.132664Z"
+    },
+    {
+      "id": "exhaust_the_etcd_quota",
+      "section": "steps",
+      "probe": "chaos.fill_etcd_volume",
+      "params": {
+        "node": "node-1",
+        "require_host_free_gb": 8
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.fill_etcd_volume",
+        "container": "globular-node-1",
+        "exit_code": 0,
+        "nospace_reached": true,
+        "status": "nospace=yes\ndbsize=2138578944",
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:47:51.991494Z"
+    },
+    {
+      "id": "attempt_mutation_while_full",
+      "section": "steps",
+      "probe": "ops.set_desired",
+      "params": {
+        "node": "node-1",
+        "name": "dns",
+        "version": "@staged",
+        "expect": "any"
+      },
+      "expect": {},
+      "result": {
+        "action": "ops.set_desired",
+        "service": "dns",
+        "version": "1.2.317",
+        "expect": "any",
+        "accepted": false,
+        "exit_code": 1,
+        "attempts": 6,
+        "error": "Error: cannot verify the kind of dns (repository unreachable: rpc error: code = Unauthenticated desc = cluster_uid required after cluster initialization); `services desired set` fails closed on an unverifiable kind per desired.keyed_by_kind_and_name \u2014 retry when the repository is reachable | Usage: |   globular services desired set <service> <version> [flags]",
+        "output": "Error: cannot verify the kind of dns (repository unreachable: rpc error: code = Unauthenticated desc = cluster_uid required after cluster initialization); `services desired set` fails closed on an unv"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:49:44.022513Z"
+    },
+    {
+      "id": "release_the_quota",
+      "section": "steps",
+      "probe": "chaos.clear_etcd_volume_fill",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.clear_etcd_volume_fill",
+        "container": "globular-node-1",
+        "exit_code": 0,
+        "status": "dbsize=1638400"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:52:28.262177Z"
+    },
+    {
+      "id": "no_half_published_artifacts",
+      "section": "assertions",
+      "probe": "repository.identity_findings",
+      "params": {},
+      "expect": {
+        "ambiguous": 0,
+        "conflict": 0,
+        "missing_blob": 0
+      },
+      "result": {
+        "total": 0,
+        "ambiguous": 0,
+        "missing_blob": 0,
+        "conflict": 0
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:56:28.692593Z"
+    },
+    {
+      "id": "desired_state_coherent",
+      "section": "assertions",
+      "probe": "cluster.desired_state",
+      "params": {},
+      "expect": {
+        "count_gte": 1
+      },
+      "result": {
+        "count": 24,
+        "services": [
+          "ai-executor",
+          "ai-memory",
+          "ai-router",
+          "ai-watcher",
+          "authentication",
+          "backup-manager",
+          "cluster-controller",
+          "cluster-doctor",
+          "dns",
+          "event",
+          "file",
+          "log",
+          "mcp",
+          "media",
+          "monitoring",
+          "node-agent",
+          "persistence",
+          "rbac",
+          "repository",
+          "resource",
+          "search",
+          "title",
+          "torrent",
+          "workflow"
+        ]
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:56:28.849998Z"
+    },
+    {
+      "id": "alarms_cleared",
+      "section": "assertions",
+      "probe": "etcd.backend_growth",
+      "params": {},
+      "expect": {
+        "alarms": 0
+      },
+      "result": {
+        "max_db_bytes": 5603328,
+        "quota_bytes": 2147483648,
+        "pct_of_quota": 0,
+        "defrag_scheduled": true,
+        "compaction_configured": true,
+        "alarms": 0
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:56:30.730207Z"
+    },
+    {
+      "id": "writes_work_again",
+      "section": "assertions",
+      "probe": "etcd.write_test",
+      "params": {},
+      "expect": {
+        "success": true
+      },
+      "result": {
+        "success": true,
+        "latency_ms": 284
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:56:31.050831Z"
+    },
+    {
+      "id": "cluster_healthy_after",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:56:31.356471Z"
+    },
+    {
+      "id": "etcd_members_healthy",
+      "section": "assertions",
+      "probe": "cluster.etcd_members",
+      "params": {},
+      "expect": {
+        "unhealthy": 0
+      },
+      "result": {
+        "total": 3,
+        "healthy": 3,
+        "unhealthy": 0
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:56:31.676510Z"
+    },
+    {
+      "id": "liveness_current",
+      "section": "assertions",
+      "probe": "state.liveness_freshness",
+      "params": {},
+      "expect": {
+        "stale_nodes": 0
+      },
+      "result": {
+        "nodes": 5,
+        "max_age_s": 60,
+        "stale_nodes": 0,
+        "oldest": "a166b992-b66d-53cb-b7c7-61dfa4dd5a36"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:56:31.831914Z"
+    },
+    {
+      "id": "ensure_quota_released",
+      "section": "cleanup",
+      "probe": "chaos.clear_etcd_volume_fill",
+      "params": {
+        "node": "node-1"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.clear_etcd_volume_fill",
+        "container": "globular-node-1",
+        "exit_code": 0,
+        "status": "dbsize=1363968"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:56:33.215780Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120,
+        "restoration_reason": ""
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T03:56:33.960042Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-09-04T12:39:36.747628Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/security/signing-keys-distribution.yaml",
+  "scenario": "signing-keys-distribution",
+  "suite": "security",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that Ed25519 signing keys are correctly generated and distributed\nacross all nodes.\n\nGlobular uses Ed25519 asymmetric cryptography for JWT signing and service\nidentity. Every node generates:\n1. A node-name key: ${node_name}_private / ${node_name}_public\n   (e.g., node-1_private \u2014 used for deterministic testing)\n2. A MAC-based key: ${mac_normalized}_private / ${mac_normalized}_public\n   (e.g., 02_42_0a_0a_00_0b_private \u2014 the actual JWT signing key)\n\nFor cross-node JWT verification, each node needs all peer PUBLIC keys.\nKeys are exchanged via the /shared-pki/keys/ volume during boot.\n\nFailure modes caught:\n- Node private key not generated (JWT issuance fails silently)\n- Peer public keys not distributed (cross-node auth fails with \"invalid signature\")\n- Key directory missing entirely (services fall back to unsigned tokens)\n- Key count too low (some peers' keys missing \u2014 partial auth failure)\n\nIndustry known problem: \"key rotation breaks cross-node auth\" \u2014 after a\nnode restart with a new MAC address (Docker assigns random MACs unless\npinned), all other nodes still have the OLD MAC's public key. The new node\nsigns with its NEW key, but peers reject it as unknown. The docker-compose.yml\nuses static mac_address assignments to prevent this.\n\nNote: This test checks presence and count, not cryptographic validity.\nA full key validation (sign + verify round-trip) requires a running\nJWT issuer, which is tested in the security suite's authz scenarios.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-09-04T12:39:40.381133Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

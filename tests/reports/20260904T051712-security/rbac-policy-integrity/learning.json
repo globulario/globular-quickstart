@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-04T05:19:12.122981Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "rbac-policy-integrity",
+  "suite": "security",
+  "result": "PASS",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "proof": {
+    "claim": "Verify the RBAC policy infrastructure is correctly deployed.\n\nChecks:\n  1. RBAC service is registered in etcd and unit is active\n  2. cluster-roles.json is deployed on every node running the RBAC service\n     (the file is baked into the service package and deployed at install time)\n  3. The policy file is valid JSON with at least 4 defined roles\n  4. The RBAC service's Ed25519 signing keys are present for token validation\n\nThis proves the authorization policy was correctly deployed from the package\nmanifest \u2014 the policy file is the ground truth for what each role can do.\nIf this file is missing or corrupt, every RBAC decision falls back to deny.\n\nNote: Full allow/deny validation via gRPC ValidateAccess is in the\nsecurity/authz-enforcement scenario (requires grpcurl or runner container).",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

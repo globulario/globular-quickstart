@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-04T07:28:29.700665Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "release-failure-audit",
+  "suite": "recovery",
+  "result": "PASS",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "proof": {
+    "claim": "Surface the release pipeline state as known, documented cluster state.\n\nWhat this scenario asserts:\n  - The release audit probe works and returns a parseable result\n  - Total ServiceRelease count is above a minimum (proves records exist)\n  - Releases actually converge \u2014 at least one reaches a terminal success\n    phase, proving the pipeline is not permanently stuck\n\nHistory (2026-08-11): this scenario previously asserted the OPPOSITE \u2014\nfailed_gte matching the total, and succeeded == 0 \u2014 on the stated premise\nthat \"all ServiceRelease records are in FAILED phase\" because of stale MinIO\ncredentials. That premise was largely an artifact of the audit probe itself:\nit counted phase == \"SUCCEEDED\", a phase that does not exist in the release\nvocabulary (see ReleasePhase* in cluster_controllerpb/resources_types.go \u2014\nthe terminal success phase is AVAILABLE). Every converged release was\ntherefore invisible to the probe and filed under \"pending\", making a working\npipeline look permanently broken. With the probe reading the real phases, the\ncluster shows converged releases alongside a small number of genuine\nfailures.\n\nDeliberately NOT asserted: an exact failure count. This scenario runs after\nthe chaos suites, which legitimately leave some releases FAILED; pinning a\nnumber is what made the previous version break the moment the system\nimproved.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

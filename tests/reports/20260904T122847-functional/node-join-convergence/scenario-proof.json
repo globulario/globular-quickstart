@@ -1,0 +1,79 @@
+{
+  "proof_schema_version": 1,
+  "checked_at": "2026-09-04T12:31:53.221018Z",
+  "scenario_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/scenarios/functional/node-join-convergence.yaml",
+  "scenario": "node-join-convergence",
+  "suite": "functional",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "status": "SUPPORTED",
+  "proof_eligible": true,
+  "contract": {
+    "declared": false,
+    "version": 1,
+    "kind": "certification",
+    "proves": "Verify that a node which leaves and returns re-registers in etcd and converges:\ndesired state is applied, packages are installed, and the doctor reports no\nERROR-severity findings afterwards.\n\nWHY THIS EXISTS\n\nOn 2026-08-10 and again on 2026-08-14, Day-1 node joins failed in production\nbecause a bundled OS dependency (libnss-resolve) pinned an exact\nsystemd-resolved version that the joining host did not have. The joins died at\nthe package-install step and the node never converged. Nothing in this suite\nexercised a join, so the same break shipped twice.\n\nThis scenario closes part of that gap: it proves that a node returning to the\ncluster actually reconverges rather than merely coming back up.\n\nWHAT THIS DOES *NOT* COVER \u2014 read before trusting a green run\n\n1. This is a REJOIN, not a fresh join. The node keeps its state directory and\n   its already-installed packages, so the package-install path that actually\n   broke twice is NOT exercised here. A true fresh join needs a harness action\n   that does not exist yet (see \"harness gap\" below).\n\n2. Containers are not hosts. The libnss-resolve class of failure is an\n   interaction between a bundled .deb and the host's systemd/nsswitch layer.\n   Containers share the host kernel and do not run an independent\n   systemd-resolved, so this simulation CANNOT reproduce that failure mode even\n   with a fresh join. That layer is covered by the pinned-VM witness\n   (services/scripts/release/verify-resolver-without-libnss.sh against Ubuntu\n   Noble release-20260518 / systemd 255.4-1ubuntu8.15), which is complementary\n   to this scenario, not replaced by it.\n\nSo: a green run here means \"a returning node reconverges\". It does not mean\n\"joins are safe\". Both statements are needed and they come from different\nplaces.\n\nHARNESS GAP\n\nThere is no `cluster.join_node` action, and `cluster-cold-boot` runs with\nreset_before:false, so no scenario currently forces a cold install of the\nrelease under test. `scripts/test-concurrent-join.sh` exercises joins outside\nthe scenario system. Adding a reset-and-join action would let this file assert\nthe install path directly and is the single highest-value addition to the\nharness for release gating.",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    },
+    "learning": {
+      "enabled": false,
+      "candidate_types": []
+    }
+  },
+  "capabilities": {
+    "supported_actions": [
+      "chaos.block_network",
+      "chaos.clear_disk_fill",
+      "chaos.clear_etcd_volume_fill",
+      "chaos.clone_node_state",
+      "chaos.deflate_etcd",
+      "chaos.detach_node_etcd",
+      "chaos.fill_disk",
+      "chaos.fill_etcd_volume",
+      "chaos.inflate_etcd",
+      "chaos.inject_expired_cert",
+      "chaos.kill_service",
+      "chaos.pause_service",
+      "chaos.restart_service",
+      "chaos.restore_cert",
+      "chaos.restore_node_state",
+      "chaos.resume_all_controllers",
+      "chaos.resume_service",
+      "chaos.sigkill_service",
+      "chaos.snapshot_node_state",
+      "chaos.start_all_nodes",
+      "chaos.start_node",
+      "chaos.stop_all_nodes",
+      "chaos.stop_node",
+      "chaos.unblock_network",
+      "chaos.wipe_node_state",
+      "ops.publish",
+      "ops.remove_node",
+      "ops.set_desired",
+      "wait"
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": [],
+    "missing_probes": [],
+    "probes_file": "/home/dave/Documents/github.com/globulario/globular-quickstart/tests/harness/lib/probes.sh"
+  },
+  "errors": [],
+  "warnings": [],
+  "production_authoritative": false,
+  "promotion_required": true,
+  "execution": {
+    "finalized_at": "2026-09-04T12:35:06.706139Z",
+    "result": "PASS",
+    "executor_exit": 0,
+    "proof_eligible": true
+  }
+}

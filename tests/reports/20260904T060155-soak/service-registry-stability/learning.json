@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-04T06:41:18.171967Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "service-registry-stability",
+  "suite": "soak",
+  "result": "PASS",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "proof": {
+    "claim": "Verify that the etcd service registry does not drift over time.\n\nServices self-register when they start and remain in etcd until\nexplicitly removed. This scenario samples the registry 3 times\nover ~4 minutes to verify:\n  - No services spontaneously deregister (count does not decrease)\n  - DNS remains registered throughout (spot-check of a specific service)\n  - RBAC remains registered throughout\n\nA count decrease means a service crashed and failed to reconnect to\netcd before the sample. A service disappearing means its reconnect\nlogic is broken or etcd rejected the re-registration.\n\nThis is a read-only audit of the service discovery layer.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

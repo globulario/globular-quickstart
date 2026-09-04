@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-04T02:57:03.283471Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "heartbeat-age-stays-under-threshold",
+  "suite": "soak",
+  "result": "PASS",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "proof": {
+    "claim": "Node liveness must be published with enough margin under the unreachable\nthreshold that ordinary jitter never crosses it.\n\nTHE PROBLEM. node.reachable fires CRITICAL when a node's last_seen exceeds\nthe staleness threshold (120s). That is correct when a node is gone. It is\ndestructive when the publish interval sits so close to the threshold that a\nhealthy, idle cluster crosses it on scheduling noise alone: the finding lands\non a different node each time, the operator sees CRITICAL on machines that\nare demonstrably fine, and the alarm stops meaning anything.\n\nMeasured on a healthy idle 5-node cluster, 2026-08-19, 8 rounds x 5 nodes,\nheartbeat_age_seconds against a 120s threshold:\n\n  18:59  ryzen=34 nuc=113 hp01=65 lenovo=65  dell=67\n  19:00  ryzen=35 nuc=73  hp01=55 lenovo=79  dell=44\n  19:01  ryzen=64 nuc=49  hp01=37 lenovo=126 dell=94    <-- BREACH\n  19:03  ryzen=62 nuc=51  hp01=58 lenovo=76  dell=112\n  19:05  ryzen=45 nuc=79  hp01=49 lenovo=36  dell=63\n  19:07  ryzen=34 nuc=48  hp01=64 lenovo=55  dell=46\n  19:10  ryzen=80 nuc=75  hp01=47 lenovo=47  dell=48\n  19:12  ryzen=34 nuc=45  hp01=39 lenovo=123 dell=65    <-- BREACH\n\nRange 34-126s. Two of forty samples exceeded the threshold; nuc (113) and\ndell (112) came within 10s of it. Every node was verified healthy at the\nmoment of each breach \u2014 ping, agent port 11000 open, globular-node-agent\nactive, NRestarts=0 \u2014 and re-querying lenovo seconds after its CRITICAL\nreturned reachable:true, heartbeat_age:72s.\n\nWHY stale_nodes:0 IS NOT ENOUGH. Asserting only that nothing is currently\npast the threshold catches the breach and nothing else. It would have passed\non six of the eight rounds above while the defect \u2014 no margin \u2014 was present\nthroughout. The margin itself has to be the assertion, which is why this\nbounds max_age_s rather than counting stale nodes.\n\nTHE BUDGET. 72s is 60% of the 120s threshold. A cluster that cannot hold its\noldest heartbeat under that has no room for a GC pause, a slow etcd write, or\na busy scheduler, and will emit false unreachable findings in normal\noperation. The bound is deliberately not 119s: a test that only fails after\nthe alarm has already fired is not a margin test.\n\nWHY SOAK. A single sample proves nothing about jitter \u2014 the 2026-08-19 data\nshows breaches at rounds 3 and 8 with clean samples either side. This takes\nfive spaced samples so a cluster that is merely lucky once cannot pass.\n\nNOT COVERED HERE: the threshold value itself, and whether the publish\ninterval or the threshold is the right thing to change. This pins the\nRELATIONSHIP between them and fails when it closes, without asserting which\nside should move.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

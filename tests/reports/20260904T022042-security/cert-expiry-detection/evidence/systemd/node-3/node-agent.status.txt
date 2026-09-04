@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-09-04 02:21:19 UTC; 58s ago
+    Process: 12659 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 12663 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 12666 (node_agent_serv)
+      Tasks: 20 (limit: 8641)
+     Memory: 28.2M (peak: 34.8M)
+        CPU: 39.606s
+     CGroup: /system.slice/docker-17c3dfa7af31859c1deca2b3311c8379d31eedd902c59cccaa42506885d7af25.scope/system.slice/globular-node-agent.service
+             └─12666 /usr/lib/globular/bin/node_agent_server
+
+Sep 04 02:21:58 node-3 node_agent_server[12666]: 2026/09/04 02:21:58 tls-convergence: repairing certs from current CA
+Sep 04 02:21:58 node-3 node_agent_server[12666]: 2026/09/04 02:21:58 tls-convergence: local certificate unusable on non-issuer node (cert not signed by current CA: x509: certificate has expired or is not yet valid: current time 2026-09-04T02:21:58Z is after 2025-01-02T00:00:00Z) — requesting re-issue
+Sep 04 02:21:58 node-3 node_agent_server[12666]: 2026/09/04 02:21:58 tls-convergence: re-issued runtime TLS certificate via CA gateway
+Sep 04 02:21:58 node-3 node_agent_server[12666]: 2026/09/04 02:21:58 tls-convergence: repair reported success but certificate is still unusable: missing IP SAN: 10.10.0.13
+Sep 04 02:21:59 node-3 node_agent_server[12666]: 2026/09/04 02:21:59 nodeagent: reporting 42 installed services (hash=339eee308e664663a84d2f9e807d807b1646bd7a924bc2d29513efca092e0b2f, sample=[node-exporter resource ai-executor mc codex])
+Sep 04 02:22:00 node-3 node_agent_server[12666]: 2026/09/04 02:22:00 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Sep 04 02:22:00 node-3 node_agent_server[12666]: 2026/09/04 02:22:00 INFO mesh: gRPC connection established target=node-3.globular.internal:443
+Sep 04 02:22:00 node-3 node_agent_server[12666]: 2026/09/04 02:22:00 etcd-client: certificate reloaded from disk (/var/lib/globular/pki/issued/services/service.crt)
+Sep 04 02:22:02 node-3 node_agent_server[12666]: 2026/09/04 02:22:02 INFO certReloader: certificate reloaded from disk cert=/var/lib/globular/pki/issued/services/service.crt
+Sep 04 02:22:12 node-3 node_agent_server[12666]: 2026/09/04 02:22:12 INFO certReloader: certificate reloaded from disk cert=/var/lib/globular/pki/issued/services/service.crt

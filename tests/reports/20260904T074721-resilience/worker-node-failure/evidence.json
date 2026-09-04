@@ -1,0 +1,271 @@
+{
+  "schema_version": 1,
+  "scenario": "worker-node-failure",
+  "suite": "resilience",
+  "start_time": "2026-09-04T08:44:42.049074Z",
+  "end_time": "2026-09-04T08:45:06.260724Z",
+  "passed": true,
+  "item_count": 13,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "nodes_gte": 5
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:44:43.193460Z"
+    },
+    {
+      "id": "node4_running",
+      "section": "preconditions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-4",
+        "service": "node-agent"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-4",
+        "service": "node-agent"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:44:43.282349Z"
+    },
+    {
+      "id": "baseline_health",
+      "section": "baseline",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {},
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:44:43.572514Z"
+    },
+    {
+      "id": "stop_node4",
+      "section": "steps",
+      "probe": "chaos.stop_node",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.stop_node",
+        "container": "globular-node-4",
+        "exit_code": 0,
+        "stdout": "globular-node-4"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:44:53.966172Z"
+    },
+    {
+      "id": "wait_node4_container_stopped",
+      "section": "steps",
+      "probe": "node.container_running",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {
+        "running": false
+      },
+      "result": {
+        "running": false,
+        "node": "node-4"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:44:53.994299Z"
+    },
+    {
+      "id": "check_cluster_healthy_degraded",
+      "section": "steps",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy",
+        "members_gte": 3
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:44:54.277584Z"
+    },
+    {
+      "id": "start_node4",
+      "section": "steps",
+      "probe": "chaos.start_node",
+      "params": {
+        "node": "node-4"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.start_node",
+        "container": "globular-node-4",
+        "exit_code": 0,
+        "stdout": "globular-node-4"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:44:54.552267Z"
+    },
+    {
+      "id": "wait_node4_rejoined",
+      "section": "steps",
+      "probe": "service.status",
+      "params": {
+        "node": "node-4",
+        "service": "node-agent"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-4",
+        "service": "node-agent"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:45:04.745875Z"
+    },
+    {
+      "id": "all_nodes_back",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "nodes_gte": 5,
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:45:05.037783Z"
+    },
+    {
+      "id": "etcd_quorum_intact",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "members_gte": 3
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:45:05.308071Z"
+    },
+    {
+      "id": "node4_agent_active",
+      "section": "assertions",
+      "probe": "service.status",
+      "params": {
+        "node": "node-4",
+        "service": "node-agent"
+      },
+      "expect": {
+        "unit_state": "active"
+      },
+      "result": {
+        "unit_state": "active",
+        "node": "node-4",
+        "service": "node-agent"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:45:05.396515Z"
+    },
+    {
+      "id": "final_cluster_health",
+      "section": "cleanup",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:45:05.676112Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120,
+        "restoration_reason": ""
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T08:45:06.260602Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

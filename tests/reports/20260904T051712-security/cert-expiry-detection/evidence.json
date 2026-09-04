@@ -1,0 +1,285 @@
+{
+  "schema_version": 1,
+  "scenario": "cert-expiry-detection",
+  "suite": "security",
+  "start_time": "2026-09-04T05:17:31.646068Z",
+  "end_time": "2026-09-04T05:18:12.206155Z",
+  "passed": true,
+  "item_count": 12,
+  "items": [
+    {
+      "id": "cluster_healthy",
+      "section": "preconditions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:17:32.855561Z"
+    },
+    {
+      "id": "node3_cert_valid_before",
+      "section": "preconditions",
+      "probe": "pki.cert_expiry_days",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "expired": false,
+        "days_remaining_gte": 1
+      },
+      "result": {
+        "days_remaining": 359,
+        "expired": false,
+        "node": "node-3",
+        "cert_path": "/var/lib/globular/pki/issued/services/service.crt"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:17:33.047150Z"
+    },
+    {
+      "id": "cert_info_before",
+      "section": "baseline",
+      "probe": "pki.cert_info",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {},
+      "result": {
+        "valid": true,
+        "chain_valid": true,
+        "days_remaining": 359,
+        "has_vip": false,
+        "vip_configured": false,
+        "vip_san_ok": true,
+        "node_ip": "10.10.0.13",
+        "has_node_ip": true,
+        "node_ip_san_ok": true,
+        "not_after": "Aug 30 04:55:01 2027 GMT",
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:17:33.739497Z"
+    },
+    {
+      "id": "expiry_days_before",
+      "section": "baseline",
+      "probe": "pki.cert_expiry_days",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {},
+      "result": {
+        "days_remaining": 359,
+        "expired": false,
+        "node": "node-3",
+        "cert_path": "/var/lib/globular/pki/issued/services/service.crt"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:17:33.930460Z"
+    },
+    {
+      "id": "inject_expired_cert",
+      "section": "steps",
+      "probe": "chaos.inject_expired_cert",
+      "params": {
+        "node": "node-3",
+        "cert_path": "/var/lib/globular/pki/issued/services/service.crt",
+        "key_path": "/var/lib/globular/pki/issued/services/service.key"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.inject_expired_cert",
+        "container": "globular-node-3",
+        "cert_path": "/var/lib/globular/pki/issued/services/service.crt",
+        "exit_code": 0,
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:17:34.382754Z"
+    },
+    {
+      "id": "verify_cert_expired",
+      "section": "steps",
+      "probe": "pki.cert_expiry_days",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "expired": true
+      },
+      "result": {
+        "days_remaining": -611,
+        "expired": true,
+        "node": "node-3",
+        "cert_path": "/var/lib/globular/pki/issued/services/service.crt"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:17:34.593667Z"
+    },
+    {
+      "id": "wait_for_repair",
+      "section": "steps",
+      "probe": "pki.cert_expiry_days",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "expired": false,
+        "days_remaining_gte": 1
+      },
+      "result": {
+        "days_remaining": 359,
+        "expired": false,
+        "node": "node-3",
+        "cert_path": "/var/lib/globular/pki/issued/services/service.crt"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:18:04.997874Z"
+    },
+    {
+      "id": "cert_valid_after_repair",
+      "section": "assertions",
+      "probe": "pki.cert_expiry_days",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "expired": false,
+        "days_remaining_gte": 1
+      },
+      "result": {
+        "days_remaining": 359,
+        "expired": false,
+        "node": "node-3",
+        "cert_path": "/var/lib/globular/pki/issued/services/service.crt"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:18:05.211790Z"
+    },
+    {
+      "id": "cert_chain_valid",
+      "section": "assertions",
+      "probe": "pki.cert_info",
+      "params": {
+        "node": "node-3"
+      },
+      "expect": {
+        "chain_valid": true,
+        "node_ip_san_ok": true
+      },
+      "result": {
+        "valid": true,
+        "chain_valid": true,
+        "days_remaining": 359,
+        "has_vip": false,
+        "vip_configured": false,
+        "vip_san_ok": true,
+        "node_ip": "10.10.0.13",
+        "has_node_ip": true,
+        "node_ip_san_ok": true,
+        "not_after": "Aug 30 05:13:04 2027 GMT",
+        "node": "node-3"
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:18:10.984146Z"
+    },
+    {
+      "id": "cluster_healthy_after",
+      "section": "assertions",
+      "probe": "cluster.health",
+      "params": {},
+      "expect": {
+        "status": "healthy"
+      },
+      "result": {
+        "status": "healthy",
+        "members": 5,
+        "nodes": 5
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:18:11.396851Z"
+    },
+    {
+      "id": "restore_cert_backup",
+      "section": "cleanup",
+      "probe": "chaos.restore_cert",
+      "params": {
+        "node": "node-3",
+        "cert_path": "/var/lib/globular/pki/issued/services/service.crt",
+        "key_path": "/var/lib/globular/pki/issued/services/service.key"
+      },
+      "expect": {},
+      "result": {
+        "action": "chaos.restore_cert",
+        "container": "globular-node-3",
+        "exit_code": 0,
+        "verification": "VERIFY_OK key=globular:globular/600 crt=globular:globular/644",
+        "stderr": ""
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:18:11.481151Z"
+    },
+    {
+      "id": "cluster_returned_to_baseline",
+      "section": "postconditions",
+      "probe": "health.fingerprint",
+      "params": {
+        "timeout_s": 120,
+        "restoration_reason": ""
+      },
+      "expect": {
+        "diffs": []
+      },
+      "result": {
+        "baseline": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "final": {
+          "containers_running": [
+            "globular-node-1",
+            "globular-node-2",
+            "globular-node-3",
+            "globular-node-4",
+            "globular-node-5"
+          ],
+          "etcd_healthy_endpoints": 5,
+          "etcd_member_count": "5",
+          "pki": {
+            "node-1": "globular:globular/400 readable backups=0",
+            "node-2": "globular:globular/600 readable backups=0",
+            "node-3": "globular:globular/600 readable backups=0",
+            "node-4": "globular:globular/600 readable backups=0",
+            "node-5": "globular:globular/600 readable backups=0"
+          }
+        },
+        "diffs": []
+      },
+      "passed": true,
+      "timestamp": "2026-09-04T05:18:12.206041Z"
+    }
+  ],
+  "result": "PASS",
+  "awareness_result": "AWARENESS_SKIPPED"
+}

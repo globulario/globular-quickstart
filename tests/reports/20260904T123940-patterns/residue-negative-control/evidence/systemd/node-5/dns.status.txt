@@ -1,0 +1,23 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-09-04 12:40:10 UTC; 10s ago
+    Process: 331 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 354 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 366 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 389 (dns_server)
+      Tasks: 15 (limit: 8641)
+     Memory: 22.6M (peak: 23.9M)
+        CPU: 329ms
+     CGroup: /system.slice/docker-62b46e1decfa7352c6a959ed3e2e81b5568fd2f1433361a7c76cb8fa43a7a6c4.scope/system.slice/globular-dns.service
+             └─389 /usr/lib/globular/bin/dns_server
+
+Sep 04 12:40:10 node-5 dns_server[389]: 2026/09/04 12:40:10 INFO InitService: loaded config by name fallback service=dns.DnsService current_id=94159a09-4083-46b8-bb43-63aed99503fd config_id=594cf1f6-4307-408b-ba9f-ef46b52e51c8
+Sep 04 12:40:10 node-5 dns_server[389]: 2026/09/04 12:40:10 INFO InitGrpcServer: gRPC server initialized service=dns.DnsService tls=true port=10006
+Sep 04 12:40:10 node-5 dns_server[389]: time=2026-09-04T12:40:10.874Z level=INFO msg="service ready" service=dns.DnsService port=10006 proxy=10007 protocol=grpc domain=globular.internal listen_ms=743
+Sep 04 12:40:10 node-5 dns_server[389]: time=2026-09-04T12:40:10.874Z level=INFO msg="starting service" name=dns.DnsService id=594cf1f6-4307-408b-ba9f-ef46b52e51c8 port=10006
+Sep 04 12:40:10 node-5 dns_server[389]: 2026/09/04 12:40:10 INFO policy: loaded permissions from file service=dns path=/var/lib/globular/policy/services/dns/permissions.generated.json count=39
+Sep 04 12:40:10 node-5 dns_server[389]: time=2026-09-04T12:40:10.881Z level=INFO msg="authz: permission mappings loaded" service=dns count=39 action_mappings=40
+Sep 04 12:40:10 node-5 dns_server[389]: time=2026-09-04T12:40:10.881Z level=INFO msg="service started successfully" name=dns.DnsService id=594cf1f6-4307-408b-ba9f-ef46b52e51c8 port=10006
+Sep 04 12:40:10 node-5 dns_server[389]: time=2026-09-04T12:40:10.886Z level=INFO msg="dns:udp server starting" port=53
+Sep 04 12:40:10 node-5 dns_server[389]: 2026/09/04 12:40:10 INFO metrics listening service=dns.DnsService addr=[::]:10007
+Sep 04 12:40:19 node-5 dns_server[389]: 2026/09/04 12:40:19 WARN rbac fallback: RBAC lookup failed, using local-roles fallback (permissive) subject=sa method=dns.zone.read reason=get_role_binding_failed error="rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\""

@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-04T14:17:54.399108Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "published-artifact-is-installable-everywhere",
+  "suite": "upgrade",
+  "result": "PASS",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "proof": {
+    "claim": "PUBLISHED must mean installable from every node, not from the node that\nhappened to handle the upload.\n\nTHE PROBLEM. The manifest authority is cluster-wide but the blob store is\nper-node: a publish materializes bytes only in the local CAS of the instance\nthat received them. Every other node reads the same manifest, reports the\nartifact as PUBLISHED, and cannot serve it. Nothing re-ran the seeder to fix\nthis, because seeding was a one-shot startup goroutine \u2014 so the gap persisted\nuntil that node's repository happened to restart.\n\nObserved 2026-08-16: cluster-controller@1.2.317's blob existed only on\nglobule-ryzen and ai-memory@1.2.317's only on globule-dell. The remaining\nnodes raised repository.identity.missing_blob_for_published_manifest as an\nERROR while the staged archives that would have healed them sat unused in\n/var/lib/globular/packages/ on those same nodes. An install routed to any of\nthem failed on an artifact the cluster insisted was published.\n\nThis is the single largest contributor to the deploy pipeline failing about\nhalf the time: whether a deploy worked depended on which repository instance\nserved the install, which is not something the operator controls or can see.\n\nWHY THE OBVIOUS FIX IS FORBIDDEN. Healing package bytes from the MinIO mirror\nis ruled out (heal_published_artifacts_from_minio_mirror,\nrepository.minio_is_not_valid_package_source) \u2014 packages do not live in\nMinIO. The only sanctioned source is the staged archive, and only when its\nsha256 matches the manifest checksum: the manifest is authority, the file on\ndisk is evidence, and filenames never decide identity.\n\nWHAT THIS PINS. After a publish, every node can serve the artifact. The\nseeding pass repeats for the life of the process rather than running once at\nstartup, so a node that loses its CAS mid-life heals without a restart.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

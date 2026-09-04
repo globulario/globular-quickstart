@@ -1,0 +1,130 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-04T01:56:07.960542Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "cluster-health-stability",
+  "suite": "soak",
+  "result": "FAIL",
+  "source_revision": "3325d3e988029a08ad9dfa2974847df560ac0441",
+  "proof": {
+    "claim": "Sample cluster health 4 times over ~5 minutes to verify the cluster\ndoes not flap, lose quorum, or drop nodes during idle operation.\n\nThis is the core soak assertion: a healthy cluster must stay healthy\nwithout operator intervention. Each sample checks:\n  - cluster.health status == healthy\n  - etcd members >= 3 (quorum maintained)\n  - node count >= 5 (no nodes silently dropped)\n  - service count >= 19 (no services deregistered)\n\nFailure means the cluster is oscillating \u2014 systemd is restart-looping\na critical service, etcd is losing connectivity, or a node heartbeat\nis missing. Any instability here surfaces a real problem to investigate.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "steps",
+        "id": "sample_t270_health",
+        "probe_or_action": "cluster.health",
+        "result": {
+          "status": "degraded",
+          "members": 1,
+          "nodes": 0
+        }
+      },
+      {
+        "section": "steps",
+        "id": "sample_t270_services",
+        "probe_or_action": "services.count",
+        "result": {
+          "count": 0,
+          "service_ids": []
+        }
+      },
+      {
+        "section": "assertions",
+        "id": "final_health",
+        "probe_or_action": "cluster.health",
+        "result": {
+          "status": "degraded",
+          "members": 1,
+          "nodes": 0
+        }
+      },
+      {
+        "section": "assertions",
+        "id": "final_service_count",
+        "probe_or_action": "services.count",
+        "result": {
+          "count": 0,
+          "service_ids": []
+        }
+      },
+      {
+        "section": "postconditions",
+        "id": "cluster_returned_to_baseline",
+        "probe_or_action": "health.fingerprint",
+        "result": {
+          "baseline": {
+            "containers_running": [
+              "globular-node-1",
+              "globular-node-2",
+              "globular-node-3",
+              "globular-node-4",
+              "globular-node-5"
+            ],
+            "etcd_healthy_endpoints": 5,
+            "etcd_member_count": "5",
+            "pki": {
+              "node-1": "globular:globular/400 readable backups=0",
+              "node-2": "globular:globular/600 readable backups=0",
+              "node-3": "globular:globular/600 readable backups=0",
+              "node-4": "globular:globular/600 readable backups=0",
+              "node-5": "globular:globular/600 readable backups=0"
+            }
+          },
+          "final": {
+            "containers_running": [
+              "globular-node-1",
+              "globular-node-2",
+              "globular-node-3",
+              "globular-node-4",
+              "globular-node-5"
+            ],
+            "etcd_healthy_endpoints": 0,
+            "etcd_member_count": "0",
+            "pki": {
+              "node-1": "root:root/400 UNREADABLE backups=0",
+              "node-2": "missing UNREADABLE backups=0",
+              "node-3": "missing UNREADABLE backups=0",
+              "node-4": "missing UNREADABLE backups=0",
+              "node-5": "missing UNREADABLE backups=0"
+            }
+          },
+          "diffs": [
+            "etcd_healthy_endpoints: baseline=5 now=0",
+            "etcd_member_count: baseline='5' now='0'",
+            "pki: baseline={'node-1': 'globular:globular/400 readable backups=0', 'node-2': 'globular:globular/600 readable backups=0', 'node-3': 'globular:globular/600 readable backups=0', 'node-4': 'globular:globular/600 readable backups=0', 'node-5': 'globular:globular/600 readable backups=0'} now={'node-1': 'root:root/400 UNREADABLE backups=0', 'node-2': 'missing UNREADABLE backups=0', 'node-3': 'missing UNREADABLE backups=0', 'node-4': 'missing UNREADABLE backups=0', 'node-5': 'missing UNREADABLE backups=0'}"
+          ]
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

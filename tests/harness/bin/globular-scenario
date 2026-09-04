@@ -2145,7 +2145,59 @@ class ScenarioExecutor:
                 diffs.append(f"{k}: baseline={b!r} now={n!r}")
         return diffs
 
-    def _verify_postconditions(self, timeout: int = 120) -> bool:
+    # Default restoration window. Deliberately short: most scenarios damage
+    # nothing the cluster needs minutes to rebuild, and a long default would
+    # hide slow repairs everywhere rather than expose them where they exist.
+    DEFAULT_RESTORATION_TIMEOUT = 120
+
+    def _restoration_timeout(self) -> int:
+        """How long this scenario's cluster is allowed to take to return to its
+        captured state.
+
+        A scenario whose damage triggers a controller repair cycle needs a
+        window that accommodates that cycle, and 120s does not. On 2026-09-03
+        authority/node-clone-identity-collision failed its postcondition at
+        etcd_healthy_endpoints 5 -> 4 on two consecutive releases while the
+        repair was working correctly and still in flight: the victim's etcd was
+        deactivated at 22:36:37, the controller's MemberAdd landed at 22:41:01
+        and the wipe-and-rejoin executed at 22:44:24 — the dispatch cooldown
+        alone is 3 minutes. The ring did return to 5, during the NEXT scenario,
+        which then failed its own postcondition for having a baseline of 4.
+
+        So the gate was reporting a working repair as broken, and its residue
+        contaminated the successor. The window has to be declared per scenario,
+        by whoever knows which repair the scenario is waiting on.
+
+        This is NOT a knob for making a slow scenario pass. A scenario that
+        needs a longer window must say WHY in `restoration_reason`, and that
+        reason is recorded in the evidence so the next reader can judge whether
+        the wait is legitimate or is hiding a regression in repair latency.
+        """
+        cfg = self._cluster_cfg()
+        raw = cfg.get("restoration_timeout_seconds")
+        if raw is None:
+            return self.DEFAULT_RESTORATION_TIMEOUT
+        try:
+            secs = int(raw)
+        except (TypeError, ValueError):
+            print(f"  POSTCONDITION: ignoring non-numeric "
+                  f"restoration_timeout_seconds={raw!r}, using default")
+            return self.DEFAULT_RESTORATION_TIMEOUT
+        if secs <= 0:
+            print(f"  POSTCONDITION: ignoring non-positive "
+                  f"restoration_timeout_seconds={secs}, using default")
+            return self.DEFAULT_RESTORATION_TIMEOUT
+        if not str(cfg.get("restoration_reason", "")).strip():
+            # Fail loudly rather than silently granting the extension: an
+            # unexplained longer window is exactly how a repair-latency
+            # regression gets absorbed instead of reported.
+            print(f"  POSTCONDITION: restoration_timeout_seconds={secs} declared "
+                  f"without restoration_reason — using the {self.DEFAULT_RESTORATION_TIMEOUT}s "
+                  f"default. State which repair the scenario is waiting on.")
+            return self.DEFAULT_RESTORATION_TIMEOUT
+        return secs
+
+    def _verify_postconditions(self, timeout: int = None) -> bool:
         """
         Bounded-convergence postcondition gate. Runs after steps, declared
         cleanup, and ledger enforcement.
@@ -2158,6 +2210,12 @@ class ScenarioExecutor:
         never returns to its captured structural state is not, no matter how
         green the scenario's own assertions were.
         """
+        if timeout is None:
+            timeout = self._restoration_timeout()
+        reason = str(self._cluster_cfg().get("restoration_reason", "")).strip()
+        if timeout != self.DEFAULT_RESTORATION_TIMEOUT:
+            print(f"  POSTCONDITION: restoration window {timeout}s — {reason}")
+
         base = self.baseline_captures.get("_health_fingerprint")
         if not base:
             # No baseline means the cluster was unreachable when the scenario
@@ -2182,7 +2240,8 @@ class ScenarioExecutor:
             time.sleep(10)
         ok = not diffs
         self.evidence.record("postconditions", "cluster_returned_to_baseline",
-                             "health.fingerprint", {"timeout_s": timeout},
+                             "health.fingerprint",
+                             {"timeout_s": timeout, "restoration_reason": reason},
                              {"diffs": []},
                              {"baseline": base, "final": now, "diffs": diffs}, ok)
         if not ok:

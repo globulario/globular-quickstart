@@ -44,6 +44,20 @@ cluster:
   require_healthy_before_start: true
   reset_before: false
   reset_after: false
+  # The victim's etcd is wiped and rejoined by the CONTROLLER, not by this
+  # scenario, and that cycle is minutes long: detection, then a 3-minute
+  # etcdRejoinDispatchCooldown, then MemberAdd, then wipe-and-rejoin, then the
+  # member republishing itself to the ring. Measured on 1.2.360: etcd
+  # deactivated 22:36:37, MemberAdd 22:41:01, wipe executed 22:44:24.
+  #
+  # With the 120s default this scenario failed at etcd_healthy_endpoints 5 -> 4
+  # on two consecutive releases while the repair was working and still in
+  # flight, and its unrestored residue then made the NEXT scenario fail for
+  # having a baseline of 4. The window must outlast the repair it waits on.
+  restoration_timeout_seconds: 600
+  restoration_reason: >-
+    waiting on the controller's etcd auto-rejoin cycle (3-minute dispatch
+    cooldown + MemberAdd + wipe-and-rejoin + republish), measured at ~8 minutes
 
 preconditions:
   - type: probe

@@ -749,7 +749,39 @@ except:
         vip_san_ok=false
     fi
 
-    echo "{\"valid\":$valid_30d,\"chain_valid\":$chain_valid,\"days_remaining\":$days_remaining,\"has_vip\":$has_vip,\"vip_configured\":$vip_configured,\"vip_san_ok\":$vip_san_ok,\"not_after\":\"$not_after\",\"node\":\"$node\"}"
+    # node_ip_san_ok — does the leaf cover the node's OWN address?
+    #
+    # This is the check whose absence let a broken repair report success. On
+    # 2026-09-03 the CA gateway re-issued node-3's certificate WITHOUT the IP
+    # SAN for 10.10.0.13; the node agent detected it and logged "repair
+    # reported success but certificate is still unusable: missing IP SAN", and
+    # cert-expiry-detection still reported PASS 12/12 — because it asked only
+    # whether the cert was un-expired and chained to the CA, and it was both.
+    #
+    # The consequence surfaced two suites later, disguised: the agent's cached
+    # etcd client could no longer authenticate, every call timed out, and the
+    # controller raised infra_unhealthy against a perfectly healthy etcd for 55
+    # reconcile cycles. An oracle that cannot see the defect the product itself
+    # already reported is not testing the repair, only the paperwork.
+    #
+    # The controller dials node agents BY IP, so a leaf without the node's own
+    # IP SAN is unusable for exactly the traffic that matters.
+    local node_ip
+    node_ip=$(docker exec "$container" sh -c \
+        "hostname -I 2>/dev/null | tr ' ' '\n' | grep -E '^10\\.10\\.0\\.' | head -1" \
+        2>/dev/null | tr -d '[:space:]')
+    local node_ip_san_ok=true
+    local has_node_ip=false
+    if [[ -n "$node_ip" ]]; then
+        if docker exec "$container" openssl x509 -noout -text -in "$cert" 2>/dev/null | \
+                grep -q "IP Address:$node_ip"; then
+            has_node_ip=true
+        else
+            node_ip_san_ok=false
+        fi
+    fi
+
+    echo "{\"valid\":$valid_30d,\"chain_valid\":$chain_valid,\"days_remaining\":$days_remaining,\"has_vip\":$has_vip,\"vip_configured\":$vip_configured,\"vip_san_ok\":$vip_san_ok,\"node_ip\":\"$node_ip\",\"has_node_ip\":$has_node_ip,\"node_ip_san_ok\":$node_ip_san_ok,\"not_after\":\"$not_after\",\"node\":\"$node\"}"
 }
 
 # probe: pki.ca_valid

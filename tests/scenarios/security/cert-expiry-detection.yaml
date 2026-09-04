@@ -120,7 +120,21 @@ assertions:
       expired: false
       days_remaining_gte: 1
 
-  # Cert is issued by the cluster CA (chain is valid)
+  # Cert is issued by the cluster CA (chain is valid) AND actually usable.
+  #
+  # chain_valid alone is not enough, and this scenario is where that was
+  # learned. On 2026-09-03 the re-issue came back correctly signed and
+  # un-expired but WITHOUT the IP SAN for the node's own address; the node
+  # agent logged "repair reported success but certificate is still unusable:
+  # missing IP SAN: 10.10.0.13" and this scenario still reported PASS 12/12,
+  # because every question it asked had a healthy answer.
+  #
+  # The damage surfaced two suites later wearing a different face: the agent's
+  # etcd client could no longer authenticate, its calls timed out, and the
+  # controller raised infra_unhealthy against a healthy etcd for 55 reconcile
+  # cycles. A repair oracle must assert the property the repair exists to
+  # restore — a USABLE identity — not merely that some certificate is present
+  # and well-formed.
   - type: probe
     id: cert_chain_valid
     probe: pki.cert_info
@@ -128,6 +142,7 @@ assertions:
       node: node-3
     expect:
       chain_valid: true
+      node_ip_san_ok: true
 
   # Cluster is fully healthy
   - type: probe

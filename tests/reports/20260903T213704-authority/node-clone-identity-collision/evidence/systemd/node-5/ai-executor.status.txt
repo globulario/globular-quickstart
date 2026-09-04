@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 22:39:19 UTC; 31s ago
+    Process: 7375 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 7379 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 7382 (ai_executor_ser)
+      Tasks: 19 (limit: 8641)
+     Memory: 26.3M (peak: 27.3M)
+        CPU: 421ms
+     CGroup: /system.slice/docker-4f05fb698565b08c60618ef216d7ef1a4d0da2f15f2085279f5b68fa7e7f7f82.scope/system.slice/globular-ai-executor.service
+             └─7382 /usr/lib/globular/bin/ai_executor_server
+
+Sep 03 22:39:19 node-5 ai_executor_server[7382]: time=2026-09-03T22:39:19.413Z level=INFO msg="ai-executor backend readiness" context=startup mode=deterministic_fallback backend="" claude_binary_present=false codex_binary_present=false credentials_present=false backend_ready=false analysis_available=false
+Sep 03 22:39:19 node-5 ai_executor_server[7382]: time=2026-09-03T22:39:19.431Z level=INFO msg="job_store: connected to etcd"
+Sep 03 22:39:19 node-5 ai_executor_server[7382]: 2026/09/03 22:39:19 INFO metrics listening service=ai_executor.AiExecutorService addr=[::]:10231
+Sep 03 22:39:19 node-5 ai_executor_server[7382]: time=2026-09-03T22:39:19.448Z level=INFO msg="job_store: loaded jobs from etcd" count=70
+Sep 03 22:39:19 node-5 ai_executor_server[7382]: time=2026-09-03T22:39:19.467Z level=INFO msg="conversation_store: connected to ScyllaDB" hosts="[10.10.0.11 10.10.0.12 10.10.0.13 10.10.0.15]"
+Sep 03 22:39:29 node-5 ai_executor_server[7382]: 2026/09/03 22:39:29 INFO mesh: Envoy available, routing through mesh target=node-5.globular.internal:443
+Sep 03 22:39:29 node-5 ai_executor_server[7382]: 2026/09/03 22:39:29 INFO mesh: gRPC connection established target=node-5.globular.internal:443
+Sep 03 22:39:49 node-5 ai_executor_server[7382]: time=2026-09-03T22:39:49.437Z level=INFO msg="peer: connected" node=node-1 endpoint=10.10.0.11:10010
+Sep 03 22:39:49 node-5 ai_executor_server[7382]: time=2026-09-03T22:39:49.446Z level=INFO msg="peer: connected" node=node-2 endpoint=10.10.0.12:10010
+Sep 03 22:39:49 node-5 ai_executor_server[7382]: time=2026-09-03T22:39:49.456Z level=INFO msg="peer: connected" node=node-3 endpoint=10.10.0.13:10010

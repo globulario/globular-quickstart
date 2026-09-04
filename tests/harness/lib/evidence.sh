@@ -265,7 +265,15 @@ evidence_collect_systemd() {
 # it is the subject of the last unresolved ERROR class, its failure mode is a
 # restart loop, and systemctl status keeps only the last ~10 lines — far too
 # few to see why a loop started when the loop has been running for minutes.
-_JOURNAL_UNITS=(cluster-controller node-agent workflow cluster-doctor scylla-manager-agent)
+# etcd joins for the reason the others did, demonstrated again on 1.2.359:
+# authority/node-clone-identity-collision failed its restoration postcondition on
+# etcd_healthy_endpoints baseline=5 now=4, and the bundle could not say why —
+# every collected journal showed the CONTROLLER acting correctly (MemberAdd,
+# wipe-and-rejoin dispatched, workflow SUCCEEDED). The one line that explained
+# the failure was in etcd's own journal on the node that never came back:
+#   "discovery failed ... error validating peerURLs ...: member count is unequal"
+# A member that refuses to start is a control-plane fact, and it was invisible.
+_JOURNAL_UNITS=(cluster-controller node-agent workflow cluster-doctor scylla-manager-agent etcd)
 
 # evidence_collect_journals <out_dir>
 # Writes per-node unit journals under evidence/journal/<node>/<unit>.log

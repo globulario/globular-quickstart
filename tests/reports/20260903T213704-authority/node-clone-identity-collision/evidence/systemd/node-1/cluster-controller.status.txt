@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 22:12:22 UTC; 27min ago
+    Process: 2078 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 2082 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2084 (cluster_control)
+      Tasks: 22 (limit: 8641)
+     Memory: 50.9M (peak: 60.0M)
+        CPU: 1min 9.441s
+     CGroup: /system.slice/docker-dbbd923c9bf30a302fe41350bf9714d62552439f7c2b9f1007eb8a21bab42717.scope/system.slice/globular-cluster-controller.service
+             └─2084 /usr/lib/globular/bin/cluster_controller_server
+
+Sep 03 22:39:33 node-1 cluster_controller_server[2084]: 2026/09/03 22:39:33 drift-reconciler: suppressed node=node-2 pkg=sidekick outcome=BLOCKED_MISSING_NATIVE_DEP
+Sep 03 22:39:33 node-1 cluster_controller_server[2084]: 2026/09/03 22:39:33 drift-reconciler: node=node-2 pkg=torrent — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Sep 03 22:39:33 node-1 cluster_controller_server[2084]: 2026/09/03 22:39:33 drift-reconciler: node=node-2 pkg=media — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Sep 03 22:39:33 node-1 cluster_controller_server[2084]: 2026/09/03 22:39:33 drift-reconciler: node=node-2 pkg=title — orphaned install; node profiles [control-plane core storage] do not satisfy catalog placement; non-dispatchable (see cluster-doctor placement.installed_package_orphaned)
+Sep 03 22:39:35 node-1 cluster_controller_server[2084]: 2026/09/03 22:39:35 invariant-workflow: dispatching cluster.invariant.enforcement
+Sep 03 22:39:35 node-1 cluster_controller_server[2084]: 2026/09/03 22:39:35 workflow cluster.invariant.enforcement: dispatching to workflow service (callback=10.10.0.11:12000, correlation=invariant:1788475175)
+Sep 03 22:39:35 node-1 cluster_controller_server[2084]: 2026/09/03 22:39:35 workflow cluster.invariant.enforcement (correlation=invariant:1788475175): RPC failed: rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: degraded (gocql: no hosts available in the pool)
+Sep 03 22:39:35 node-1 cluster_controller_server[2084]: 2026/09/03 22:39:35 invariant-workflow: FAILED after 2ms: ExecuteWorkflow cluster.invariant.enforcement: rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: degraded (gocql: no hosts available in the pool)
+Sep 03 22:39:35 node-1 cluster_controller_server[2084]: 2026/09/03 22:39:35 invariant-lane: enforcement run failed: ExecuteWorkflow cluster.invariant.enforcement: rpc error: code = Unavailable desc = service unavailable: distributed dependencies are down — scylladb: degraded (gocql: no hosts available in the pool)
+Sep 03 22:39:38 node-1 cluster_controller_server[2084]: 2026/09/03 22:39:38 health: external install detected for node 35ac3821-6b90-52eb-a800-41130471770b — all 21 services converged, stamped applied hash

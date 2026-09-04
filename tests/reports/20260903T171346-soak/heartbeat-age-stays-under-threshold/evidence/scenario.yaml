@@ -1,0 +1,181 @@
+version: 1
+name: heartbeat-age-stays-under-threshold
+description: |
+  Node liveness must be published with enough margin under the unreachable
+  threshold that ordinary jitter never crosses it.
+
+  THE PROBLEM. node.reachable fires CRITICAL when a node's last_seen exceeds
+  the staleness threshold (120s). That is correct when a node is gone. It is
+  destructive when the publish interval sits so close to the threshold that a
+  healthy, idle cluster crosses it on scheduling noise alone: the finding lands
+  on a different node each time, the operator sees CRITICAL on machines that
+  are demonstrably fine, and the alarm stops meaning anything.
+
+  Measured on a healthy idle 5-node cluster, 2026-08-19, 8 rounds x 5 nodes,
+  heartbeat_age_seconds against a 120s threshold:
+
+    18:59  ryzen=34 nuc=113 hp01=65 lenovo=65  dell=67
+    19:00  ryzen=35 nuc=73  hp01=55 lenovo=79  dell=44
+    19:01  ryzen=64 nuc=49  hp01=37 lenovo=126 dell=94    <-- BREACH
+    19:03  ryzen=62 nuc=51  hp01=58 lenovo=76  dell=112
+    19:05  ryzen=45 nuc=79  hp01=49 lenovo=36  dell=63
+    19:07  ryzen=34 nuc=48  hp01=64 lenovo=55  dell=46
+    19:10  ryzen=80 nuc=75  hp01=47 lenovo=47  dell=48
+    19:12  ryzen=34 nuc=45  hp01=39 lenovo=123 dell=65    <-- BREACH
+
+  Range 34-126s. Two of forty samples exceeded the threshold; nuc (113) and
+  dell (112) came within 10s of it. Every node was verified healthy at the
+  moment of each breach — ping, agent port 11000 open, globular-node-agent
+  active, NRestarts=0 — and re-querying lenovo seconds after its CRITICAL
+  returned reachable:true, heartbeat_age:72s.
+
+  WHY stale_nodes:0 IS NOT ENOUGH. Asserting only that nothing is currently
+  past the threshold catches the breach and nothing else. It would have passed
+  on six of the eight rounds above while the defect — no margin — was present
+  throughout. The margin itself has to be the assertion, which is why this
+  bounds max_age_s rather than counting stale nodes.
+
+  THE BUDGET. 72s is 60% of the 120s threshold. A cluster that cannot hold its
+  oldest heartbeat under that has no room for a GC pause, a slow etcd write, or
+  a busy scheduler, and will emit false unreachable findings in normal
+  operation. The bound is deliberately not 119s: a test that only fails after
+  the alarm has already fired is not a margin test.
+
+  WHY SOAK. A single sample proves nothing about jitter — the 2026-08-19 data
+  shows breaches at rounds 3 and 8 with clean samples either side. This takes
+  five spaced samples so a cluster that is merely lucky once cannot pass.
+
+  NOT COVERED HERE: the threshold value itself, and whether the publish
+  interval or the threshold is the right thing to change. This pins the
+  RELATIONSHIP between them and fails when it closes, without asserting which
+  side should move.
+
+suite: soak
+tags:
+  - liveness
+  - heartbeat
+  - false-positive
+  - node-reachable
+
+cluster:
+  profile: quickstart-5node
+  require_healthy_before_start: true
+  reset_before: false
+  reset_after: false
+
+preconditions:
+  - type: probe
+    id: cluster_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # Guard against a vacuous pass. state.liveness_freshness reports the OLDEST
+  # last_seen across the nodes it can see; if it can see one node, "the oldest
+  # is fresh" is a statement about one heartbeat, not about the cluster.
+  - type: probe
+    id: all_five_nodes_visible
+    probe: state.liveness_freshness
+    expect:
+      nodes_gte: 5
+
+baseline:
+  - type: probe
+    id: liveness_at_start
+    probe: state.liveness_freshness
+
+steps:
+  # ── sample 1 of 5 ──────────────────────────────────────────────────────────
+  - id: margin_sample_1
+    probe: state.liveness_freshness
+    expect:
+      nodes_gte: 5
+      stale_nodes: 0
+      max_age_s_lte: 72
+
+  - id: gap_before_sample_2
+    action: wait
+    params:
+      timeout: 90
+      reason: "space the samples so jitter has room to appear between them"
+
+  # ── sample 2 of 5 ──────────────────────────────────────────────────────────
+  - id: margin_sample_2
+    probe: state.liveness_freshness
+    expect:
+      nodes_gte: 5
+      stale_nodes: 0
+      max_age_s_lte: 72
+
+  - id: gap_before_sample_3
+    action: wait
+    params:
+      timeout: 90
+      reason: "space the samples so jitter has room to appear between them"
+
+  # ── sample 3 of 5 ──────────────────────────────────────────────────────────
+  - id: margin_sample_3
+    probe: state.liveness_freshness
+    expect:
+      nodes_gte: 5
+      stale_nodes: 0
+      max_age_s_lte: 72
+
+  - id: gap_before_sample_4
+    action: wait
+    params:
+      timeout: 90
+      reason: "space the samples so jitter has room to appear between them"
+
+  # ── sample 4 of 5 ──────────────────────────────────────────────────────────
+  - id: margin_sample_4
+    probe: state.liveness_freshness
+    expect:
+      nodes_gte: 5
+      stale_nodes: 0
+      max_age_s_lte: 72
+
+  - id: gap_before_sample_5
+    action: wait
+    params:
+      timeout: 90
+      reason: "space the samples so jitter has room to appear between them"
+
+  # ── sample 5 of 5 ──────────────────────────────────────────────────────────
+  - id: margin_sample_5
+    probe: state.liveness_freshness
+    expect:
+      nodes_gte: 5
+      stale_nodes: 0
+      max_age_s_lte: 72
+
+assertions:
+  # The samples above are the test. These confirm the cluster was genuinely
+  # idle and healthy throughout, so a passing margin cannot be explained by the
+  # cluster having been busy doing nothing, or by nodes having dropped out of
+  # the liveness set between samples.
+  - type: probe
+    id: still_five_nodes
+    probe: state.liveness_freshness
+    expect:
+      nodes_gte: 5
+      stale_nodes: 0
+
+  - type: probe
+    id: cluster_still_healthy
+    probe: cluster.health
+    expect:
+      status: healthy
+
+  # No node.reachable finding should have fired during the run. This is the
+  # operator-visible consequence of the margin closing, and it is asserted
+  # against the doctor rather than re-derived: report_severity is the surface
+  # that actually owns the verdict.
+  - type: probe
+    id: no_error_findings_from_liveness
+    probe: doctor.report_severity
+    expect:
+      reachable: true
+      error: 0
+
+cleanup: []

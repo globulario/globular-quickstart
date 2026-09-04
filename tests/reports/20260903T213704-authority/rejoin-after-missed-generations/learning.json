@@ -1,0 +1,123 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-03T22:56:14.467450Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "rejoin-after-missed-generations",
+  "suite": "authority",
+  "result": "FAIL",
+  "source_revision": "15c406c54800f11addf0d152e37f0d79b630561f",
+  "proof": {
+    "claim": "A node that missed several generations must converge FORWARD, and must never\nbe treated as evidence that its old generation should be restored.\n\nTHE FAULT. Stop a node. While it is down, advance the cluster through several\ndesired-state changes. Restart it.\n\n    node-5 down, holding a complete and internally consistent view of\n    generation N\n          \u2193\n    cluster advances: N \u2192 N+1 \u2192 N+2 \u2192 N+3\n          \u2193\n    node-5 returns, still coherent, still wrong\n\nWHY THIS IS NOT ORDINARY REJOIN. etcd-member-resync already covers a member\ncatching up on writes it missed, and compute-node-rejoin covers a node coming\nback. Both return a node to a cluster whose desired state it merely lags.\nThis returns a node holding an ALTERNATE HISTORY: locally complete, internally\nconsistent, and contradicted by the cluster.\n\nThe law under test is the one that makes local state safe to keep at all:\n\n    local persisted state is evidence of what happened,\n    never authority over what should happen.\n\nA node that returns with generation N must be read as an observer of the\ncurrent generation, not as a witness that N should be reconstructed. The\nfailure mode this hunts is a returning node whose stale local records win a\nmerge, or whose reappearance makes the controller re-derive an older desired\nstate from installed evidence.\n\nWHAT MUST HOLD. The returning node ends on the cluster's current generation,\nthe desired state written while it was away is unchanged, no drift storm\nfollows, and the cluster is healthy with every node accounted for.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [
+      {
+        "section": "steps",
+        "id": "advance_generation_1",
+        "probe_or_action": "ops.set_desired",
+        "result": {
+          "action": "ops.set_desired",
+          "service": "dns",
+          "version": "1.2.317",
+          "expect": "accepted",
+          "accepted": false,
+          "exit_code": 1,
+          "attempts": 2,
+          "error": "Error: cannot verify the kind of dns (repository unreachable: rpc error: code = DeadlineExceeded desc = context deadline exceeded); `services desired set` fails closed on an unverifiable kind per desired.keyed_by_kind_and_name \u2014 retry when the repository is reachable | Usage: |   globular services desired set <service> <version> [flags]",
+          "output": "Error: cannot verify the kind of dns (repository unreachable: rpc error: code = DeadlineExceeded desc = context deadline exceeded); `services desired set` fails closed on an unverifiable kind per desi"
+        }
+      },
+      {
+        "section": "steps",
+        "id": "advance_generation_3",
+        "probe_or_action": "ops.set_desired",
+        "result": {
+          "action": "ops.set_desired",
+          "service": "authentication",
+          "version": "1.2.317",
+          "expect": "accepted",
+          "accepted": false,
+          "exit_code": 1,
+          "attempts": 1,
+          "error": "Error: cannot verify the kind of authentication (repository unreachable: rpc error: code = Unauthenticated desc = cluster_uid required after cluster initialization); `services desired set` fails closed on an unverifiable kind per desired.keyed_by_kind_and_name \u2014 retry when the repository is reachable | Usage: |   globular services desired set <service> <version> [flags]",
+          "output": "Error: cannot verify the kind of authentication (repository unreachable: rpc error: code = Unauthenticated desc = cluster_uid required after cluster initialization); `services desired set` fails close"
+        }
+      },
+      {
+        "section": "postconditions",
+        "id": "cluster_returned_to_baseline",
+        "probe_or_action": "health.fingerprint",
+        "result": {
+          "baseline": {
+            "containers_running": [
+              "globular-node-1",
+              "globular-node-2",
+              "globular-node-3",
+              "globular-node-4",
+              "globular-node-5"
+            ],
+            "etcd_healthy_endpoints": 4,
+            "etcd_member_count": "4",
+            "pki": {
+              "node-1": "globular:globular/400 readable backups=0",
+              "node-2": "globular:globular/600 readable backups=0",
+              "node-3": "globular:globular/600 readable backups=0",
+              "node-4": "globular:globular/600 readable backups=0",
+              "node-5": "globular:globular/600 readable backups=0"
+            }
+          },
+          "final": {
+            "containers_running": [
+              "globular-node-1",
+              "globular-node-2",
+              "globular-node-3",
+              "globular-node-4",
+              "globular-node-5"
+            ],
+            "etcd_healthy_endpoints": 5,
+            "etcd_member_count": "5",
+            "pki": {
+              "node-1": "globular:globular/400 readable backups=0",
+              "node-2": "globular:globular/600 readable backups=0",
+              "node-3": "globular:globular/600 readable backups=0",
+              "node-4": "globular:globular/600 readable backups=0",
+              "node-5": "globular:globular/600 readable backups=0"
+            }
+          },
+          "diffs": [
+            "etcd_healthy_endpoints: baseline=4 now=5",
+            "etcd_member_count: baseline='4' now='5'"
+          ]
+        }
+      }
+    ],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

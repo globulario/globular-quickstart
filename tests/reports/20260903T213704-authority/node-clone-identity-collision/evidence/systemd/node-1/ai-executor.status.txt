@@ -1,0 +1,22 @@
+● globular-ai-executor.service - Globular ai_executor
+     Loaded: loaded (/etc/systemd/system/globular-ai-executor.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 22:12:02 UTC; 27min ago
+    Process: 1599 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/ai-executor && chown globular:globular /var/lib/globular/ai-executor (code=exited, status=0/SUCCESS)
+    Process: 1623 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 1633 (ai_executor_ser)
+      Tasks: 21 (limit: 8641)
+     Memory: 35.9M (peak: 41.1M)
+        CPU: 3.429s
+     CGroup: /system.slice/docker-dbbd923c9bf30a302fe41350bf9714d62552439f7c2b9f1007eb8a21bab42717.scope/system.slice/globular-ai-executor.service
+             └─1633 /usr/lib/globular/bin/ai_executor_server
+
+Sep 03 22:37:04 node-1 ai_executor_server[1633]: time=2026-09-03T22:37:04.540Z level=INFO msg="codex: no credentials found"
+Sep 03 22:39:17 node-1 ai_executor_server[1633]: 2026/09/03 22:39:17 WARN port/proxy change detected in desired; restart required to take effect service=ai_executor.AiExecutorService id=84723d53-3b03-38a8-b876-50809c8491cd old_port=10010 new_port=10016 old_proxy=10231 new_proxy=10231
+Sep 03 22:39:27 node-1 ai_executor_server[1633]: time=2026-09-03T22:39:27.251Z level=INFO msg="processing incident" incident_id=51d5f109-a7e8-11f1-9d7a-02420a0a000d rule_id=service-crash tier=1 trigger=service.exited batch_size=1
+Sep 03 22:39:27 node-1 ai_executor_server[1633]: time=2026-09-03T22:39:27.343Z level=INFO msg="diagnosis complete" incident_id=51d5f109-a7e8-11f1-9d7a-02420a0a000d root_cause="service_crash: globular-scylla-manager-agent.service" confidence=0.6000000238418579 proposed_action=restart_service:globular-scylla-manager-agent.service job_state=JOB_DIAGNOSED
+Sep 03 22:39:27 node-1 ai_executor_server[1633]: time=2026-09-03T22:39:27.343Z level=INFO msg="executing remediation" incident=51d5f109-a7e8-11f1-9d7a-02420a0a000d action_type=ACTION_RESTART_SERVICE target=restart_service:globular-scylla-manager-agent.service
+Sep 03 22:39:27 node-1 ai_executor_server[1633]: time=2026-09-03T22:39:27.360Z level=INFO msg="restart_service: request published" target=restart_service:globular-scylla-manager-agent.service
+Sep 03 22:39:30 node-1 ai_executor_server[1633]: time=2026-09-03T22:39:30.361Z level=ERROR msg="remediation failed" incident=51d5f109-a7e8-11f1-9d7a-02420a0a000d action_type=ACTION_RESTART_SERVICE err="verification failed: inconclusive: restart of restart_service:globular-scylla-manager-agent.service dispatched via event bus; confirm via node-agent or cluster doctor"
+Sep 03 22:39:30 node-1 ai_executor_server[1633]: time=2026-09-03T22:39:30.361Z level=ERROR msg="REMEDIATION FAILED" incident_id=51d5f109-a7e8-11f1-9d7a-02420a0a000d summary="service-crash triggered by service.exited on scylla-manager-agent (1 events in batch)" proposed_action=restart_service:globular-scylla-manager-agent.service
+Sep 03 22:39:30 node-1 ai_executor_server[1633]: 2026/09/03 22:39:30 INFO acc: AIMD decrease method=/ai_executor.AiExecutorService/ProcessIncident rtt_ms=3124 baseline_ms=20 window=81 new_window=72
+Sep 03 22:39:34 node-1 ai_executor_server[1633]: time=2026-09-03T22:39:34.420Z level=INFO msg="peer: connected" node=node-5 endpoint=10.10.0.15:10016

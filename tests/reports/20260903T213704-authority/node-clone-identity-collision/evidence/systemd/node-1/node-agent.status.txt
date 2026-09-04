@@ -1,0 +1,22 @@
+● globular-node-agent.service - Globular node_agent
+     Loaded: loaded (/etc/systemd/system/globular-node-agent.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 22:11:39 UTC; 28min ago
+    Process: 218 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/node-agent && chown root:root /var/lib/globular/node-agent (code=exited, status=0/SUCCESS)
+    Process: 236 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 256 (node_agent_serv)
+      Tasks: 33 (limit: 8641)
+     Memory: 105.3M (peak: 126.1M)
+        CPU: 6min 28.150s
+     CGroup: /system.slice/docker-dbbd923c9bf30a302fe41350bf9714d62552439f7c2b9f1007eb8a21bab42717.scope/system.slice/globular-node-agent.service
+             └─256 /usr/lib/globular/bin/node_agent_server
+
+Sep 03 22:37:14 node-1 node_agent_server[256]: 2026/09/03 22:37:14 nodeagent: reporting 47 installed services (hash=8cb6022ce83a537ec86d6a7ff15f0acfe86349bb2ffee6f66994c2a16173ed86, sample=[backup-manager monitoring mcp gateway codex])
+Sep 03 22:37:15 node-1 node_agent_server[256]: 2026/09/03 22:37:15 nodeagent: refreshed etcd endpoint list from /globular/system/etcd_endpoints (5 endpoint(s))
+Sep 03 22:37:16 node-1 node_agent_server[256]: 2026/09/03 22:37:16 behavioral observation: infra_probe skipped component=minio node=c777633e-6d07-5713-9c4c-deb3317eee25: record evidence signal.probe.59a2dc19f5ec4feb.evidence.0: rpc error: code = Internal desc = BehavioralMemoryService.RecordEvidence: record evidence: target signal "signal.probe.59a2dc19f5ec4feb": behavioral-memory store: not found
+Sep 03 22:37:39 node-1 node_agent_server[256]: 2026/09/03 22:37:39 WARN mesh: cached connection unhealthy, reconnecting state=SHUTDOWN
+Sep 03 22:37:39 node-1 node_agent_server[256]: 2026/09/03 22:37:39 INFO mesh: gRPC connection established target=node-1.globular.internal:443
+Sep 03 22:37:46 node-1 node_agent_server[256]: 2026/09/03 22:37:46 nodeagent: reporting 47 installed services (hash=8cb6022ce83a537ec86d6a7ff15f0acfe86349bb2ffee6f66994c2a16173ed86, sample=[sidekick etcd repository sha256sum log])
+Sep 03 22:38:18 node-1 node_agent_server[256]: 2026/09/03 22:38:18 nodeagent: reporting 47 installed services (hash=8cb6022ce83a537ec86d6a7ff15f0acfe86349bb2ffee6f66994c2a16173ed86, sample=[gateway scylla-manager yt-dlp resource workflow])
+Sep 03 22:38:50 node-1 node_agent_server[256]: 2026/09/03 22:38:50 nodeagent: reporting 47 installed services (hash=8cb6022ce83a537ec86d6a7ff15f0acfe86349bb2ffee6f66994c2a16173ed86, sample=[backup-manager ffmpeg etcdctl ai-memory cluster-doctor])
+Sep 03 22:39:22 node-1 node_agent_server[256]: 2026/09/03 22:39:22 nodeagent: reporting 47 installed services (hash=8cb6022ce83a537ec86d6a7ff15f0acfe86349bb2ffee6f66994c2a16173ed86, sample=[sha256sum sctool workflow scylladb yt-dlp])
+Sep 03 22:39:22 node-1 node_agent_server[256]: 2026/09/03 22:39:22 scylla-seeds: seed list converged in /etc/scylla/scylla.yaml: "10.10.0.11,10.10.0.12,10.10.0.13" -> "10.10.0.11,10.10.0.12,10.10.0.13,10.10.0.15" (no restart — seeds are read at process start)

@@ -1,0 +1,23 @@
+● globular-dns.service - Globular dns
+     Loaded: loaded (/etc/systemd/system/globular-dns.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 17:12:04 UTC; 11s ago
+    Process: 303 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/dns && chown globular:globular /var/lib/globular/dns (code=exited, status=0/SUCCESS)
+    Process: 348 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+    Process: 363 ExecStartPre=/bin/sh -c if ! systemctl cat scylla-server.service >/dev/null 2>&1; then echo "no local scylla-server unit on this node — remote scylla topology; deferring to service-level readiness gate"; exit 0; fi; for i in $(seq 1 90); do ss -lnt | grep -q ":9042 " && exit 0; sleep 1; done; echo "local scylla 9042 not ready after 90s"; ss -lnt 2>&1; systemctl status scylla-server.service --no-pager -l 2>&1 | tail -5; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 384 (dns_server)
+      Tasks: 13 (limit: 8641)
+     Memory: 21.3M (peak: 22.1M)
+        CPU: 294ms
+     CGroup: /system.slice/docker-913caaa482a54a2c14bb5f8d58d006e3dda7f25c3b9b7074cf9c137650348492.scope/system.slice/globular-dns.service
+             └─384 /usr/lib/globular/bin/dns_server
+
+Sep 03 17:12:04 node-5 systemd[1]: Started globular-dns.service - Globular dns.
+Sep 03 17:12:05 node-5 dns_server[384]: 2026/09/03 17:12:05 INFO InitService: loaded config by name fallback service=dns.DnsService current_id=2aee7a9e-0b1a-4ccb-9edc-eadbc78b1793 config_id=244424de-577e-4b6a-bd49-0e468ed17a12
+Sep 03 17:12:05 node-5 dns_server[384]: 2026/09/03 17:12:05 INFO InitGrpcServer: gRPC server initialized service=dns.DnsService tls=true port=10006
+Sep 03 17:12:05 node-5 dns_server[384]: time=2026-09-03T17:12:05.984Z level=INFO msg="service ready" service=dns.DnsService port=10006 proxy=10007 protocol=grpc domain=globular.internal listen_ms=979
+Sep 03 17:12:05 node-5 dns_server[384]: time=2026-09-03T17:12:05.984Z level=INFO msg="starting service" name=dns.DnsService id=244424de-577e-4b6a-bd49-0e468ed17a12 port=10006
+Sep 03 17:12:05 node-5 dns_server[384]: 2026/09/03 17:12:05 INFO policy: loaded permissions from file service=dns path=/var/lib/globular/policy/services/dns/permissions.generated.json count=39
+Sep 03 17:12:05 node-5 dns_server[384]: time=2026-09-03T17:12:05.988Z level=INFO msg="authz: permission mappings loaded" service=dns count=39 action_mappings=40
+Sep 03 17:12:05 node-5 dns_server[384]: time=2026-09-03T17:12:05.988Z level=INFO msg="service started successfully" name=dns.DnsService id=244424de-577e-4b6a-bd49-0e468ed17a12 port=10006
+Sep 03 17:12:05 node-5 dns_server[384]: time=2026-09-03T17:12:05.990Z level=INFO msg="dns:udp server starting" port=53
+Sep 03 17:12:06 node-5 dns_server[384]: 2026/09/03 17:12:06 INFO metrics listening service=dns.DnsService addr=[::]:10007

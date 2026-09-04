@@ -1,0 +1,43 @@
+{
+  "learning_schema_version": 1,
+  "created_at": "2026-09-03T17:11:25.068560Z",
+  "source": "globular-quickstart-simulation",
+  "scenario": "pki-cert-validity-all-nodes",
+  "suite": "security",
+  "result": "PASS",
+  "source_revision": "15c406c54800f11addf0d152e37f0d79b630561f",
+  "proof": {
+    "claim": "Verify that TLS certificates are valid and not approaching expiry on all nodes.\n\nGlobular uses two certificate types:\n1. Cluster CA (10-year validity) \u2014 root of trust for all mTLS\n2. Service certificates (1-year validity) \u2014 per-node, signed by cluster CA\n\nCertificate expiry is a silent killer in distributed systems: everything\nworks perfectly until the moment a cert expires, then all mTLS connections\nimmediately fail. This test provides early warning before that happens.\n\nFailure modes caught:\n- Certificate expired (days_remaining = 0)\n- Certificate approaching expiry (< 30 days) \u2014 renewal window missed\n- Certificate file missing on a node (entrypoint.sh PKI step failed)\n- CA cert is different between nodes (concurrent CA generation on split boot)\n- Service cert issued by wrong CA (mTLS will fail between nodes)\n\nIndustry known problem: \"certificate expiry blindness\" \u2014 ops teams assume\ncerts are managed by automation, automation silently fails, certs expire in\nproduction. The 30-day threshold gives a recovery window even if a renewal\ncycle is missed.\n\nThreshold rationale:\n- Service certs: 365 days. Alert at 30 days (within one monthly check cycle).\n- CA cert: 3650 days. Alert at 30 days (same policy for consistency).\n- The quickstart cluster generates fresh certs at each cold boot, so fresh\n  clusters will always have 300+ days remaining.",
+    "kind": "certification",
+    "origin": {
+      "type": "manual",
+      "ref": ""
+    },
+    "governing_contracts": [],
+    "invariants": [],
+    "known_failure_modes": [],
+    "forbidden_outcomes": [],
+    "determinism": {
+      "replayable": false,
+      "seed": null
+    }
+  },
+  "observations": {
+    "failed_items": [],
+    "unsupported_required": [],
+    "unsupported_optional": []
+  },
+  "candidate_policy": {
+    "learning_enabled": false,
+    "candidate_types": [],
+    "may_create_candidates": true,
+    "may_promote": false
+  },
+  "authority": {
+    "production_authoritative": false,
+    "promotion_required": true,
+    "note": "Simulation output is evidence/candidate knowledge only. Governed promotion is required before production may rely on it."
+  },
+  "evidence_ref": "evidence.json",
+  "proof_ref": "scenario-proof.json"
+}

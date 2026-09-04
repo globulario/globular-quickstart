@@ -1,0 +1,22 @@
+● globular-cluster-controller.service - Globular cluster_controller
+     Loaded: loaded (/etc/systemd/system/globular-cluster-controller.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-09-03 22:12:22 UTC; 43min ago
+    Process: 2078 ExecStartPre=/bin/sh -c mkdir -p /var/lib/globular/cluster-controller && chown globular:globular /var/lib/globular/cluster-controller (code=exited, status=0/SUCCESS)
+    Process: 2082 ExecStartPre=/bin/sh -c for i in $(seq 1 60); do [ -f /var/lib/globular/pki/issued/services/service.crt ] && exit 0; sleep 1; done; echo "TLS cert not ready after 60s"; ls -la /var/lib/globular/pki/issued/services/ 2>&1 || echo "cert dir missing"; exit 1 (code=exited, status=0/SUCCESS)
+   Main PID: 2084 (cluster_control)
+      Tasks: 22 (limit: 8641)
+     Memory: 54.7M (peak: 60.6M)
+        CPU: 1min 48.184s
+     CGroup: /system.slice/docker-dbbd923c9bf30a302fe41350bf9714d62552439f7c2b9f1007eb8a21bab42717.scope/system.slice/globular-cluster-controller.service
+             └─2084 /usr/lib/globular/bin/cluster_controller_server
+
+Sep 03 22:55:39 node-1 cluster_controller_server[2084]: 2026/09/03 22:55:39 actor[invariant]: minio storage repair — map[repaired:[] repaired_count:0]
+Sep 03 22:55:39 node-1 cluster_controller_server[2084]: 2026/09/03 22:55:39 actor[invariant]: fence_unreachable — 0 node(s) fenced
+Sep 03 22:55:39 node-1 cluster_controller_server[2084]: 2026/09/03 22:55:39 actor[invariant]: enforcement report emitted
+Sep 03 22:55:39 node-1 cluster_controller_server[2084]: 2026/09/03 22:55:39 actor[invariant]: enforcement SUCCEEDED
+Sep 03 22:55:39 node-1 cluster_controller_server[2084]: 2026/09/03 22:55:39 invariant-workflow: enforcement completed successfully
+Sep 03 22:55:39 node-1 cluster_controller_server[2084]: 2026/09/03 22:55:39 workflow cluster.invariant.enforcement (correlation=invariant:1788476139): SUCCEEDED
+Sep 03 22:55:39 node-1 cluster_controller_server[2084]: 2026/09/03 22:55:39 invariant-workflow: SUCCEEDED in 408ms
+Sep 03 22:55:44 node-1 cluster_controller_server[2084]: 2026/09/03 22:55:44 convergence-committer: node=a166b992-b66d-53cb-b7c7-61dfa4dd5a36 COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Sep 03 22:55:44 node-1 cluster_controller_server[2084]: 2026/09/03 22:55:44 convergence-committer: node=c777633e-6d07-5713-9c4c-deb3317eee25 COMMAND/claude outcome=FAILED_TRANSIENT reason=
+Sep 03 22:55:44 node-1 cluster_controller_server[2084]: 2026/09/03 22:55:44 convergence-committer: node=c8a09d9e-3813-5357-ab58-93aa410f27fb COMMAND/claude outcome=FAILED_TRANSIENT reason=
